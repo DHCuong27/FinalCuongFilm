@@ -1,49 +1,617 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - FinalCuongFilm.MVC</title>
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/FinalCuongFilm.MVC.styles.css" asp-append-version="true" />
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>CuongPhim</title>
+	<link href="../Layout_CuongPhim/css/bootstrap.min.css" rel="stylesheet">
+	<link href="../Layout_CuongPhim/css/font-awesome.min.css" rel="stylesheet">
+	<link href="../Layout_CuongPhim/css/global.css" rel="stylesheet">
+	<link href="../Layout_CuongPhim/css/index.css" rel="stylesheet">
+	<link rel="icon" type="image/png" href="@Url.Content("../Layout_CuongPhim/img/Logo/LogoCCP.png")" />
+	<link href="https://fonts.googleapis.com/css2?family=Rajdhani&display=swap" rel="stylesheet">
+	<script src="../Layout_CuongPhim/js/bootstrap.bundle.min.js"></script>
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+	<script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">FinalCuongFilm.MVC</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </nav>
-    </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
+	<!-- Header -->
+	<nav class="navbar navbar-expand-lg navbar-dark bg-dark px-3">
+		<!-- Logo -->
+		<a class="navbar-brand d-flex align-items-center" href="/">
+			<img src="~/Layout_CuongPhim/../Layout_CuongPhim/img/Logo/LogoCCP.png" alt="CuongPhim Logo" height="40" class="me-2">
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - FinalCuongFilm.MVC - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-        </div>
-    </footer>
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
-    @await RenderSectionAsync("Scripts", required: false)
+			<!-- Name + Slogan -->
+			<div class="d-flex flex-column">
+				<span class="fw-bold text-danger">CuongPhim</span>
+				<div class="d-flex flex-column brand-box">
+					<small class="slogan">Here we go!</small>
+				</div>
+			</div>
+
+		</a>
+
+		<!-- Toggle for mobile -->
+		<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar"
+				aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
+			<span class="navbar-toggler-icon"></span>
+		</button>
+
+		<!-- Navbar content -->
+		<div class="collapse navbar-collapse" id="mainNavbar">
+
+			<!-- Left menu -->
+			<ul class="navbar-nav me-auto mb-2 mb-lg-0">
+
+				<!-- Topics -->
+				<li class="nav-item dropdown">
+					<a class="nav-link dropdown-toggle" href="#" id="topicDropdown" role="button"
+					   data-bs-toggle="dropdown" aria-expanded="false">
+						Topics
+					</a>
+
+					<ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="topicDropdown">
+						<li><a class="dropdown-item" href="@Url.Action("topics", "film", new { topicSlug = "marvel" })">Marvel</a></li>
+						<li><a class="dropdown-item" href="@Url.Action("topics", "film", new { topicSlug = "sitcom" })">SitCom</a></li>
+						<li><a class="dropdown-item" href="@Url.Action("topics", "film", new { topicSlug = "xuyen-khong" })">Time Travel</a></li>
+						<li><a class="dropdown-item" href="@Url.Action("topics", "film", new { topicSlug = "co-trang" })">Historical</a></li>
+						<li><a class="dropdown-item" href="@Url.Action("topics", "film", new { topicSlug = "tham-vong" })">Ambition</a></li>
+						<li><a class="dropdown-item" href="@Url.Action("topics", "film", new { topicSlug = "phu-thuy" })">Witchcraft</a></li>
+						<li><a class="dropdown-item" href="@Url.Action("topics", "film", new { topicSlug = "long-tieng" })">Dubbed</a></li>
+						<li><a class="dropdown-item" href="@Url.Action("topics", "film", new { topicSlug = "top-imdb" })">Top IMDb</a></li>
+						<li><a class="dropdown-item" href="@Url.Action("topics", "film", new { topicSlug = "de-xuat" })">Recommended</a></li>
+					</ul>
+				</li>
+
+				<!-- Genres -->
+				<li class="nav-item dropdown">
+					<a class="nav-link dropdown-toggle" href="#" id="genreDropdown" role="button"
+					   data-bs-toggle="dropdown" aria-expanded="false">
+						Genres
+					</a>
+					<ul class="dropdown-menu dropdown-menu-dark p-3" aria-labelledby="genreDropdown"
+						style="width:900px; columns:4;">
+						<li><a class="dropdown-item" href="@Url.Action("genre", "film", new { genreSlug = "hanh-dong" })">Action</a></li>
+						<li><a class="dropdown-item" href="@Url.Action("genre", "film", new { genreSlug = "kinh-di" })">Horror</a></li>
+						<li><a class="dropdown-item" href="@Url.Action("genre", "film", new { genreSlug = "hai" })">Comedy</a></li>
+						<li><a class="dropdown-item" href="@Url.Action("genre", "film", new { genreSlug = "tinh-cam" })">Romance</a></li>
+						<li><a class="dropdown-item" href="@Url.Action("genre", "film", new { genreSlug = "hoat-hinh" })">Animation</a></li>
+						<li><a class="dropdown-item" href="@Url.Action("genre", "film", new { genreSlug = "chien-tranh" })">War</a></li>
+						<li><a class="dropdown-item" href="@Url.Action("genre", "film", new { genreSlug = "vien-tuong" })">Science Fiction</a></li>
+						<li><a class="dropdown-item" href="@Url.Action("genre", "film", new { genreSlug = "co-trang" })">Historical</a></li>
+						<li><a class="dropdown-item" href="@Url.Action("genre", "film", new { genreSlug = "phieu-luu" })">Adventure</a></li>
+						<li><a class="dropdown-item" href="@Url.Action("genre", "film", new { genreSlug = "tai-lieu" })">Documentary</a></li>
+						<li><a class="dropdown-item" href="@Url.Action("genre", "film", new { genreSlug = "am-nhac" })">Music</a></li>
+						<li><a class="dropdown-item" href="@Url.Action("genre", "film", new { genreSlug = "gia-dinh" })">Family</a></li>
+						<li><a class="dropdown-item" href="@Url.Action("genre", "film", new { genreSlug = "giang-sinh" })">Christmas</a></li>
+						<li><a class="dropdown-item" href="@Url.Action("genre", "film", new { genreSlug = "gia-tuong" })">Fantasy</a></li>
+						<li><a class="dropdown-item" href="@Url.Action("genre", "film", new { genreSlug = "hoang-cung" })">Royal Palace</a></li>
+						<li><a class="dropdown-item" href="@Url.Action("genre", "film", new { genreSlug = "hinh-su" })">Crime</a></li>
+						<li><a class="dropdown-item" href="@Url.Action("genre", "film", new { genreSlug = "hoc-duong" })">School</a></li>
+						<li><a class="dropdown-item" href="@Url.Action("genre", "film", new { genreSlug = "khoa-hoc" })">Science</a></li>
+						<li><a class="dropdown-item" href="@Url.Action("genre", "film", new { genreSlug = "kinh-dien" })">Classic</a></li>
+						<li><a class="dropdown-item" href="@Url.Action("genre", "film", new { genreSlug = "kich-noi" })">Drama</a></li>
+						<li><a class="dropdown-item" href="@Url.Action("genre", "film", new { genreSlug = "ky-ao" })">Mystery</a></li>
+						<li><a class="dropdown-item" href="@Url.Action("genre", "film", new { genreSlug = "live-action" })">Live Action</a></li>
+						<li><a class="dropdown-item" href="@Url.Action("genre", "film", new { genreSlug = "lang-man" })">Romantic</a></li>
+						<li><a class="dropdown-item" href="@Url.Action("genre", "film", new { genreSlug = "lich-su" })">History</a></li>
+						<li><a class="dropdown-item" href="@Url.Action("genre", "film", new { genreSlug = "marvel" })">Marvel</a></li>
+						<li><a class="dropdown-item" href="@Url.Action("genre", "film", new { genreSlug = "mien-vien-tay" })">Western</a></li>
+						<li><a class="dropdown-item" href="@Url.Action("genre", "film", new { genreSlug = "nghe-nghiep" })">Professional</a></li>
+						<li><a class="dropdown-item" href="@Url.Action("genre", "film", new { genreSlug = "nguoi-mau" })">Model</a></li>
+						<li><a class="dropdown-item" href="@Url.Action("genre", "film", new { genreSlug = "nhac-kich" })">Musical</a></li>
+						<li><a class="dropdown-item" href="@Url.Action("genre", "film", new { genreSlug = "phep-thuat" })">Magic</a></li>
+						<li><a class="dropdown-item" href="@Url.Action("genre", "film", new { genreSlug = "sieu-anh-hung" })">Superhero</a></li>
+						<li><a class="dropdown-item" href="@Url.Action("genre", "film", new { genreSlug = "thieu-nhi" })">Children</a></li>
+						<li><a class="dropdown-item" href="@Url.Action("genre", "film", new { genreSlug = "than-thoai" })">Mythology</a></li>
+						<li><a class="dropdown-item" href="@Url.Action("genre", "film", new { genreSlug = "the-thao" })">Sports</a></li>
+						<li><a class="dropdown-item" href="@Url.Action("genre", "film", new { genreSlug = "tuoi-tre" })">Youth</a></li>
+						<li><a class="dropdown-item" href="@Url.Action("genre", "film", new { genreSlug = "tam-ly" })">Psychology</a></li>
+						<li><a class="dropdown-item" href="@Url.Action("genre", "film", new { genreSlug = "tap-luyen" })">Training</a></li>
+						<li><a class="dropdown-item" href="@Url.Action("genre", "film", new { genreSlug = "vo-thuat" })">Martial Arts</a></li>
+						<li><a class="dropdown-item" href="@Url.Action("genre", "film", new { genreSlug = "xuyen-khong" })">Time Travel</a></li>
+						<li><a class="dropdown-item" href="@Url.Action("genre", "film", new { genreSlug = "dau-thuong" })">Tragedy</a></li>
+						<li><a class="dropdown-item" href="@Url.Action("genre", "film", new { genreSlug = "doi-thuong" })">Slice of Life</a></li>
+						<li><a class="dropdown-item" href="@Url.Action("genre", "film", new { genreSlug = "am-thuc" })">Culinary</a></li>
+					</ul>
+				</li>
+
+				<!-- Countries -->
+				<li class="nav-item dropdown">
+					<a class="nav-link dropdown-toggle" href="#" id="countryDropdown" role="button"
+					   data-bs-toggle="dropdown" aria-expanded="false">
+						Countries
+					</a>
+					<ul class="dropdown-menu dropdown-menu-dark p-3" aria-labelledby="countryDropdown"
+						style="width:500px; columns:3;">
+						<li><a class="dropdown-item" href="@Url.Action("countries", "film", new { countryCode = "gb" })">UK</a></li>
+						<li><a class="dropdown-item" href="@Url.Action("countries", "film", new { countryCode = "ca" })">Canada</a></li>
+						<li><a class="dropdown-item" href="@Url.Action("countries", "film", new { countryCode = "kr" })">South Korea</a></li>
+						<li><a class="dropdown-item" href="@Url.Action("countries", "film", new { countryCode = "hk" })">Hong Kong</a></li>
+						<li><a class="dropdown-item" href="@Url.Action("countries", "film", new { countryCode = "us" })">USA</a></li>
+						<li><a class="dropdown-item" href="@Url.Action("countries", "film", new { countryCode = "jp" })">Japan</a></li>
+						<li><a class="dropdown-item" href="@Url.Action("countries", "film", new { countryCode = "fr" })">France</a></li>
+						<li><a class="dropdown-item" href="@Url.Action("countries", "film", new { countryCode = "th" })">Thailand</a></li>
+						<li><a class="dropdown-item" href="@Url.Action("countries", "film", new { countryCode = "cn" })">China</a></li>
+						<li><a class="dropdown-item" href="@Url.Action("countries", "film", new { countryCode = "au" })">Australia</a></li>
+						<li><a class="dropdown-item" href="@Url.Action("countries", "film", new { countryCode = "tw" })">Taiwan</a></li>
+						<li><a class="dropdown-item" href="@Url.Action("countries", "film", new { countryCode = "de" })">Germany</a></li>
+					</ul>
+				</li>
+
+				<!-- Other links -->
+				<li class="nav-item"><a class="nav-link" href="@Url.Action("phimle", "film")">Movies</a></li>
+				<li class="nav-item"><a class="nav-link" href="@Url.Action("phimbo", "film")">TV Series</a></li>
+				<li class="nav-item"><a class="nav-link" href="#">Schedule</a></li>
+				<li class="nav-item"><a class="nav-link active" aria-current="page" href="@Url.Action("wt", "film")">Watch Together</a></li>
+				<li class="nav-item"><a class="nav-link" href="@Url.Action("actors", "actors")">Actors</a></li>
+			</ul>
+
+			<!-- Search Box -->
+			<form class="d-flex search-box" role="search">
+				<input class="form-control me-2" type="search" placeholder="Search movies, actors..." aria-label="Search">
+				<button type="submit">Search</button>
+			</form>
+
+
+			<!-- Account -->
+			<ul class="navbar-nav ms-auto">
+				@if (User.Identity.IsAuthenticated)
+				{
+					<li class="nav-item dropdown">
+						<a class="nav-link dropdown-toggle account-btn d-flex align-items-center px-3 py-2"
+						   href="#" id="profileDropdown" role="button"
+						   data-bs-toggle="dropdown" aria-expanded="false">
+							<i class="bi bi-person-fill me-2"></i>
+							@User.Identity.Name
+						</a>
+						<ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end" aria-labelledby="profileDropdown">
+							<li><a class="dropdown-item" asp-controller="User" asp-action="Profile">Profile</a></li>
+							<li><hr class="dropdown-divider"></li>
+							<li>
+								<form asp-controller="Account" asp-action="Logout" method="post">
+									<button type="submit" class="dropdown-item text-danger">Logout</button>
+								</form>
+							</li>
+						</ul>
+					</li>
+				}
+				else
+				{
+					<li class="nav-item">
+						<a class="nav-link account-btn d-flex align-items-center px-3 py-2"
+						   href="#" data-bs-toggle="modal" data-bs-target="#loginModal">
+							<i class="bi bi-person-fill me-2"></i> Member
+						</a>
+					</li>
+				}
+			</ul>
+
+			@if (!User.Identity.IsAuthenticated)
+			{
+				<!-- Login Modal -->
+				<div class="modal fade" id="loginModal" tabindex="-1" aria-hidden="true">
+					<div class="modal-dialog modal-lg modal-dialog-centered">
+						<div class="modal-content login-modal">
+							<div class="row g-0">
+								<!-- Left panel -->
+								<div class="col-md-7 bg-dark text-white p-4">
+									<div class="d-flex justify-content-end">
+										<button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+									</div>
+
+									<h3 class="fw-bold mb-3">Login</h3>
+									<p class="text-muted">
+										Don't have an account?
+										<a href="#" class="text-warning" data-bs-toggle="modal" data-bs-target="#registerModal" data-bs-dismiss="modal">
+											Sign up now
+										</a>
+									</p>
+
+									<!-- Show notification -->
+									<div id="loginMessage"></div>
+
+									<form id="loginForm">
+										<div class="mb-3">
+											<input type="email" name="email" class="form-control form-control-lg" placeholder="Email" required>
+										</div>
+										<div class="mb-3">
+											<input type="password" name="password" class="form-control form-control-lg" placeholder="Password" required>
+										</div>
+
+										<!-- Loading Spinner -->
+										<div id="loginLoading" class="text-center d-none mb-2">
+											<div class="spinner-border text-warning" role="status"></div>
+											<p class="mt-2">Logging in...</p>
+										</div>
+
+										<button type="submit" class="btn btn-warning w-100 fw-bold py-2">Login</button>
+									</form>
+
+									<!-- Google One Tap Login Section -->
+									<div class="text-center mt-4">
+										<div id="g_id_onload"
+											 data-client_id="324732710940-ufir8fe90iv37efa36pgm1dejfj7a3q8.apps.googleusercontent.com"
+											 data-context="signin"
+											 data-ux_mode="redirect"
+											 data-login_uri="https://localhost:7180/Account/GoogleOneTapCallback"
+											 data-auto_prompt="true">
+										</div>
+									</div>
+
+
+									<div class="g_id_signin" data-type="standard"></div>
+
+									<div class="text-center mt-3">
+										<a href="#" class="text-muted" data-bs-toggle="modal" data-bs-target="#forgotPasswordModal" data-bs-dismiss="modal">
+											Forgot password?
+										</a>
+									</div>
+								</div>
+								<!-- Right panel with image -->
+								<div class="col-md-5 d-none d-md-flex align-items-center justify-content-center bg-secondary">
+									<img src="~/Layout_CuongPhim/img/postercp.png" alt="Login Image" class="img-fluid rounded-end">
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- Register Modal -->
+				<div class="modal fade" id="registerModal" tabindex="-1" aria-hidden="true">
+					<div class="modal-dialog modal-lg modal-dialog-centered">
+						<div class="modal-content register-modal">
+							<div class="row g-0">
+								<!-- Left panel -->
+								<div class="col-md-7 bg-dark text-white p-4">
+									<div class="d-flex justify-content-end">
+										<button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+									</div>
+
+									<h3 class="fw-bold mb-3">Sign Up</h3>
+									<p class="text-muted">
+										Already have an account?
+										<a href="#" class="text-warning" data-bs-toggle="modal" data-bs-target="#loginModal" data-bs-dismiss="modal">
+											Login
+										</a>
+									</p>
+
+									<!-- Show notification -->
+									<div id="registerMessage"></div>
+
+									<form id="registerForm">
+										<div class="mb-3">
+											<input type="text" name="fullName" class="form-control form-control-lg" placeholder="Username" required>
+										</div>
+										<div class="mb-3">
+											<input type="email" name="email" class="form-control form-control-lg" placeholder="Email" required>
+										</div>
+										<div class="mb-3">
+											<input type="password" name="password" class="form-control form-control-lg" placeholder="Password" required>
+										</div>
+										<div class="mb-3">
+											<input type="password" name="confirmPassword" class="form-control form-control-lg" placeholder="Confirm Password" required>
+										</div>
+
+										<!-- Loading Spinner -->
+										<div id="registerLoading" class="text-center d-none mb-2">
+											<div class="spinner-border text-warning" role="status"></div>
+											<p class="mt-2">Processing...</p>
+										</div>
+
+										<button type="submit" class="btn btn-warning w-100 fw-bold py-2">Sign Up</button>
+									</form>
+
+									<!-- Register with Google -->
+									<div class="text-center mt-3">
+										<a href="~/Account/GoogleLogin" class="btn btn-outline-light w-100">
+											<i class="bi bi-google me-2"></i> Sign up with Google
+										</a>
+									</div>
+								</div>
+								<!-- Right panel with image -->
+								<div class="col-md-5 d-none d-md-flex align-items-center justify-content-center bg-secondary">
+									<img src="~/Layout_CuongPhim/img/postercp.png" alt="Register Image" class="img-fluid rounded-end">
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+
+				<!-- Forgot Password Modal -->
+				<div class="modal fade" id="forgotPasswordModal" tabindex="-1" aria-hidden="true">
+					<div class="modal-dialog modal-lg modal-dialog-centered">
+						<div class="modal-content forgot-password-modal">
+							<div class="row g-0">
+								<!-- Left panel -->
+								<div class="col-md-7 bg-dark text-white p-4">
+									<div class="d-flex justify-content-end">
+										<button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+									</div>
+									<p class="text-muted">
+										Already have an account?
+										<a href="#" class="text-warning" data-bs-toggle="modal" data-bs-target="#loginModal" data-bs-dismiss="modal">
+											Login
+										</a>
+									</p>
+									<h3 class="fw-bold mb-3">Forgot Password</h3>
+									<p class="text-muted">Enter your email to receive password reset instructions. Next steps will be sent to your inbox.</p>
+
+									<!-- Show notification -->
+									@if (TempData["Error"] != null)
+									{
+										<div class="alert alert-danger">@TempData["Error"]</div>
+									}
+									@if (TempData["Success"] != null)
+									{
+										<div class="alert alert-success">@TempData["Success"]</div>
+									}
+									<form id="forgotForm">
+										<div class="mb-3">
+											<input type="email" name="email" class="form-control form-control-lg" placeholder="Enter your email" required>
+										</div>
+										<div id="forgotMessage"></div>
+										<button type="submit" class="btn btn-warning w-100 fw-bold py-2">Send Reset Request</button>
+									</form>
+								</div>
+								<!-- Right panel with image -->
+								<div class="col-md-5 d-none d-md-flex align-items-center justify-content-center bg-secondary">
+									<img src="~/Layout_CuongPhim/img/postercp.png" alt="Forgot Password Image" class="img-fluid rounded-end">
+								</div>
+
+							</div>
+						</div>
+					</div>
+				</div>
+			}
+		</div>
+	</nav>
+	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+	<script>
+		$(function () {
+			// LOGIN
+			$("#loginForm").submit(function (e) {
+				e.preventDefault();
+				$.post("/Account/Login", $(this).serialize(), function (res) {
+					if (res.success) {
+						$("#loginMessage").html(`<div class="alert alert-success">${res.message}</div>`);
+						setTimeout(() => location.reload(), 1000);
+					} else {
+						$("#loginMessage").html(`<div class="alert alert-danger">${res.message}</div>`);
+					}
+				});
+			});
+
+			// REGISTER
+			$("#registerForm").submit(function (e) {
+				e.preventDefault();
+				$.post("/Account/Register", $(this).serialize(), function (res) {
+					if (res.success) {
+						$("#registerMessage").html(`<div class="alert alert-success">${res.message}</div>`);
+						setTimeout(() => location.reload(), 1000);
+					} else {
+						$("#registerMessage").html(`<div class="alert alert-danger">${res.message}</div>`);
+					}
+				});
+			});
+
+			// FORGOT PASSWORD
+			$("#forgotForm").submit(function (e) {
+				e.preventDefault();
+				$.post("/Account/ForgotPassword", $(this).serialize(), function (res) {
+					if (res.success) {
+						$("#forgotMessage").html(`<div class="alert alert-success">${res.message}</div>`);
+					} else {
+						$("#forgotMessage").html(`<div class="alert alert-danger">${res.message}</div>`);
+					}
+				});
+			});
+		});
+				document.addEventListener("DOMContentLoaded", function () {
+			// Login form
+			const loginForm = document.getElementById("loginForm");
+			if (loginForm) {
+				loginForm.addEventListener("submit", function (e) {
+					e.preventDefault();
+					document.getElementById("loginLoading").classList.remove("d-none");
+
+					// simulate AJAX processing
+					setTimeout(() => {
+						document.getElementById("loginLoading").classList.add("d-none");
+						document.getElementById("loginMessage").innerHTML =
+							`<div class="alert alert-success">Login successful!</div>`;
+					}, 2000);
+				});
+			}
+
+			// Register form
+			const registerForm = document.getElementById("registerForm");
+			if (registerForm) {
+				registerForm.addEventListener("submit", function (e) {
+					e.preventDefault();
+					document.getElementById("registerLoading").classList.remove("d-none");
+
+					setTimeout(() => {
+						document.getElementById("registerLoading").classList.add("d-none");
+						document.getElementById("registerMessage").innerHTML =
+							`<div class="alert alert-success">Registration successful!</div>`;
+					}, 2000);
+				});
+			}
+		});
+
+	</script>
+
+
+	@RenderBody()
+
+
+	<section id="footer">
+		<div class="footer_m clearfix">
+			<div class="container">
+				<div class="row footer_1">
+					<div class="col-md-4">
+						<div class="footer_1i">
+							<h3><a class="text-white" href="~/Layout_CuongPhim/img/Logo/LogoCCP.png"><i class="fa fa-video-camera col_red me-1"></i> Planet</a></h3>
+							<p class="mt-3">Lorem ipsum dolor sit amet consect etur adi pisicing elit sed do eiusmod tempor incididunt. Lorem ipsum dolor sit amet consect etur. </p>
+							<h6 class="fw-normal">
+								<i class="fa fa-map-marker fs-5 align-middle col_red me-1"></i> 5311 Ceaver Sidge Td.
+								Pakland, DE 13507
+							</h6>
+							<h6 class="fw-normal mt-3"><i class="fa fa-envelope fs-5 align-middle col_red me-1"></i> info@gmail.com</h6>
+							<h6 class="fw-normal mt-3 mb-0"><i class="fa fa-phone fs-5 align-middle col_red me-1"></i>  +123 123 456</h6>
+						</div>
+					</div>
+					<div class="col-md-4">
+						<div class="footer_1i">
+							<h4>Flickr <span class="col_red">Stream</span></h4>
+							<div class="footer_1i1 row mt-4">
+								<div class="col-md-3 col-3">
+									<div class="footer_1i1i">
+										<div class="grid clearfix">
+											<figure class="effect-jazz mb-0">
+												<a href="#"><img src="../Layout_CuongPhim/img/4.jpg" height="70" class="w-100" alt="abc"></a>
+											</figure>
+										</div>
+									</div>
+								</div>
+								<div class="col-md-3 col-3">
+									<div class="footer_1i1i">
+										<div class="grid clearfix">
+											<figure class="effect-jazz mb-0">
+												<a href="#"><img src="../Layout_CuongPhim/img/5.jpg" height="70" class="w-100" alt="abc"></a>
+											</figure>
+										</div>
+									</div>
+								</div>
+								<div class="col-md-3 col-3">
+									<div class="footer_1i1i">
+										<div class="grid clearfix">
+											<figure class="effect-jazz mb-0">
+												<a href="#"><img src="../Layout_CuongPhim/img/6.jpg" height="70" class="w-100" alt="abc"></a>
+											</figure>
+										</div>
+									</div>
+								</div>
+								<div class="col-md-3 col-3">
+									<div class="footer_1i1i">
+										<div class="grid clearfix">
+											<figure class="effect-jazz mb-0">
+												<a href="#"><img src="../Layout_CuongPhim/img/7.jpg" height="70" class="w-100" alt="abc"></a>
+											</figure>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="footer_1i1 row mt-3">
+								<div class="col-md-3 col-3">
+									<div class="footer_1i1i">
+										<div class="grid clearfix">
+											<figure class="effect-jazz mb-0">
+												<a href="#"><img src="../Layout_CuongPhim/img/8.jpg" height="70" class="w-100" alt="abc"></a>
+											</figure>
+										</div>
+									</div>
+								</div>
+								<div class="col-md-3 col-3">
+									<div class="footer_1i1i">
+										<div class="grid clearfix">
+											<figure class="effect-jazz mb-0">
+												<a href="#"><img src="../Layout_CuongPhim/img/9.jpg" height="70" class="w-100" alt="abc"></a>
+											</figure>
+										</div>
+									</div>
+								</div>
+								<div class="col-md-3 col-3">
+									<div class="footer_1i1i">
+										<div class="grid clearfix">
+											<figure class="effect-jazz mb-0">
+												<a href="#"><img src="../Layout_CuongPhim/img/10.jpg" height="70" class="w-100" alt="abc"></a>
+											</figure>
+										</div>
+									</div>
+								</div>
+								<div class="col-md-3 col-3">
+									<div class="footer_1i1i">
+										<div class="grid clearfix">
+											<figure class="effect-jazz mb-0">
+												<a href="#"><img src="../Layout_CuongPhim/img/11.jpg" height="70" class="w-100" alt="abc"></a>
+											</figure>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-4">
+						<div class="footer_1i">
+							<h4>Sign  <span class="col_red">Newsletter</span></h4>
+							<p class="mt-3">Subscribe to our newsletter list to get latest news and updates from us</p>
+							<div class="input-group">
+								<input type="text" class="form-control bg-black" placeholder="Email">
+								<span class="input-group-btn">
+									<button class="btn btn text-white bg_red rounded-0 border-0" type="button">
+										Subscribe
+									</button>
+								</span>
+							</div>
+							<ul class="social-network social-circle mb-0 mt-4">
+								<li><a href="#" class="icoRss" title="Rss"><i class="fa fa-instagram"></i></a></li>
+								<li><a href="#" class="icoFacebook" title="Facebook"><i class="fa fa-facebook"></i></a></li>
+								<li><a href="#" class="icoTwitter" title="Twitter"><i class="fa fa-twitter"></i></a></li>
+								<li><a href="#" class="icoGoogle" title="Google +"><i class="fa fa-youtube"></i></a></li>
+								<li><a href="#" class="icoLinkedin" title="Linkedin"><i class="fa fa-linkedin"></i></a></li>
+							</ul>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</section>
+
+	<section id="footer_b" class="pt-3 pb-3 bg_grey">
+		<div class="container">
+			<div class="row footer_1">
+				<div class="col-md-8">
+					<div class="footer_1l">
+						<p class="mb-0">© 2013 Your Website Name. All Rights Reserved | Design by <a class="col_red" href="http://www.templateonweb.com">TemplateOnWeb</a></p>
+					</div>
+				</div>
+				<div class="col-md-4">
+					<div class="footer_1r">
+						<ul class="mb-0">
+							<li class="d-inline-block me-2"><a href="#">Home</a></li>
+							<li class="d-inline-block me-2"><a href="#">Features</a></li>
+							<li class="d-inline-block me-2"><a href="#">Pages</a></li>
+							<li class="d-inline-block me-2"><a href="#">Portfolio</a></li>
+							<li class="d-inline-block me-2"><a href="#">Blog</a></li>
+							<li class="d-inline-block"><a href="#">Contact</a></li>
+						</ul>
+					</div>
+				</div>
+			</div>
+		</div>
+	</section>
+	@RenderSection("Scripts", required: false)
+	<script>
+		window.onscroll = function() {myFunction()};
+
+		var navbar_sticky = document.getElementById("navbar_sticky");
+		var sticky = navbar_sticky.offsetTop;
+		var navbar_height = document.querySelector('.navbar').offsetHeight;
+
+		function myFunction() {
+		  if (window.pageYOffset >= sticky + navbar_height) {
+			navbar_sticky.classList.add("sticky")
+			document.body.style.paddingTop = navbar_height + 'px';
+		  } else {
+			navbar_sticky.classList.remove("sticky");
+			document.body.style.paddingTop = '0'
+		  }
+		}
+	</script>
+
 </body>
 </html>
