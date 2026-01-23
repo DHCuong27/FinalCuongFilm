@@ -183,11 +183,11 @@
 							@User.Identity.Name
 						</a>
 						<ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end" aria-labelledby="profileDropdown">
-							<li><a class="dropdown-item" asp-controller="user" asp-action="profile">Trang cá nhân</a></li>
+							<li><a class="dropdown-item" asp-controller="user" asp-action="profile">Profile</a></li>
 							<li><hr class="dropdown-divider"></li>
 							<li>
-								<form asp-controller="Account" asp-action="Logout" method="post">
-									<button type="submit" class="dropdown-item text-danger">Đăng xuất</button>
+								<form id="logoutForm" class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "Index" })">
+									<button id="logout" type="submit" class="nav-link btn btn-link text-dark border-0">Logout</button>
 								</form>
 							</li>
 						</ul>
@@ -206,7 +206,7 @@
 
 			@if (!User.Identity.IsAuthenticated)
 			{
-				<!-- Modal Đăng nhập -->
+				<!-- Modal Login -->	
 				<div class="modal fade" id="loginModal" tabindex="-1" aria-hidden="true">
 					<div class="modal-dialog modal-lg modal-dialog-centered">
 						<div class="modal-content login-modal">
@@ -217,11 +217,11 @@
 										<button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
 									</div>
 
-									<h3 class="fw-bold mb-3">Đăng nhập</h3>
+									<h3 class="fw-bold mb-3">Login</h3>
 									<p class="text-muted">
-										Chưa có tài khoản?
+										Don't have an account yet?
 										<a href="#" class="text-warning" data-bs-toggle="modal" data-bs-target="#registerModal" data-bs-dismiss="modal">
-											Đăng ký ngay
+											Register now.
 										</a>
 									</p>
 
@@ -233,16 +233,16 @@
 											<input type="email" name="email" class="form-control form-control-lg" placeholder="Email" required>
 										</div>
 										<div class="mb-3">
-											<input type="password" name="password" class="form-control form-control-lg" placeholder="Mật khẩu" required>
+											<input type="password" name="password" class="form-control form-control-lg" placeholder="Password..." required>
 										</div>
 
 										<!-- Loading Spinner -->
 										<div id="loginLoading" class="text-center d-none mb-2">
 											<div class="spinner-border text-warning" role="status"></div>
-											<p class="mt-2">Đang đăng nhập...</p>
+											<p class="mt-2">Logging in......</p>
 										</div>
 
-										<button type="submit" class="btn btn-warning w-100 fw-bold py-2">Đăng nhập</button>
+										<button type="submit" class="btn btn-warning w-100 fw-bold py-2">Login</button>
 									</form>
 
 									<!-- Google One Tap Login Section -->						
@@ -266,7 +266,7 @@
 									</div>
 									<div class="text-center mt-3">
 										<a href="#" class="text-muted" data-bs-toggle="modal" data-bs-target="#forgotPasswordModal" data-bs-dismiss="modal">
-											Quên mật khẩu?
+											Forgot password?
 										</a>
 									</div>
 								</div>
@@ -290,11 +290,11 @@
 										<button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
 									</div>
 
-									<h3 class="fw-bold mb-3">Đăng ký</h3>
+									<h3 class="fw-bold mb-3">Register</h3>
 									<p class="text-muted">
-										Đã có tài khoản?
+										Do you already have an account?
 										<a href="#" class="text-warning" data-bs-toggle="modal" data-bs-target="#loginModal" data-bs-dismiss="modal">
-											Đăng nhập
+											Login
 										</a>
 									</p>
 
@@ -309,19 +309,19 @@
 											<input type="email" name="email" class="form-control form-control-lg" placeholder="Email" required>
 										</div>
 										<div class="mb-3">
-											<input type="password" name="password" class="form-control form-control-lg" placeholder="Mật khẩu" required>
+											<input type="password" name="password" class="form-control form-control-lg" placeholder="Password..." required>
 										</div>
 										<div class="mb-3">
-											<input type="password" name="confirmPassword" class="form-control form-control-lg" placeholder="Nhập lại mật khẩu" required>
+											<input type="password" name="confirmPassword" class="form-control form-control-lg" placeholder="Confirm Password" required>
 										</div>
 
 										<!-- Loading Spinner -->
 										<div id="registerLoading" class="text-center d-none mb-2">
 											<div class="spinner-border text-warning" role="status"></div>
-											<p class="mt-2">Đang xử lý...</p>
+											<p class="mt-2">Processing...</p>
 										</div>
 
-										<button type="submit" class="btn btn-warning w-100 fw-bold py-2">Đăng ký</button>
+										<button type="submit" class="btn btn-warning w-100 fw-bold py-2">Register</button>
 									</form>
 
 									<!-- Register with Google -->
@@ -355,7 +355,7 @@
 				</div>
 			
 
-				<!-- Modal Quên mật khẩu -->
+				<!-- Modal Quên Password... -->
 				<div class="modal fade" id="forgotPasswordModal" tabindex="-1" aria-hidden="true">
 					<div class="modal-dialog modal-lg modal-dialog-centered">
 						<div class="modal-content forgot-password-modal">
@@ -368,11 +368,11 @@
 									<p class="text-muted">
 										Đã có tài khoản?
 										<a href="#" class="text-warning" data-bs-toggle="modal" data-bs-target="#loginModal" data-bs-dismiss="modal">
-											Đăng nhập
+											Login
 										</a>
 									</p>
-									<h3 class="fw-bold mb-3">Quên mật khẩu</h3>
-									<p class="text-muted">Nhập email để nhận hướng dẫn đặt lại mật khẩu qua email. Các bước tiếp theo sẽ được gửi đến hộp thư của bạn.</p>
+									<h3 class="fw-bold mb-3">Quên Password...</h3>
+									<p class="text-muted">Nhập email để nhận hướng dẫn đặt lại Password... qua email. Các bước tiếp theo sẽ được gửi đến hộp thư của bạn.</p>
 
 									<!-- Hiển thị thông báo -->
 									@if (TempData["Error"] != null)
@@ -404,79 +404,7 @@
 			}
 		</div>
 	</nav>
-	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-	<script>
-			
-		$(document).ready(function () {
-			// LOGIN
-			$("#loginForm").on("submit", function (e) {
-				e.preventDefault();
-				$("#loginLoading").removeClass("d-none");
-				$("#loginMessage").html("");
 
-				$.ajax({
-					url: "/Account/Login",
-					type: "POST",
-					data: $(this).serialize(),
-					success: function (res) {
-						$("#loginLoading").addClass("d-none");
-						if (res.success) {
-							$("#loginMessage").html(`<div class="alert alert-success">${res.message}</div>`);
-							setTimeout(() => location.reload(), 1000);
-						} else {
-							$("#loginMessage").html(`<div class="alert alert-danger">${res.message}</div>`);
-						}
-					},
-					error: function () {
-						$("#loginLoading").addClass("d-none");
-						$("#loginMessage").html(`<div class="alert alert-danger">Có lỗi xảy ra. Vui lòng thử lại!</div>`);
-					}
-				});
-			});
-
-			// REGISTER
-			$("#registerForm").on("submit", function (e) {
-				e.preventDefault();
-				$("#registerLoading").removeClass("d-none");
-				$("#registerMessage").html("");
-
-				$.ajax({
-					url: "/Account/Register",
-					type: "POST",
-					data: $(this).serialize(),
-					success: function (res) {
-						$("#registerLoading").addClass("d-none");
-						if (res.success) {
-							$("#registerMessage").html(`<div class="alert alert-success">${res.message}</div>`);
-							setTimeout(() => location.reload(), 1000);
-						} else {
-							$("#registerMessage").html(`<div class="alert alert-danger">${res.message}</div>`);
-						}
-					},
-					error: function () {
-						$("#registerLoading").addClass("d-none");
-						$("#registerMessage").html(`<div class="alert alert-danger">Có lỗi xảy ra. Vui lòng thử lại!</div>`);
-					}
-				});
-			});
-
-			// FORGOT PASSWORD
-			$("#forgotForm").on("submit", function (e) {
-				e.preventDefault();
-				$("#forgotMessage").html("");
-
-				$.post("/Account/ForgotPassword", $(this).serialize(), function (res) {
-					if (res.success) {
-						$("#forgotMessage").html(`<div class="alert alert-success">${res.message}</div>`);
-					} else {
-						$("#forgotMessage").html(`<div class="alert alert-danger">${res.message}</div>`);
-					}
-				}).fail(function () {
-					$("#forgotMessage").html(`<div class="alert alert-danger">Có lỗi xảy ra. Vui lòng thử lại!</div>`);
-				});
-			});
-		});
-	</script>
 
 	<!-- Hero Section -->
 	<section class="hero-section">
@@ -535,7 +463,8 @@
 			</div>
 		</div>
 	</section>
-
+
+
 
 	<!-- Topics Section -->
 	<!-- Thêm class cho auto-scroll -->
@@ -2151,6 +2080,7 @@
 			</div>
 		</div>
 	</section>
+	@RenderSection("Scripts", required: false)
 
 	<script>
 		window.onscroll = function() {myFunction()};
@@ -2169,7 +2099,7 @@
 		  }
 		}
 	</script>
+</body>
 
-				</body >
-
-				</html >
+</html>
+				

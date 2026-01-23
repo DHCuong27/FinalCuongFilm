@@ -1,5 +1,6 @@
 using FinalCuongFilm.ApplicationCore.Entities.Identity;
 using FinalCuongFilm.DataLayer;
+using FinalCuongFilm.MVC.Data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -74,5 +75,7 @@ app.MapRazorPages();
 app.MapControllerRoute(
 	name: "default",
 	pattern: "{controller=Home}/{action=Index}/{id?}");
+
+await IdentitySeed.SeedAsync(app.Services);
 
 app.Run();
