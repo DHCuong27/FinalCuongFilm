@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 namespace FinalCuongFilm.MVC.Controllers
 {
 
+	[Area("Admin")]
 	[Authorize(Roles = "Admin")]
 	public class MoviesController : Controller
     {

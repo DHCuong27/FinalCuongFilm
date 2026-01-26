@@ -1,10 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
+namespace FinalCuongFilm.MVC.Controllers
 {
 
-	[Area("Admin")]
 	[Authorize(Roles = "Admin")]
 	public class AdminController : Controller
 	{

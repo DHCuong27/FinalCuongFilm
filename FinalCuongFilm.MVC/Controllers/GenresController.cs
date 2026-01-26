@@ -1,16 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using FinalCuongFilm.ApplicationCore.Entities;
+using FinalCuongFilm.DataLayer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using FinalCuongFilm.ApplicationCore.Entities;
-using FinalCuongFilm.DataLayer;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace FinalCuongFilm.MVC.Controllers
 {
-    public class GenresController : Controller
+	[Authorize(Roles = "Admin")]
+	public class GenresController : Controller
     {
         private readonly CuongFilmDbContext _context;
 
