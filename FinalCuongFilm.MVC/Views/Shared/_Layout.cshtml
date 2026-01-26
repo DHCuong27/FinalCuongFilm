@@ -22,7 +22,7 @@
 		<a class="navbar-brand d-flex align-items-center" href="/">
 			<img src="~/Layout_CuongPhim/../Layout_CuongPhim/img/Logo/LogoCCP.png" alt="CuongPhim Logo" height="40" class="me-2">
 
-			<!-- Name + Slogan -->
+			<!-- Tên + Slogan -->
 			<div class="d-flex flex-column">
 				<span class="fw-bold text-danger">CuongPhim</span>
 				<div class="d-flex flex-column brand-box">
@@ -32,17 +32,18 @@
 
 		</a>
 
-		<!-- Toggle for mobile -->
+		<!-- Toggle cho mobile -->
 		<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar"
 				aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
 			<span class="navbar-toggler-icon"></span>
 		</button>
 
-		<!-- Navbar content -->
+		<!-- Nội dung navbar -->
 		<div class="collapse navbar-collapse" id="mainNavbar">
 
-			<!-- Left menu -->
+			<!-- Menu trái -->
 			<ul class="navbar-nav me-auto mb-2 mb-lg-0">
+
 
 				<!-- Topics -->
 				<li class="nav-item dropdown">
@@ -148,302 +149,15 @@
 				<li class="nav-item"><a class="nav-link" href="@Url.Action("actors", "actors")">Actors</a></li>
 			</ul>
 
-			<!-- Search Box -->
+			<!-- Ô Search -->
 			<form class="d-flex search-box" role="search">
 				<input class="form-control me-2" type="search" placeholder="Search movies, actors..." aria-label="Search">
 				<button type="submit">Search</button>
 			</form>
 
-
-			<!-- Account -->
-			<ul class="navbar-nav ms-auto">
-				@if (User.Identity.IsAuthenticated)
-				{
-					<li class="nav-item dropdown">
-						<a class="nav-link dropdown-toggle account-btn d-flex align-items-center px-3 py-2"
-						   href="#" id="profileDropdown" role="button"
-						   data-bs-toggle="dropdown" aria-expanded="false">
-							<i class="bi bi-person-fill me-2"></i>
-							@User.Identity.Name
-						</a>
-						<ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end" aria-labelledby="profileDropdown">
-							<li><a class="dropdown-item"  asp-action="Profile">Profile</a></li>
-							<li><hr class="dropdown-divider"></li>
-							<li>
-								<form  method="post">
-									<button type="submit" class="dropdown-item text-danger">Logout</button>
-								</form>
-							</li>
-						</ul>
-					</li>
-				}
-				else
-				{
-					<li class="nav-item">
-						<a class="nav-link account-btn d-flex align-items-center px-3 py-2"
-						   href="#" data-bs-toggle="modal" data-bs-target="#loginModal">
-							<i class="bi bi-person-fill me-2"></i> Member
-						</a>
-					</li>
-				}
-			</ul>
-
-			@if (!User.Identity.IsAuthenticated)
-			{
-				<!-- Login Modal -->
-				<div class="modal fade" id="loginModal" tabindex="-1" aria-hidden="true">
-					<div class="modal-dialog modal-lg modal-dialog-centered">
-						<div class="modal-content login-modal">
-							<div class="row g-0">
-								<!-- Left panel -->
-								<div class="col-md-7 bg-dark text-white p-4">
-									<div class="d-flex justify-content-end">
-										<button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-									</div>
-
-									<h3 class="fw-bold mb-3">Login</h3>
-									<p class="text-muted">
-										Don't have an account?
-										<a href="#" class="text-warning" data-bs-toggle="modal" data-bs-target="#registerModal" data-bs-dismiss="modal">
-											Sign up now
-										</a>
-									</p>
-
-									<!-- Show notification -->
-									<div id="loginMessage"></div>
-
-									<form id="loginForm">
-										<div class="mb-3">
-											<input type="email" name="email" class="form-control form-control-lg" placeholder="Email" required>
-										</div>
-										<div class="mb-3">
-											<input type="password" name="password" class="form-control form-control-lg" placeholder="Password" required>
-										</div>
-
-										<!-- Loading Spinner -->
-										<div id="loginLoading" class="text-center d-none mb-2">
-											<div class="spinner-border text-warning" role="status"></div>
-											<p class="mt-2">Logging in...</p>
-										</div>
-
-										<button type="submit" class="btn btn-warning w-100 fw-bold py-2">Login</button>
-									</form>
-
-									<!-- Google One Tap Login Section -->
-									<div class="text-center mt-4">
-										<div id="g_id_onload"
-											 data-client_id="324732710940-ufir8fe90iv37efa36pgm1dejfj7a3q8.apps.googleusercontent.com"
-											 data-context="signin"
-											 data-ux_mode="redirect"
-											 data-login_uri="https://localhost:7180/Account/GoogleOneTapCallback"
-											 data-auto_prompt="true">
-										</div>
-									</div>
-
-
-									<div class="g_id_signin" data-type="standard"></div>
-
-									<div class="text-center mt-3">
-										<a href="#" class="text-muted" data-bs-toggle="modal" data-bs-target="#forgotPasswordModal" data-bs-dismiss="modal">
-											Forgot password?
-										</a>
-									</div>
-								</div>
-								<!-- Right panel with image -->
-								<div class="col-md-5 d-none d-md-flex align-items-center justify-content-center bg-secondary">
-									<img src="~/Layout_CuongPhim/img/postercp.png" alt="Login Image" class="img-fluid rounded-end">
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
-
-				<!-- Register Modal -->
-				<div class="modal fade" id="registerModal" tabindex="-1" aria-hidden="true">
-					<div class="modal-dialog modal-lg modal-dialog-centered">
-						<div class="modal-content register-modal">
-							<div class="row g-0">
-								<!-- Left panel -->
-								<div class="col-md-7 bg-dark text-white p-4">
-									<div class="d-flex justify-content-end">
-										<button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-									</div>
-
-									<h3 class="fw-bold mb-3">Sign Up</h3>
-									<p class="text-muted">
-										Already have an account?
-										<a href="#" class="text-warning" data-bs-toggle="modal" data-bs-target="#loginModal" data-bs-dismiss="modal">
-											Login
-										</a>
-									</p>
-
-									<!-- Show notification -->
-									<div id="registerMessage"></div>
-
-									<form id="registerForm">
-										<div class="mb-3">
-											<input type="text" name="fullName" class="form-control form-control-lg" placeholder="Username" required>
-										</div>
-										<div class="mb-3">
-											<input type="email" name="email" class="form-control form-control-lg" placeholder="Email" required>
-										</div>
-										<div class="mb-3">
-											<input type="password" name="password" class="form-control form-control-lg" placeholder="Password" required>
-										</div>
-										<div class="mb-3">
-											<input type="password" name="confirmPassword" class="form-control form-control-lg" placeholder="Confirm Password" required>
-										</div>
-
-										<!-- Loading Spinner -->
-										<div id="registerLoading" class="text-center d-none mb-2">
-											<div class="spinner-border text-warning" role="status"></div>
-											<p class="mt-2">Processing...</p>
-										</div>
-
-										<button type="submit" class="btn btn-warning w-100 fw-bold py-2">Sign Up</button>
-									</form>
-
-									<!-- Register with Google -->
-									<div class="text-center mt-3">
-										<a href="~/Account/GoogleLogin" class="btn btn-outline-light w-100">
-											<i class="bi bi-google me-2"></i> Sign up with Google
-										</a>
-									</div>
-								</div>
-								<!-- Right panel with image -->
-								<div class="col-md-5 d-none d-md-flex align-items-center justify-content-center bg-secondary">
-									<img src="~/Layout_CuongPhim/img/postercp.png" alt="Register Image" class="img-fluid rounded-end">
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
-
-
-				<!-- Forgot Password Modal -->
-				<div class="modal fade" id="forgotPasswordModal" tabindex="-1" aria-hidden="true">
-					<div class="modal-dialog modal-lg modal-dialog-centered">
-						<div class="modal-content forgot-password-modal">
-							<div class="row g-0">
-								<!-- Left panel -->
-								<div class="col-md-7 bg-dark text-white p-4">
-									<div class="d-flex justify-content-end">
-										<button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-									</div>
-									<p class="text-muted">
-										Already have an account?
-										<a href="#" class="text-warning" data-bs-toggle="modal" data-bs-target="#loginModal" data-bs-dismiss="modal">
-											Login
-										</a>
-									</p>
-									<h3 class="fw-bold mb-3">Forgot Password</h3>
-									<p class="text-muted">Enter your email to receive password reset instructions. Next steps will be sent to your inbox.</p>
-
-									<!-- Show notification -->
-									@if (TempData["Error"] != null)
-									{
-										<div class="alert alert-danger">@TempData["Error"]</div>
-									}
-									@if (TempData["Success"] != null)
-									{
-										<div class="alert alert-success">@TempData["Success"]</div>
-									}
-									<form id="forgotForm">
-										<div class="mb-3">
-											<input type="email" name="email" class="form-control form-control-lg" placeholder="Enter your email" required>
-										</div>
-										<div id="forgotMessage"></div>
-										<button type="submit" class="btn btn-warning w-100 fw-bold py-2">Send Reset Request</button>
-									</form>
-								</div>
-								<!-- Right panel with image -->
-								<div class="col-md-5 d-none d-md-flex align-items-center justify-content-center bg-secondary">
-									<img src="~/Layout_CuongPhim/img/postercp.png" alt="Forgot Password Image" class="img-fluid rounded-end">
-								</div>
-
-							</div>
-						</div>
-					</div>
-				</div>
-			}
-		</div>
+		</div> <!-- ĐÂY LÀ THẺ ĐÓNG BỊ THIẾU - ĐÓNG CHO collapse navbar-collapse -->
+		@await Html.PartialAsync("_LoginPartial")
 	</nav>
-	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-	<script>
-		$(function () {
-			// LOGIN
-			$("#loginForm").submit(function (e) {
-				e.preventDefault();
-				$.post("/Account/Login", $(this).serialize(), function (res) {
-					if (res.success) {
-						$("#loginMessage").html(`<div class="alert alert-success">${res.message}</div>`);
-						setTimeout(() => location.reload(), 1000);
-					} else {
-						$("#loginMessage").html(`<div class="alert alert-danger">${res.message}</div>`);
-					}
-				});
-			});
-
-			// REGISTER
-			$("#registerForm").submit(function (e) {
-				e.preventDefault();
-				$.post("/Account/Register", $(this).serialize(), function (res) {
-					if (res.success) {
-						$("#registerMessage").html(`<div class="alert alert-success">${res.message}</div>`);
-						setTimeout(() => location.reload(), 1000);
-					} else {
-						$("#registerMessage").html(`<div class="alert alert-danger">${res.message}</div>`);
-					}
-				});
-			});
-
-			// FORGOT PASSWORD
-			$("#forgotForm").submit(function (e) {
-				e.preventDefault();
-				$.post("/Account/ForgotPassword", $(this).serialize(), function (res) {
-					if (res.success) {
-						$("#forgotMessage").html(`<div class="alert alert-success">${res.message}</div>`);
-					} else {
-						$("#forgotMessage").html(`<div class="alert alert-danger">${res.message}</div>`);
-					}
-				});
-			});
-		});
-				document.addEventListener("DOMContentLoaded", function () {
-			// Login form
-			const loginForm = document.getElementById("loginForm");
-			if (loginForm) {
-				loginForm.addEventListener("submit", function (e) {
-					e.preventDefault();
-					document.getElementById("loginLoading").classList.remove("d-none");
-
-					// simulate AJAX processing
-					setTimeout(() => {
-						document.getElementById("loginLoading").classList.add("d-none");
-						document.getElementById("loginMessage").innerHTML =
-							`<div class="alert alert-success">Login successful!</div>`;
-					}, 2000);
-				});
-			}
-
-			// Register form
-			const registerForm = document.getElementById("registerForm");
-			if (registerForm) {
-				registerForm.addEventListener("submit", function (e) {
-					e.preventDefault();
-					document.getElementById("registerLoading").classList.remove("d-none");
-
-					setTimeout(() => {
-						document.getElementById("registerLoading").classList.add("d-none");
-						document.getElementById("registerMessage").innerHTML =
-							`<div class="alert alert-success">Registration successful!</div>`;
-					}, 2000);
-				});
-			}
-		});
-
-	</script>
-
 
 	@RenderBody()
 

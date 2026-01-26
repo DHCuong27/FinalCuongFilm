@@ -1,0 +1,99 @@
+﻿/* Biến cho notifications */
+:root {
+    --notification-bg: #1a1a1a;
+    --notification-bg-hover: #2a2a2a;
+    --notification-border: #404040;
+    --notification-unread-bg: rgba(229, 9, 20, 0.08);
+    --notification-unread-border: #e50914;
+    --text-primary: #ffffff;
+    --text-secondary: #d0d0d0;
+    --text-muted: #8a8a8a;
+    --border-radius: 8px;
+    --transition: all 0.3s ease;
+}
+
+/* Notifications Container Layout - 1 viền nét đứt và nằm ngang */
+#notifications-container {
+    background-color: var(--notification-bg);
+    border: 2px dashed var(--notification-border); /* Chỉ 1 viền nét đứt */
+    border-radius: var(--border-radius);
+    margin: 2rem auto;
+    max-width: 800px;
+    position: relative;
+    display: flex; /* Nằm ngang */
+    flex-direction: row;
+    min-height: 150px;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Empty State Layout - Nằm trong container và căn giữa */
+.empty-state {
+    text-align: center;
+    padding: 2rem;
+    color: var(--text-muted);
+    width: 100%;
+}
+
+.empty-state-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    opacity: 0.7;
+}
+
+.empty-state-title {
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    font-size: 1.2rem;
+    line-height: 1.4;
+}
+
+.empty-state-description {
+    color: var(--text-muted);
+    margin: 0;
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+/* Responsive Layout */
+@media (max-width: 768px) {
+    #notifications-container {
+        margin: 1rem;
+        min-height: 120px;
+    }
+
+    .empty-state {
+        padding: 1.5rem;
+    }
+
+    .empty-state-icon {
+        font-size: 2rem;
+    }
+
+    .empty-state-title {
+        font-size: 1.1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    #notifications-container {
+        min-height: 100px;
+    }
+
+    .empty-state {
+        padding: 1rem;
+    }
+
+    .empty-state-icon {
+        font-size: 1.8rem;
+    }
+
+    .empty-state-title {
+        font-size: 1rem;
+    }
+
+    .empty-state-description {
+        font-size: 0.85rem;
+    }
+}

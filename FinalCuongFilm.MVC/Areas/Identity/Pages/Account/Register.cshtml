@@ -2,66 +2,342 @@
 @model RegisterModel
 @{
     ViewData["Title"] = "Register";
+    Layout = "/Areas/Identity/Pages/_Layout.cshtml";
 }
 
-<h1>@ViewData["Title"]</h1>
+<style>
+    :root {
+        --netflix-red: #e50914;
+        --netflix-dark: #141414;
+        --netflix-light: #8c8c8c;
+        --netflix-white: #fff;
+        --netflix-gray: #333;
+        --netflix-input-bg: #333;
+        --netflix-input-focus: #454545;
+    }
 
-<div class="row">
-    <div class="col-md-4">
-        <form id="registerForm" asp-route-returnUrl="@Model.ReturnUrl" method="post">
-            <h2>Create a new account.</h2>
-            <hr />
-            <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
-            <div class="form-floating mb-3">
-                <input asp-for="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" />
-                <label asp-for="Input.Email">Email</label>
-                <span asp-validation-for="Input.Email" class="text-danger"></span>
-            </div>
-            <div class="form-floating mb-3">
-                <input asp-for="Input.Password" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" />
-                <label asp-for="Input.Password">Password</label>
-                <span asp-validation-for="Input.Password" class="text-danger"></span>
-            </div>
-            <div class="form-floating mb-3">
-                <input asp-for="Input.ConfirmPassword" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" />
-                <label asp-for="Input.ConfirmPassword">Confirm Password</label>
-                <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
-            </div>
-            <button id="registerSubmit" type="submit" class="w-100 btn btn-lg btn-primary">Register</button>
-        </form>
+    body {
+        background-color: var(--netflix-dark);
+        color: var(--netflix-white);
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        min-height: 100vh;
+    }
+
+    .netflix-register-container {
+        position: relative;
+        min-height: 100vh;
+        background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), 
+                    url('https://assets.nflxext.com/ffe/siteui/vlv3/9db4a880-3034-4e98-bdea-5d983e86bf52/b5953637-091d-4e02-9754-2bfadc8a8f7c/GB-en-20230925-popsignuptwoweeks-perspective_alpha_website_large.jpg');
+        background-size: cover;
+        background-position: center;
+    }
+
+    .netflix-header {
+        padding: 20px 50px;
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 10;
+    }
+
+    .netflix-logo {
+        height: 45px;
+        width: auto;
+    }
+
+    .netflix-register-box {
+        background-color: rgba(0, 0, 0, 0.75);
+        border-radius: 4px;
+        padding: 60px 68px 40px;
+        margin: 0 auto;
+        max-width: 450px;
+        min-height: 660px;
+        position: relative;
+        top: 100px;
+    }
+
+    .netflix-register-title {
+        color: var(--netflix-white);
+        font-size: 32px;
+        font-weight: 700;
+        margin-bottom: 28px;
+    }
+
+    .netflix-form-group {
+        margin-bottom: 16px;
+        position: relative;
+    }
+
+    .netflix-input {
+        width: 100%;
+        height: 50px;
+        background-color: var(--netflix-input-bg);
+        border: 1px solid var(--netflix-gray);
+        border-radius: 4px;
+        color: var(--netflix-white);
+        font-size: 16px;
+        padding: 16px 20px 0;
+        box-sizing: border-box;
+        transition: all 0.2s ease;
+    }
+
+    .netflix-input:focus {
+        background-color: var(--netflix-input-focus);
+        border-color: var(--netflix-white);
+        outline: none;
+    }
+
+    .netflix-input:focus + .netflix-label,
+    .netflix-input:not(:placeholder-shown) + .netflix-label {
+        top: 7px;
+        font-size: 11px;
+        color: var(--netflix-light);
+    }
+
+    .netflix-label {
+        position: absolute;
+        top: 18px;
+        left: 20px;
+        color: var(--netflix-light);
+        font-size: 16px;
+        transition: all 0.2s ease;
+        pointer-events: none;
+    }
+
+    .netflix-btn {
+        width: 100%;
+        height: 50px;
+        background-color: var(--netflix-red);
+        color: var(--netflix-white);
+        border: none;
+        border-radius: 4px;
+        font-size: 16px;
+        font-weight: 700;
+        cursor: pointer;
+        margin: 24px 0 12px;
+        transition: background-color 0.2s ease;
+    }
+
+    .netflix-btn:hover {
+        background-color: #f6121d;
+    }
+
+    .netflix-signup-now {
+        color: var(--netflix-light);
+        font-size: 16px;
+        margin-top: 16px;
+    }
+
+    .netflix-login-link {
+        color: var(--netflix-white);
+        text-decoration: none;
+        font-weight: 500;
+        margin-left: 5px;
+    }
+
+    .netflix-login-link:hover {
+        text-decoration: underline;
+    }
+
+    .netflix-or-divider {
+        display: flex;
+        align-items: center;
+        margin: 20px 0;
+        color: var(--netflix-light);
+        font-size: 13px;
+    }
+
+    .netflix-or-divider::before,
+    .netflix-or-divider::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background-color: var(--netflix-gray);
+    }
+
+    .netflix-or-divider span {
+        padding: 0 10px;
+    }
+
+    .netflix-google-btn {
+        width: 100%;
+        height: 50px;
+        background-color: transparent;
+        color: var(--netflix-light);
+        border: 1px solid var(--netflix-gray);
+        border-radius: 4px;
+        font-size: 16px;
+        font-weight: 500;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        margin: 10px 0;
+        transition: all 0.2s ease;
+    }
+
+    .netflix-google-btn:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+        border-color: var(--netflix-white);
+        color: var(--netflix-white);
+    }
+
+    .validation-message {
+        color: #e87c03;
+        font-size: 13px;
+        margin-top: 5px;
+        display: block;
+    }
+
+    .validation-summary {
+        background-color: #e87c03;
+        color: var(--netflix-white);
+        padding: 10px 20px;
+        border-radius: 4px;
+        margin-bottom: 20px;
+        font-size: 14px;
+    }
+
+    .validation-summary ul {
+        margin: 0;
+        padding-left: 20px;
+    }
+
+    .password-strength {
+        margin-top: 5px;
+        font-size: 12px;
+    }
+
+    .password-strength-meter {
+        height: 4px;
+        background: #333;
+        border-radius: 2px;
+        margin-top: 5px;
+        overflow: hidden;
+    }
+
+    .password-strength-meter-fill {
+        height: 100%;
+        width: 0;
+        transition: width 0.3s ease;
+    }
+
+    .weak { background: #e50914; width: 33%; }
+    .medium { background: #e87c03; width: 66%; }
+    .strong { background: #5fa052; width: 100%; }
+
+</style>
+
+<div class="netflix-register-container">
+    <!-- Netflix Header with Logo -->
+    <div class="netflix-header">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg" 
+             alt="Netflix" 
+             class="netflix-logo">
     </div>
-    <div class="col-md-6 col-md-offset-2">
-        <section>
-            <h3>Use another service to register.</h3>
-            <hr />
-            @{
-                if ((Model.ExternalLogins?.Count ?? 0) == 0)
-                {
-                    <div>
-                        <p>
-                            There are no external authentication services configured. See this <a href="https://go.microsoft.com/fwlink/?LinkID=532715">article
-                            about setting up this ASP.NET application to support logging in via external services</a>.
-                        </p>
+
+    <!-- Register Form -->
+    <div class="container">
+        <div class="netflix-register-box">
+            <h1 class="netflix-register-title">Sign Up</h1>
+
+            @if (!ViewData.ModelState.IsValid)
+            {
+                <div class="validation-summary" role="alert">
+                    <ul>
+                        @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                        {
+                            <li>@error.ErrorMessage</li>
+                        }
+                    </ul>
+                </div>
+            }
+
+            <form id="registerForm" asp-route-returnUrl="@Model.ReturnUrl" method="post">
+                <div class="netflix-form-group">
+                    <input asp-for="Input.Email" 
+                           class="netflix-input" 
+                           autocomplete="username" 
+                           aria-required="true"
+                           placeholder=" " />
+                    <label asp-for="Input.Email" class="netflix-label">Email</label>
+                    <span asp-validation-for="Input.Email" class="validation-message"></span>
+                </div>
+                
+                <div class="netflix-form-group">
+                    <input asp-for="Input.Password" 
+                           class="netflix-input" 
+                           id="password"
+                           autocomplete="new-password" 
+                           aria-required="true"
+                           placeholder=" " />
+                    <label asp-for="Input.Password" class="netflix-label">Password</label>
+                    <span asp-validation-for="Input.Password" class="validation-message"></span>
+                    <div class="password-strength-meter">
+                        <div class="password-strength-meter-fill" id="passwordStrength"></div>
                     </div>
+                    <div class="password-strength" id="passwordStrengthText"></div>
+                </div>
+
+                <div class="netflix-form-group">
+                    <input asp-for="Input.ConfirmPassword" 
+                           class="netflix-input" 
+                           id="confirmPassword"
+                           autocomplete="new-password" 
+                           aria-required="true"
+                           placeholder=" " />
+                    <label asp-for="Input.ConfirmPassword" class="netflix-label">Confirm Password</label>
+                    <span asp-validation-for="Input.ConfirmPassword" class="validation-message"></span>
+                    <div class="password-strength" id="passwordMatchText"></div>
+                </div>
+
+                <button id="registerSubmit" type="submit" class="netflix-btn">
+                    Sign Up
+                </button>
+
+                <div class="netflix-or-divider">
+                    <span>OR</span>
+                </div>
+
+                <!-- External Login -->
+                @if ((Model.ExternalLogins?.Count ?? 0) > 0)
+                {
+                    <form id="external-account" asp-page="./ExternalLogin" asp-route-returnUrl="@Model.ReturnUrl" method="post">
+                        @foreach (var provider in Model.ExternalLogins!)
+                        {
+                            <button type="submit" class="netflix-google-btn" name="provider" value="@provider.Name" 
+                                    title="Register using your @provider.DisplayName account">
+                                <i class="bi bi-google"></i>
+                                Sign up with @provider.DisplayName
+                            </button>
+                        }
+                    </form>
                 }
                 else
                 {
-                    <form id="external-account" asp-page="./ExternalLogin" asp-route-returnUrl="@Model.ReturnUrl" method="post" class="form-horizontal">
-                        <div>
-                            <p>
-                                @foreach (var provider in Model.ExternalLogins!)
-                                {
-                                    <button type="submit" class="btn btn-primary" name="provider" value="@provider.Name" title="Log in using your @provider.DisplayName account">@provider.DisplayName</button>
-                                }
-                            </p>
-                        </div>
-                    </form>
+                    <div style="color: var(--netflix-light); font-size: 14px; text-align: center; margin: 20px 0;">
+                        <p>
+                            There are no external authentication services configured.
+                        </p>
+                    </div>
                 }
-            }
-        </section>
+
+                <div class="netflix-signup-now">
+                    Already have an account?
+                    <a asp-page="./Login" asp-route-returnUrl="@Model.ReturnUrl" class="netflix-login-link">
+                        Sign in now
+                    </a>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 
 @section Scripts {
-    <partial name="_ValidationScriptsPartial" />
+    <partial name="_ValidationScriptsPartial" />  
+      
 }

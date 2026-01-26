@@ -71,10 +71,18 @@ app.UseSession();
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapRazorPages(); 
+app.MapRazorPages();
+
+app.MapControllerRoute(
+	name: "areas",
+	pattern: "{area:exists}/{controller=Admin}/{action=Index}/{id?}");
+
+
 app.MapControllerRoute(
 	name: "default",
 	pattern: "{controller=Home}/{action=Index}/{id?}");
+
+
 
 await IdentitySeed.SeedAsync(app.Services);
 
