@@ -5,12 +5,12 @@
     <!-- Required meta tags-->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta name="description" content="au theme template">
+    <meta name="description" content="CuongPhim Admin Dashboard">
     <meta name="author" content="Hung Cuong">
-    <meta name="keywords" content="au theme template">
+    <meta name="keywords" content="Film Management, Admin Dashboard">
 
     <!-- Title Page-->
-    <title>Dashboard</title>
+    <title>CuongPhim Admin Dashboard</title>
 
     <!-- Fontfaces CSS-->
     <link href="~/Layout_Admin/css/font-face.css" rel="stylesheet" media="all">
@@ -26,9 +26,142 @@
     <link href="~/Layout_Admin/css/swiper-bundle-11.2.10.min.css" rel="stylesheet" media="all">
     <link href="~/Layout_Admin/vendor/perfect-scrollbar/perfect-scrollbar-1.5.6.css" rel="stylesheet" media="all">
 
+    <!-- DataTables CSS -->
+    <link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+    <link href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.bootstrap5.min.css" rel="stylesheet">
+
     <!-- Main CSS-->
     <link href="~/Layout_Admin/css/theme.css" rel="stylesheet" media="all">
 
+    <style>
+        :root {
+            --film-primary: #dc3545;
+            --film-secondary: #6c757d;
+            --film-success: #28a745;
+            --film-info: #17a2b8;
+            --film-warning: #ffc107;
+            --film-danger: #e74c3c;
+        }
+
+        .film-card {
+            border-radius: 15px;
+            overflow: hidden;
+            transition: transform 0.3s ease;
+            border: none;
+        }
+
+            .film-card:hover {
+                transform: translateY(-5px);
+            }
+
+            .film-card.c1 {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            }
+
+            .film-card.c2 {
+                background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            }
+
+            .film-card.c3 {
+                background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            }
+
+            .film-card.c4 {
+                background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            }
+
+        .btn-film {
+            background: var(--film-primary);
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+            .btn-film:hover {
+                background: #c82333;
+                transform: translateY(-2px);
+                box-shadow: 0 5px 15px rgba(220, 53, 69, 0.3);
+            }
+
+        .film-table {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+            .film-table th {
+                background: #f8f9fa;
+                border-bottom: 2px solid #dee2e6;
+                font-weight: 600;
+            }
+
+        .action-buttons .btn {
+            padding: 5px 10px;
+            margin: 0 2px;
+            font-size: 12px;
+        }
+
+        .film-poster {
+            width: 60px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 5px;
+        }
+
+        .status-badge {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-active {
+            background: rgba(40, 167, 69, 0.1);
+            color: var(--film-success);
+        }
+
+        .status-inactive {
+            background: rgba(108, 117, 125, 0.1);
+            color: var(--film-secondary);
+        }
+
+        .status-premium {
+            background: rgba(255, 193, 7, 0.1);
+            color: var(--film-warning);
+        }
+
+        .film-modal .modal-content {
+            border-radius: 15px;
+            border: none;
+        }
+
+        .film-form .form-label {
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .film-form .form-control {
+            border-radius: 8px;
+            border: 1px solid #ced4da;
+            padding: 10px 15px;
+        }
+
+            .film-form .form-control:focus {
+                border-color: var(--film-primary);
+                box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+            }
+
+        .genre-tag {
+            display: inline-block;
+            background: #e9ecef;
+            padding: 4px 12px;
+            border-radius: 20px;
+            margin: 2px;
+            font-size: 12px;
+        }
+    </style>
 </head>
 
 <body>
@@ -39,8 +172,8 @@
             <div class="header-mobile__bar">
                 <div class="container-fluid">
                     <div class="header-mobile-inner">
-                        <a class="logo" href="index.html">
-                            <img src="Layout_Admin/images/icon/logo.png" alt="CoolAdmin" />
+                        <a class="logo" href="/Admin">
+                            <img src="~/Layout_Admin/images/icon/logo.png" alt="CuongPhim Admin" />
                         </a>
                         <button class="hamburger hamburger--slider" type="button">
                             <span class="hamburger-box">
@@ -53,105 +186,40 @@
             <nav class="navbar-mobile">
                 <div class="container-fluid">
                     <ul class="navbar-mobile__list list-unstyled">
-                        <li class="has-sub">
-                            <a class="js-arrow" href="#">
+                        <li class="active">
+                            <a href="/Admin">
                                 <i class="fas fa-tachometer-alt"></i>Dashboard
                             </a>
-                            <ul class="navbar-mobile-sub__list list-unstyled js-sub-list">
-                                <li>
-                                    <a href="index.html">Dashboard 1</a>
-                                </li>
-                                <li>
-                                    <a href="index2.html">Dashboard 2</a>
-                                </li>
-                                <li>
-                                    <a href="index3.html">Dashboard 3</a>
-                                </li>
-                                <li>
-                                    <a href="index4.html">Dashboard 4</a>
-                                </li>
-                            </ul>
                         </li>
                         <li>
-                            <a href="chart.html">
-                                <i class="fas fa-chart-bar"></i>Charts
+                            <a href="/Admin/Films">
+                                <i class="fas fa-film"></i>Films
                             </a>
                         </li>
                         <li>
-                            <a href="table.html">
-                                <i class="fas fa-table"></i>Tables
+                            <a href="/Admin/Categories">
+                                <i class="fas fa-tags"></i>Categories
                             </a>
                         </li>
                         <li>
-                            <a href="form.html">
-                                <i class="far fa-check-square"></i>Forms
+                            <a href="/Admin/Actors">
+                                <i class="fas fa-users"></i>Actors
                             </a>
                         </li>
                         <li>
-                            <a href="calendar.html">
-                                <i class="fas fa-calendar-alt"></i>Calendar
+                            <a href="/Admin/Users">
+                                <i class="fas fa-user-friends"></i>Users
                             </a>
                         </li>
                         <li>
-                            <a href="map.html">
-                                <i class="fas fa-map-marker-alt"></i>Maps
+                            <a href="/Admin/Comments">
+                                <i class="fas fa-comments"></i>Comments
                             </a>
                         </li>
-                        <li class="has-sub">
-                            <a class="js-arrow" href="#">
-                                <i class="fas fa-copy"></i>Pages
+                        <li>
+                            <a href="/Admin/Settings">
+                                <i class="fas fa-cog"></i>Settings
                             </a>
-                            <ul class="navbar-mobile-sub__list list-unstyled js-sub-list">
-                                <li>
-                                    <a href="login.html">Login</a>
-                                </li>
-                                <li>
-                                    <a href="register.html">Register</a>
-                                </li>
-                                <li>
-                                    <a href="forget-pass.html">Forget Password</a>
-                                </li>
-                            </ul>
-                        </li>
-                        <li class="has-sub">
-                            <a class="js-arrow" href="#">
-                                <i class="fas fa-desktop"></i>UI Elements
-                            </a>
-                            <ul class="navbar-mobile-sub__list list-unstyled js-sub-list">
-                                <li>
-                                    <a href="button.html">Button</a>
-                                </li>
-                                <li>
-                                    <a href="badge.html">Badges</a>
-                                </li>
-                                <li>
-                                    <a href="tab.html">Tabs</a>
-                                </li>
-                                <li>
-                                    <a href="card.html">Cards</a>
-                                </li>
-                                <li>
-                                    <a href="alert.html">Alerts</a>
-                                </li>
-                                <li>
-                                    <a href="progress-bar.html">Progress Bars</a>
-                                </li>
-                                <li>
-                                    <a href="modal.html">Modals</a>
-                                </li>
-                                <li>
-                                    <a href="switch.html">Switchs</a>
-                                </li>
-                                <li>
-                                    <a href="grid.html">Grids</a>
-                                </li>
-                                <li>
-                                    <a href="fontawesome.html">Fontawesome Icon</a>
-                                </li>
-                                <li>
-                                    <a href="typo.html">Typography</a>
-                                </li>
-                            </ul>
                         </li>
                     </ul>
                 </div>
@@ -161,112 +229,58 @@
         <!-- MENU SIDEBAR-->
         <aside class="menu-sidebar d-none d-lg-block">
             <div class="logo">
-                <a href="#">
-                    <img src="Layout_Admin/images/icon/logo.png" alt="Cool Admin" />
+                <a href="/Admin">
+                    <img src="~/Layout_Admin/images/icon/logo.png" alt="CuongPhim Admin" />
+                    <h4 class="text-white mt-2">CuongPhim Admin</h4>
                 </a>
             </div>
             <div class="menu-sidebar__content js-scrollbar1">
                 <nav class="navbar-sidebar">
                     <ul class="list-unstyled navbar__list">
-                        <li class="active has-sub">
-                            <a class="js-arrow" href="#">
+                        <li class="active">
+                            <a href="/Admin">
                                 <i class="fas fa-tachometer-alt"></i>Dashboard
                             </a>
-                            <ul class="list-unstyled navbar__sub-list js-sub-list">
-                                <li>
-                                    <a href="index.html">Dashboard 1</a>
-                                </li>
-                                <li>
-                                    <a href="index2.html">Dashboard 2</a>
-                                </li>
-                                <li>
-                                    <a href="index3.html">Dashboard 3</a>
-                                </li>
-                                <li>
-                                    <a href="index4.html">Dashboard 4</a>
-                                </li>
-                            </ul>
                         </li>
                         <li>
-                            <a href="chart.html">
-                                <i class="fas fa-chart-bar"></i>Charts
+                            <a href="/Admin/Films">
+                                <i class="fas fa-film"></i>Films Management
                             </a>
                         </li>
                         <li>
-                            <a href="table.html">
-                                <i class="fas fa-table"></i>Tables
+                            <a href="/Admin/Categories">
+                                <i class="fas fa-tags"></i>Categories & Genres
                             </a>
                         </li>
                         <li>
-                            <a href="form.html">
-                                <i class="far fa-check-square"></i>Forms
+                            <a href="/Admin/Actors">
+                                <i class="fas fa-users"></i>Actors & Directors
                             </a>
                         </li>
                         <li>
-                            <a href="calendar.html">
-                                <i class="fas fa-calendar-alt"></i>Calendar
+                            <a href="/Admin/Episodes">
+                                <i class="fas fa-play-circle"></i>Episodes
                             </a>
                         </li>
                         <li>
-                            <a href="map.html">
-                                <i class="fas fa-map-marker-alt"></i>Maps
+                            <a href="/Admin/Users">
+                                <i class="fas fa-user-friends"></i>User Management
                             </a>
                         </li>
-                        <li class="has-sub">
-                            <a class="js-arrow" href="#">
-                                <i class="fas fa-copy"></i>Pages
+                        <li>
+                            <a href="/Admin/Comments">
+                                <i class="fas fa-comments"></i>Comments & Reviews
                             </a>
-                            <ul class="list-unstyled navbar__sub-list js-sub-list">
-                                <li>
-                                    <a href="login.html">Login</a>
-                                </li>
-                                <li>
-                                    <a href="register.html">Register</a>
-                                </li>
-                                <li>
-                                    <a href="forget-pass.html">Forget Password</a>
-                                </li>
-                            </ul>
                         </li>
-                        <li class="has-sub">
-                            <a class="js-arrow" href="#">
-                                <i class="fas fa-desktop"></i>UI Elements
+                        <li>
+                            <a href="/Admin/Reports">
+                                <i class="fas fa-chart-bar"></i>Reports & Analytics
                             </a>
-                            <ul class="list-unstyled navbar__sub-list js-sub-list">
-                                <li>
-                                    <a href="button.html">Button</a>
-                                </li>
-                                <li>
-                                    <a href="badge.html">Badges</a>
-                                </li>
-                                <li>
-                                    <a href="tab.html">Tabs</a>
-                                </li>
-                                <li>
-                                    <a href="card.html">Cards</a>
-                                </li>
-                                <li>
-                                    <a href="alert.html">Alerts</a>
-                                </li>
-                                <li>
-                                    <a href="progress-bar.html">Progress Bars</a>
-                                </li>
-                                <li>
-                                    <a href="modal.html">Modals</a>
-                                </li>
-                                <li>
-                                    <a href="switch.html">Switchs</a>
-                                </li>
-                                <li>
-                                    <a href="grid.html">Grids</a>
-                                </li>
-                                <li>
-                                    <a href="fontawesome.html">Fontawesome Icon</a>
-                                </li>
-                                <li>
-                                    <a href="typo.html">Typography</a>
-                                </li>
-                            </ul>
+                        </li>
+                        <li>
+                            <a href="/Admin/Settings">
+                                <i class="fas fa-cog"></i>System Settings
+                            </a>
                         </li>
                     </ul>
                 </nav>
@@ -281,7 +295,7 @@
                     <div class="container-fluid">
                         <div class="header-wrap">
                             <form class="form-header" action="" method="POST">
-                                <input class="au-input au-input--xl" type="text" name="search" placeholder="Search for datas &amp; reports..." />
+                                <input class="au-input au-input--xl" type="text" name="search" placeholder="Search films, actors, users..." />
                                 <button class="au-btn--submit" type="submit">
                                     <i class="zmdi zmdi-search"></i>
                                 </button>
@@ -290,111 +304,46 @@
                                 <div class="noti-wrap">
                                     <div class="noti__item js-item-menu">
                                         <i class="zmdi zmdi-comment-more"></i>
-                                        <span class="quantity">1</span>
+                                        <span class="quantity" id="commentCount">3</span>
                                         <div class="mess-dropdown js-dropdown">
                                             <div class="mess__title">
-                                                <p>You have 2 news message</p>
+                                                <p>New Comments</p>
                                             </div>
-                                            <div class="mess__item">
-                                                <div class="image img-cir img-40">
-                                                    <img src="Layout_Admin/images/icon/avatar-06.jpg" alt="Michelle Moreno" />
-                                                </div>
-                                                <div class="content">
-                                                    <h6>Michelle Moreno</h6>
-                                                    <p>Have sent a photo</p>
-                                                    <span class="time">3 min ago</span>
-                                                </div>
-                                            </div>
-                                            <div class="mess__item">
-                                                <div class="image img-cir img-40">
-                                                    <img src="Layout_Admin/images/icon/avatar-04.jpg" alt="Diane Myers" />
-                                                </div>
-                                                <div class="content">
-                                                    <h6>Diane Myers</h6>
-                                                    <p>You are now connected on message</p>
-                                                    <span class="time">Yesterday</span>
-                                                </div>
+                                            <div class="mess__item" id="commentList">
+                                                <!-- Comments loaded dynamically -->
                                             </div>
                                             <div class="mess__footer">
-                                                <a href="#">View all messages</a>
+                                                <a href="/Admin/Comments">View all comments</a>
                                             </div>
                                         </div>
                                     </div>
                                     <div class="noti__item js-item-menu">
-                                        <i class="zmdi zmdi-email"></i>
-                                        <span class="quantity">1</span>
+                                        <i class="zmdi zmdi-account-add"></i>
+                                        <span class="quantity" id="userCount">5</span>
                                         <div class="email-dropdown js-dropdown">
                                             <div class="email__title">
-                                                <p>You have 3 New Emails</p>
+                                                <p>New Users</p>
                                             </div>
-                                            <div class="email__item">
-                                                <div class="image img-cir img-40">
-                                                    <img src="Layout_Admin/images/icon/avatar-06.jpg" alt="Cynthia Harvey" />
-                                                </div>
-                                                <div class="content">
-                                                    <p>Meeting about new dashboard...</p>
-                                                    <span>Cynthia Harvey, 3 min ago</span>
-                                                </div>
-                                            </div>
-                                            <div class="email__item">
-                                                <div class="image img-cir img-40">
-                                                    <img src="Layout_Admin/images/icon/avatar-05.jpg" alt="Cynthia Harvey" />
-                                                </div>
-                                                <div class="content">
-                                                    <p>Meeting about new dashboard...</p>
-                                                    <span>Cynthia Harvey, Yesterday</span>
-                                                </div>
-                                            </div>
-                                            <div class="email__item">
-                                                <div class="image img-cir img-40">
-                                                    <img src="Layout_Admin/images/icon/avatar-04.jpg" alt="Cynthia Harvey" />
-                                                </div>
-                                                <div class="content">
-                                                    <p>Meeting about new dashboard...</p>
-                                                    <span>Cynthia Harvey, January 15, 2025</span>
-                                                </div>
+                                            <div class="email__item" id="userList">
+                                                <!-- Users loaded dynamically -->
                                             </div>
                                             <div class="email__footer">
-                                                <a href="#">See all emails</a>
+                                                <a href="/Admin/Users">View all users</a>
                                             </div>
                                         </div>
                                     </div>
                                     <div class="noti__item js-item-menu">
                                         <i class="zmdi zmdi-notifications"></i>
-                                        <span class="quantity">3</span>
+                                        <span class="quantity" id="reportCount">2</span>
                                         <div class="notifi-dropdown js-dropdown">
                                             <div class="notifi__title">
-                                                <p>You have 3 Notifications</p>
+                                                <p>System Reports</p>
                                             </div>
-                                            <div class="notifi__item">
-                                                <div class="bg-c1 img-cir img-40">
-                                                    <i class="zmdi zmdi-email-open"></i>
-                                                </div>
-                                                <div class="content">
-                                                    <p>You got a email notification</p>
-                                                    <span class="date">January 15, 2025 14:30</span>
-                                                </div>
-                                            </div>
-                                            <div class="notifi__item">
-                                                <div class="bg-c2 img-cir img-40">
-                                                    <i class="zmdi zmdi-account-box"></i>
-                                                </div>
-                                                <div class="content">
-                                                    <p>Your account has been blocked</p>
-                                                    <span class="date">January 15, 2025 14:30</span>
-                                                </div>
-                                            </div>
-                                            <div class="notifi__item">
-                                                <div class="bg-c3 img-cir img-40">
-                                                    <i class="zmdi zmdi-file-text"></i>
-                                                </div>
-                                                <div class="content">
-                                                    <p>You got a new file</p>
-                                                    <span class="date">January 15, 2025 14:30</span>
-                                                </div>
+                                            <div class="notifi__item" id="reportList">
+                                                <!-- Reports loaded dynamically -->
                                             </div>
                                             <div class="notifi__footer">
-                                                <a href="#">All notifications</a>
+                                                <a href="/Admin/Reports">View all reports</a>
                                             </div>
                                         </div>
                                     </div>
@@ -402,44 +351,44 @@
                                 <div class="account-wrap">
                                     <div class="account-item clearfix js-item-menu">
                                         <div class="image">
-                                            <img src="Layout_Admin/images/icon/avatar-01.jpg" alt="John Doe" />
+                                            <img src="~/Layout_Admin/images/icon/avatar-01.jpg" alt="Admin" />
                                         </div>
                                         <div class="content">
-                                            <a class="js-acc-btn" href="#">john doe</a>
+                                            <a class="js-acc-btn" href="#">Admin</a>
                                         </div>
                                         <div class="account-dropdown js-dropdown">
                                             <div class="info clearfix">
                                                 <div class="image">
                                                     <a href="#">
-                                                        <img src="Layout_Admin/images/icon/avatar-01.jpg" alt="John Doe" />
+                                                        <img src="~/Layout_Admin/images/icon/avatar-01.jpg" alt="Admin" />
                                                     </a>
                                                 </div>
                                                 <div class="content">
                                                     <h5 class="name">
-                                                        <a href="#">john doe</a>
+                                                        <a href="#">Administrator</a>
                                                     </h5>
-                                                    <span class="email">johndoe@example.com</span>
+                                                    <span class="email">admin@cuongphim.com</span>
                                                 </div>
                                             </div>
                                             <div class="account-dropdown__body">
                                                 <div class="account-dropdown__item">
-                                                    <a href="#">
-                                                        <i class="zmdi zmdi-account"></i>Account
+                                                    <a href="/Admin/Profile">
+                                                        <i class="zmdi zmdi-account"></i>Profile
                                                     </a>
                                                 </div>
                                                 <div class="account-dropdown__item">
-                                                    <a href="#">
-                                                        <i class="zmdi zmdi-settings"></i>Setting
+                                                    <a href="/Admin/Settings">
+                                                        <i class="zmdi zmdi-settings"></i>Settings
                                                     </a>
                                                 </div>
                                                 <div class="account-dropdown__item">
-                                                    <a href="#">
-                                                        <i class="zmdi zmdi-money-box"></i>Billing
+                                                    <a href="/Admin/Activity">
+                                                        <i class="zmdi zmdi-calendar-note"></i>Activity Log
                                                     </a>
                                                 </div>
                                             </div>
                                             <div class="account-dropdown__footer">
-                                                <a href="#">
+                                                <a href="/Account/Logout">
                                                     <i class="zmdi zmdi-power"></i>Logout
                                                 </a>
                                             </div>
@@ -456,521 +405,172 @@
             <div class="main-content">
                 <div class="section__content section__content--p30">
                     <div class="container-fluid">
-                        <div class="row">
-                            <div class="col-md-12">
-                                <div class="overview-wrap">
-                                    <h2 class="title-1">overview</h2>
-                                    <button class="au-btn au-btn-icon au-btn--blue">
-                                        <i class="zmdi zmdi-plus"></i>add item
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
+                        <!-- Statistics Cards -->
                         <div class="row m-t-25">
                             <div class="col-sm-6 col-lg-3">
-                                <div class="overview-item overview-item--c1">
+                                <div class="overview-item overview-item--c1 film-card c1">
                                     <div class="overview__inner">
                                         <div class="overview-box clearfix">
                                             <div class="icon">
-                                                <i class="zmdi zmdi-account-o"></i>
+                                                <i class="fas fa-film"></i>
                                             </div>
                                             <div class="text">
-                                                <h2>10368</h2>
-                                                <span>members online</span>
+                                                <h2 id="totalFilms">1,245</h2>
+                                                <span>Total Films</span>
                                             </div>
                                         </div>
                                         <div class="overview-chart">
-                                            <canvas id="widgetChart1"></canvas>
+                                            <canvas id="filmChart"></canvas>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                             <div class="col-sm-6 col-lg-3">
-                                <div class="overview-item overview-item--c2">
+                                <div class="overview-item overview-item--c2 film-card c2">
                                     <div class="overview__inner">
                                         <div class="overview-box clearfix">
                                             <div class="icon">
-                                                <i class="zmdi zmdi-shopping-cart"></i>
+                                                <i class="fas fa-users"></i>
                                             </div>
                                             <div class="text">
-                                                <h2>388,688</h2>
-                                                <span>items solid</span>
+                                                <h2 id="totalUsers">45,688</h2>
+                                                <span>Total Users</span>
                                             </div>
                                         </div>
                                         <div class="overview-chart">
-                                            <canvas id="widgetChart2"></canvas>
+                                            <canvas id="userChart"></canvas>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                             <div class="col-sm-6 col-lg-3">
-                                <div class="overview-item overview-item--c3">
+                                <div class="overview-item overview-item--c3 film-card c3">
                                     <div class="overview__inner">
                                         <div class="overview-box clearfix">
                                             <div class="icon">
-                                                <i class="zmdi zmdi-calendar-note"></i>
+                                                <i class="fas fa-comments"></i>
                                             </div>
                                             <div class="text">
-                                                <h2>1,086</h2>
-                                                <span>this week</span>
+                                                <h2 id="totalComments">23,086</h2>
+                                                <span>Total Comments</span>
                                             </div>
                                         </div>
                                         <div class="overview-chart">
-                                            <canvas id="widgetChart3"></canvas>
+                                            <canvas id="commentChart"></canvas>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                             <div class="col-sm-6 col-lg-3">
-                                <div class="overview-item overview-item--c4">
+                                <div class="overview-item overview-item--c4 film-card c4">
                                     <div class="overview__inner">
                                         <div class="overview-box clearfix">
                                             <div class="icon">
-                                                <i class="zmdi zmdi-money"></i>
+                                                <i class="fas fa-eye"></i>
                                             </div>
                                             <div class="text">
-                                                <h2>$1,060,386</h2>
-                                                <span>total earnings</span>
+                                                <h2 id="totalViews">12.5M</h2>
+                                                <span>Total Views</span>
                                             </div>
                                         </div>
                                         <div class="overview-chart">
-                                            <canvas id="widgetChart4"></canvas>
+                                            <canvas id="viewChart"></canvas>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Quick Actions -->
                         <div class="row">
-                            <div class="col-lg-6">
+                            <div class="col-md-12">
                                 <div class="au-card recent-report">
                                     <div class="au-card-inner">
-                                        <h3 class="title-2">recent reports</h3>
-                                        <div class="chart-info">
-                                            <div class="chart-info__right">
-                                                <div class="chart-statis">
-                                                    <span class="index incre">
-                                                        <i class="zmdi zmdi-long-arrow-up"></i>25%
-                                                    </span>
-                                                    <span class="label">products</span>
-                                                </div>
-                                                <div class="chart-statis me-0">
-                                                    <span class="index decre">
-                                                        <i class="zmdi zmdi-long-arrow-down"></i>10%
-                                                    </span>
-                                                    <span class="label">services</span>
-                                                </div>
+                                        <h3 class="title-2">Quick Actions</h3>
+                                        <div class="row mt-4">
+                                            <div class="col-md-3 col-6 mb-3">
+                                                <button class="btn btn-film w-100" data-bs-toggle="modal" data-bs-target="#addFilmModal">
+                                                    <i class="fas fa-plus me-2"></i>Add New Film
+                                                </button>
                                             </div>
-                                        </div>
-                                        <div class="recent-report__chart">
-                                            <canvas id="recent-rep-chart"></canvas>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-lg-6">
-                                <div class="au-card chart-percent-card">
-                                    <div class="au-card-inner">
-                                        <h3 class="title-2 tm-b-5">Revenue Distribution</h3>
-                                        <div class="row no-gutters">
-                                            <div class="col-xl-12">
-                                                <div class="percent-chart">
-                                                    <canvas id="percent-chart"></canvas>
-                                                </div>
+                                            <div class="col-md-3 col-6 mb-3">
+                                                <a href="/Admin/Films" class="btn btn-outline-danger w-100">
+                                                    <i class="fas fa-film me-2"></i>Manage Films
+                                                </a>
+                                            </div>
+                                            <div class="col-md-3 col-6 mb-3">
+                                                <a href="/Admin/Categories" class="btn btn-outline-primary w-100">
+                                                    <i class="fas fa-tags me-2"></i>Manage Categories
+                                                </a>
+                                            </div>
+                                            <div class="col-md-3 col-6 mb-3">
+                                                <a href="/Admin/Users" class="btn btn-outline-success w-100">
+                                                    <i class="fas fa-users me-2"></i>Manage Users
+                                                </a>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Recent Films Table -->
                         <div class="row">
-                            <div class="col-lg-9">
-                                <h2 class="title-1 m-b-25">Earnings By Items</h2>
-                                <div class="table-responsive table--no-card m-b-40">
-                                    <table class="table table-borderless table-striped table-earning">
+                            <div class="col-lg-12">
+                                <h2 class="title-1 m-b-25">Recent Films</h2>
+                                <div class="table-responsive table--no-card m-b-40 film-table">
+                                    <table class="table table-borderless table-striped" id="filmsTable">
                                         <thead>
                                             <tr>
-                                                <th>date</th>
-                                                <th>order ID</th>
-                                                <th>name</th>
-                                                <th class="text-end">price</th>
-                                                <th class="text-end">quantity</th>
-                                                <th class="text-end">total</th>
+                                                <th>ID</th>
+                                                <th>Poster</th>
+                                                <th>Title</th>
+                                                <th>Category</th>
+                                                <th>Views</th>
+                                                <th>Rating</th>
+                                                <th>Status</th>
+                                                <th>Created Date</th>
+                                                <th>Actions</th>
                                             </tr>
                                         </thead>
-                                        <tbody>
-                                            <tr>
-                                                <td>2025-01-15 14:32</td>
-                                                <td>100398</td>
-                                                <td>iPhone 17 128GB Titanium</td>
-                                                <td class="text-end">$1299.00</td>
-                                                <td class="text-end">1</td>
-                                                <td class="text-end">$999.00</td>
-                                            </tr>
-                                            <tr>
-                                                <td>2025-01-14 10:18</td>
-                                                <td>100397</td>
-                                                <td>Samsung Galaxy S25 Ultra</td>
-                                                <td class="text-end">$1199.00</td>
-                                                <td class="text-end">1</td>
-                                                <td class="text-end">$756.00</td>
-                                            </tr>
-                                            <tr>
-                                                <td>2025-01-13 16:45</td>
-                                                <td>100396</td>
-                                                <td>PS5 Pro DualSense Controller</td>
-                                                <td class="text-end">$79.00</td>
-                                                <td class="text-end">2</td>
-                                                <td class="text-end">$44.00</td>
-                                            </tr>
-                                            <tr>
-                                                <td>2025-01-12 09:23</td>
-                                                <td>100395</td>
-                                                <td>iPhone 17 Pro Max 1TB Space Black</td>
-                                                <td class="text-end">$1699.00</td>
-                                                <td class="text-end">1</td>
-                                                <td class="text-end">$1199.00</td>
-                                            </tr>
-                                            <tr>
-                                                <td>2025-01-11 13:17</td>
-                                                <td>100393</td>
-                                                <td>USB-C to USB-C Thunderbolt 5 Cable</td>
-                                                <td class="text-end">$29.00</td>
-                                                <td class="text-end">3</td>
-                                                <td class="text-end">$30.00</td>
-                                            </tr>
-                                            <tr>
-                                                <td>2025-01-10 11:55</td>
-                                                <td>100392</td>
-                                                <td>Apple Watch Series 11 Ultra</td>
-                                                <td class="text-end">$899.00</td>
-                                                <td class="text-end">6</td>
-                                                <td class="text-end">$1494.00</td>
-                                            </tr>
-                                            <tr>
-                                                <td>2025-01-09 15:42</td>
-                                                <td>100391</td>
-                                                <td>Sony A7R VI Mirrorless Camera</td>
-                                                <td class="text-end">$3899.00</td>
-                                                <td class="text-end">1</td>
-                                                <td class="text-end">$699.00</td>
-                                            </tr>
-                                            <tr>
-                                                <td>2025-01-08 08:29</td>
-                                                <td>100393</td>
-                                                <td>USB-C to Lightning Cable 2m</td>
-                                                <td class="text-end">$19.00</td>
-                                                <td class="text-end">3</td>
-                                                <td class="text-end">$30.00</td>
-                                            </tr>
+                                        <tbody id="filmsTableBody">
+                                            <!-- Films loaded dynamically -->
                                         </tbody>
                                     </table>
                                 </div>
                             </div>
-                            <div class="col-lg-3">
-                                <h2 class="title-1 m-b-25">Top countries</h2>
-                                <div class="au-card au-card--bg-blue au-card-top-countries m-b-40">
-                                    <div class="au-card-inner">
-                                        <div class="table-responsive">
-                                            <table class="table table-top-countries">
-                                                <tbody>
-                                                    <tr>
-                                                        <td>United States</td>
-                                                        <td class="text-end">$119,366.96</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>Australia</td>
-                                                        <td class="text-end">$70,261.65</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>United Kingdom</td>
-                                                        <td class="text-end">$46,399.22</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>Turkey</td>
-                                                        <td class="text-end">$35,364.90</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>Germany</td>
-                                                        <td class="text-end">$20,366.96</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>France</td>
-                                                        <td class="text-end">$10,366.96</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>Australia</td>
-                                                        <td class="text-end">$5,366.96</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>Italy</td>
-                                                        <td class="text-end">$1639.32</td>
-                                                    </tr>
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
                         </div>
-                        <div class="row">
-                            <div class="col-lg-6">
-                                <div class="au-card au-card--no-shadow au-card--no-pad m-b-40">
-                                    <div class="au-card-title" style="background-image:url('Layout_Admin/images/bg-title-01.jpg');">
-                                        <div class="bg-overlay bg-overlay--blue"></div>
-                                        <h3>
-                                            <i class="zmdi zmdi-account-calendar"></i>23 January, 2025
-                                        </h3>
-                                        <button class="au-btn-plus">
-                                            <i class="zmdi zmdi-plus"></i>
-                                        </button>
-                                    </div>
-                                    <div class="au-task js-list-load">
-                                        <div class="au-task__title">
-                                            <p>Tasks for John Doe</p>
-                                        </div>
-                                        <div class="au-task-list js-scrollbar3">
-                                            <div class="au-task__item au-task__item--danger">
-                                                <div class="au-task__item-inner">
-                                                    <h5 class="task">
-                                                        <a href="#">Meeting about plan for Admin Template 2025</a>
-                                                    </h5>
-                                                    <span class="time">10:00 AM</span>
-                                                </div>
-                                            </div>
-                                            <div class="au-task__item au-task__item--warning">
-                                                <div class="au-task__item-inner">
-                                                    <h5 class="task">
-                                                        <a href="#">Create new task for Dashboard</a>
-                                                    </h5>
-                                                    <span class="time">11:00 AM</span>
-                                                </div>
-                                            </div>
-                                            <div class="au-task__item au-task__item--primary">
-                                                <div class="au-task__item-inner">
-                                                    <h5 class="task">
-                                                        <a href="#">Meeting about plan for Admin Template 2025</a>
-                                                    </h5>
-                                                    <span class="time">02:00 PM</span>
-                                                </div>
-                                            </div>
-                                            <div class="au-task__item au-task__item--success">
-                                                <div class="au-task__item-inner">
-                                                    <h5 class="task">
-                                                        <a href="#">Create new task for Dashboard</a>
-                                                    </h5>
-                                                    <span class="time">03:30 PM</span>
-                                                </div>
-                                            </div>
-                                            <div class="au-task__item au-task__item--danger js-load-item">
-                                                <div class="au-task__item-inner">
-                                                    <h5 class="task">
-                                                        <a href="#">Meeting about plan for Admin Template 2025</a>
-                                                    </h5>
-                                                    <span class="time">10:00 AM</span>
-                                                </div>
-                                            </div>
-                                            <div class="au-task__item au-task__item--warning js-load-item">
-                                                <div class="au-task__item-inner">
-                                                    <h5 class="task">
-                                                        <a href="#">Create new task for Dashboard</a>
-                                                    </h5>
-                                                    <span class="time">11:00 AM</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="au-task__footer">
-                                            <button class="au-btn au-btn-load js-load-btn">load more</button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-lg-6">
-                                <div class="au-card au-card--no-shadow au-card--no-pad m-b-40">
-                                    <div class="au-card-title" style="background-image:url('Layout_Admin/images/bg-title-02.jpg');">
-                                        <div class="bg-overlay bg-overlay--blue"></div>
-                                        <h3>
-                                            <i class="zmdi zmdi-comment-text"></i>New Messages
-                                        </h3>
-                                        <button class="au-btn-plus">
-                                            <i class="zmdi zmdi-plus"></i>
-                                        </button>
-                                    </div>
-                                    <div class="au-inbox-wrap js-inbox-wrap">
-                                        <div class="au-message js-list-load">
-                                            <div class="au-message__noti">
-                                                <p>
-                                                    You Have
-                                                    <span>2</span>
 
-                                                    new messages
-                                                </p>
-                                            </div>
-                                            <div class="au-message-list">
-                                                <div class="au-message__item unread">
-                                                    <div class="au-message__item-inner">
-                                                        <div class="au-message__item-text">
-                                                            <div class="avatar-wrap">
-                                                                <div class="avatar">
-                                                                    <img src="Layout_Admin/images/icon/avatar-02.jpg" alt="John Smith">
-                                                                </div>
-                                                            </div>
-                                                            <div class="text">
-                                                                <h5 class="name">John Smith</h5>
-                                                                <p>Have sent a photo</p>
-                                                            </div>
-                                                        </div>
-                                                        <div class="au-message__item-time">
-                                                            <span>12 Min ago</span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div class="au-message__item unread">
-                                                    <div class="au-message__item-inner">
-                                                        <div class="au-message__item-text">
-                                                            <div class="avatar-wrap online">
-                                                                <div class="avatar">
-                                                                    <img src="Layout_Admin/images/icon/avatar-03.jpg" alt="Nicholas Martinez">
-                                                                </div>
-                                                            </div>
-                                                            <div class="text">
-                                                                <h5 class="name">Nicholas Martinez</h5>
-                                                                <p>You are now connected on message</p>
-                                                            </div>
-                                                        </div>
-                                                        <div class="au-message__item-time">
-                                                            <span>11:00 PM</span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div class="au-message__item">
-                                                    <div class="au-message__item-inner">
-                                                        <div class="au-message__item-text">
-                                                            <div class="avatar-wrap online">
-                                                                <div class="avatar">
-                                                                    <img src="Layout_Admin/images/icon/avatar-04.jpg" alt="Michelle Sims">
-                                                                </div>
-                                                            </div>
-                                                            <div class="text">
-                                                                <h5 class="name">Michelle Sims</h5>
-                                                                <p>Lorem ipsum dolor sit amet</p>
-                                                            </div>
-                                                        </div>
-                                                        <div class="au-message__item-time">
-                                                            <span>Yesterday</span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div class="au-message__item">
-                                                    <div class="au-message__item-inner">
-                                                        <div class="au-message__item-text">
-                                                            <div class="avatar-wrap">
-                                                                <div class="avatar">
-                                                                    <img src="Layout_Admin/images/icon/avatar-05.jpg" alt="Michelle Sims">
-                                                                </div>
-                                                            </div>
-                                                            <div class="text">
-                                                                <h5 class="name">Michelle Sims</h5>
-                                                                <p>Purus feugiat finibus</p>
-                                                            </div>
-                                                        </div>
-                                                        <div class="au-message__item-time">
-                                                            <span>Sunday</span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div class="au-message__item js-load-item">
-                                                    <div class="au-message__item-inner">
-                                                        <div class="au-message__item-text">
-                                                            <div class="avatar-wrap online">
-                                                                <div class="avatar">
-                                                                    <img src="Layout_Admin/images/icon/avatar-04.jpg" alt="Michelle Sims">
-                                                                </div>
-                                                            </div>
-                                                            <div class="text">
-                                                                <h5 class="name">Michelle Sims</h5>
-                                                                <p>Lorem ipsum dolor sit amet</p>
-                                                            </div>
-                                                        </div>
-                                                        <div class="au-message__item-time">
-                                                            <span>Yesterday</span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div class="au-message__item js-load-item">
-                                                    <div class="au-message__item-inner">
-                                                        <div class="au-message__item-text">
-                                                            <div class="avatar-wrap">
-                                                                <div class="avatar">
-                                                                    <img src="Layout_Admin/images/icon/avatar-05.jpg" alt="Michelle Sims">
-                                                                </div>
-                                                            </div>
-                                                            <div class="text">
-                                                                <h5 class="name">Michelle Sims</h5>
-                                                                <p>Purus feugiat finibus</p>
-                                                            </div>
-                                                        </div>
-                                                        <div class="au-message__item-time">
-                                                            <span>Sunday</span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="au-message__footer">
-                                                <button class="au-btn au-btn-load js-load-btn">load more</button>
-                                            </div>
-                                        </div>
-                                        <div class="au-chat">
-                                            <div class="au-chat__title">
-                                                <div class="au-chat-info">
-                                                    <div class="avatar-wrap online">
-                                                        <div class="avatar avatar--small">
-                                                            <img src="Layout_Admin/images/icon/avatar-02.jpg" alt="John Smith">
-                                                        </div>
-                                                    </div>
-                                                    <span class="nick">
-                                                        <a href="#">John Smith</a>
-                                                    </span>
-                                                </div>
-                                            </div>
-                                            <div class="au-chat__content">
-                                                <div class="recei-mess-wrap">
-                                                    <span class="mess-time">12 Min ago</span>
-                                                    <div class="recei-mess__inner">
-                                                        <div class="avatar avatar--tiny">
-                                                            <img src="Layout_Admin/images/icon/avatar-02.jpg" alt="John Smith">
-                                                        </div>
-                                                        <div class="recei-mess-list">
-                                                            <div class="recei-mess">Lorem ipsum dolor sit amet, consectetur adipiscing elit non iaculis</div>
-                                                            <div class="recei-mess">Donec tempor, sapien ac viverra</div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div class="send-mess-wrap">
-                                                    <span class="mess-time">30 Sec ago</span>
-                                                    <div class="send-mess__inner">
-                                                        <div class="send-mess-list">
-                                                            <div class="send-mess">Lorem ipsum dolor sit amet, consectetur adipiscing elit non iaculis</div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="au-chat-textfield">
-                                                <form class="au-form-icon">
-                                                    <input class="au-input au-input--full au-input--h65" type="text" placeholder="Type a message">
-                                                    <button class="au-input-icon">
-                                                        <i class="zmdi zmdi-camera"></i>
-                                                    </button>
-                                                </form>
-                                            </div>
-                                        </div>
-                                    </div>
+                        <!-- Recent Users Table -->
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <h2 class="title-1 m-b-25">Recent Users</h2>
+                                <div class="table-responsive table--no-card m-b-40 film-table">
+                                    <table class="table table-borderless table-striped" id="usersTable">
+                                        <thead>
+                                            <tr>
+                                                <th>ID</th>
+                                                <th>Avatar</th>
+                                                <th>Username</th>
+                                                <th>Email</th>
+                                                <th>Role</th>
+                                                <th>Joined Date</th>
+                                                <th>Status</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="usersTableBody">
+                                            <!-- Users loaded dynamically -->
+                                        </tbody>
+                                    </table>
                                 </div>
                             </div>
                         </div>
+
                         <div class="row">
                             <div class="col-md-12">
                                 <div class="copyright">
-                                    <p>Copyright © 2025 Colorlib. All rights reserved. Template by <a href="https://colorlib.com" rel="nofollow" target="_blank">Colorlib</a>.</p>
+                                    <p>Copyright © 2025 CuongPhim. All rights reserved. Admin Dashboard v2.0</p>
                                 </div>
                             </div>
                         </div>
@@ -978,27 +578,334 @@
                 </div>
             </div>
             <!-- END MAIN CONTENT-->
-            <!-- END PAGE CONTAINER-->
         </div>
+    </div>
 
+    <!-- Add Film Modal -->
+    <div class="modal fade film-modal" id="addFilmModal" tabindex="-1" aria-labelledby="addFilmModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addFilmModalLabel">Add New Film</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="filmForm" class="film-form">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="filmTitle" class="form-label">Film Title *</label>
+                                    <input type="text" class="form-control" id="filmTitle" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="filmDescription" class="form-label">Description</label>
+                                    <textarea class="form-control" id="filmDescription" rows="3"></textarea>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="filmCategory" class="form-label">Category *</label>
+                                    <select class="form-control" id="filmCategory" required>
+                                        <option value="">Select Category</option>
+                                        <option value="movie">Movie</option>
+                                        <option value="series">TV Series</option>
+                                        <option value="anime">Anime</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="filmPoster" class="form-label">Poster URL</label>
+                                    <input type="text" class="form-control" id="filmPoster">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="filmTrailer" class="form-label">Trailer URL</label>
+                                    <input type="text" class="form-control" id="filmTrailer">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="filmStatus" class="form-label">Status</label>
+                                    <select class="form-control" id="filmStatus">
+                                        <option value="active">Active</option>
+                                        <option value="inactive">Inactive</option>
+                                        <option value="upcoming">Upcoming</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="mb-3">
+                                    <label class="form-label">Genres</label>
+                                    <div id="genreTags">
+                                        <span class="genre-tag">Action</span>
+                                        <span class="genre-tag">Comedy</span>
+                                        <span class="genre-tag">Drama</span>
+                                        <span class="genre-tag">Horror</span>
+                                        <span class="genre-tag">Romance</span>
+                                    </div>
+                                    <input type="text" class="form-control mt-2" id="filmGenres" placeholder="Add genres (comma separated)">
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-film" id="saveFilmBtn">Save Film</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Film Modal -->
+    <div class="modal fade film-modal" id="editFilmModal" tabindex="-1" aria-labelledby="editFilmModalLabel" aria-hidden="true">
+        <!-- Similar structure as add modal -->
     </div>
 
     <!-- Jquery JS-->
-    <script src="Layout_Admin/js/vanilla-utils.js"></script>
+    <script src="~/Layout_Admin/js/vanilla-utils.js"></script>
     <!-- Bootstrap JS-->
-    <script src="Layout_Admin/vendor/bootstrap-5.3.8.bundle.min.js"></script>
-    <!-- Vendor JS       -->
-    <script src="Layout_Admin/vendor/perfect-scrollbar/perfect-scrollbar-1.5.6.min.js"></script>
-    <script src="Layout_Admin/vendor/chartjs/chart.umd.js-4.5.0.min.js"></script>
+    <script src="~/Layout_Admin/vendor/bootstrap-5.3.8.bundle.min.js"></script>
+    <!-- Vendor JS -->
+    <script src="~/Layout_Admin/vendor/perfect-scrollbar/perfect-scrollbar-1.5.6.min.js"></script>
+    <script src="~/Layout_Admin/vendor/chartjs/chart.umd.js-4.5.0.min.js"></script>
+
+    <!-- DataTables JS -->
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.bootstrap5.min.js"></script>
 
     <!-- Main JS-->
-    <script src="Layout_Admin/js/bootstrap5-init.js"></script>
-    <script src="Layout_Admin/js/main-vanilla.js"></script>
-    <script src="Layout_Admin/js/swiper-bundle-11.2.10.min.js"></script>
-    <script src="Layout_Admin/js/aos.js"></script>
-    <script src="Layout_Admin/js/modern-plugins.js"></script>
+    <script src="~/Layout_Admin/js/bootstrap5-init.js"></script>
+    <script src="~/Layout_Admin/js/main-vanilla.js"></script>
+    <script src="~/Layout_Admin/js/swiper-bundle-11.2.10.min.js"></script>
+    <script src="~/Layout_Admin/js/aos.js"></script>
+    <script src="~/Layout_Admin/js/modern-plugins.js"></script>
 
+    <script>
+        // Dashboard functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize DataTables
+            $('#filmsTable').DataTable({
+                "order": [[0, "desc"]],
+                "pageLength": 10,
+                "responsive": true
+            });
+
+            $('#usersTable').DataTable({
+                "order": [[0, "desc"]],
+                "pageLength": 10,
+                "responsive": true
+            });
+
+            // Load sample data
+            loadSampleData();
+
+            // Initialize charts
+            initCharts();
+
+            // Form submission
+            document.getElementById('saveFilmBtn').addEventListener('click', function() {
+                saveFilm();
+            });
+        });
+
+        function loadSampleData() {
+            // Sample films data
+            const films = [
+                {
+                    id: 1,
+                    poster: 'https://via.placeholder.com/60x80',
+                    title: 'One Piece: Film Red',
+                    category: 'Anime',
+                    views: '2.5M',
+                    rating: '8.5',
+                    status: 'active',
+                    date: '2025-01-15'
+                },
+                {
+                    id: 2,
+                    poster: 'https://via.placeholder.com/60x80',
+                    title: 'Avengers: Endgame',
+                    category: 'Movie',
+                    views: '15.2M',
+                    rating: '9.2',
+                    status: 'active',
+                    date: '2025-01-14'
+                },
+                {
+                    id: 3,
+                    poster: 'https://via.placeholder.com/60x80',
+                    title: 'Stranger Things',
+                    category: 'Series',
+                    views: '8.7M',
+                    rating: '8.9',
+                    status: 'active',
+                    date: '2025-01-13'
+                }
+            ];
+
+            const filmsTableBody = document.getElementById('filmsTableBody');
+            films.forEach(film => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${film.id}</td>
+                    <td><img src="${film.poster}" class="film-poster" alt="${film.title}"></td>
+                    <td>${film.title}</td>
+                    <td>${film.category}</td>
+                    <td>${film.views}</td>
+                    <td>${film.rating}/10</td>
+                    <td><span class="status-badge status-active">${film.status}</span></td>
+                    <td>${film.date}</td>
+                    <td class="action-buttons">
+                        <button class="btn btn-sm btn-primary" onclick="editFilm(${film.id})"><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-sm btn-info" onclick="viewFilm(${film.id})"><i class="fas fa-eye"></i></button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteFilm(${film.id})"><i class="fas fa-trash"></i></button>
+                    </td>
+                `;
+                filmsTableBody.appendChild(row);
+            });
+
+            // Sample users data
+            const users = [
+                {
+                    id: 1,
+                    avatar: 'https://via.placeholder.com/40x40',
+                    username: 'john_doe',
+                    email: 'john@example.com',
+                    role: 'User',
+                    date: '2025-01-10',
+                    status: 'active'
+                },
+                {
+                    id: 2,
+                    avatar: 'https://via.placeholder.com/40x40',
+                    username: 'jane_smith',
+                    email: 'jane@example.com',
+                    role: 'Premium',
+                    date: '2025-01-09',
+                    status: 'active'
+                }
+            ];
+
+            const usersTableBody = document.getElementById('usersTableBody');
+            users.forEach(user => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${user.id}</td>
+                    <td><img src="${user.avatar}" class="rounded-circle" width="40" height="40" alt="${user.username}"></td>
+                    <td>${user.username}</td>
+                    <td>${user.email}</td>
+                    <td>${user.role}</td>
+                    <td>${user.date}</td>
+                    <td><span class="status-badge status-active">${user.status}</span></td>
+                    <td class="action-buttons">
+                        <button class="btn btn-sm btn-warning" onclick="editUser(${user.id})"><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteUser(${user.id})"><i class="fas fa-ban"></i></button>
+                    </td>
+                `;
+                usersTableBody.appendChild(row);
+            });
+        }
+
+        function initCharts() {
+            // Film Statistics Chart
+            const filmCtx = document.getElementById('filmChart').getContext('2d');
+            new Chart(filmCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'New Films',
+                        data: [12, 19, 8, 15, 22, 18],
+                        borderColor: 'rgba(255, 255, 255, 0.8)',
+                        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            display: false
+                        },
+                        x: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+
+        // CRUD Operations
+        function saveFilm() {
+            const filmData = {
+                title: document.getElementById('filmTitle').value,
+                description: document.getElementById('filmDescription').value,
+                category: document.getElementById('filmCategory').value,
+                poster: document.getElementById('filmPoster').value,
+                trailer: document.getElementById('filmTrailer').value,
+                status: document.getElementById('filmStatus').value,
+                genres: document.getElementById('filmGenres').value
+            };
+
+            // Here you would typically make an AJAX call to save the film
+            console.log('Saving film:', filmData);
+
+            // Show success message
+            alert('Film saved successfully!');
+
+            // Close modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('addFilmModal'));
+            modal.hide();
+
+            // Reset form
+            document.getElementById('filmForm').reset();
+
+            // Reload films table (in a real app, this would be an AJAX call)
+            location.reload();
+        }
+
+        function editFilm(id) {
+            console.log('Editing film:', id);
+            // In a real app, load film data and show edit modal
+            alert(`Editing film ID: ${id}`);
+        }
+
+        function viewFilm(id) {
+            console.log('Viewing film:', id);
+            // In a real app, redirect to film detail page
+            window.open(`/Admin/Films/View/${id}`, '_blank');
+        }
+
+        function deleteFilm(id) {
+            if (confirm('Are you sure you want to delete this film?')) {
+                console.log('Deleting film:', id);
+                // In a real app, make AJAX call to delete film
+                alert(`Film ${id} deleted successfully!`);
+                location.reload();
+            }
+        }
+
+        function editUser(id) {
+            console.log('Editing user:', id);
+            // In a real app, load user data and show edit modal
+            alert(`Editing user ID: ${id}`);
+        }
+
+        function deleteUser(id) {
+            if (confirm('Are you sure you want to delete this user?')) {
+                console.log('Deleting user:', id);
+                // In a real app, make AJAX call to delete user
+                alert(`User ${id} deleted successfully!`);
+                location.reload();
+            }
+        }
+    </script>
 </body>
-
 </html>
-<!-- end document-->

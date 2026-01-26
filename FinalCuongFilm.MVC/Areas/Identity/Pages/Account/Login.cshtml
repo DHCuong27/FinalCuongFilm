@@ -31,7 +31,6 @@
     .netflix-login-container {
         position: relative;
         min-height: 100vh;
-        background: linear-gradient( rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0.85) ), url('https://assets.nflxext.com/ffe/siteui/vlv3/9db4a880-3034-4e98-bdea-5d983e86bf52/b5953637-091d-4e02-9754-2bfadc8a8f7c/GB-en-20230925-popsignuptwoweeks-perspective_alpha_website_large.jpg') center / cover no-repeat;
     }
 
     /* ===== HEADER ===== */
@@ -279,21 +278,6 @@
                     <span>OR</span>
                 </div>
 
-                <!-- Google Sign In -->
-                @if ((Model.ExternalLogins?.Count ?? 0) > 0)
-                {
-                    <form id="external-account" asp-page="./ExternalLogin" asp-route-returnUrl="@Model.ReturnUrl" method="post">
-                        @foreach (var provider in Model.ExternalLogins!)
-                        {
-                            <button type="submit" class="netflix-google-btn" name="provider" value="@provider.Name"
-                                    title="Log in using your @provider.DisplayName account">
-                                <i class="bi bi-google"></i>
-                                Sign in with @provider.DisplayName
-                            </button>
-                        }
-                    </form>
-                }
-
                 <div class="netflix-signup-now">
                     New to Netflix?
                     <a asp-page="./Register" asp-route-returnUrl="@Model.ReturnUrl" class="netflix-signup-link">
@@ -304,21 +288,7 @@
         </div>
     </div>
 
-    <!-- Footer -->
-    <div class="netflix-footer">
-        <div class="netflix-footer-content">
-            <p style="color: var(--netflix-light); font-size: 16px; margin: 0;">Questions? Call 1-844-505-2993</p>
-            <div class="netflix-footer-links">
-                <a href="#" class="netflix-footer-link">FAQ</a>
-                <a href="#" class="netflix-footer-link">Help Center</a>
-                <a href="#" class="netflix-footer-link">Terms of Use</a>
-                <a href="#" class="netflix-footer-link">Privacy</a>
-                <a href="#" class="netflix-footer-link">Cookie Preferences</a>
-                <a href="#" class="netflix-footer-link">Corporate Information</a>
-            </div>
-        </div>
-    </div>
-</div>
+
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
