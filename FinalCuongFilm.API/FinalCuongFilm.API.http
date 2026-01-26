@@ -1,0 +1,6 @@
+@FinalCuongFilm.API_HostAddress = http://localhost:5037
+
+GET {{FinalCuongFilm.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
