@@ -1,0 +1,90 @@
+﻿@model FinalCuongFilm.Common.DTOs.MovieDto
+
+@{
+    ViewData["Title"] = "Chi tiết Phim";
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <h2 class="title-1">@ViewData["Title"]</h2>
+    </div>
+</div>
+
+<div class="row m-t-30">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <strong>Thông tin phim</strong>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        @if (!string.IsNullOrEmpty(Model.PosterUrl))
+                        {
+                            <img src="@Model.PosterUrl" alt="@Model.Title" class="img-fluid" />
+                        }
+                        else
+                        {
+                            <img src="~/images/no-poster.jpg" alt="No poster" class="img-fluid" />
+                        }
+                    </div>
+                    <div class="col-md-8">
+                        <dl class="row">
+                            <dt class="col-sm-4">Tiêu đề:</dt>
+                            <dd class="col-sm-8">@Model.Title</dd>
+
+                            <dt class="col-sm-4">Slug:</dt>
+                            <dd class="col-sm-8">@Model.Slug</dd>
+
+                            <dt class="col-sm-4">Năm phát hành:</dt>
+                            <dd class="col-sm-8">@Model.ReleaseYear</dd>
+
+                            <dt class="col-sm-4">Thời lượng:</dt>
+                            <dd class="col-sm-8">@Model.DurationMinutes phút</dd>
+
+                            <dt class="col-sm-4">Loại phim:</dt>
+                            <dd class="col-sm-8">@Model.Type</dd>
+
+                            <dt class="col-sm-4">Trạng thái:</dt>
+                            <dd class="col-sm-8">
+                                <span class="badge badge-info">@Model.Status</span>
+                                @if (Model.IsActive)
+                                {
+                                    <span class="badge badge-success">Hoạt động</span>
+                                }
+                                else
+                                {
+                                    <span class="badge badge-secondary">Tạm ẩn</span>
+                                }
+                            </dd>
+
+                            <dt class="col-sm-4">Quốc gia:</dt>
+                            <dd class="col-sm-8">@Model.CountryName</dd>
+
+                            <dt class="col-sm-4">Ngôn ngữ:</dt>
+                            <dd class="col-sm-8">@Model.LanguageName</dd>
+                        </dl>
+
+                        <hr />
+
+                        <h5>Mô tả</h5>
+                        <p>@Model.Description</p>
+
+                        @if (!string.IsNullOrEmpty(Model.TrailerUrl))
+                        {
+                            <h5>Trailer</h5>
+                            <a href="@Model.TrailerUrl" target="_blank" class="btn btn-sm btn-info">Xem trailer</a>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row m-t-20">
+    <div class="col-md-12">
+        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">Chỉnh sửa</a>
+        <a asp-action="Index" class="btn btn-secondary">Quay lại danh sách</a>
+    </div>
+</div>

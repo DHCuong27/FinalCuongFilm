@@ -1,0 +1,273 @@
+﻿@model FinalCuongFilm.ApplicationCore.Entities.Genre
+
+@{
+    ViewData["Title"] = "Create Genre";
+    Layout = "~/Views/Shared/Layout_Admin.cshtml";
+}
+
+<style>
+    /* Custom styles for Create Genre page */
+    .create-genre-container {
+        padding: 30px 0;
+    }
+
+    .genre-form-card {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+        margin-bottom: 30px;
+    }
+
+    .genre-form-header {
+        background: linear-gradient(135deg, #dc3545, #ff6b6b);
+        color: white;
+        padding: 20px;
+        border-radius: 15px 15px 0 0;
+    }
+
+        .genre-form-header h2 {
+            margin: 0;
+            font-weight: 600;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+            .genre-form-header h2 i {
+                font-size: 1.2rem;
+            }
+
+    .genre-form-body {
+        padding: 30px;
+    }
+
+    .genre-form .form-label {
+        font-weight: 600;
+        color: #2d3748;
+        margin-bottom: 8px;
+        display: block;
+    }
+
+    .genre-form .form-control {
+        border: 2px solid #e9ecef;
+        border-radius: 10px;
+        padding: 12px 15px;
+        font-size: 14px;
+        transition: all 0.3s ease;
+        background: #f8f9fa;
+        width: 100%;
+    }
+
+        .genre-form .form-control:focus {
+            border-color: #dc3545;
+            box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.15);
+            background: white;
+            outline: none;
+        }
+
+    .genre-form .form-group {
+        margin-bottom: 25px;
+    }
+
+    .field-validation-error {
+        color: #e74c3c;
+        font-size: 12px;
+        margin-top: 5px;
+        display: block;
+    }
+
+    .validation-summary-errors {
+        background: #f8d7da;
+        border: 1px solid #f5c6cb;
+        color: #721c24;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+
+        .validation-summary-errors ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+
+    .btn-genre {
+        padding: 12px 30px;
+        border-radius: 10px;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-genre-primary {
+        background: linear-gradient(135deg, #dc3545, #ff6b6b);
+        color: white;
+    }
+
+        .btn-genre-primary:hover {
+            background: linear-gradient(135deg, #c82333, #e95c5c);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(220, 53, 69, 0.3);
+            color: white;
+            text-decoration: none;
+        }
+
+    .btn-genre-secondary {
+        background: #6c757d;
+        color: white;
+    }
+
+        .btn-genre-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(108, 117, 125, 0.3);
+            color: white;
+            text-decoration: none;
+        }
+
+    .form-actions {
+        display: flex;
+        gap: 15px;
+        margin-top: 30px;
+        flex-wrap: wrap;
+    }
+
+    .slug-generator-container {
+        position: relative;
+    }
+
+    .slug-generator-btn {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: #dc3545;
+        color: white;
+        border: none;
+        padding: 6px 15px;
+        border-radius: 6px;
+        font-size: 12px;
+        cursor: pointer;
+        transition: background 0.3s ease;
+    }
+
+        .slug-generator-btn:hover {
+            background: #c82333;
+        }
+
+    .help-text {
+        font-size: 12px;
+        color: #6c757d;
+        margin-top: 5px;
+        display: block;
+    }
+
+ 
+</style>
+
+<div class="create-genre-container">
+    <div class="genre-form-card">
+        <div class="genre-form-header">
+            <h2>
+                <i class="fas fa-plus-circle"></i>
+                @ViewData["Title"]
+            </h2>
+        </div>
+
+        <div class="genre-form-body">
+            <form asp-action="Create" class="genre-form">
+                <div asp-validation-summary="ModelOnly" class="validation-summary-errors"></div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label asp-for="Name" class="form-label">
+                                <i class="fas fa-tag me-1"></i>Genre Name
+                            </label>
+                            <input asp-for="Name" class="form-control"
+                                   placeholder="Enter genre name (e.g., Action, Romance, Horror)" />
+                            <span asp-validation-for="Name" class="field-validation-error"></span>
+                            <span class="help-text">This will be displayed on the website</span>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="form-group slug-generator-container">
+                            <label asp-for="Slug" class="form-label">
+                                <i class="fas fa-link me-1"></i>URL Slug
+                            </label>
+                            <input asp-for="Slug" class="form-control"
+                                   placeholder="auto-generated-slug" />
+                            <button type="button" class="slug-generator-btn" onclick="generateSlug()">
+                                <i class="fas fa-sync-alt"></i> Generate
+                            </button>
+                            <span asp-validation-for="Slug" class="field-validation-error"></span>
+                            <span class="help-text">Used in URLs (lowercase, hyphens, no spaces)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Description" class="form-label">
+                        <i class="fas fa-align-left me-1"></i>Description
+                    </label>
+                    <input asp-for="Description" class="form-control"
+                           placeholder="Enter a brief description of this genre..." />
+                    <span asp-validation-for="Description" class="field-validation-error"></span>
+                    <span class="help-text">Describe what this genre represents (optional)</span>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn-genre btn-genre-primary">
+                        <i class="fas fa-save"></i>Create Genre
+                    </button>
+                    <a asp-action="Index" class="btn-genre btn-genre-secondary">
+                        <i class="fas fa-arrow-left"></i>Back to List
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        // Generate slug from name
+        function generateSlug() {
+            const nameInput = document.querySelector('input[name="Name"]');
+            const slugInput = document.querySelector('input[name="Slug"]');
+
+            if (nameInput && slugInput) {
+                const name = nameInput.value;
+                const slug = name.toLowerCase()
+                    .replace(/[^\w\s]/gi, '')
+                    .replace(/\s+/g, '-')
+                    .replace(/--+/g, '-')
+                    .replace(/^-+|-+$/g, '');
+                slugInput.value = slug;
+            }
+        }
+
+        // Auto-generate slug when name changes
+        document.addEventListener('DOMContentLoaded', function() {
+            const nameInput = document.querySelector('input[name="Name"]');
+            if (nameInput) {
+                nameInput.addEventListener('blur', function() {
+                    const slugInput = document.querySelector('input[name="Slug"]');
+                    if (slugInput && !slugInput.value) {
+                        generateSlug();
+                    }
+                });
+            }
+        });
+    </script>
+}

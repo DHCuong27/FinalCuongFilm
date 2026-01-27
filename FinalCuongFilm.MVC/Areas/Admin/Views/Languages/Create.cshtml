@@ -1,0 +1,47 @@
+﻿@model FinalCuongFilm.Common.DTOs.LanguageCreateDto
+
+@{
+    ViewData["Title"] = "Thêm Ngôn ngữ Mới";
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <h2 class="title-1">@ViewData["Title"]</h2>
+    </div>
+</div>
+
+<div class="row m-t-30">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <strong>Thông tin ngôn ngữ</strong>
+            </div>
+            <div class="card-body card-block">
+                <form asp-action="Create" method="post">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                    <div class="form-group">
+                        <label asp-for="Name" class="form-control-label">Tên ngôn ngữ <span class="text-danger">*</span></label>
+                        <input asp-for="Name" class="form-control" placeholder="Ví dụ: Tiếng Việt, English, 日本語..." />
+                        <span asp-validation-for="Name" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-actions form-group">
+                        <button type="submit" class="btn btn-primary btn-sm">
+                            <i class="fa fa-save"></i> Lưu
+                        </button>
+                        <a asp-action="Index" class="btn btn-secondary btn-sm">
+                            <i class="fa fa-times"></i> Hủy
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

@@ -1,0 +1,50 @@
+﻿@model IEnumerable<FinalCuongFilm.Common.DTOs.ActorDto>
+
+@{
+    ViewData["Title"] = "Quản lý Diễn viên";
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="overview-wrap">
+            <h2 class="title-1">@ViewData["Title"]</h2>
+            <a asp-action="Create" class="au-btn au-btn-icon au-btn--blue">
+                <i class="zmdi zmdi-plus"></i>Thêm mới
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row m-t-30">
+    <div class="col-md-12">
+        <div class="table-responsive table--no-card m-b-40">
+            <table class="table table-borderless table-striped table-earning">
+                <thead>
+                    <tr>
+                        <th>Tên</th>
+                        <th>Slug</th>
+                        <th>Giới tính</th>
+                        <th>Ngày sinh</th>
+                        <th>Hành động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>@item.Name</td>
+                            <td>@item.Slug</td>
+                            <td>@item.Gender</td>
+                            <td>@item.DateOfBirth?.ToString("dd/MM/yyyy")</td>
+                            <td>
+                                <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-primary">Sửa</a>
+                                <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info">Chi tiết</a>
+                                <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger">Xóa</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

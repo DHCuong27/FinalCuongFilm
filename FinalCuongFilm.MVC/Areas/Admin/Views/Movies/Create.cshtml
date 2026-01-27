@@ -1,0 +1,673 @@
+﻿@model FinalCuongFilm.Common.DTOs.MovieCreateDto
+@using FinalCuongFilm.ApplicationCore
+
+@{
+    ViewData["Title"] = "Thêm Phim Mới";
+}
+
+<style>
+    :root {
+        --primary-red: #dc3545;
+        --dark-red: #c82333;
+        --dark-bg: #121212;
+        --light-bg: #1e1e1e;
+        --card-bg: #1a1a1a;
+        --input-bg: #2d2d2d;
+        --input-focus: #3a3a3a;
+        --text-primary: #ffffff;
+        --text-secondary: #b0b0b0;
+        --border-color: #404040;
+        --success-color: #28a745;
+        --warning-color: #ffc107;
+        --shadow-lg: 0 10px 40px rgba(0, 0, 0, 0.5);
+        --shadow-md: 0 6px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    body {
+        background: linear-gradient(135deg, var(--dark-bg) 0%, #1a1a1a 100%);
+        color: var(--text-primary);
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        min-height: 100vh;
+    }
+
+    .movie-create-container {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 30px 20px;
+    }
+
+    .page-header {
+        margin-bottom: 40px;
+        position: relative;
+    }
+
+    .page-title {
+        font-size: 36px;
+        font-weight: 800;
+        color: var(--text-primary);
+        margin-bottom: 10px;
+        letter-spacing: -0.5px;
+        background: linear-gradient(135deg, var(--primary-red), var(--dark-red));
+    
+        -webkit-text-fill-color: transparent;
+      
+    }
+
+    .page-subtitle {
+        font-size: 16px;
+        color: var(--text-secondary);
+        font-weight: 400;
+    }
+
+    .movie-form-card {
+        background: var(--card-bg);
+        border-radius: 16px;
+        padding: 40px;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid var(--border-color);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .movie-form-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary-red), var(--dark-red));
+    }
+
+    .section-title {
+        font-size: 20px;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin: 30px 0 20px 0;
+        padding-bottom: 10px;
+        border-bottom: 2px solid var(--border-color);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .section-title i {
+        color: var(--primary-red);
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 24px;
+        margin-bottom: 30px;
+    }
+
+    .form-grid-full {
+        grid-column: 1 / -1;
+    }
+
+    .form-group {
+        margin-bottom: 0;
+    }
+
+    .form-label {
+        display: block;
+        margin-bottom: 8px;
+        color: var(--text-primary);
+        font-weight: 500;
+        font-size: 14px;
+        letter-spacing: 0.3px;
+    }
+
+    .form-label .required {
+        color: var(--primary-red);
+        margin-left: 2px;
+    }
+
+    .form-control {
+        width: 100%;
+        height: 48px;
+        background: var(--input-bg);
+        border: 2px solid var(--border-color);
+        border-radius: 10px;
+        color: var(--text-primary);
+        font-size: 15px;
+        padding: 12px 16px;
+        transition: all 0.25s ease;
+        font-family: inherit;
+    }
+
+    .form-control:focus {
+        background: var(--input-focus);
+        border-color: var(--primary-red);
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.15);
+    }
+
+    textarea.form-control {
+        height: 120px;
+        resize: vertical;
+        min-height: 100px;
+    }
+
+    select.form-control[multiple] {
+        height: 140px;
+        padding: 8px;
+    }
+
+    .form-control::placeholder {
+        color: var(--text-secondary);
+        opacity: 0.6;
+    }
+
+    .form-text {
+        display: block;
+        margin-top: 6px;
+        font-size: 12px;
+        color: var(--text-secondary);
+    }
+
+    .text-danger {
+        display: block;
+        margin-top: 6px;
+        font-size: 12px;
+        color: var(--primary-red);
+        font-weight: 400;
+    }
+
+    /* Custom Select Styling */
+    .custom-select-wrapper {
+        position: relative;
+    }
+
+    .custom-select-wrapper::after {
+        content: '▼';
+        position: absolute;
+        right: 16px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-secondary);
+        pointer-events: none;
+        font-size: 12px;
+    }
+
+    /* Multi-select Tags */
+    .select-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 10px;
+        min-height: 36px;
+    }
+
+    .select-tag {
+        background: rgba(220, 53, 69, 0.15);
+        color: var(--primary-red);
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .select-tag-remove {
+        cursor: pointer;
+        font-size: 14px;
+        opacity: 0.7;
+        transition: opacity 0.2s;
+    }
+
+    .select-tag-remove:hover {
+        opacity: 1;
+    }
+
+    /* Checkbox Styling */
+    .checkbox-group {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 20px;
+    }
+
+    .custom-checkbox {
+        position: relative;
+        width: 20px;
+        height: 20px;
+        cursor: pointer;
+    }
+
+    .custom-checkbox input {
+        position: absolute;
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+
+    .checkbox-mark {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 20px;
+        height: 20px;
+        background: var(--input-bg);
+        border: 2px solid var(--border-color);
+        border-radius: 4px;
+        transition: all 0.2s ease;
+    }
+
+    .custom-checkbox input:checked ~ .checkbox-mark {
+        background: var(--primary-red);
+        border-color: var(--primary-red);
+    }
+
+    .custom-checkbox input:checked ~ .checkbox-mark::after {
+        content: '✓';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: white;
+        font-size: 12px;
+        font-weight: bold;
+    }
+
+    .checkbox-label {
+        color: var(--text-primary);
+        font-weight: 500;
+        font-size: 14px;
+        cursor: pointer;
+    }
+
+    /* Form Actions */
+    .form-actions {
+        display: flex;
+        gap: 16px;
+        margin-top: 40px;
+        padding-top: 30px;
+        border-top: 1px solid var(--border-color);
+    }
+
+    .btn {
+        padding: 14px 32px;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 15px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border: none;
+        font-family: inherit;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        min-width: 120px;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, var(--primary-red), var(--dark-red));
+        color: var(--text-primary);
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(220, 53, 69, 0.3);
+    }
+
+    .btn-secondary {
+        background: transparent;
+        color: var(--text-secondary);
+        border: 2px solid var(--border-color);
+    }
+
+    .btn-secondary:hover {
+        background: rgba(255, 255, 255, 0.05);
+        color: var(--text-primary);
+        border-color: var(--text-primary);
+    }
+
+    .btn i {
+        font-size: 16px;
+    }
+
+    /* Validation Summary */
+    .validation-summary {
+        background: rgba(220, 53, 69, 0.1);
+        border: 1px solid rgba(220, 53, 69, 0.3);
+        border-radius: 10px;
+        padding: 16px;
+        margin-bottom: 30px;
+    }
+
+    .validation-summary ul {
+        margin: 0;
+        padding-left: 20px;
+    }
+
+    .validation-summary li {
+        color: var(--primary-red);
+        font-size: 13px;
+        margin: 4px 0;
+    }
+
+    /* Responsive Design */
+    @@media (max-width: 768px) {
+        .movie-create-container {
+            padding: 20px 16px;
+        }
+        
+        .movie-form-card {
+            padding: 30px 24px;
+        }
+        
+        .page-title {
+            font-size: 28px;
+        }
+        
+        .form-grid {
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+        
+        .form-actions {
+            flex-direction: column;
+        }
+        
+        .btn {
+            width: 100%;
+        }
+    }
+
+    @@media (max-width: 480px) {
+        .movie-form-card {
+            padding: 24px 20px;
+            border-radius: 12px;
+        }
+        
+        .page-title {
+            font-size: 24px;
+        }
+        
+        .section-title {
+            font-size: 18px;
+        }
+        
+        .form-control {
+            height: 44px;
+            font-size: 14px;
+        }
+    }
+
+    /* Animation */
+    @@keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .movie-form-card {
+        animation: fadeInUp 0.4s ease-out;
+    }
+</style>
+
+<div class="movie-create-container">
+    <div class="page-header">
+        <h1 class="page-title">@ViewData["Title"]</h1>
+        <p class="page-subtitle">Nhập thông tin chi tiết về bộ phim mới</p>
+    </div>
+
+    <div class="movie-form-card">
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div class="validation-summary" role="alert">
+                <ul>
+                    @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                    {
+                        <li>@error.ErrorMessage</li>
+                    }
+                </ul>
+            </div>
+        }
+
+        <form asp-action="Create" method="post">
+            <div class="section-title">
+                <i class="bi bi-film"></i>
+                Thông tin cơ bản
+            </div>
+
+            <div class="form-grid">
+                <div class="form-grid-full">
+                    <div class="form-group">
+                        <label class="form-label">
+                            Tiêu đề <span class="required">*</span>
+                        </label>
+                        <input asp-for="Title" class="form-control" placeholder="Nhập tên phim..." />
+                        <span asp-validation-for="Title" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="form-grid-full">
+                    <div class="form-group">
+                        <label class="form-label">Mô tả</label>
+                        <textarea asp-for="Description" class="form-control" placeholder="Nhập mô tả phim..."></textarea>
+                        <span asp-validation-for="Description" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Năm phát hành</label>
+                    <input asp-for="ReleaseYear" class="form-control" type="number" min="1900" max="2100" placeholder="2024" />
+                    <span asp-validation-for="ReleaseYear" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Thời lượng (phút)</label>
+                    <input asp-for="DurationMinutes" class="form-control" type="number" min="1" placeholder="120" />
+                    <span asp-validation-for="DurationMinutes" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="section-title">
+                <i class="bi bi-link"></i>
+                Liên kết phương tiện
+            </div>
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label">URL Poster</label>
+                    <input asp-for="PosterUrl" class="form-control" placeholder="https://example.com/poster.jpg" />
+                    <span asp-validation-for="PosterUrl" class="text-danger"></span>
+                    <small class="form-text">Đường dẫn hình ảnh poster phim</small>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">URL Trailer</label>
+                    <input asp-for="TrailerUrl" class="form-control" placeholder="https://youtube.com/..." />
+                    <span asp-validation-for="TrailerUrl" class="text-danger"></span>
+                    <small class="form-text">Đường dẫn video trailer</small>
+                </div>
+            </div>
+
+            <div class="section-title">
+                <i class="bi bi-gear"></i>
+                Phân loại
+            </div>
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label">
+                        Loại phim <span class="required">*</span>
+                    </label>
+                    @* <select asp-for="Type" class="form-control" asp-items="Html.GetEnumSelectList<FinalCuongFilm.ApplicationCore.Enums.MovieType>()">
+                        <option value="">-- Chọn loại phim --</option>
+                    </select> *@
+                    <span asp-validation-for="Type" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">
+                        Trạng thái <span class="required">*</span>
+                    </label>
+                    @* <select asp-for="Status" class="form-control" asp-items="Html.GetEnumSelectList<FinalCuongFilm.ApplicationCore.Enums.MovieStatus>()">
+                        <option value="">-- Chọn trạng thái --</option>
+                    </select> *@
+                    <span asp-validation-for="Status" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">
+                        Quốc gia <span class="required">*</span>
+                    </label>
+                    <div class="custom-select-wrapper">
+                        <select asp-for="CountryId" class="form-control" asp-items="ViewBag.Countries">
+                            <option value="">-- Chọn quốc gia --</option>
+                        </select>
+                    </div>
+                    <span asp-validation-for="CountryId" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">
+                        Ngôn ngữ <span class="required">*</span>
+                    </label>
+                    <div class="custom-select-wrapper">
+                        <select asp-for="LanguageId" class="form-control" asp-items="ViewBag.Languages">
+                            <option value="">-- Chọn ngôn ngữ --</option>
+                        </select>
+                    </div>
+                    <span asp-validation-for="LanguageId" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="section-title">
+                <i class="bi bi-people"></i>
+                Thành phần phim
+            </div>
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label">Diễn viên</label>
+                    <select asp-for="ActorIds" class="form-control" asp-items="ViewBag.Actors" multiple>
+                    </select>
+                    <small class="form-text">Nhấn Ctrl/Cmd + Click để chọn nhiều</small>
+                    <div class="select-tags" id="actorTags"></div>
+                    <span asp-validation-for="ActorIds" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Thể loại</label>
+                    <select asp-for="GenreIds" class="form-control" asp-items="ViewBag.Genres" multiple>
+                    </select>
+                    <small class="form-text">Nhấn Ctrl/Cmd + Click để chọn nhiều</small>
+                    <div class="select-tags" id="genreTags"></div>
+                    <span asp-validation-for="GenreIds" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="checkbox-group">
+                <label class="custom-checkbox">
+                    <input asp-for="IsActive" type="checkbox" checked />
+                    <span class="checkbox-mark"></span>
+                </label>
+                <label class="checkbox-label">Kích hoạt ngay</label>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-check-lg"></i>
+                    Lưu phim
+                </button>
+                <a asp-action="Index" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left"></i>
+                    Quay lại
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Update multi-select tags display
+            function updateSelectTags(selectId, tagContainerId) {
+                const select = document.getElementById(selectId);
+                const tagContainer = document.getElementById(tagContainerId);
+                
+                if (!select || !tagContainer) return;
+                
+                function updateTags() {
+                    tagContainer.innerHTML = '';
+                    const selectedOptions = Array.from(select.selectedOptions);
+                    
+                    selectedOptions.forEach(option => {
+                        const tag = document.createElement('div');
+                        tag.className = 'select-tag';
+                        tag.innerHTML = `
+                            ${option.text}
+                            <span class="select-tag-remove" data-value="${option.value}">×</span>
+                        `;
+                        tagContainer.appendChild(tag);
+                    });
+                }
+                
+                // Initial update
+                updateTags();
+                
+                // Update on change
+                select.addEventListener('change', updateTags);
+                
+                // Handle tag removal
+                tagContainer.addEventListener('click', function(e) {
+                    if (e.target.classList.contains('select-tag-remove')) {
+                        const value = e.target.getAttribute('data-value');
+                        const option = select.querySelector(`option[value="${value}"]`);
+                        if (option) {
+                            option.selected = false;
+                            updateTags();
+                        }
+                    }
+                });
+            }
+            
+            // Initialize tag displays
+            updateSelectTags('ActorIds', 'actorTags');
+            updateSelectTags('GenreIds', 'genreTags');
+            
+            // Add custom styles to selects
+            const selects = document.querySelectorAll('select');
+            selects.forEach(select => {
+                // Add hover effect
+                select.addEventListener('mouseenter', function() {
+                    this.style.borderColor = 'var(--text-secondary)';
+                });
+                
+                select.addEventListener('mouseleave', function() {
+                    if (!this.matches(':focus')) {
+                        this.style.borderColor = 'var(--border-color)';
+                    }
+                });
+            });
+            
+            // Form submission feedback
+            const form = document.querySelector('form');
+            form.addEventListener('submit', function(e) {
+                const submitBtn = this.querySelector('button[type="submit"]');
+                if (submitBtn) {
+                    submitBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Đang xử lý...';
+                    submitBtn.disabled = true;
+                }
+            });
+        });
+    </script>
+}

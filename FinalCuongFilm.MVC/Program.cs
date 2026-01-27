@@ -3,6 +3,8 @@ using FinalCuongFilm.DataLayer;
 using FinalCuongFilm.MVC.Data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using FinalCuongFilm.Service.Interfaces;      
+using FinalCuongFilm.Service.Services;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -40,6 +42,14 @@ builder.Services.ConfigureApplicationCookie(options =>
 	options.AccessDeniedPath = "/Identity/Account/AccessDenied";
 });
 
+//  Services
+builder.Services.AddScoped<IMovieService, MovieService>();
+builder.Services.AddScoped<IActorService, ActorService>();
+builder.Services.AddScoped<IGenreService, GenreService>();
+builder.Services.AddScoped<ICountryService, CountryService>();
+builder.Services.AddScoped<ILanguageService, LanguageService>();
+//builder.Services.AddScoped<IEpisodeService, EpisodeService>();
+
 // MVC 
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
@@ -73,14 +83,9 @@ app.UseAuthorization();
 
 app.MapRazorPages();
 
-//app.MapControllerRoute(
-//	name: "areas",
-//	pattern: "{area:exists}/{controller=Admin}/{action=Index}/{id?}");
-
 app.MapControllerRoute(
-	name: "default",
-	pattern: "{controller=Admin}/{action=Index}/{id?}");
-
+	name: "areas",
+	pattern: "{area:exists}/{controller=Admin}/{action=Index}/{id?}");
 
 app.MapControllerRoute(
 	name: "default",

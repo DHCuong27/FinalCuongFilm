@@ -1,5 +1,6 @@
 ﻿@{
     ViewData["Title"] = "Tài khoản";
+    Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
 <link href="~/layout_user/css/layout.css" rel="stylesheet" />
@@ -38,7 +39,7 @@
                         </a>
                     </li>
                     <li class="sidebar-nav__item">
-                        <a href="@Url.Action("profile", "users")" class="sidebar-nav__link">
+                        <a href="@Url.Action("Profile", "User")" class="sidebar-nav__link">
                             <span class="sidebar-nav__icon">👤</span>
                             <span>Tài khoản</span>
                         </a>

@@ -1,0 +1,50 @@
+﻿@model FinalCuongFilm.Common.DTOs.MovieDto
+
+@{
+    ViewData["Title"] = "Xóa Phim";
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <h2 class="title-1 text-danger">@ViewData["Title"]</h2>
+    </div>
+</div>
+
+<div class="row m-t-30">
+    <div class="col-md-8">
+        <div class="alert alert-danger">
+            <h4>Bạn có chắc chắn muốn xóa phim này?</h4>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <strong>Thông tin phim sẽ bị xóa</strong>
+            </div>
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-3">Tiêu đề:</dt>
+                    <dd class="col-sm-9">@Model.Title</dd>
+
+                    <dt class="col-sm-3">Năm phát hành:</dt>
+                    <dd class="col-sm-9">@Model.ReleaseYear</dd>
+
+                    <dt class="col-sm-3">Quốc gia:</dt>
+                    <dd class="col-sm-9">@Model.CountryName</dd>
+
+                    <dt class="col-sm-3">Mô tả:</dt>
+                    <dd class="col-sm-9">@Model.Description</dd>
+                </dl>
+
+                <form asp-action="Delete" method="post">
+                    <input type="hidden" asp-for="Id" />
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fa fa-trash"></i> Xác nhận xóa
+                    </button>
+                    <a asp-action="Index" class="btn btn-secondary">
+                        <i class="fa fa-times"></i> Hủy
+                    </a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

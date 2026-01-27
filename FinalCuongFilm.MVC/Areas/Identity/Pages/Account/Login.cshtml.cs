@@ -123,14 +123,23 @@ namespace FinalCuongFilm.MVC.Areas.Identity.Pages.Account
 					Input.RememberMe,
 					lockoutOnFailure: false);
 
-				if (result.Succeeded)
-				{
-					_logger.LogInformation("User logged in.");
-
-					var user = await _userManager.FindByEmailAsync(Input.Email);
-					if (user != null && await _userManager.IsInRoleAsync(user, "Admin"))
+					if (result.Succeeded)
 					{
-						return LocalRedirect(Url.Content("~/Admin"));
+					var user = await _userManager.FindByEmailAsync(Input.Email);
+					if (user != null)
+					{
+						var roles = await _userManager.GetRolesAsync(user);
+
+						if (roles.Contains("Admin"))
+						{
+							// Nếu là Admin, redirect về Admin Dashboard
+							return RedirectToAction("Index",  new { area = "Admin" });
+						}
+						else
+						{
+							// Nếu là User thường, redirect về trang chủ
+							return LocalRedirect(returnUrl);
+						}
 					}
 
 					return LocalRedirect(returnUrl);

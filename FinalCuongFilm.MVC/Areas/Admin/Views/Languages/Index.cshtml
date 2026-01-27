@@ -1,0 +1,63 @@
+﻿@model IEnumerable<FinalCuongFilm.Common.DTOs.LanguageDto>
+
+@{
+    ViewData["Title"] = "Quản lý Ngôn ngữ";
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="overview-wrap">
+            <h2 class="title-1">@ViewData["Title"]</h2>
+            <a asp-action="Create" class="au-btn au-btn-icon au-btn--blue">
+                <i class="zmdi zmdi-plus"></i>Thêm mới
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row m-t-30">
+    <div class="col-md-12">
+        @if (Model != null && Model.Any())
+        {
+            <div class="table-responsive table--no-card m-b-40">
+                <table class="table table-borderless table-striped table-earning">
+                    <thead>
+                        <tr>
+                            <th>Tên</th>
+                            <th>Slug</th>
+                            <th>Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td><strong>@item.Name</strong></td>
+                                <td><code>@item.Slug</code></td>
+                                <td>
+                                    <div class="table-data-feature">
+                                        <a asp-action="Details" asp-route-id="@item.Id" class="item" data-toggle="tooltip" title="Chi tiết">
+                                            <i class="zmdi zmdi-eye"></i>
+                                        </a>
+                                        <a asp-action="Edit" asp-route-id="@item.Id" class="item" data-toggle="tooltip" title="Sửa">
+                                            <i class="zmdi zmdi-edit"></i>
+                                        </a>
+                                        <a asp-action="Delete" asp-route-id="@item.Id" class="item" data-toggle="tooltip" title="Xóa">
+                                            <i class="zmdi zmdi-delete"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-info">
+                <strong>Thông báo:</strong> Chưa có ngôn ngữ nào. <a asp-action="Create">Thêm ngôn ngữ mới</a>
+            </div>
+        }
+    </div>
+</div>

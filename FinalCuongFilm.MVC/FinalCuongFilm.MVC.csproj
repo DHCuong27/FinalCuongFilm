@@ -21,9 +21,12 @@
   <ItemGroup>
     <ProjectReference Include="..\FinalCuongFilm.ApplicationCore\FinalCuongFilm.ApplicationCore.csproj" />
     <ProjectReference Include="..\FinalCuongFilm.Datalayer\FinalCuongFilm.Datalayer.csproj" />
+    <ProjectReference Include="..\FinalCuongFilm.Service\FinalCuongFilm.Service.csproj" />
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Areas\Admin\Data\" />
+    <Folder Include="Areas\Admin\Models\" />
     <Folder Include="Areas\Identity\Data\" />
   </ItemGroup>
 

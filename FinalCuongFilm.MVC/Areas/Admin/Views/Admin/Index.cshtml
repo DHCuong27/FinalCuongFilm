@@ -1,0 +1,85 @@
+﻿@{
+    ViewData["Title"] = "Dashboard";
+    Layout = "~/Areas/Admin/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <h3 class="title-5 m-b-35">Dashboard Admin</h3>
+    </div>
+</div>
+
+<div class="row m-t-25">
+    <div class="col-sm-6 col-lg-3">
+        <div class="overview-item overview-item--c1">
+            <div class="overview__inner">
+                <div class="overview-box clearfix">
+                    <div class="icon">
+                        <i class="fas fa-film"></i>
+                    </div>
+                    <div class="text">
+                        <h2>@ViewBag.TotalMovies</h2>
+                        <span>Total Movies</span>
+                    </div>
+                </div>
+                <div class="overview-chart">
+                    <a asp-area="Admin" asp-controller="Movies" asp-action="Index" class="btn btn-sm btn-primary">Manage</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="overview-item overview-item--c2">
+            <div class="overview__inner">
+                <div class="overview-box clearfix">
+                    <div class="icon">
+                        <i class="fas fa-user-friends"></i>
+                    </div>
+                    <div class="text">
+                        <h2>@ViewBag.TotalActors</h2>
+                        <span>Actors</span>
+                    </div>
+                </div>
+                <div class="overview-chart">
+                    <a asp-area="Admin" asp-controller="Actors" asp-action="Index" class="btn btn-sm btn-success">Manage</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="overview-item overview-item--c3">
+            <div class="overview__inner">
+                <div class="overview-box clearfix">
+                    <div class="icon">
+                        <i class="fas fa-tags"></i>
+                    </div>
+                    <div class="text">
+                        <h2>@ViewBag.TotalGenres</h2>
+                        <span>Genres</span>
+                    </div>
+                </div>
+                <div class="overview-chart">
+                    <a asp-area="Admin" asp-controller="Genres" asp-action="Index" class="btn btn-sm btn-warning">Manage</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="overview-item overview-item--c4">
+            <div class="overview__inner">
+                <div class="overview-box clearfix">
+                    <div class="icon">
+                        <i class="fas fa-globe"></i>
+                    </div>
+                    <div class="text">
+                        <h2>@ViewBag.TotalCountries</h2>
+                        <span>Countries</span>
+                    </div>
+                </div>
+                <div class="overview-chart">
+                    <a asp-area="Admin" asp-controller="Countries" asp-action="Index" class="btn btn-sm btn-info">Manage</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

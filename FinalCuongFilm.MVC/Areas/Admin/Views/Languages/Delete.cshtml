@@ -1,0 +1,44 @@
+﻿@model FinalCuongFilm.Common.DTOs.LanguageDto
+
+@{
+    ViewData["Title"] = "Xóa Ngôn ngữ";
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <h2 class="title-1 text-danger">@ViewData["Title"]</h2>
+    </div>
+</div>
+
+<div class="row m-t-30">
+    <div class="col-md-6">
+        <div class="alert alert-danger">
+            <h4>Bạn có chắc chắn muốn xóa ngôn ngữ này?</h4>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <strong>Thông tin ngôn ngữ sẽ bị xóa</strong>
+            </div>
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-4">Tên:</dt>
+                    <dd class="col-sm-8">@Model.Name</dd>
+
+                    <dt class="col-sm-4">Slug:</dt>
+                    <dd class="col-sm-8">@Model.Slug</dd>
+                </dl>
+
+                <form asp-action="Delete" method="post">
+                    <input type="hidden" asp-for="Id" />
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fa fa-trash"></i> Xác nhận xóa
+                    </button>
+                    <a asp-action="Index" class="btn btn-secondary">
+                        <i class="fa fa-times"></i> Hủy
+                    </a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
