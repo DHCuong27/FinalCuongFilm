@@ -3,81 +3,238 @@
     Layout = "~/Areas/Admin/Views/Shared/_LayoutAdmin.cshtml";
 }
 
+<style>
+    /* CSS đơn giản cho Dashboard */
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #f8f9fa;
+        color: #333;
+        line-height: 1.6;
+    }
+
+    .page-title {
+        font-size: 1.8rem;
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid #eaeaea;
+    }
+
+    .dashboard-card {
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        border: 1px solid #e0e0e0;
+        margin-bottom: 1.5rem;
+        overflow: hidden;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+        .dashboard-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.12);
+        }
+
+    .card-content {
+        padding: 1.5rem;
+    }
+
+    .card-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+
+    .card-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 1rem;
+        font-size: 1.5rem;
+    }
+
+        .card-icon.movie {
+            background-color: rgba(0, 123, 255, 0.1);
+            color: #007bff;
+        }
+
+        .card-icon.actor {
+            background-color: rgba(40, 167, 69, 0.1);
+            color: #28a745;
+        }
+
+        .card-icon.genre {
+            background-color: rgba(255, 193, 7, 0.1);
+            color: #ffc107;
+        }
+
+        .card-icon.country {
+            background-color: rgba(23, 162, 184, 0.1);
+            color: #17a2b8;
+        }
+
+    .card-text h2 {
+        font-size: 2rem;
+        font-weight: 600;
+        margin: 0;
+        color: #2c3e50;
+    }
+
+    .card-text span {
+        color: #6c757d;
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+
+    .card-action {
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid #eaeaea;
+    }
+
+    .btn-manage {
+        display: inline-block;
+        padding: 0.5rem 1.25rem;
+        background-color: white;
+        color: #495057;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        text-decoration: none;
+        font-weight: 500;
+        font-size: 0.9rem;
+        transition: all 0.2s ease;
+    }
+
+        .btn-manage:hover {
+            background-color: #f8f9fa;
+            border-color: #adb5bd;
+            text-decoration: none;
+            color: #495057;
+        }
+
+    .row {
+        display: flex;
+        flex-wrap: wrap;
+        margin-right: -0.75rem;
+        margin-left: -0.75rem;
+    }
+
+    .col-sm-6, .col-lg-3 {
+        padding-right: 0.75rem;
+        padding-left: 0.75rem;
+        position: relative;
+        width: 100%;
+    }
+
+    .col-sm-6 {
+        flex: 0 0 50%;
+        max-width: 50%;
+    }
+
+    .col-lg-3 {
+        flex: 0 0 25%;
+        max-width: 25%;
+    }
+
+    .m-b-35 {
+        margin-bottom: 2.5rem;
+    }
+
+    .m-t-25 {
+        margin-top: 1.5rem;
+    }
+</style>
+
 <div class="row">
     <div class="col-md-12">
-        <h3 class="title-5 m-b-35">Dashboard Admin</h3>
+        <h1 class="page-title">Dashboard Admin</h1>
     </div>
 </div>
 
 <div class="row m-t-25">
     <div class="col-sm-6 col-lg-3">
-        <div class="overview-item overview-item--c1">
-            <div class="overview__inner">
-                <div class="overview-box clearfix">
-                    <div class="icon">
+        <div class="dashboard-card">
+            <div class="card-content">
+                <div class="card-header">
+                    <div class="card-icon movie">
                         <i class="fas fa-film"></i>
                     </div>
-                    <div class="text">
+                    <div class="card-text">
                         <h2>@ViewBag.TotalMovies</h2>
                         <span>Total Movies</span>
                     </div>
                 </div>
-                <div class="overview-chart">
-                    <a asp-area="Admin" asp-controller="Movies" asp-action="Index" class="btn btn-sm btn-primary">Manage</a>
+                <div class="card-action">
+                    <a asp-area="Admin" asp-controller="Movies" asp-action="Index" class="btn-manage">
+                        Manage
+                    </a>
                 </div>
             </div>
         </div>
     </div>
+
     <div class="col-sm-6 col-lg-3">
-        <div class="overview-item overview-item--c2">
-            <div class="overview__inner">
-                <div class="overview-box clearfix">
-                    <div class="icon">
+        <div class="dashboard-card">
+            <div class="card-content">
+                <div class="card-header">
+                    <div class="card-icon actor">
                         <i class="fas fa-user-friends"></i>
                     </div>
-                    <div class="text">
+                    <div class="card-text">
                         <h2>@ViewBag.TotalActors</h2>
                         <span>Actors</span>
                     </div>
                 </div>
-                <div class="overview-chart">
-                    <a asp-area="Admin" asp-controller="Actors" asp-action="Index" class="btn btn-sm btn-success">Manage</a>
+                <div class="card-action">
+                    <a asp-area="Admin" asp-controller="Actors" asp-action="Index" class="btn-manage">
+                        Manage
+                    </a>
                 </div>
             </div>
         </div>
     </div>
+
     <div class="col-sm-6 col-lg-3">
-        <div class="overview-item overview-item--c3">
-            <div class="overview__inner">
-                <div class="overview-box clearfix">
-                    <div class="icon">
+        <div class="dashboard-card">
+            <div class="card-content">
+                <div class="card-header">
+                    <div class="card-icon genre">
                         <i class="fas fa-tags"></i>
                     </div>
-                    <div class="text">
+                    <div class="card-text">
                         <h2>@ViewBag.TotalGenres</h2>
                         <span>Genres</span>
                     </div>
                 </div>
-                <div class="overview-chart">
-                    <a asp-area="Admin" asp-controller="Genres" asp-action="Index" class="btn btn-sm btn-warning">Manage</a>
+                <div class="card-action">
+                    <a asp-area="Admin" asp-controller="Genres" asp-action="Index" class="btn-manage">
+                        Manage
+                    </a>
                 </div>
             </div>
         </div>
     </div>
+
     <div class="col-sm-6 col-lg-3">
-        <div class="overview-item overview-item--c4">
-            <div class="overview__inner">
-                <div class="overview-box clearfix">
-                    <div class="icon">
+        <div class="dashboard-card">
+            <div class="card-content">
+                <div class="card-header">
+                    <div class="card-icon country">
                         <i class="fas fa-globe"></i>
                     </div>
-                    <div class="text">
+                    <div class="card-text">
                         <h2>@ViewBag.TotalCountries</h2>
                         <span>Countries</span>
                     </div>
                 </div>
-                <div class="overview-chart">
-                    <a asp-area="Admin" asp-controller="Countries" asp-action="Index" class="btn btn-sm btn-info">Manage</a>
+                <div class="card-action">
+                    <a asp-area="Admin" asp-controller="Countries" asp-action="Index" class="btn-manage">
+                        Manage
+                    </a>
                 </div>
             </div>
         </div>

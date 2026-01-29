@@ -1,48 +1,57 @@
-﻿@model FinalCuongFilm.ApplicationCore.Entities.Actor
+﻿@model FinalCuongFilm.Common.DTOs.ActorDto
 
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = "Chi tiết Diễn viên";
 }
 
-<h1>Details</h1>
-
-<div>
-    <h4>Actor</h4>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Name)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Name)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Slug)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Slug)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.AvartUrl)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.AvartUrl)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.DateOfBirth)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.DateOfBirth)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Gender)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Gender)
-        </dd>
-    </dl>
+<div class="row">
+    <div class="col-md-12">
+        <h2 class="title-1">@ViewData["Title"]</h2>
+    </div>
 </div>
-<div>
-    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
-    <a asp-action="Index">Back to List</a>
+
+<div class="row m-t-30">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <strong>Thông tin diễn viên</strong>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 text-center">
+                        @if (!string.IsNullOrEmpty(Model.AvartUrl))
+                        {
+                            <img src="@Model.AvartUrl" alt="@Model.Name" class="img-fluid rounded-circle" style="max-width: 200px;" />
+                        }
+                        else
+                        {
+                            <div style="width: 200px; height: 200px; border-radius: 50%; background: #ccc; display: flex; align-items: center; justify-content: center; margin: auto;">
+                                <i class="zmdi zmdi-account" style="font-size: 80px;"></i>
+                            </div>
+                        }
+                    </div>
+                    <div class="col-md-8">
+                        <dl class="row">
+                            <dt class="col-sm-4">Tên:</dt>
+                            <dd class="col-sm-8"><strong>@Model.Name</strong></dd>
+
+                            <dt class="col-sm-4">Slug:</dt>
+                            <dd class="col-sm-8"><code>@Model.Slug</code></dd>
+
+                            <dt class="col-sm-4">Ngày sinh:</dt>
+                            <dd class="col-sm-8">@Model.DateOfBirth?.ToString("dd/MM/yyyy")</dd>
+
+                            @* <dt class="col-sm-4">Giới tính:</dt>
+                            <dd class="col-sm-8">@Model.Gender</dd> *@
+                        </dl>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="m-t-20">
+            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">Chỉnh sửa</a>
+            <a asp-action="Index" class="btn btn-secondary">Quay lại danh sách</a>
+        </div>
+    </div>
 </div>

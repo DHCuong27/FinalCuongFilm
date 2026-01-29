@@ -1,0 +1,105 @@
+﻿@model IEnumerable<FinalCuongFilm.Common.DTOs.EpisodeDto>
+
+@{
+    ViewData["Title"] = "Quản lý Tập phim";
+    var movieId = ViewBag.MovieId as Guid?;
+    var movieTitle = ViewBag.MovieTitle as string;
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="overview-wrap">
+            <h2 class="title-1">
+                @ViewData["Title"]
+                @if (!string.IsNullOrEmpty(movieTitle))
+                {
+                    <small class="text-muted"> - @movieTitle</small>
+                }
+            </h2>
+            <a asp-action="Create" asp-route-movieId="@movieId" class="au-btn au-btn-icon au-btn--blue">
+                <i class="zmdi zmdi-plus"></i>Thêm tập mới
+            </a>
+        </div>
+    </div>
+</div>
+
+@if (movieId.HasValue)
+{
+    <div class="row m-t-15">
+        <div class="col-md-12">
+            <a asp-action="Index" class="btn btn-sm btn-secondary">
+                <i class="fa fa-arrow-left"></i> Xem tất cả tập phim
+            </a>
+        </div>
+    </div>
+}
+
+<div class="row m-t-30">
+    <div class="col-md-12">
+        @if (Model != null && Model.Any())
+        {
+            <div class="table-responsive table--no-card m-b-40">
+                <table class="table table-borderless table-striped table-earning">
+                    <thead>
+                        <tr>
+                            <th>Tập</th>
+                            <th>Tiêu đề</th>
+                            <th>Phim</th>
+                            <th>Thời lượng</th>
+                            <th>Ngày phát sóng</th>
+                            <th>Lượt xem</th>
+                            <th>Trạng thái</th>
+                            <th>Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td><strong>Tập @item.EpisodeNumber</strong></td>
+                                <td>@item.Title</td>
+                                <td>
+                                    <a asp-action="Index" asp-route-movieId="@item.MovieId">
+                                        @item.MovieTitle
+                                    </a>
+                                </td>
+                                <td>@item.DurationMinutes phút</td>
+                                <td>@item.AirDate?.ToString("dd/MM/yyyy")</td>
+                                <td>@item.ViewCount.ToString("N0")</td>
+                                <td>
+                                    @if (item.IsActive)
+                                    {
+                                        <span class="role admin">Hoạt động</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="role user">Tạm ẩn</span>
+                                    }
+                                </td>
+                                <td>
+                                    <div class="table-data-feature">
+                                        <a asp-action="Details" asp-route-id="@item.Id" class="item" data-toggle="tooltip" title="Chi tiết">
+                                            <i class="zmdi zmdi-eye"></i>
+                                        </a>
+                                        <a asp-action="Edit" asp-route-id="@item.Id" class="item" data-toggle="tooltip" title="Sửa">
+                                            <i class="zmdi zmdi-edit"></i>
+                                        </a>
+                                        <a asp-action="Delete" asp-route-id="@item.Id" class="item" data-toggle="tooltip" title="Xóa">
+                                            <i class="zmdi zmdi-delete"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-info">
+                <strong>Thông báo:</strong> Chưa có tập phim nào. <a asp-action="Create" asp-route-movieId="@movieId">Thêm tập mới</a>
+            </div>
+        }
+    </div>
+</div>

@@ -20,5 +20,20 @@ namespace FinalCuongFilm.ApplicationCore.Entities
 			Ongoing = 2,
 			Completed = 3,
 		}
+		public enum FileType
+		{
+			Video,
+			Subtitle,
+			Trailer
+		}
+
+		public enum VideoQuality
+		{
+			Q360p,
+			Q480p,
+			Q720p,
+			Q1080p,
+			Q2160p // 4K
+		}
 	}
 }

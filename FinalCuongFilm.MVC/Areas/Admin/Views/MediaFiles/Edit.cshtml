@@ -23,7 +23,7 @@
                 <input asp-for="Quality" class="form-control" />
                 <span asp-validation-for="Quality" class="text-danger"></span>
             </div>
-            <div class="form-group">
+            @* <div class="form-group">
                 <label asp-for="FileFormat" class="control-label"></label>
                 <input asp-for="FileFormat" class="form-control" />
                 <span asp-validation-for="FileFormat" class="text-danger"></span>
@@ -32,7 +32,7 @@
                 <label asp-for="FileSizeInBytes" class="control-label"></label>
                 <input asp-for="FileSizeInBytes" class="form-control" />
                 <span asp-validation-for="FileSizeInBytes" class="text-danger"></span>
-            </div>
+            </div> *@
             <div class="form-group">
                 <label asp-for="MovieId" class="control-label"></label>
                 <select asp-for="MovieId" class="form-control" asp-items="ViewBag.MovieId"></select>
@@ -43,11 +43,11 @@
                 <select asp-for="EpisodeId" class="form-control" asp-items="ViewBag.EpisodeId"></select>
                 <span asp-validation-for="EpisodeId" class="text-danger"></span>
             </div>
-            <div class="form-group">
+            @* <div class="form-group">
                 <label asp-for="CreatedAt" class="control-label"></label>
                 <input asp-for="CreatedAt" class="form-control" />
                 <span asp-validation-for="CreatedAt" class="text-danger"></span>
-            </div>
+            </div> *@
             <div class="form-group">
                 <input type="submit" value="Save" class="btn btn-primary" />
             </div>

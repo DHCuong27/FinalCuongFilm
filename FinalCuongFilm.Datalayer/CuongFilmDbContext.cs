@@ -123,7 +123,7 @@ namespace FinalCuongFilm.DataLayer
 					.HasMaxLength(MaxLengths.SLUG);
 			});
 
-			// Episode
+			// ===== Episode Configuration =====
 			modelBuilder.Entity<Episode>(entity =>
 			{
 				entity.ToTable("Episodes");
@@ -131,17 +131,30 @@ namespace FinalCuongFilm.DataLayer
 
 				entity.Property(e => e.Title)
 					.IsRequired()
-					.HasMaxLength(MaxLengths.TITLE);
+					.HasMaxLength(255);
 
-				entity.Property(e => e.EpisodeNumber)
-					.IsRequired();
+				entity.Property(e => e.Description)
+					.HasMaxLength(2000);
+
+				entity.Property(e => e.ViewCount)
+					.HasDefaultValue(0);
+
+				entity.Property(e => e.IsActive)
+					.HasDefaultValue(true);
 
 				entity.Property(e => e.CreatedAt)
 					.HasDefaultValueSql("GETUTCDATE()");
 
-				// Unique constraint
+				// Relationship với Movie
+				entity.HasOne(e => e.Movie)
+					.WithMany(m => m.Episodes)
+					.HasForeignKey(e => e.MovieId)
+					.OnDelete(DeleteBehavior.Cascade); 
+
+				// Index cho performance
+				entity.HasIndex(e => e.MovieId);
 				entity.HasIndex(e => new { e.MovieId, e.EpisodeNumber })
-					.IsUnique();
+					.IsUnique(); // Đảm bảo không trùng số tập trong 1 phim
 			});
 
 			// Favorite
@@ -199,39 +212,62 @@ namespace FinalCuongFilm.DataLayer
 			modelBuilder.Entity<MediaFile>(entity =>
 			{
 				entity.ToTable("MediaFiles");
+
+				// Primary Key
 				entity.HasKey(m => m.Id);
 
+				entity.Property(m => m.Id)
+					  .HasColumnName("Id")
+					  .IsRequired();
+
+				// File info
 				entity.Property(m => m.FileName)
-					.IsRequired()
-					.HasMaxLength(MaxLengths.FILE_NAME);
+					  .IsRequired()
+					  .HasMaxLength(MaxLengths.FILE_NAME);
+
+				entity.Property(m => m.FileUrl)
+					  .IsRequired()
+					  .HasMaxLength(500);
+
+				entity.Property(m => m.FilePath)
+					  .HasMaxLength(500);
+
+				entity.Property(m => m.FileType)
+					  .IsRequired()
+					  .HasMaxLength(20); // video, subtitle
 
 				entity.Property(m => m.Quality)
-					.IsRequired()
-					.HasMaxLength(20);
+					  .HasMaxLength(20); // 1080p, 720p...
 
-				entity.Property(m => m.FileFormat)
-					.IsRequired()
-					.HasMaxLength(MaxLengths.FILE_FORMAT);
+				entity.Property(m => m.Language)
+					  .HasMaxLength(10); // vi, en...
 
-				entity.Property(m => m.FileSizeInBytes)
-					.IsRequired();
+				entity.Property(m => m.FileSizeBytes)
+					  .HasColumnName("FileSizeInBytes")
+					  .IsRequired(false);
 
-				entity.Property(m => m.CreatedAt)
-					.HasDefaultValueSql("GETUTCDATE()");
+				entity.Property(m => m.UploadedAt)
+					  .HasColumnName("CreatedAt")
+					  .HasDefaultValueSql("GETUTCDATE()")
+					  .IsRequired();
 
-				// Relationship với Movie
+				
+				// Relationships
+			
+
 				entity.HasOne(m => m.Movie)
-					.WithMany(x => x.MediaFiles)
+					.WithMany(m => m.MediaFiles)
 					.HasForeignKey(m => m.MovieId)
-					.OnDelete(DeleteBehavior.Cascade);
+					.OnDelete(DeleteBehavior.Restrict); // hoặc NoAction
 
-				// Relationship với Episode
+
 				entity.HasOne(m => m.Episode)
-					.WithMany(x => x.MediaFiles)
-					.HasForeignKey(m => m.EpisodeId)
-					.OnDelete(DeleteBehavior.Restrict)
-					.IsRequired(false);
+						 .WithMany(e => e.MediaFiles)
+						.HasForeignKey(m => m.EpisodeId)
+						.OnDelete(DeleteBehavior.Cascade);
+
 			});
+
 
 			// Review
 			modelBuilder.Entity<Review>(entity =>

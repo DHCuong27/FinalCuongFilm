@@ -1,0 +1,227 @@
+﻿using FinalCuongFilm.ApplicationCore.Entities;
+using FinalCuongFilm.Common.DTOs;
+using FinalCuongFilm.Datalayer;
+using FinalCuongFilm.DataLayer;
+using FinalCuongFilm.Service.Interfaces;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+
+namespace FinalCuongFilm.Service.Services
+{
+	public class MediaFileService : IMediaFileService
+	{
+		private readonly CuongFilmDbContext _context;
+		private readonly string _uploadPath;
+
+		
+			public MediaFileService(CuongFilmDbContext context, IConfiguration configuration)
+			{
+				_context = context;
+
+				// Lấy path từ appsettings.json
+				var webRootPath = configuration["FileUpload:WebRootPath"] ?? "wwwroot";
+				_uploadPath = Path.Combine(webRootPath, "uploads", "media");
+
+				if (!Directory.Exists(_uploadPath))
+				{
+					Directory.CreateDirectory(_uploadPath);
+				}
+			}
+
+			public async Task<IEnumerable<MediaFileDto>> GetAllAsync()
+		{
+			var mediaFiles = await _context.MediaFiles
+				.Include(m => m.Movie)
+				.Include(m => m.Episode)
+				.ToListAsync();
+
+			return mediaFiles.Select(m => MapToDto(m)).ToList();
+		}
+
+		public async Task<IEnumerable<MediaFileDto>> GetByMovieIdAsync(Guid movieId)
+		{
+			var mediaFiles = await _context.MediaFiles
+				.Include(m => m.Movie)
+				.Include(m => m.Episode)
+				.Where(m => m.MovieId == movieId)
+				.ToListAsync();
+
+			return mediaFiles.Select(m => MapToDto(m)).ToList();
+		}
+
+		public async Task<IEnumerable<MediaFileDto>> GetByEpisodeIdAsync(Guid episodeId)
+		{
+			var mediaFiles = await _context.MediaFiles
+				.Include(m => m.Movie)
+				.Include(m => m.Episode)
+				.Where(m => m.EpisodeId == episodeId)
+				.ToListAsync();
+
+			return mediaFiles.Select(m => MapToDto(m)).ToList();
+		}
+
+		public async Task<MediaFileDto?> GetByIdAsync(Guid id)
+		{
+			var mediaFile = await _context.MediaFiles
+				.Include(m => m.Movie)
+				.Include(m => m.Episode)
+				.FirstOrDefaultAsync(m => m.Id == id);
+
+			return mediaFile == null ? null : MapToDto(mediaFile);
+		}
+
+		public async Task<MediaFileDto> CreateAsync(MediaFileCreateDto dto)
+		{
+			// Validate: Phải có MovieId HOẶC EpisodeId
+			if (!dto.MovieId.HasValue && !dto.EpisodeId.HasValue)
+			{
+				throw new InvalidOperationException("Phải chọn Phim hoặc Tập phim.");
+			}
+
+			var mediaFile = new MediaFile
+			{
+				Id = Guid.NewGuid(),
+				FileName = dto.FileName,
+				FileUrl = dto.FileUrl,
+				FilePath = dto.FilePath,
+				FileSizeBytes = dto.FileSizeBytes,
+				FileType = dto.FileType,
+				Quality = dto.Quality,
+				Language = dto.Language,
+				MovieId = dto.MovieId,
+				EpisodeId = dto.EpisodeId,
+				UploadedAt = DateTime.UtcNow
+			};
+
+			_context.MediaFiles.Add(mediaFile);
+			await _context.SaveChangesAsync();
+
+			return await GetByIdAsync(mediaFile.Id) ?? throw new Exception("Failed to create media file");
+		}
+
+		public async Task<MediaFileDto> UploadAsync(MediaFileUploadDto dto)
+		{
+			if (dto.File == null || dto.File.Length == 0)
+			{
+				throw new InvalidOperationException("File không hợp lệ.");
+			}
+
+			// Validate file extension
+			var allowedExtensions = new[] { ".mp4", ".mkv", ".avi", ".mov", ".webm", ".srt", ".vtt" };
+			var extension = Path.GetExtension(dto.File.FileName).ToLowerInvariant();
+
+			if (!allowedExtensions.Contains(extension))
+			{
+				throw new InvalidOperationException($"Định dạng file không được hỗ trợ. Chỉ chấp nhận: {string.Join(", ", allowedExtensions)}");
+			}
+
+			// Validate: Phải có MovieId HOẶC EpisodeId
+			if (!dto.MovieId.HasValue && !dto.EpisodeId.HasValue)
+			{
+				throw new InvalidOperationException("Phải chọn Phim hoặc Tập phim.");
+			}
+
+			// Tạo tên file unique
+			var uniqueFileName = $"{Guid.NewGuid()}{extension}";
+			var filePath = Path.Combine(_uploadPath, uniqueFileName);
+
+			// Lưu file vào server
+			using (var stream = new FileStream(filePath, FileMode.Create))
+			{
+				await dto.File.CopyToAsync(stream);
+			}
+
+			// Tạo URL để truy cập file
+			var fileUrl = $"/uploads/media/{uniqueFileName}";
+
+			// Tạo MediaFile entity
+			var createDto = new MediaFileCreateDto
+			{
+				FileName = dto.File.FileName,
+				FileUrl = fileUrl,
+				FilePath = filePath,
+				FileSizeBytes = dto.File.Length,
+				FileType = dto.FileType,
+				Quality = dto.Quality,
+				Language = dto.Language,
+				MovieId = dto.MovieId,
+				EpisodeId = dto.EpisodeId
+			};
+
+			return await CreateAsync(createDto);
+		}
+
+		public async Task<bool> UpdateAsync(MediaFileUpdateDto dto)
+		{
+			var mediaFile = await _context.MediaFiles.FindAsync(dto.Id);
+			if (mediaFile == null)
+				return false;
+
+			mediaFile.FileName = dto.FileName;
+			mediaFile.FileUrl = dto.FileUrl;
+			mediaFile.FilePath = dto.FilePath;
+			mediaFile.FileSizeBytes = dto.FileSizeBytes;
+			mediaFile.FileType = dto.FileType;
+			mediaFile.Quality = dto.Quality;
+			mediaFile.Language = dto.Language;
+			mediaFile.MovieId = dto.MovieId;
+			mediaFile.EpisodeId = dto.EpisodeId;
+
+			await _context.SaveChangesAsync();
+			return true;
+		}
+
+		public async Task<bool> DeleteAsync(Guid id)
+		{
+			var mediaFile = await _context.MediaFiles.FindAsync(id);
+			if (mediaFile == null)
+				return false;
+
+			// Xóa file vật lý nếu tồn tại
+			if (!string.IsNullOrEmpty(mediaFile.FilePath) && File.Exists(mediaFile.FilePath))
+			{
+				try
+				{
+					File.Delete(mediaFile.FilePath);
+				}
+				catch (Exception ex)
+				{
+					// Log lỗi nhưng vẫn xóa record trong database
+					Console.WriteLine($"Không thể xóa file: {ex.Message}");
+				}
+			}
+
+			_context.MediaFiles.Remove(mediaFile);
+			await _context.SaveChangesAsync();
+			return true;
+		}
+
+		public async Task<bool> ExistsAsync(Guid id)
+		{
+			return await _context.MediaFiles.AnyAsync(m => m.Id == id);
+		}
+
+		private static MediaFileDto MapToDto(MediaFile mediaFile)
+		{
+			return new MediaFileDto
+			{
+				Id = mediaFile.Id,
+				FileName = mediaFile.FileName,
+				FileUrl = mediaFile.FileUrl,
+				FilePath = mediaFile.FilePath,
+				FileSizeBytes = mediaFile.FileSizeBytes,
+				FileType = mediaFile.FileType,
+				Quality = mediaFile.Quality,
+				Language = mediaFile.Language,
+				UploadedAt = mediaFile.UploadedAt,
+				MovieId = mediaFile.MovieId,
+				MovieTitle = mediaFile.Movie?.Title,
+				EpisodeId = mediaFile.EpisodeId,
+				EpisodeTitle = mediaFile.Episode?.Title,
+				EpisodeNumber = mediaFile.Episode?.EpisodeNumber
+			};
+		}
+	}
+}

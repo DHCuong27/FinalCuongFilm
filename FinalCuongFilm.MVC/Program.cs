@@ -1,10 +1,11 @@
-using FinalCuongFilm.ApplicationCore.Entities.Identity;
+﻿using FinalCuongFilm.ApplicationCore.Entities.Identity;
 using FinalCuongFilm.DataLayer;
 using FinalCuongFilm.MVC.Data;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 using FinalCuongFilm.Service.Interfaces;      
 using FinalCuongFilm.Service.Services;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -48,7 +49,14 @@ builder.Services.AddScoped<IActorService, ActorService>();
 builder.Services.AddScoped<IGenreService, GenreService>();
 builder.Services.AddScoped<ICountryService, CountryService>();
 builder.Services.AddScoped<ILanguageService, LanguageService>();
-//builder.Services.AddScoped<IEpisodeService, EpisodeService>();
+builder.Services.AddScoped<IEpisodeService, EpisodeService>();
+builder.Services.AddScoped<IMediaFileService, MediaFileService>();
+
+// Cấu hình upload file size
+builder.Services.Configure<FormOptions>(options =>
+{
+	options.MultipartBodyLengthLimit = 2147483648; // 2GB
+});
 
 // MVC 
 builder.Services.AddControllersWithViews();

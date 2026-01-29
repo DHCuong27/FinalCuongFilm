@@ -24,17 +24,17 @@
             @Html.DisplayFor(model => model.Quality)
         </dd>
         <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.FileFormat)
+            @* @Html.DisplayNameFor(model => model.FileFormat) *@
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.FileFormat)
+            @* @Html.DisplayFor(model => model.FileFormat) *@
         </dd>
-        <dt class = "col-sm-2">
+        @* <dt class = "col-sm-2">
             @Html.DisplayNameFor(model => model.FileSizeInBytes)
         </dt>
         <dd class = "col-sm-10">
             @Html.DisplayFor(model => model.FileSizeInBytes)
-        </dd>
+        </dd> *@
         <dt class = "col-sm-2">
             @Html.DisplayNameFor(model => model.Movie)
         </dt>
@@ -47,12 +47,12 @@
         <dd class = "col-sm-10">
             @Html.DisplayFor(model => model.Episode.Title)
         </dd>
-        <dt class = "col-sm-2">
+        @* <dt class = "col-sm-2">
             @Html.DisplayNameFor(model => model.CreatedAt)
         </dt>
         <dd class = "col-sm-10">
             @Html.DisplayFor(model => model.CreatedAt)
-        </dd>
+        </dd> *@
     </dl>
     
     <form asp-action="Delete">

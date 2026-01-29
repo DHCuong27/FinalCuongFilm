@@ -69,9 +69,20 @@
                                 <i class="fas fa-globe"></i>Languages
                             </a>
                         </li>
+                        <li class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "Episodes" ? "active" : "")">
+                            <a asp-area="Admin" asp-controller="Episodes" asp-action="Index">
+                                <i class="fas fa-globe"></i>Episodes
+                            </a>
+                        </li>
+                        <li class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "MediaFiles" ? "active" : "")">
+                            <a asp-area="Admin" asp-controller="MediaFiles" asp-action="Index">
+                                <i class="fas fa-globe"></i>MediaFiles
+                            </a>
+                        </li>
                     </ul>
                 </div>
             </nav>
+            MediaFiles
         </header>
         <!-- END HEADER MOBILE-->
         <!-- MENU SIDEBAR-->
@@ -112,6 +123,16 @@
                         <li class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "Languages" ? "active" : "")">
                             <a asp-area="Admin" asp-controller="Languages" asp-action="Index">
                                 <i class="fas fa-globe"></i>Manage Languages
+                            </a>
+                        </li>
+                        <li class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "Episodes" ? "active" : "")">
+                            <a asp-area="Admin" asp-controller="Episodes" asp-action="Index">
+                                <i class="fas fa-globe"></i>Manage Episodes
+                            </a>
+                        </li>
+                        <li class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "MediaFiles" ? "active" : "")">
+                            <a asp-area="Admin" asp-controller="MediaFiles" asp-action="Index">
+                                <i class="fas fa-globe"></i>Manage MediaFiles
                             </a>
                         </li>
                     </ul>

@@ -64,15 +64,17 @@
                                 <span class="badge badge-info">@item.Status</span>
                             </td>
                             <td>
-                                <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-primary">
-                                    <i class="zmdi zmdi-edit"></i> Sửa
-                                </a>
-                                <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info">
-                                    <i class="zmdi zmdi-eye"></i> Chi tiết
-                                </a>
-                                <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger">
-                                    <i class="zmdi zmdi-delete"></i> Xóa
-                                </a>
+                                <div class="table-data-feature">
+                                    <a asp-action="Details" asp-route-id="@item.Id" class="item" data-toggle="tooltip" title="Chi tiết">
+                                        <i class="zmdi zmdi-eye"></i>
+                                    </a>
+                                    <a asp-action="Edit" asp-route-id="@item.Id" class="item" data-toggle="tooltip" title="Sửa">
+                                        <i class="zmdi zmdi-edit"></i>
+                                    </a>
+                                    <a asp-action="Delete" asp-route-id="@item.Id" class="item" data-toggle="tooltip" title="Xóa">
+                                        <i class="zmdi zmdi-delete"></i>
+                                    </a>
+                                </div>
                             </td>
                         </tr>
                     }

@@ -1,53 +1,95 @@
-﻿@model FinalCuongFilm.ApplicationCore.Entities.MediaFile
+﻿@model FinalCuongFilm.Common.DTOs.MediaFileCreateDto
 
 @{
-    ViewData["Title"] = "Create";
+    ViewData["Title"] = "Thêm Media File (URL)";
 }
 
-<h1>Create</h1>
-
-<h4>MediaFile</h4>
-<hr />
 <div class="row">
-    <div class="col-md-4">
-        <form asp-action="Create">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group">
-                <label asp-for="FileName" class="control-label"></label>
-                <input asp-for="FileName" class="form-control" />
-                <span asp-validation-for="FileName" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Quality" class="control-label"></label>
-                <input asp-for="Quality" class="form-control" />
-                <span asp-validation-for="Quality" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="FileFormat" class="control-label"></label>
-                <input asp-for="FileFormat" class="form-control" />
-                <span asp-validation-for="FileFormat" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="FileSizeInBytes" class="control-label"></label>
-                <input asp-for="FileSizeInBytes" class="form-control" />
-                <span asp-validation-for="FileSizeInBytes" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="MovieId" class="control-label"></label>
-                <select asp-for="MovieId" class ="form-control" asp-items="ViewBag.MovieId"></select>
-            </div>
-            <div class="form-group">
-                <label asp-for="EpisodeId" class="control-label"></label>
-                <select asp-for="EpisodeId" class ="form-control" asp-items="ViewBag.EpisodeId"></select>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
-            </div>
-        </form>
+    <div class="col-md-12">
+        <h2 class="title-1">@ViewData["Title"]</h2>
     </div>
 </div>
 
-<div>
-    <a asp-action="Index">Back to List</a>
+<div class="row m-t-30">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <strong>Thêm media file từ URL (CDN, YouTube, ...)</strong>
+            </div>
+            <div class="card-body card-block">
+                <form asp-action="Create" method="post">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                    <div class="form-group">
+                        <label asp-for="MovieId" class="form-control-label">Phim</label>
+                        <select asp-for="MovieId" class="form-control" asp-items="ViewBag.Movies">
+                            <option value="">-- Chọn phim (nếu không chọn tập) --</option>
+                        </select>
+                        <span asp-validation-for="MovieId" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="EpisodeId" class="form-control-label">Tập phim</label>
+                        <select asp-for="EpisodeId" class="form-control" asp-items="ViewBag.Episodes">
+                            <option value="">-- Chọn tập (nếu có) --</option>
+                        </select>
+                        <span asp-validation-for="EpisodeId" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="FileName" class="form-control-label">Tên file <span class="text-danger">*</span></label>
+                        <input asp-for="FileName" class="form-control" placeholder="Ví dụ: episode_01_1080p.mp4" />
+                        <span asp-validation-for="FileName" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="FileUrl" class="form-control-label">URL file <span class="text-danger">*</span></label>
+                        <input asp-for="FileUrl" class="form-control" placeholder="https://cdn.example.com/video.mp4" />
+                        <span asp-validation-for="FileUrl" class="text-danger"></span>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label asp-for="FileType" class="form-control-label">Loại file</label>
+                                <select asp-for="FileType" class="form-control" asp-items="ViewBag.FileTypes">
+                                </select>
+                                <span asp-validation-for="FileType" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label asp-for="Quality" class="form-control-label">Chất lượng</label>
+                                <select asp-for="Quality" class="form-control" asp-items="ViewBag.Qualities">
+                                    <option value="">-- Chọn chất lượng --</option>
+                                </select>
+                                <span asp-validation-for="Quality" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="Language" class="form-control-label">Ngôn ngữ (cho subtitle)</label>
+                        <input asp-for="Language" class="form-control" placeholder="Ví dụ: Tiếng Việt, English..." />
+                        <span asp-validation-for="Language" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-actions form-group">
+                        <button type="submit" class="btn btn-primary btn-sm">
+                            <i class="fa fa-save"></i> Lưu
+                        </button>
+                        <a asp-action="Index" asp-route-movieId="@Model.MovieId" asp-route-episodeId="@Model.EpisodeId" class="btn btn-secondary btn-sm">
+                            <i class="fa fa-times"></i> Hủy
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 </div>
 
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

@@ -17,34 +17,64 @@
 
 <div class="row m-t-30">
     <div class="col-md-12">
-        <div class="table-responsive table--no-card m-b-40">
-            <table class="table table-borderless table-striped table-earning">
-                <thead>
-                    <tr>
-                        <th>Tên</th>
-                        <th>Slug</th>
-                        <th>Giới tính</th>
-                        <th>Ngày sinh</th>
-                        <th>Hành động</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var item in Model)
-                    {
+        @if (Model != null && Model.Any())
+        {
+            <div class="table-responsive table--no-card m-b-40">
+                <table class="table table-borderless table-striped table-earning">
+                    <thead>
                         <tr>
-                            <td>@item.Name</td>
-                            <td>@item.Slug</td>
-                            <td>@item.Gender</td>
-                            <td>@item.DateOfBirth?.ToString("dd/MM/yyyy")</td>
-                            <td>
-                                <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-primary">Sửa</a>
-                                <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info">Chi tiết</a>
-                                <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger">Xóa</a>
-                            </td>
+                            <th>Avatar</th>
+                            <th>Tên</th>
+                            <th>Slug</th>
+                            <th>Ngày sinh</th>
+                            <th>Giới tính</th>
+                            <th>Hành động</th>
                         </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(item.AvartUrl))
+                                    {
+                                        <img src="@item.AvartUrl" alt="@item.Name" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover;" />
+                                    }
+                                    else
+                                    {
+                                        <div style="width: 50px; height: 50px; border-radius: 50%; background: #ccc; display: flex; align-items: center; justify-content: center;">
+                                            <i class="zmdi zmdi-account"></i>
+                                        </div>
+                                    }
+                                </td>
+                                <td><strong>@item.Name</strong></td>
+                                <td><code>@item.Slug</code></td>
+                                <td>@item.DateOfBirth?.ToString("dd/MM/yyyy")</td>
+                                <td>@item.Gender</td>
+                                <td>
+                                    <div class="table-data-feature">
+                                        <a asp-action="Details" asp-route-id="@item.Id" class="item" data-toggle="tooltip" title="Chi tiết">
+                                            <i class="zmdi zmdi-eye"></i>
+                                        </a>
+                                        <a asp-action="Edit" asp-route-id="@item.Id" class="item" data-toggle="tooltip" title="Sửa">
+                                            <i class="zmdi zmdi-edit"></i>
+                                        </a>
+                                        <a asp-action="Delete" asp-route-id="@item.Id" class="item" data-toggle="tooltip" title="Xóa">
+                                            <i class="zmdi zmdi-delete"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-info">
+                <strong>Thông báo:</strong> Chưa có diễn viên nào. <a asp-action="Create">Thêm diễn viên mới</a>
+            </div>
+        }
     </div>
 </div>

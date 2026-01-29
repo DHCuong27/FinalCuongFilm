@@ -1,71 +1,140 @@
-﻿@model IEnumerable<FinalCuongFilm.ApplicationCore.Entities.MediaFile>
+﻿@model IEnumerable<FinalCuongFilm.Common.DTOs.MediaFileDto>
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Quản lý Media Files";
+    var movieId = ViewBag.MovieId as Guid?;
+    var episodeId = ViewBag.EpisodeId as Guid?;
+    var movieTitle = ViewBag.MovieTitle as string;
+    var episodeTitle = ViewBag.EpisodeTitle as string;
 }
 
-<h1>Index</h1>
+<div class="row">
+    <div class="col-md-12">
+        <div class="overview-wrap">
+            <h2 class="title-1">
+                @ViewData["Title"]
+                @if (!string.IsNullOrEmpty(episodeTitle))
+                {
+                    <small class="text-muted"> - @episodeTitle</small>
+                }
+                else if (!string.IsNullOrEmpty(movieTitle))
+                {
+                    <small class="text-muted"> - @movieTitle</small>
+                }
+            </h2>
+            <div>
+                <a asp-action="Upload" asp-route-movieId="@movieId" asp-route-episodeId="@episodeId" class="au-btn au-btn-icon au-btn--green">
+                    <i class="zmdi zmdi-upload"></i>Upload File
+                </a>
+                <a asp-action="Create" asp-route-movieId="@movieId" asp-route-episodeId="@episodeId" class="au-btn au-btn-icon au-btn--blue">
+                    <i class="zmdi zmdi-plus"></i>Thêm URL
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.FileName)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Quality)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.FileFormat)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.FileSizeInBytes)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Movie)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Episode)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.CreatedAt)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.FileName)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Quality)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.FileFormat)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.FileSizeInBytes)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Movie.Slug)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Episode.Title)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.CreatedAt)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-            </td>
-        </tr>
+@if (episodeId.HasValue || movieId.HasValue)
+{
+    <div class="row m-t-15">
+        <div class="col-md-12">
+            @if (episodeId.HasValue && movieId.HasValue)
+            {
+                <a asp-action="Index" asp-route-movieId="@movieId" class="btn btn-sm btn-secondary">
+                    <i class="fa fa-arrow-left"></i> Xem media của phim
+                </a>
+            }
+            <a asp-action="Index" class="btn btn-sm btn-secondary">
+                <i class="fa fa-arrow-left"></i> Xem tất cả media files
+            </a>
+        </div>
+    </div>
 }
-    </tbody>
-</table>
+
+<div class="row m-t-30">
+    <div class="col-md-12">
+        @if (Model != null && Model.Any())
+        {
+            <div class="table-responsive table--no-card m-b-40">
+                <table class="table table-borderless table-striped table-earning">
+                    <thead>
+                        <tr>
+                            <th>File</th>
+                            <th>Loại</th>
+                            <th>Chất lượng</th>
+                            <th>Kích thước</th>
+                            <th>Phim/Tập</th>
+                            <th>Ngày upload</th>
+                            <th>Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>
+                                    <strong>@item.FileName</strong><br />
+                                    <small class="text-muted">@item.FileUrl</small>
+                                </td>
+                                <td>
+                                    @if (item.FileType == "Video")
+                                    {
+                                        <span class="role admin">@item.FileType</span>
+                                    }
+                                    else if (item.FileType == "Subtitle")
+                                    {
+                                        <span class="role user">@item.FileType</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="role">@item.FileType</span>
+                                    }
+                                </td>
+                                <td>@item.Quality</td>
+                                <td>@item.FileSizeFormatted</td>
+                                <td>
+                                    @if (item.EpisodeId.HasValue)
+                                    {
+                                        <a asp-controller="Episodes" asp-action="Details" asp-route-id="@item.EpisodeId">
+                                            Tập @item.EpisodeNumber: @item.EpisodeTitle
+                                        </a>
+                                    }
+                                    else if (item.MovieId.HasValue)
+                                    {
+                                        <a asp-controller="Movies" asp-action="Details" asp-route-id="@item.MovieId">
+                                            @item.MovieTitle
+                                        </a>
+                                    }
+                                </td>
+                                <td>@item.UploadedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                                <td>
+                                    <div class="table-data-feature">
+                                        <a href="@item.FileUrl" target="_blank" class="item" data-toggle="tooltip" title="Xem">
+                                            <i class="zmdi zmdi-play"></i>
+                                        </a>
+                                        <a asp-action="Details" asp-route-id="@item.Id" class="item" data-toggle="tooltip" title="Chi tiết">
+                                            <i class="zmdi zmdi-eye"></i>
+                                        </a>
+                                        <a asp-action="Edit" asp-route-id="@item.Id" class="item" data-toggle="tooltip" title="Sửa">
+                                            <i class="zmdi zmdi-edit"></i>
+                                        </a>
+                                        <a asp-action="Delete" asp-route-id="@item.Id" class="item" data-toggle="tooltip" title="Xóa">
+                                            <i class="zmdi zmdi-delete"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-info">
+                <strong>Thông báo:</strong> Chưa có media file nào.
+                <a asp-action="Upload" asp-route-movieId="@movieId" asp-route-episodeId="@episodeId">Upload file mới</a>
+            </div>
+        }
+    </div>
+</div>

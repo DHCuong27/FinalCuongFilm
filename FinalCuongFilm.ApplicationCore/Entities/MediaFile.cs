@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿// Kiểm tra entity có đầy đủ không
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace FinalCuongFilm.ApplicationCore.Entities
 {
@@ -12,18 +9,21 @@ namespace FinalCuongFilm.ApplicationCore.Entities
 		[Key]
 		public Guid Id { get; set; } = Guid.NewGuid();
 		public string FileName { get; set; } = string.Empty;
+		public string FileUrl { get; set; } = string.Empty;
+		public string? FilePath { get; set; }
+		public long? FileSizeBytes { get; set; }
+		public string FileType { get; set; } = string.Empty; // video, subtitle
+		public string? Quality { get; set; } // 1080p, 720p, 480p, 360p
+		public string? Language { get; set; } // cho subtitle
+		public DateTime UploadedAt { get; set; } = DateTime.UtcNow;
 
-		public string Quality { get; set; } = string.Empty;
-
-		public string FileFormat { get; set; } = string.Empty;
-		public long FileSizeInBytes { get; set; }
-
-		public Guid MovieId { get; set; }
-		public Movie? Movie { get; set; } 
+		// Foreign Keys
+		public Guid? MovieId { get; set; }
+		[ForeignKey("MovieId")]
+		public Movie? Movie { get; set; }
 
 		public Guid? EpisodeId { get; set; }
+		[ForeignKey("EpisodeId")]
 		public Episode? Episode { get; set; }
-
-		public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 	}
 }
