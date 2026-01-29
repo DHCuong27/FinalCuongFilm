@@ -1,0 +1,45 @@
+﻿@{
+    ViewData["Title"] = "Danh sách của tôi";
+    Layout = "_LayoutUser";
+}
+
+<style>
+    body {
+        background-color: #141414;
+        color: white;
+    }
+
+    .section-header {
+        font-size: 1.8rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        padding-left: 0.5rem;
+        border-left: 4px solid #e50914;
+    }
+
+    .netflix-alert {
+        background-color: #2d2d2d;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        padding: 1.5rem;
+        margin: 2rem 0;
+    }
+
+        .netflix-alert i {
+            color: #e50914;
+            margin-right: 0.5rem;
+            font-size: 1.2rem;
+        }
+</style>
+
+<div class="container" style="padding-top: 3rem; min-height: 60vh;">
+    <h2 class="section-header">
+        <i class="fas fa-list" style="color: #e50914; margin-right: 0.5rem;"></i>
+        Danh sách của tôi
+    </h2>
+
+    <div class="netflix-alert mt-4">
+        <i class="fas fa-info-circle"></i> Danh sách của bạn đang trống. Hãy thêm phim yêu thích!
+    </div>
+</div>

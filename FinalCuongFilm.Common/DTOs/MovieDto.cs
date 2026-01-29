@@ -9,6 +9,7 @@ namespace FinalCuongFilm.Common.DTOs
 		public string Slug { get; set; } = string.Empty;
 		public string? Description { get; set; }
 		public int? ReleaseYear { get; set; }
+		public long ViewCount { get; set; }
 		public int? DurationMinutes { get; set; }
 		public string? PosterUrl { get; set; }
 		public string? TrailerUrl { get; set; }

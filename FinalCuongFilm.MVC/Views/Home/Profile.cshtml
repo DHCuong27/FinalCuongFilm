@@ -1,0 +1,75 @@
+﻿@{
+    ViewData["Title"] = "Hồ sơ của tôi";
+    Layout = "_LayoutUser";
+}
+
+<style>
+    body {
+        background-color: #141414;
+        color: white;
+    }
+
+    .user-avatar-large {
+        width: 100px;
+        height: 100px;
+        font-size: 2.5rem;
+        border-radius: 4px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 600;
+    }
+
+    .section-header {
+        font-size: 1.8rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        padding-left: 0.5rem;
+        border-left: 4px solid #e50914;
+    }
+
+    .card {
+        background-color: #2d2d2d;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+</style>
+
+<div class="container" style="padding-top: 3rem; min-height: 60vh;">
+    <h2 class="section-header">
+        <i class="fas fa-user" style="color: #e50914; margin-right: 0.5rem;"></i>
+        Hồ sơ của tôi
+    </h2>
+
+    <div class="row mt-4">
+        <div class="col-md-4">
+            <div class="card text-white">
+                <div class="card-body text-center">
+                    <div class="user-avatar-large mx-auto mb-3">
+                        @(User.Identity?.Name?.Substring(0, 1).ToUpper() ?? "U")
+                    </div>
+                    <h4>@(User.Identity?.Name ?? "User")</h4>
+                    <p class="text-muted">@(User.Identity?.Name ?? "user")@@cuongfilm.com</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-8">
+            <div class="card text-white">
+                <div class="card-body">
+                    <h5>Thông tin tài khoản</h5>
+                    <hr style="border-color: rgba(255,255,255,0.15);" />
+                    <div class="mb-3">
+                        <strong>Email:</strong> @(User.Identity?.Name ?? "user")
+                    </div>
+                    <div class="mb-3">
+                        <strong>Ngày tham gia:</strong> 01/01/2024
+                    </div>
+                    <div class="mb-3">
+                        <strong>Số phim đã xem:</strong> 0
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

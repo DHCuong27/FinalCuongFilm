@@ -28,6 +28,7 @@
     <Folder Include="Areas\Admin\Data\" />
     <Folder Include="Areas\Admin\Models\" />
     <Folder Include="Areas\Identity\Data\" />
+    <Folder Include="Views\User\" />
   </ItemGroup>
 
   <ItemGroup>

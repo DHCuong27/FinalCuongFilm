@@ -1,0 +1,546 @@
+﻿@model FinalCuongFilm.MVC.Models.ViewModels.MovieDetailsViewModel
+
+@{
+    ViewData["Title"] = Model.Movie.Title;
+    Layout = "_LayoutUser";
+}
+
+<style>
+    :root {
+        --netflix-red: #e50914;
+        --netflix-dark: #1e1e1e; /* Sáng hơn một chút */
+        --netflix-gray: #3a3a3a; /* Sáng hơn */
+        --netflix-light-gray: #a0a0a0; /* Sáng hơn */
+        --netflix-white: #ffffff;
+        --netflix-light-bg: rgba(50, 50, 50, 0.6); /* Sáng hơn */
+    }
+
+    body {
+        background-color: var(--netflix-dark);
+        color: var(--netflix-white);
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        overflow-x: hidden;
+    }
+
+    /* Hero Banner - SÁNG HƠN */
+    .movie-hero {
+        position: relative;
+        height: 70vh;
+        min-height: 500px;
+        background: linear-gradient(to right, rgba(30, 30, 30, 0.85) 20%, /* Sáng hơn */
+        rgba(30, 30, 30, 0.65) 50%, /* Sáng hơn */
+        rgba(30, 30, 30, 0.4) 100%); /* Sáng hơn */
+        display: flex;
+        align-items: center;
+        margin-bottom: 2rem;
+        overflow: hidden;
+    }
+
+    .movie-hero-backdrop {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        z-index: -1;
+        opacity: 0.75; /* TĂNG độ sáng từ 0.6 lên 0.75 */
+        filter: brightness(1.2) contrast(1.1); /* Tăng độ sáng và độ tương phản */
+    }
+
+    .movie-hero-content {
+        padding: 0 4rem;
+        max-width: 800px;
+        z-index: 2;
+        width: 100%;
+        text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8); /* Tăng độ đậm cho chữ */
+    }
+
+    .movie-hero-title {
+        font-size: 3.5rem;
+        font-weight: 800;
+        margin-bottom: 1rem;
+        line-height: 1.2;
+        color: #ffffff; /* Trắng tinh để nổi bật */
+        text-shadow: 3px 3px 10px rgba(0, 0, 0, 0.9); /* Tăng shadow */
+    }
+
+    .movie-meta-badges {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
+    }
+
+    .movie-badge {
+        background-color: rgba(255, 255, 255, 0.25); /* Sáng hơn */
+        padding: 0.4rem 1.2rem; /* Lớn hơn */
+        border-radius: 6px;
+        font-size: 1rem;
+        font-weight: 600;
+        white-space: nowrap;
+        color: white;
+        text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .movie-hero-actions {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+        flex-wrap: wrap;
+    }
+
+    .netflix-play-btn {
+        background-color: var(--netflix-white);
+        color: var(--netflix-dark);
+        border: none;
+        padding: 1rem 3rem; /* Lớn hơn */
+        font-size: 1.2rem;
+        font-weight: 700; /* Đậm hơn */
+        border-radius: 6px;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        white-space: nowrap;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+    }
+
+        .netflix-play-btn:hover {
+            background-color: #f0f0f0;
+            color: var(--netflix-dark);
+            text-decoration: none;
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6);
+        }
+
+    .netflix-trailer-btn {
+        background-color: rgba(140, 140, 140, 0.9); /* Sáng hơn */
+        color: var(--netflix-white);
+        border: none;
+        padding: 1rem 2.5rem; /* Lớn hơn */
+        font-size: 1.2rem;
+        font-weight: 700; /* Đậm hơn */
+        border-radius: 6px;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        white-space: nowrap;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+    }
+
+        .netflix-trailer-btn:hover {
+            background-color: rgba(160, 160, 160, 1);
+            color: var(--netflix-white);
+            text-decoration: none;
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+        }
+
+    /* Main Content - Sáng hơn */
+    .movie-main-content {
+        padding: 0 2rem 3rem;
+        max-width: 1400px;
+        margin: 0 auto;
+        width: 100%;
+        box-sizing: border-box;
+        background-color: rgba(30, 30, 30, 0.9); /* Thêm nền sáng hơn */
+        border-radius: 12px;
+        margin-top: -2rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    /* Info Grid - Sáng hơn */
+    .movie-info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 2rem; /* Khoảng cách lớn hơn */
+        margin-bottom: 2rem;
+        background-color: var(--netflix-light-bg); /* Sáng hơn */
+        padding: 2rem; /* Padding lớn hơn */
+        border-radius: 10px;
+        width: 100%;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .info-item {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+    }
+
+    .info-label {
+        color: var(--netflix-light-gray); /* Sáng hơn */
+        font-size: 1rem;
+        margin-bottom: 0.5rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        font-weight: 500;
+    }
+
+    .info-value {
+        font-size: 1.3rem; /* Lớn hơn */
+        font-weight: 600; /* Đậm hơn */
+        color: #ffffff; /* Trắng hơn */
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    /* Description - Sáng hơn */
+    .movie-description {
+        font-size: 1.2rem; /* Lớn hơn */
+        line-height: 1.8; /* Dãn dòng hơn */
+        color: #e0e0e0; /* Sáng hơn */
+        max-width: 900px; /* Rộng hơn */
+        margin: 2rem 0 3rem;
+        padding: 2rem; /* Padding lớn hơn */
+        background-color: var(--netflix-light-bg); /* Sáng hơn */
+        border-radius: 10px;
+        border-left: 5px solid var(--netflix-red); /* Dày hơn */
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Episodes Section - Sáng hơn */
+    .episodes-section {
+        margin-bottom: 3rem;
+        width: 100%;
+        padding: 2rem;
+        background-color: var(--netflix-light-bg);
+        border-radius: 10px;
+    }
+
+    .section-title {
+        font-size: 2rem; /* Lớn hơn */
+        font-weight: 700; /* Đậm hơn */
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: white;
+    }
+
+        .section-title i {
+            color: var(--netflix-red);
+            font-size: 2rem; /* Lớn hơn */
+        }
+
+    .episodes-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); /* Lớn hơn */
+        gap: 1.2rem; /* Khoảng cách lớn hơn */
+        width: 100%;
+    }
+
+    .episode-card {
+        background-color: rgba(70, 70, 70, 0.8); /* Sáng hơn */
+        border-radius: 8px; /* Bo tròn hơn */
+        overflow: hidden;
+        transition: all 0.3s ease;
+        border: 2px solid rgba(255, 255, 255, 0.1);
+        aspect-ratio: 1/1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        max-width: 130px; /* Lớn hơn */
+        margin: 0 auto;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+    }
+
+        .episode-card:hover {
+            transform: translateY(-5px); /* Di chuyển nhiều hơn */
+            background-color: var(--netflix-red);
+            border-color: var(--netflix-red);
+            box-shadow: 0 8px 25px rgba(229, 9, 20, 0.4);
+        }
+
+    .episode-link {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+        padding: 1rem;
+        color: white;
+        text-decoration: none;
+        font-weight: 700; /* Đậm hơn */
+        font-size: 1.1rem; /* Lớn hơn */
+        text-align: center;
+    }
+
+    /* Related Movies - Sáng hơn */
+    .related-section {
+        margin-top: 3rem;
+        width: 100%;
+        padding: 2rem;
+        background-color: var(--netflix-light-bg);
+        border-radius: 10px;
+    }
+
+    .movies-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* Lớn hơn */
+        gap: 2rem; /* Khoảng cách lớn hơn */
+        width: 100%;
+    }
+
+    .related-movie-card {
+        transition: all 0.3s ease;
+        width: 100%;
+        max-width: 250px; /* Lớn hơn */
+        margin: 0 auto;
+    }
+
+        .related-movie-card:hover {
+            transform: translateY(-8px); /* Di chuyển nhiều hơn */
+        }
+
+    /* Movie poster container - Sáng hơn */
+    .movie-poster {
+        position: relative;
+        border-radius: 10px; /* Bo tròn hơn */
+        overflow: hidden;
+        background-color: rgba(70, 70, 70, 0.8); /* Sáng hơn */
+        margin-bottom: 0.8rem;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.4);
+        width: 100%;
+        height: 0;
+        padding-bottom: 150%;
+        border: 2px solid rgba(255, 255, 255, 0.1);
+    }
+
+        .movie-poster img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: all 0.3s ease;
+            filter: brightness(1.1); /* Tăng độ sáng ảnh */
+        }
+
+    .related-movie-card:hover .movie-poster img {
+        transform: scale(1.08); /* Phóng to hơn */
+        filter: brightness(1.3); /* Sáng hơn khi hover */
+    }
+
+    .movie-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(to bottom, transparent 60%, rgba(0, 0, 0, 0.9) 100%); /* Đậm hơn ở dưới */
+        display: flex;
+        align-items: flex-end;
+        justify-content: flex-end;
+        opacity: 1;
+    }
+
+        .movie-overlay i {
+            color: var(--netflix-red);
+            font-size: 1.8rem; /* Lớn hơn */
+            background-color: rgba(0, 0, 0, 0.8);
+            border-radius: 50%;
+            width: 45px; /* Lớn hơn */
+            height: 45px; /* Lớn hơn */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 15px; /* Lớn hơn */
+            border: 2px solid var(--netflix-red);
+        }
+
+    .movie-title {
+        font-size: 1.1rem; /* Lớn hơn */
+        font-weight: 700; /* Đậm hơn */
+        margin: 0.8rem 0 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        text-align: center;
+        width: 100%;
+        color: white;
+        text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+    }
+
+        .movie-title a {
+            color: #ffffff; /* Trắng hơn */
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+            .movie-title a:hover {
+                color: var(--netflix-red);
+                text-decoration: underline;
+            }
+
+    /* Ensure all images are responsive */
+    img {
+        max-width: 100%;
+        height: auto;
+        display: block;
+    }
+
+    /* Container width constraints */
+    .container-constraint {
+        max-width: 100%;
+        overflow: hidden;
+    }
+
+    /* Hero image fix - Tăng độ sáng */
+    .movie-hero-backdrop {
+        object-position: center center;
+        filter: brightness(1.25) contrast(1.15); /* Tăng thêm độ sáng */
+    }
+</style>
+
+<!-- Hero Banner với ảnh sáng hơn -->
+<div class="movie-hero">
+    <img src="@(string.IsNullOrEmpty(Model.Movie.PosterUrl) ? "https://images.unsplash.com/photo-1536440136628-849c177e76a1?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80&brightness=1.2" : Model.Movie.PosterUrl)"
+         class="movie-hero-backdrop"
+         alt="@Model.Movie.Title"
+         loading="lazy"
+         onerror="this.src='https://images.unsplash.com/photo-1536440136628-849c177e76a1?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80&brightness=1.2'"
+         style="filter: brightness(1.25) contrast(1.15);">
+
+    <div class="movie-hero-content container-constraint">
+        <h1 class="movie-hero-title">@Model.Movie.Title</h1>
+
+        <div class="movie-meta-badges">
+            <span class="movie-badge">@Model.Movie.Type</span>
+            <span class="movie-badge">@Model.Movie.Status</span>
+            @if (Model.Movie.IsActive)
+            {
+                <span class="movie-badge" style="background-color: rgba(229, 9, 20, 0.95); border-color: rgba(229, 9, 20, 0.7);">Đang chiếu</span>
+            }
+        </div>
+
+        <div class="movie-hero-actions">
+            @if (Model.Episodes.Any())
+            {
+                <a asp-controller="Movie" asp-action="Watch" asp-route-slug="@Model.Movie.Slug" asp-route-ep="1"
+                   class="netflix-play-btn">
+                    <i class="fas fa-play"></i> Xem Tập 1
+                </a>
+            }
+            else if (Model.MediaFiles.Any())
+            {
+                <a asp-controller="Movie" asp-action="Watch" asp-route-slug="@Model.Movie.Slug"
+                   class="netflix-play-btn">
+                    <i class="fas fa-play"></i> Xem Phim
+                </a>
+            }
+
+            @if (!string.IsNullOrEmpty(Model.Movie.TrailerUrl))
+            {
+                <a href="@Model.Movie.TrailerUrl" target="_blank" class="netflix-trailer-btn">
+                    <i class="fas fa-video"></i> Xem Trailer
+                </a>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Main Content -->
+<div class="movie-main-content container-constraint">
+    <!-- Info Grid -->
+    <div class="movie-info-grid">
+        <div class="info-item">
+            <span class="info-label">Năm phát hành</span>
+            <span class="info-value">@Model.Movie.ReleaseYear</span>
+        </div>
+        <div class="info-item">
+            <span class="info-label">Thời lượng</span>
+            <span class="info-value">@Model.Movie.DurationMinutes phút</span>
+        </div>
+        <div class="info-item">
+            <span class="info-label">Quốc gia</span>
+            <span class="info-value">@Model.Movie.CountryName</span>
+        </div>
+        <div class="info-item">
+            <span class="info-label">Ngôn ngữ</span>
+            <span class="info-value">@Model.Movie.LanguageName</span>
+        </div>
+        <div class="info-item">
+            <span class="info-label">Lượt xem</span>
+            <span class="info-value">@Model.Movie.ViewCount.ToString("N0")</span>
+        </div>
+    </div>
+
+    <!-- Description -->
+    <div class="movie-description">
+        @Model.Movie.Description
+    </div>
+
+    <!-- Episodes List -->
+    @if (Model.Episodes.Any())
+    {
+        <div class="episodes-section">
+            <h3 class="section-title">
+                <i class="fas fa-list"></i> Danh sách tập
+            </h3>
+            <div class="episodes-grid">
+                @foreach (var episode in Model.Episodes)
+                {
+                    <div class="episode-card">
+                        <a asp-controller="Movie" asp-action="Watch"
+                           asp-route-slug="@Model.Movie.Slug"
+                           asp-route-ep="@episode.EpisodeNumber"
+                           class="episode-link">
+                            Tập @episode.EpisodeNumber
+                        </a>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+
+    <!-- Related Movies -->
+    @if (Model.RelatedMovies.Any())
+    {
+        <div class="related-section">
+            <h3 class="section-title">
+                <i class="fas fa-film"></i> Phim liên quan
+            </h3>
+            <div class="movies-row">
+                @foreach (var relatedMovie in Model.RelatedMovies)
+                {
+                    <div class="related-movie-card">
+                        <a asp-controller="Movies" asp-action="Details" asp-route-slug="@relatedMovie.Slug">
+                            <div class="movie-poster">
+                                <img src="@(string.IsNullOrEmpty(relatedMovie.PosterUrl) ? "https://via.placeholder.com/300x450/3a3a3a/ffffff?text=No+Poster" : relatedMovie.PosterUrl)"
+                                     alt="@relatedMovie.Title"
+                                     loading="lazy"
+                                     onerror="this.src='https://via.placeholder.com/300x450/3a3a3a/ffffff?text=No+Poster'"
+                                     style="filter: brightness(1.1);">
+                                <div class="movie-overlay">
+                                    <i class="fas fa-play-circle"></i>
+                                </div>
+                            </div>
+                        </a>
+                        <h6 class="movie-title">
+                            <a asp-controller="Movies" asp-action="Details" asp-route-slug="@relatedMovie.Slug">
+                                @relatedMovie.Title
+                            </a>
+                        </h6>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+</div>

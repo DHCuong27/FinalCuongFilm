@@ -10,39 +10,77 @@ namespace FinalCuongFilm.MVC.Controllers
 		private readonly ILogger<HomeController> _logger;
 		private readonly IMovieService _movieService;
 		private readonly IGenreService _genreService;
+		private readonly ICountryService _countryService;
 
 		public HomeController(
 			ILogger<HomeController> logger,
 			IMovieService movieService,
-			IGenreService genreService)
+			IGenreService genreService,
+			ICountryService countryService)
 		{
 			_logger = logger;
 			_movieService = movieService;
 			_genreService = genreService;
+			_countryService = countryService;
 		}
 
-		// GET: /
 		public async Task<IActionResult> Index()
 		{
-			// Nếu user là Admin, redirect về Admin Dashboard
 			if (User.IsInRole("Admin"))
 			{
 				return RedirectToAction("Index", "Dashboard", new { area = "Admin" });
 			}
 
-			// Lấy phim mới nhất (Active)
 			var allMovies = await _movieService.GetAllAsync();
-			var activeMovies = allMovies
+
+			var latestMovies = allMovies
 				.Where(m => m.IsActive)
 				.OrderByDescending(m => m.ReleaseYear)
 				.Take(12)
 				.ToList();
 
-			// Lấy thể loại để hiển thị menu
-			var genres = await _genreService.GetAllAsync();
-			ViewBag.Genres = genres;
+			var popularMovies = allMovies
+				.Where(m => m.IsActive)
+				.OrderByDescending(m => m.ViewCount)
+				.Take(12)
+				.ToList();
 
-			return View(activeMovies);
+			var genres = await _genreService.GetAllAsync();
+			var countries = await _countryService.GetAllAsync();
+
+			ViewBag.LatestMovies = latestMovies;
+			ViewBag.PopularMovies = popularMovies;
+			ViewBag.Genres = genres;
+			ViewBag.Countries = countries;
+
+			return View();
+		}
+
+		// Profile
+		public IActionResult Profile()
+		{
+			if (!User.Identity.IsAuthenticated)
+				return RedirectToPage("/Account/Login", new { area = "Identity" });
+
+			return View();
+		}
+
+		// Continue Watching
+		public IActionResult ContinueWatching()
+		{
+			if (!User.Identity.IsAuthenticated)
+				return RedirectToPage("/Account/Login", new { area = "Identity" });
+
+			return View();
+		}
+
+		// My List
+		public IActionResult MyList()
+		{
+			if (!User.Identity.IsAuthenticated)
+				return RedirectToPage("/Account/Login", new { area = "Identity" });
+
+			return View();
 		}
 
 		public IActionResult Privacy()

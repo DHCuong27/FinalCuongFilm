@@ -1,0 +1,380 @@
+﻿@model FinalCuongFilm.MVC.Models.ViewModels.MovieWatchViewModel
+
+@{
+    ViewData["Title"] = $"Xem {Model.Movie.Title}";
+    Layout = "_LayoutUser";
+    var videoUrl = Model.MediaFiles.FirstOrDefault()?.FileUrl;
+
+    var nextEpisode = Model.CurrentEpisode != null && Model.Episodes.Any()
+        ? Model.Episodes.FirstOrDefault(e => e.EpisodeNumber == Model.CurrentEpisode.EpisodeNumber + 1)
+        : null;
+
+    var nextUrl = nextEpisode != null
+        ? Url.Action("Watch", "Movies", new { slug = Model.Movie.Slug, ep = nextEpisode.EpisodeNumber })
+        : "";
+}
+
+<style>
+    :root {
+        --netflix-red: #e50914;
+        --netflix-dark: #141414;
+        --netflix-dark2: #181818;
+        --netflix-gray: #2d2d2d;
+        --netflix-light-gray: #8c8c8c;
+        --netflix-white: #ffffff;
+    }
+
+    body {
+        background-color: var(--netflix-dark);
+        color: var(--netflix-white);
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+    }
+
+    /* Video Container */
+    .video-container {
+        position: relative;
+        width: 100%;
+        background: #000;
+        min-height: 70vh;
+    }
+
+    #videoPlayer {
+        width: 100%;
+        height: 70vh;
+        outline: none;
+    }
+
+    /* Movie Info */
+    .movie-watch-info {
+        padding: 2rem 4rem;
+        background: linear-gradient(to bottom, rgba(20, 20, 20, 0.8), var(--netflix-dark));
+    }
+
+        .movie-watch-info h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+    .episode-title {
+        color: var(--netflix-light-gray);
+        font-size: 1.2rem;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+        .episode-title i {
+            color: var(--netflix-red);
+        }
+
+    .movie-description {
+        font-size: 1.1rem;
+        line-height: 1.6;
+        color: #d2d2d2;
+        max-width: 800px;
+        margin-bottom: 2rem;
+    }
+
+    /* Back to Info Button */
+    .info-button {
+        background-color: rgba(255, 255, 255, 0.1);
+        color: white;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        padding: 0.8rem 2rem;
+        border-radius: 4px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+        .info-button:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+            text-decoration: none;
+        }
+
+    /* Episodes Grid */
+    .episodes-section {
+        padding: 0 4rem 4rem;
+    }
+
+        .episodes-section h3 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--netflix-gray);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+            .episodes-section h3 i {
+                color: var(--netflix-red);
+            }
+
+    .episodes-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+        gap: 0.8rem;
+    }
+
+    .episode-btn {
+        background-color: var(--netflix-gray);
+        color: white;
+        border: none;
+        border-radius: 4px;
+        padding: 0.8rem 0.5rem;
+        font-weight: 600;
+        text-align: center;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        display: block;
+    }
+
+        .episode-btn:hover {
+            background-color: var(--netflix-red);
+            color: white;
+            text-decoration: none;
+            transform: scale(1.05);
+        }
+
+        .episode-btn.active {
+            background-color: var(--netflix-red);
+            color: white;
+        }
+
+    /* No Video Warning */
+    .netflix-warning {
+        background-color: var(--netflix-gray);
+        color: white;
+        border: none;
+        border-radius: 4px;
+        padding: 2rem;
+        text-align: center;
+        margin: 2rem;
+    }
+
+        .netflix-warning i {
+            color: var(--netflix-red);
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+    /* Countdown Overlay */
+    .countdown-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.95);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        backdrop-filter: blur(10px);
+    }
+
+    .countdown-content {
+        background: rgba(40, 40, 40, 0.9);
+        padding: 3rem;
+        border-radius: 8px;
+        text-align: center;
+        max-width: 500px;
+        width: 90%;
+        border: 1px solid var(--netflix-gray);
+    }
+
+        .countdown-content h3 {
+            color: white;
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+        }
+
+    .countdown-timer {
+        font-size: 3rem;
+        color: var(--netflix-red);
+        font-weight: 700;
+        margin: 1rem 0;
+    }
+
+    .countdown-message {
+        color: var(--netflix-light-gray);
+        font-size: 1.1rem;
+        margin-bottom: 2rem;
+    }
+
+    .countdown-btn {
+        background-color: var(--netflix-red);
+        color: white;
+        border: none;
+        padding: 0.8rem 2rem;
+        font-size: 1rem;
+        font-weight: 600;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+        margin: 0 0.5rem;
+    }
+
+        .countdown-btn:hover {
+            background-color: #f40612;
+        }
+
+        .countdown-btn.secondary {
+            background-color: var(--netflix-gray);
+        }
+
+            .countdown-btn.secondary:hover {
+                background-color: var(--netflix-light-gray);
+            }
+</style>
+
+<div class="video-container">
+    @if (!string.IsNullOrEmpty(videoUrl))
+    {
+        <video id="videoPlayer"
+               controls
+               autoplay
+               playsinline
+               data-next-episode="@(nextEpisode?.EpisodeNumber ?? 0)"
+               data-next-url="@nextUrl">
+            <source src="@videoUrl" type="video/mp4" />
+            Trình duyệt của bạn không hỗ trợ video HTML5.
+        </video>
+    }
+    else
+    {
+        <div class="netflix-warning">
+            <i class="fas fa-exclamation-triangle"></i>
+            <h3>Chưa có video cho tập này</h3>
+            <p>Vui lòng quay lại sau hoặc chọn tập khác!</p>
+        </div>
+    }
+</div>
+
+<div class="movie-watch-info">
+    <div class="row align-items-start">
+        <div class="col-lg-9 col-md-8">
+            <h1>@Model.Movie.Title</h1>
+            @if (Model.CurrentEpisode != null)
+            {
+                <div class="episode-title">
+                    <i class="fas fa-film"></i>
+                    Tập @Model.CurrentEpisode.EpisodeNumber: @Model.CurrentEpisode.Title
+                </div>
+                @if (!string.IsNullOrEmpty(Model.CurrentEpisode.Description))
+                {
+                    <p class="movie-description">@Model.CurrentEpisode.Description</p>
+                }
+            }
+            else if (!string.IsNullOrEmpty(Model.Movie.Description))
+            {
+                <p class="movie-description">@Model.Movie.Description</p>
+            }
+        </div>
+        <div class="col-lg-3 col-md-4 text-lg-end text-md-end text-start mt-md-0 mt-3">
+            <a asp-controller="Movies" asp-action="Details" asp-route-slug="@Model.Movie.Slug"
+               class="info-button">
+                <i class="fas fa-info-circle"></i> Thông tin phim
+            </a>
+        </div>
+    </div>
+</div>
+
+@if (Model.Episodes.Any())
+{
+    <div class="episodes-section">
+        <h3><i class="fas fa-list"></i> Chọn tập</h3>
+        <div class="episodes-grid">
+            @foreach (var episode in Model.Episodes)
+            {
+                var isActive = Model.CurrentEpisode != null && episode.Id == Model.CurrentEpisode.Id;
+                <a asp-controller="Movies" asp-action="Watch"
+                   asp-route-slug="@Model.Movie.Slug"
+                   asp-route-ep="@episode.EpisodeNumber"
+                   class="episode-btn @(isActive ? "active" : "")">
+                    @episode.EpisodeNumber
+                </a>
+            }
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <script>
+        (function() {
+            var videoPlayer = document.getElementById('videoPlayer');
+            if (!videoPlayer) return;
+
+            var nextUrl = videoPlayer.dataset.nextUrl;
+            var nextEpisode = videoPlayer.dataset.nextEpisode;
+
+            if (nextUrl && nextEpisode && nextEpisode !== '0') {
+                videoPlayer.addEventListener('ended', function() {
+                    showNetflixCountdown(nextUrl, nextEpisode);
+                });
+            }
+
+            function showNetflixCountdown(url, episodeNumber) {
+                var countdown = 10;
+                var overlay = document.createElement('div');
+                overlay.className = 'countdown-overlay';
+
+                var content = document.createElement('div');
+                content.className = 'countdown-content';
+                content.innerHTML = `
+                    <h3>Tập tiếp theo</h3>
+                    <div class="countdown-timer" id="netflixCountdown">${countdown}</div>
+                    <p class="countdown-message">Tự động chuyển sang <strong>Tập ${episodeNumber}</strong></p>
+                    <div>
+                        <button id="playNowBtn" class="countdown-btn">
+                            <i class="fas fa-play"></i> Xem ngay
+                        </button>
+                        <button id="cancelBtn" class="countdown-btn secondary">
+                            <i class="fas fa-times"></i> Hủy
+                        </button>
+                    </div>
+                `;
+
+                overlay.appendChild(content);
+                document.body.appendChild(overlay);
+
+                var interval = setInterval(function() {
+                    countdown--;
+                    var countdownEl = document.getElementById('netflixCountdown');
+                    if (countdownEl) {
+                        countdownEl.textContent = countdown;
+                        if (countdown <= 5) {
+                            countdownEl.style.color = '#ff4444';
+                        }
+                    }
+
+                    if (countdown <= 0) {
+                        clearInterval(interval);
+                        window.location.href = url;
+                    }
+                }, 1000);
+
+                document.getElementById('playNowBtn').addEventListener('click', function() {
+                    clearInterval(interval);
+                    window.location.href = url;
+                });
+
+                document.getElementById('cancelBtn').addEventListener('click', function() {
+                    clearInterval(interval);
+                    document.body.removeChild(overlay);
+                    videoPlayer.play(); // Resume video playback if still at end
+                });
+            }
+        })();
+    </script>
+}
