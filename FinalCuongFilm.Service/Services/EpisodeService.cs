@@ -1,6 +1,5 @@
 ﻿using FinalCuongFilm.ApplicationCore.Entities;
 using FinalCuongFilm.Common.DTOs;
-using FinalCuongFilm.Datalayer;
 using FinalCuongFilm.DataLayer;
 using FinalCuongFilm.Service.Interfaces;
 using Microsoft.EntityFrameworkCore;

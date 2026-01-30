@@ -239,4 +239,69 @@
             </div>
         </div>
     </div>
+
+
+    <div class="col-sm-6 col-lg-3">
+        <div class="dashboard-card">
+            <div class="card-content">
+                <div class="card-header">
+                    <div class="card-icon languages">
+                        <i class="fas fa-tags"></i>
+                    </div>
+                    <div class="card-text">
+                        <h2>@ViewBag.TotalLanguages</h2>
+                        <span>Languages</span>
+                    </div>
+                </div>
+                <div class="card-action">
+                    <a asp-area="Admin" asp-controller="Languages" asp-action="Index" class="btn-manage">
+                        Manage
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="col-sm-6 col-lg-3">
+        <div class="dashboard-card">
+            <div class="card-content">
+                <div class="card-header">
+                    <div class="card-icon episodes">
+                        <i class="fas fa-globe"></i>
+                    </div>
+                    <div class="card-text">
+                        <h2>@ViewBag.TotalEpisodes</h2>
+                        <span>Episodes</span>
+                    </div>
+                </div>
+                <div class="card-action">
+                    <a asp-area="Admin" asp-controller="Episodes" asp-action="Index" class="btn-manage">
+                        Manage
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+        <div class="col-sm-6 col-lg-3">
+        <div class="dashboard-card">
+            <div class="card-content">
+                <div class="card-header">
+                    <div class="card-icon mediaFiles">
+                        <i class="fas fa-globe"></i>
+                    </div>
+                    <div class="card-text">
+                        <h2>@ViewBag.TotalMediaFiles</h2>
+                        <span>MediaFiles</span>
+                    </div>
+                </div>
+                <div class="card-action">
+                    <a asp-area="Admin" asp-controller="MediaFiles" asp-action="Index" class="btn-manage">
+                        Manage
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div
 </div>
