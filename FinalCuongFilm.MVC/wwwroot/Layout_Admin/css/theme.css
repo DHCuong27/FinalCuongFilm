@@ -1586,19 +1586,32 @@ section {
     border-top: 1px solid #f2f2f2;
 }
 
-.account-dropdown__footer a {
+.account-dropdown__footer form {
+    margin: 0;
+    padding: 0;
+}
+
+.account-dropdown__footer a,
+.account-dropdown__footer button {
     display: block;
     color: #333;
     padding: 15px 25px;
     font-size: 14px;
+    width: 100%;
+    text-align: left;
+    border: none;
+    background: none;
+    cursor: pointer;
 }
 
-.account-dropdown__footer a:hover {
+.account-dropdown__footer a:hover,
+.account-dropdown__footer button:hover {
     background: #4272d7;
     color: #fff;
 }
 
-.account-dropdown__footer a i {
+.account-dropdown__footer a i,
+.account-dropdown__footer button i {
     line-height: 1;
     margin-right: 20px;
     font-size: 18px;
