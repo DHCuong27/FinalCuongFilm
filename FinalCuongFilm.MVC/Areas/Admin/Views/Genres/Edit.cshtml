@@ -1,45 +1,304 @@
 ﻿@model FinalCuongFilm.ApplicationCore.Entities.Genre
 
 @{
-    ViewData["Title"] = "Edit";
-   
+    ViewData["Title"] = "Edit Genre";
 }
 
-<h1>Edit</h1>
+<style>
+    :root {
+        --primary-color: #4f46e5;
+        --primary-light: #e0e7ff;
+        --text-dark: #1f2937;
+        --text-gray: #6b7280;
+        --border-color: #d1d5db;
+        --bg-light: #f9fafb;
+        --radius: 8px;
+        --shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
 
-<h4>Genre</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
+    body {
+        background-color: #f3f4f6;
+        font-family: 'Segoe UI', system-ui, sans-serif;
+    }
+
+    .edit-container {
+        max-width: 600px;
+        margin: 40px auto;
+        padding: 0 20px;
+    }
+
+    .page-title {
+        font-size: 28px;
+        font-weight: 700;
+        color: var(--text-dark);
+        margin-bottom: 8px;
+    }
+
+    .page-subtitle {
+        font-size: 16px;
+        color: var(--text-gray);
+        margin-bottom: 30px;
+    }
+
+    .edit-card {
+        background: white;
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        padding: 30px;
+        border: 1px solid var(--border-color);
+    }
+
+    .form-group {
+        margin-bottom: 24px;
+    }
+
+    .form-label {
+        display: block;
+        margin-bottom: 8px;
+        color: var(--text-dark);
+        font-weight: 600;
+        font-size: 14px;
+    }
+
+    .required {
+        color: #dc2626;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 12px 16px;
+        border: 2px solid var(--border-color);
+        border-radius: 6px;
+        font-size: 15px;
+        color: var(--text-dark);
+        background: white;
+        transition: border 0.2s;
+    }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .form-control::placeholder {
+            color: var(--text-gray);
+            opacity: 0.7;
+        }
+
+    textarea.form-control {
+        min-height: 100px;
+        resize: vertical;
+        font-family: inherit;
+    }
+
+    .field-error {
+        display: block;
+        margin-top: 6px;
+        color: #dc2626;
+        font-size: 13px;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 32px;
+        padding-top: 24px;
+        border-top: 1px solid var(--border-color);
+    }
+
+    .btn {
+        padding: 12px 24px;
+        border-radius: 6px;
+        font-weight: 600;
+        font-size: 15px;
+        cursor: pointer;
+        transition: all 0.2s;
+        border: none;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-primary {
+        background: var(--primary-color);
+        color: white;
+    }
+
+        .btn-primary:hover {
+            background: #4338ca;
+            transform: translateY(-1px);
+        }
+
+    .btn-secondary {
+        background: white;
+        color: var(--text-dark);
+        border: 1px solid var(--border-color);
+    }
+
+        .btn-secondary:hover {
+            background: var(--bg-light);
+            border-color: var(--text-gray);
+        }
+
+    .help-text {
+        display: block;
+        margin-top: 6px;
+        font-size: 13px;
+        color: var(--text-gray);
+    }
+
+    /* Slug Generator */
+    .slug-generate {
+        display: flex;
+        gap: 8px;
+        margin-top: 8px;
+    }
+
+    .slug-generate-btn {
+        padding: 8px 16px;
+        background: var(--primary-light);
+        color: var(--primary-color);
+        border: none;
+        border-radius: 4px;
+        font-size: 13px;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+
+        .slug-generate-btn:hover {
+            background: #c7d2fe;
+        }
+
+    /* Responsive */
+    @@media (max-width: 640px) {
+        .edit-container {
+            padding: 0 16px;
+            margin: 24px auto;
+        }
+
+        .edit-card {
+            padding: 24px 20px;
+        }
+
+        .page-title {
+            font-size: 24px;
+        }
+
+        .form-actions {
+            flex-direction: column;
+        }
+
+        .btn {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+
+    /* Simple Animation */
+    .edit-card {
+        animation: slideUp 0.3s ease;
+    }
+
+    @@keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+
+<div class="edit-container">
+    <h1 class="page-title">@ViewData["Title"]</h1>
+    <p class="page-subtitle">Update genre information</p>
+
+    <div class="edit-card">
         <form asp-action="Edit">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div asp-validation-summary="ModelOnly" class="field-error"></div>
             <input type="hidden" asp-for="Id" />
+
             <div class="form-group">
-                <label asp-for="Name" class="control-label"></label>
-                <input asp-for="Name" class="form-control" />
-                <span asp-validation-for="Name" class="text-danger"></span>
+                <label asp-for="Name" class="form-label">
+                    Name <span class="required">*</span>
+                </label>
+                <input asp-for="Name" class="form-control"
+                       placeholder="Enter genre name" />
+                <span asp-validation-for="Name" class="field-error"></span>
+                <div class="help-text">Example: Action, Comedy, Drama</div>
             </div>
+
             <div class="form-group">
-                <label asp-for="Slug" class="control-label"></label>
-                <input asp-for="Slug" class="form-control" />
-                <span asp-validation-for="Slug" class="text-danger"></span>
+                <label asp-for="Slug" class="form-label">
+                    Slug <span class="required">*</span>
+                </label>
+                <input asp-for="Slug" class="form-control"
+                       placeholder="genre-slug" />
+                <span asp-validation-for="Slug" class="field-error"></span>
+                <div class="slug-generate">
+                    <button type="button" class="slug-generate-btn" onclick="generateSlug()">
+                        Generate from name
+                    </button>
+                </div>
+                <div class="help-text">URL-friendly identifier (lowercase with hyphens)</div>
             </div>
+
             <div class="form-group">
-                <label asp-for="Description" class="control-label"></label>
-                <input asp-for="Description" class="form-control" />
-                <span asp-validation-for="Description" class="text-danger"></span>
+                <label asp-for="Description" class="form-label">Description</label>
+                <textarea asp-for="Description" class="form-control"
+                          placeholder="Enter genre description"></textarea>
+                <span asp-validation-for="Description" class="field-error"></span>
+                <div class="help-text">Optional description for the genre</div>
             </div>
-            <div class="form-group">
-                <input type="submit" value="Save" class="btn btn-primary" />
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">
+                    <span>💾</span> Save Changes
+                </button>
+                <a asp-action="Index" class="btn btn-secondary">
+                    <span>←</span> Back to List
+                </a>
             </div>
         </form>
     </div>
 </div>
 
-<div>
-    <a asp-action="Index">Back to List</a>
-</div>
-
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        function generateSlug() {
+            const nameInput = document.getElementById('Name');
+            const slugInput = document.getElementById('Slug');
+
+            if (!nameInput.value.trim()) {
+                alert('Please enter a name first');
+                return;
+            }
+
+            const name = nameInput.value.trim();
+            const slug = name
+                .toLowerCase()
+                .replace(/[^\w\s-]/g, '')
+                .replace(/\s+/g, '-')
+                .replace(/--+/g, '-')
+                .trim();
+
+            slugInput.value = slug;
+        }
+
+        // Auto-generate slug when name loses focus (if slug is empty)
+        document.getElementById('Name')?.addEventListener('blur', function() {
+            const slugInput = document.getElementById('Slug');
+            if (!slugInput.value.trim() && this.value.trim()) {
+                generateSlug();
+            }
+        });
+    </script>
 }

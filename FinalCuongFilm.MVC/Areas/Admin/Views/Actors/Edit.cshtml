@@ -1,67 +1,588 @@
 ﻿@model FinalCuongFilm.Common.DTOs.ActorUpdateDto
 
 @{
-    ViewData["Title"] = "Chỉnh sửa Diễn viên";
+    ViewData["Title"] = "Edit Actor";
 }
 
-<div class="row">
-    <div class="col-md-12">
-        <h2 class="title-1">@ViewData["Title"]</h2>
+<style>
+    :root {
+        --primary-color: #2563eb;
+        --primary-light: #dbeafe;
+        --text-dark: #1f2937;
+        --text-gray: #6b7280;
+        --border-color: #e5e7eb;
+        --bg-light: #f9fafb;
+        --radius-md: 8px;
+        --radius-lg: 12px;
+        --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+        --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.05);
+        --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.1);
+        --danger-red: #ef4444;
+        --success-green: #10b981;
+    }
+
+    body {
+        background-color: #f8fafc;
+        font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    }
+
+    .edit-actor-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 30px 20px;
+    }
+
+    .page-header {
+        text-align: center;
+        margin-bottom: 40px;
+    }
+
+    .page-title {
+        font-size: 32px;
+        font-weight: 700;
+        color: var(--text-dark);
+        margin-bottom: 10px;
+        position: relative;
+        display: inline-block;
+    }
+
+        .page-title::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 4px;
+            background: var(--primary-color);
+            border-radius: 2px;
+        }
+
+    .page-subtitle {
+        font-size: 16px;
+        color: var(--text-gray);
+        margin-top: 15px;
+    }
+
+    .edit-actor-card {
+        background: white;
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-lg);
+        padding: 40px;
+        border: 1px solid var(--border-color);
+        position: relative;
+        overflow: hidden;
+    }
+
+        .edit-actor-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-color), #3b82f6);
+        }
+
+    .card-header {
+        background: var(--bg-light);
+        padding: 20px 24px;
+        margin: -40px -40px 30px -40px;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+        .card-header h3 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-dark);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+            .card-header h3 i {
+                color: var(--primary-color);
+                font-size: 20px;
+            }
+
+    /* Form Grid */
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 24px;
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 24px;
+    }
+
+    .form-group {
+        margin-bottom: 0;
+    }
+
+    .form-label {
+        display: block;
+        margin-bottom: 8px;
+        color: var(--text-dark);
+        font-weight: 600;
+        font-size: 14px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .required-star {
+        color: var(--danger-red);
+        margin-left: 4px;
+    }
+
+    /* Form Controls */
+    .form-control {
+        width: 100%;
+        height: 48px;
+        padding: 12px 16px;
+        border: 2px solid var(--border-color);
+        border-radius: var(--radius-md);
+        background-color: white;
+        color: var(--text-dark);
+        font-size: 15px;
+        font-family: inherit;
+        transition: all 0.3s ease;
+    }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+        }
+
+        .form-control:hover {
+            border-color: var(--primary-color);
+        }
+
+        .form-control::placeholder {
+            color: var(--text-gray);
+            opacity: 0.6;
+        }
+
+    select.form-control {
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 16px center;
+        background-size: 16px;
+        padding-right: 40px;
+    }
+
+    /* Avatar Preview Section */
+    .avatar-section {
+        display: flex;
+        align-items: center;
+        gap: 24px;
+        margin-bottom: 24px;
+        padding: 20px;
+        background: var(--bg-light);
+        border-radius: var(--radius-md);
+        border: 1px solid var(--border-color);
+    }
+
+    .avatar-preview {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        overflow: hidden;
+        border: 3px solid var(--border-color);
+        flex-shrink: 0;
+    }
+
+        .avatar-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+    .avatar-placeholder {
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--text-gray);
+    }
+
+    .avatar-info {
+        flex: 1;
+    }
+
+    .avatar-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--text-dark);
+        margin-bottom: 8px;
+    }
+
+    .avatar-description {
+        font-size: 14px;
+        color: var(--text-gray);
+        line-height: 1.5;
+    }
+
+    /* URL Input Group */
+    .url-input-group {
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+    }
+
+        .url-input-group .form-control {
+            flex: 1;
+        }
+
+    .url-paste-btn {
+        padding: 12px 16px;
+        background: var(--primary-light);
+        color: var(--primary-color);
+        border: 2px solid var(--border-color);
+        border-radius: var(--radius-md);
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        white-space: nowrap;
+    }
+
+        .url-paste-btn:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+    /* Date Input Styling */
+    input[type="date"].form-control {
+        font-family: inherit;
+        color-scheme: light;
+    }
+
+        input[type="date"].form-control::-webkit-calendar-picker-indicator {
+            cursor: pointer;
+            opacity: 0.6;
+            transition: opacity 0.3s ease;
+        }
+
+        input[type="date"].form-control:hover::-webkit-calendar-picker-indicator {
+            opacity: 1;
+        }
+
+    /* Validation */
+    .validation-summary {
+        background: rgba(239, 68, 68, 0.05);
+        border: 1px solid rgba(239, 68, 68, 0.3);
+        border-radius: var(--radius-md);
+        padding: 16px;
+        margin-bottom: 30px;
+    }
+
+        .validation-summary ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+
+        .validation-summary li {
+            color: var(--danger-red);
+            font-size: 13px;
+            margin: 4px 0;
+        }
+
+    .field-validation-error {
+        display: block;
+        margin-top: 6px;
+        color: var(--danger-red);
+        font-size: 13px;
+        font-weight: 500;
+    }
+
+    /* Help Text */
+    .help-text {
+        display: block;
+        margin-top: 6px;
+        font-size: 13px;
+        color: var(--text-gray);
+        font-style: italic;
+    }
+
+    /* Form Actions */
+    .form-actions {
+        display: flex;
+        gap: 16px;
+        margin-top: 40px;
+        padding-top: 30px;
+        border-top: 1px solid var(--border-color);
+    }
+
+    .btn {
+        padding: 14px 32px;
+        border-radius: var(--radius-md);
+        font-weight: 600;
+        font-size: 15px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: none;
+        font-family: inherit;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        min-width: 140px;
+        text-decoration: none;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, var(--primary-color), #3b82f6);
+        color: white;
+    }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.3);
+        }
+
+    .btn-secondary {
+        background: transparent;
+        color: var(--text-gray);
+        border: 2px solid var(--border-color);
+    }
+
+        .btn-secondary:hover {
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+            border-color: var(--text-gray);
+        }
+
+    /* Loading State */
+    .btn-loading {
+        position: relative;
+        color: transparent !important;
+    }
+
+        .btn-loading::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border: 3px solid white;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 0.8s linear infinite;
+        }
+
+    @@keyframes spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    /* Responsive */
+    @@media (max-width: 768px) {
+        .edit-actor-container {
+            padding: 20px 16px;
+        }
+
+        .edit-actor-card {
+            padding: 30px 24px;
+        }
+
+        .card-header {
+            margin: -30px -24px 20px -24px;
+            padding: 16px 24px;
+        }
+
+        .page-title {
+            font-size: 28px;
+        }
+
+        .form-row {
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        .avatar-section {
+            flex-direction: column;
+            text-align: center;
+            gap: 16px;
+        }
+
+        .avatar-preview {
+            width: 120px;
+            height: 120px;
+        }
+
+        .form-actions {
+            flex-direction: column;
+        }
+
+        .btn {
+            width: 100%;
+        }
+    }
+
+    @@media (max-width: 480px) {
+        .edit-actor-card {
+            padding: 24px 20px;
+            border-radius: 12px;
+        }
+
+        .page-title {
+            font-size: 24px;
+        }
+
+        .card-header h3 {
+            font-size: 16px;
+        }
+
+        .form-control {
+            height: 44px;
+            font-size: 14px;
+        }
+
+        .url-input-group {
+            flex-direction: column;
+        }
+
+        .url-paste-btn {
+            width: 100%;
+            padding: 10px;
+        }
+    }
+
+    /* Animation */
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .edit-actor-card {
+        animation: fadeIn 0.4s ease-out;
+    }
+</style>
+
+<div class="edit-actor-container">
+    <div class="page-header">
+        <h1 class="page-title">@ViewData["Title"]</h1>
+        <p class="page-subtitle">Update actor information</p>
     </div>
-</div>
 
-<div class="row m-t-30">
-    <div class="col-md-8">
-        <div class="card">
-            <div class="card-header">
-                <strong>Cập nhật thông tin diễn viên</strong>
+    <div class="edit-actor-card">
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div class="validation-summary" role="alert">
+                <ul>
+                    @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                    {
+                        <li>@error.ErrorMessage</li>
+                    }
+                </ul>
             </div>
-            <div class="card-body card-block">
-                <form asp-action="Edit" method="post">
-                    <input type="hidden" asp-for="Id" />
-                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        }
 
-                    <div class="form-group">
-                        <label asp-for="Name" class="form-control-label">Tên diễn viên <span class="text-danger">*</span></label>
-                        <input asp-for="Name" class="form-control" />
-                        <span asp-validation-for="Name" class="text-danger"></span>
-                    </div>
-
-                    <div class="form-group">
-                        <label asp-for="AvartUrl" class="form-control-label">URL Avatar</label>
-                        <input asp-for="AvartUrl" class="form-control" placeholder="https://example.com/avatar.jpg" />
-                        <span asp-validation-for="AvartUrl" class="text-danger"></span>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label asp-for="DateOfBirth" class="form-control-label">Ngày sinh</label>
-                                <input asp-for="DateOfBirth" class="form-control" type="date" />
-                                <span asp-validation-for="DateOfBirth" class="text-danger"></span>
-                            </div>
-                        </div>
-                        @* <div class="col-md-6">
-                            <div class="form-group">
-                                <label asp-for="Gender" class="form-control-label">Giới tính</label>
-                                <select asp-for="Gender" class="form-control" asp-items="Html.GetEnumSelectList<FinalCuongFilm.ApplicationCore.Entities.Enum.Gender>()">
-                                </select>
-                                <span asp-validation-for="Gender" class="text-danger"></span>
-                            </div>
-                        </div> *@
-                    </div>
-
-                    <div class="form-actions form-group">
-                        <button type="submit" class="btn btn-primary btn-sm">
-                            <i class="fa fa-save"></i> Cập nhật
-                        </button>
-                        <a asp-action="Index" class="btn btn-secondary btn-sm">
-                            <i class="fa fa-times"></i> Hủy
-                        </a>
-                    </div>
-                </form>
-            </div>
+        <div class="card-header">
+            <h3>
+                <i>✏️</i>
+                Update Actor Information
+            </h3>
         </div>
+
+        <form asp-action="Edit" method="post" id="editForm">
+            <input type="hidden" asp-for="Id" />
+
+            <div class="form-grid">
+                <!-- Avatar Preview -->
+                <div class="avatar-section" id="avatarPreviewSection">
+                    <div class="avatar-preview">
+                        @if (!string.IsNullOrEmpty(Model.AvartUrl))
+                        {
+                            <img src="@Model.AvartUrl" alt="Current Avatar" id="avatarPreviewImage" />
+                        }
+                        else
+                        {
+                            <div class="avatar-placeholder" id="avatarPlaceholder">
+                                <div>👤</div>
+                            </div>
+                        }
+                    </div>
+                    <div class="avatar-info">
+                        <div class="avatar-title">Avatar Preview</div>
+                        <div class="avatar-description">
+                            Current avatar will be displayed here. Enter a new URL to update.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Name Input -->
+                <div class="form-group">
+                    <label asp-for="Name" class="form-label">
+                        Actor Name <span class="required-star">*</span>
+                    </label>
+                    <input asp-for="Name" class="form-control"
+                           placeholder="Enter actor name" />
+                    <span asp-validation-for="Name" class="field-validation-error"></span>
+                    <small class="help-text">Full name of the actor</small>
+                </div>
+
+                <!-- Avatar URL Input -->
+                <div class="form-group">
+                    <label asp-for="AvartUrl" class="form-label">Avatar URL</label>
+                    <div class="url-input-group">
+                        <input asp-for="AvartUrl" class="form-control"
+                               placeholder="https://example.com/avatar.jpg"
+                               id="avatarUrlInput" />
+                        <button type="button" class="url-paste-btn" id="pasteUrlBtn">
+                            <i>📋</i> Paste URL
+                        </button>
+                    </div>
+                    <span asp-validation-for="AvartUrl" class="field-validation-error"></span>
+                    <small class="help-text">Direct image URL for the actor's avatar</small>
+                </div>
+
+                <!-- Date of Birth and Gender -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label asp-for="DateOfBirth" class="form-label">Date of Birth</label>
+                        <input asp-for="DateOfBirth" class="form-control" type="date" />
+                        <span asp-validation-for="DateOfBirth" class="field-validation-error"></span>
+                        <small class="help-text">Actor's birth date</small>
+                    </div>
+
+                    @* <div class="form-group">
+                        <label asp-for="Gender" class="form-label">Gender</label>
+                        <select asp-for="Gender" class="form-control" 
+                                asp-items="Html.GetEnumSelectList<FinalCuongFilm.ApplicationCore.Entities.Enum.Gender>()">
+                        </select>
+                        <span asp-validation-for="Gender" class="field-validation-error"></span>
+                        <small class="help-text">Select gender</small>
+                    </div> *@
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary" id="submitBtn">
+                    <i>💾</i> Update Actor
+                </button>
+                <a asp-action="Index" class="btn btn-secondary">
+                    <i>←</i> Back to List
+                </a>
+            </div>
+        </form>
     </div>
 </div>
 
@@ -69,4 +590,89 @@
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const avatarUrlInput = document.getElementById('avatarUrlInput');
+            const avatarPreviewImage = document.getElementById('avatarPreviewImage');
+            const avatarPlaceholder = document.getElementById('avatarPlaceholder');
+            const pasteUrlBtn = document.getElementById('pasteUrlBtn');
+            const submitBtn = document.getElementById('submitBtn');
+            const editForm = document.getElementById('editForm');
+
+            // Update avatar preview when URL changes
+            avatarUrlInput.addEventListener('input', function() {
+                const url = this.value.trim();
+                updateAvatarPreview(url);
+            });
+
+            // Paste URL from clipboard
+            pasteUrlBtn.addEventListener('click', async function() {
+                try {
+                    const text = await navigator.clipboard.readText();
+                    avatarUrlInput.value = text;
+                    updateAvatarPreview(text);
+
+                    // Show success feedback
+                    const originalText = this.innerHTML;
+                    this.innerHTML = '<i>✓</i> URL Pasted!';
+                    this.style.background = '#10b981';
+                    this.style.color = 'white';
+                    this.style.borderColor = '#10b981';
+
+                    setTimeout(() => {
+                        this.innerHTML = originalText;
+                        this.style.background = '';
+                        this.style.color = '';
+                        this.style.borderColor = '';
+                    }, 2000);
+                } catch (err) {
+                    alert('Cannot read from clipboard. Please paste manually (Ctrl+V)');
+                }
+            });
+
+            // Update avatar preview function
+            function updateAvatarPreview(url) {
+                if (isValidImageUrl(url)) {
+                    if (avatarPreviewImage) {
+                        avatarPreviewImage.src = url;
+                        avatarPreviewImage.style.display = 'block';
+                        if (avatarPlaceholder) {
+                            avatarPlaceholder.style.display = 'none';
+                        }
+                    }
+                } else if (!url) {
+                    if (avatarPreviewImage) {
+                        avatarPreviewImage.style.display = 'none';
+                    }
+                    if (avatarPlaceholder) {
+                        avatarPlaceholder.style.display = 'flex';
+                    }
+                }
+            }
+
+            // Validate image URL
+            function isValidImageUrl(url) {
+                if (!url) return false;
+                try {
+                    const parsedUrl = new URL(url);
+                    const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp'];
+                    const path = parsedUrl.pathname.toLowerCase();
+                    return imageExtensions.some(ext => path.endsWith(ext));
+                } catch (_) {
+                    return false;
+                }
+            }
+
+            // Form submission
+            editForm.addEventListener('submit', function(e) {
+                submitBtn.classList.add('btn-loading');
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '';
+            });
+
+            // Initialize avatar preview on page load
+            updateAvatarPreview(avatarUrlInput.value);
+        });
+    </script>
 }
