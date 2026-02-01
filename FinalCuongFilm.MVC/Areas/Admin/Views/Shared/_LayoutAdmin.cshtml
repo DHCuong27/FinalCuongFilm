@@ -16,6 +16,200 @@
 
     <!-- Main CSS-->
     <link href="~/Layout_Admin/css/theme.css" rel="stylesheet" media="all">
+
+<style>
+    /* Dropdown container */
+    .account-dropdown {
+        position: absolute;
+        top: calc(100% + 10px);
+        right: 0;
+        width: 280px;
+        background: #ffffff;
+        border: 1px solid #e0e0e0;
+        border-radius: 6px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-10px);
+        transition: all 0.2s ease;
+        z-index: 1000;
+        overflow: hidden;
+    }
+
+    /* Show dropdown */
+    .account-dropdown.show {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+    }
+
+    /* Arrow pointing up */
+    .account-dropdown::before {
+        content: '';
+        position: absolute;
+        top: -8px;
+        right: 20px;
+        width: 0;
+        height: 0;
+        border-left: 8px solid transparent;
+        border-right: 8px solid transparent;
+        border-bottom: 8px solid #ffffff;
+        z-index: 1;
+    }
+
+    .account-dropdown::after {
+        content: '';
+        position: absolute;
+        top: -9px;
+        right: 19px;
+        width: 0;
+        height: 0;
+        border-left: 9px solid transparent;
+        border-right: 9px solid transparent;
+        border-bottom: 9px solid #e0e0e0;
+        z-index: 0;
+    }
+
+    /* Info section */
+    .account-dropdown .info {
+        padding: 20px;
+        display: flex;
+        align-items: center;
+        border-bottom: 1px solid #f0f0f0;
+        background: #fafafa;
+    }
+
+    .account-dropdown .info .image {
+        margin-right: 15px;
+        flex-shrink: 0;
+    }
+
+    .account-dropdown .info .image a {
+        display: block;
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        overflow: hidden;
+        border: 2px solid #e0e0e0;
+    }
+
+    .account-dropdown .info .image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .account-dropdown .info .content {
+        flex: 1;
+        overflow: hidden;
+    }
+
+    .account-dropdown .info .content h5.name {
+        margin: 0 0 5px 0;
+        font-size: 16px;
+        font-weight: 600;
+        color: #333333;
+    }
+
+    .account-dropdown .info .content .email {
+        color: #666666;
+        font-size: 13px;
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    /* Menu items body */
+    .account-dropdown__body {
+        padding: 10px 0;
+        background: #ffffff;
+    }
+
+    .account-dropdown__item {
+        margin: 0;
+    }
+
+    .account-dropdown__item a {
+        display: flex;
+        align-items: center;
+        padding: 12px 20px;
+        color: #333333;
+        font-size: 14px;
+        text-decoration: none;
+        transition: background-color 0.2s ease;
+    }
+
+    .account-dropdown__item a:hover {
+        background-color: #f5f5f5;
+    }
+
+    .account-dropdown__item a i {
+        margin-right: 12px;
+        font-size: 16px;
+        width: 20px;
+        text-align: center;
+        color: #666666;
+    }
+
+    /* Footer - Logout section */
+    .account-dropdown__footer {
+        padding: 15px 20px;
+        border-top: 1px solid #f0f0f0;
+        background: #ffffff;
+    }
+
+    .account-dropdown__footer form {
+        margin: 0;
+    }
+
+    .account-dropdown__footer .btn-logout {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        padding: 10px;
+        background: #f5f5f5;
+        color: #dc3545;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .account-dropdown__footer .btn-logout:hover {
+        background: #dc3545;
+        color: #ffffff;
+        border-color: #dc3545;
+    }
+
+    .account-dropdown__footer .btn-logout i {
+        margin-right: 8px;
+        font-size: 16px;
+    }
+
+    /* Separator line */
+    .account-dropdown__separator {
+        height: 1px;
+        background: #f0f0f0;
+        margin: 5px 0;
+    }
+
+    /* Responsive */
+    @@media (max-width: 991px) {
+        .account-dropdown {
+            width: 260px;
+            right: -10px;
+        }
+        
+        .account-dropdown::before,
+        .account-dropdown::after {
+            right: 15px;
+        }
+    }
+</style>
 </head>
 
 <body class="animsition">
@@ -41,7 +235,7 @@
                     <ul class="navbar-mobile__list list-unstyled">
                         <li class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "Admin" ? "active" : "")">
                             <a asp-area="Admin" asp-controller="Admin" asp-action="Index">
-                                <i class="fas fa-tachometer-alt"></i>Dashboard
+                                <i class="fas fa-tachometer-alt"></i>Admin
                             </a>
                         </li>
                         <li class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "Movies" ? "active" : "")">
@@ -66,38 +260,49 @@
                         </li>
                         <li class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "Languages" ? "active" : "")">
                             <a asp-area="Admin" asp-controller="Languages" asp-action="Index">
-                                <i class="fas fa-globe"></i>Languages
+                                <i class="fas fa-language"></i>Languages
                             </a>
                         </li>
                         <li class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "Episodes" ? "active" : "")">
                             <a asp-area="Admin" asp-controller="Episodes" asp-action="Index">
-                                <i class="fas fa-globe"></i>Episodes
+                                <i class="fas fa-list-ol"></i>Episodes
                             </a>
                         </li>
                         <li class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "MediaFiles" ? "active" : "")">
                             <a asp-area="Admin" asp-controller="MediaFiles" asp-action="Index">
-                                <i class="fas fa-globe"></i>MediaFiles
+                                <i class="fas fa-photo-video"></i>MediaFiles
                             </a>
+                        </li>
+                        @* <li style="border-top: 1px solid rgba(255,255,255,0.1); margin-top: 10px; padding-top: 10px;">
+                            <a href="/">
+                                <i class="fas fa-home"></i>Về trang chủ
+                            </a>
+                        </li> *@
+                        <li>
+                            <form asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="/" method="post" style="margin: 0;">
+                                <button type="submit" style="background: none; border: none; color: #dc3545; width: 100%; text-align: left; padding: 10px 15px; cursor: pointer; display: flex; align-items: center;">
+                                    <i class="fas fa-sign-out-alt" style="margin-right: 10px; width: 20px;"></i>Đăng xuất
+                                </button>
+                            </form>
                         </li>
                     </ul>
                 </div>
             </nav>
-            MediaFiles
         </header>
         <!-- END HEADER MOBILE-->
         <!-- MENU SIDEBAR-->
         <aside class="menu-sidebar d-none d-lg-block">
             <div class="logo">
                 <a asp-area="Admin" asp-controller="Admin" asp-action="Index">
-                    <img src="~/Layout_Admin/images/icon/logo-mini.png" "alt="CuongPhim Admin" />
-                </a>     CuongFilm
+                    <img src="~/Layout_Admin/images/icon/logo-mini.png" alt="CuongPhim Admin" />
+                </a>
             </div>
             <div class="menu-sidebar__content js-scrollbar1">
                 <nav class="navbar-sidebar">
                     <ul class="list-unstyled navbar__list">
                         <li class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "Admin" ? "active" : "")">
                             <a asp-area="Admin" asp-controller="Admin" asp-action="Index">
-                                <i class="fas fa-tachometer-alt"></i>Dashboard
+                                <i class="fas fa-tachometer-alt"></i>Admin Dashboard
                             </a>
                         </li>
                         <li class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "Movies" ? "active" : "")">
@@ -122,19 +327,20 @@
                         </li>
                         <li class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "Languages" ? "active" : "")">
                             <a asp-area="Admin" asp-controller="Languages" asp-action="Index">
-                                <i class="fas fa-globe"></i>Manage Languages
+                                <i class="fas fa-language"></i>Manage Languages
                             </a>
                         </li>
                         <li class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "Episodes" ? "active" : "")">
                             <a asp-area="Admin" asp-controller="Episodes" asp-action="Index">
-                                <i class="fas fa-globe"></i>Manage Episodes
+                                <i class="fas fa-list-ol"></i>Manage Episodes
                             </a>
                         </li>
                         <li class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "MediaFiles" ? "active" : "")">
                             <a asp-area="Admin" asp-controller="MediaFiles" asp-action="Index">
-                                <i class="fas fa-globe"></i>Manage MediaFiles
+                                <i class="fas fa-photo-video"></i>Manage MediaFiles
                             </a>
                         </li>
+
                     </ul>
                 </nav>
             </div>
@@ -151,36 +357,59 @@
                                 <div class="account-wrap">
                                     <div class="account-item clearfix js-item-menu">
                                         <div class="image">
-                                            <img src="~/Layout_Admin/images/icon/logo-mini.png" alt="Admin" />
+                                            <img src="~/Layout_Admin/images/icon/Bruno.png" alt="Admin" />
                                         </div>
                                         <div class="content">
-                                            <a class="js-acc-btn" href="#">@(User.Identity?.Name ?? "Admin")</a>
+                                            <a class="js-acc-btn" href="javascript:void(0)">@(User.Identity?.Name ?? "Admin")</a>
                                         </div>
                                         <div class="account-dropdown js-dropdown">
+                                            <!-- Info Section với Gradient -->
                                             <div class="info clearfix">
                                                 <div class="image">
-                                                    <a href="#">
-                                                        <img src="~/Layout_Admin/images/icon/Logo.png" alt="Admin" />
+                                                    <a href="javascript:void(0)">
+                                                        <img src="~/Layout_Admin/images/icon/Bruno.png" alt="Admin" />
                                                     </a>
                                                 </div>
                                                 <div class="content">
                                                     <h5 class="name">
-                                                        <a href="#">@(User.Identity?.Name ?? "Admin")</a>
+                                                        <a href="javascript:void(0)">@(User.Identity?.Name ?? "Admin")</a>
                                                     </h5>
-                                                    <span class="email">@(User.Identity?.Name ?? "admin@example.com")</span>
+                                                    <span class="email">@(User.Identity?.Name ?? "admin")@@cuongfilm.com</span>
                                                 </div>
                                             </div>
+
+                                            <!-- Menu Items -->
                                             <div class="account-dropdown__body">
                                                 <div class="account-dropdown__item">
-                                                    <a asp-area="Identity" asp-page="/Account/Manage/Index">
-                                                        <i class="zmdi zmdi-account"></i>Tài khoản
+                                                    <a asp-area="Admin" asp-controller="Admin" asp-action="Index">
+                                                        <i class="zmdi zmdi-view-Admin"></i>Admin
                                                     </a>
                                                 </div>
+                                                @* <div class="account-dropdown__item">
+                                                    <a asp-area="Identity" asp-page="/Account/Manage/Index">
+                                                        <i class="zmdi zmdi-settings"></i>Cài đặt tài khoản
+                                                    </a>
+                                                </div> *@
+                                                @* <div class="account-dropdown__item">
+                                                    <a asp-area="Identity" asp-page="/Account/Manage/ChangePassword">
+                                                        <i class="zmdi zmdi-lock"></i>Đổi mật khẩu
+                                                    </a>
+                                                </div> *@
+                                                <div class="account-dropdown__separator"></div>
+                                                <div class="account-dropdown__item">
+                                                    @* <a href="/">
+                                                        <i class="zmdi zmdi-home"></i>Về trang chủ
+                                                    </a> *@
+                                                </div>
                                             </div>
+
+                                            <!-- Logout Footer với Gradient -->
                                             <div class="account-dropdown__footer">
                                                 <form asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="/" method="post">
-                                                    <button type="submit" class="btn btn-link">
-                                                        <i class="zmdi zmdi-power"></i>Đăng xuất
+                                                    @Html.AntiForgeryToken()
+                                                    <button type="submit" class="btn-logout">
+                                                        <i class="zmdi zmdi-power"></i>
+                                                        <span>Đăng xuất</span>
                                                     </button>
                                                 </form>
                                             </div>
@@ -233,6 +462,63 @@
     <script src="~/Layout_Admin/vendor/bootstrap-4.1/bootstrap.min.js"></script>
     <!-- Main JS-->
     <script src="~/Layout_Admin/js/main.js"></script>
+
+    <script>
+        // ============================================
+        // DROPDOWN TOGGLE FUNCTIONALITY
+        // ============================================
+        document.addEventListener('DOMContentLoaded', function() {
+            const accountItems = document.querySelectorAll('.js-item-menu');
+
+            accountItems.forEach(item => {
+                const button = item.querySelector('.js-acc-btn');
+                const dropdown = item.querySelector('.js-dropdown');
+
+                if (button && dropdown) {
+                    // Toggle dropdown on click
+                    button.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+
+                        // Close other dropdowns
+                        document.querySelectorAll('.js-dropdown').forEach(dd => {
+                            if (dd !== dropdown) {
+                                dd.classList.remove('show');
+                            }
+                        });
+
+                        // Toggle current dropdown
+                        dropdown.classList.toggle('show');
+                    });
+                }
+            });
+
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('.account-item')) {
+                    document.querySelectorAll('.js-dropdown').forEach(dropdown => {
+                        dropdown.classList.remove('show');
+                    });
+                }
+            });
+
+            // Close dropdown when pressing ESC
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    document.querySelectorAll('.js-dropdown').forEach(dropdown => {
+                        dropdown.classList.remove('show');
+                    });
+                }
+            });
+
+            // Prevent dropdown from closing when clicking inside
+            document.querySelectorAll('.js-dropdown').forEach(dropdown => {
+                dropdown.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            });
+        });
+    </script>
 
     @await RenderSectionAsync("Scripts", required: false)
 </body>

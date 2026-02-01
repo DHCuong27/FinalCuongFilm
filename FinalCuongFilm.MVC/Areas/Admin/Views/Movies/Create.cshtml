@@ -285,9 +285,9 @@
                     <label class="form-label">
                         Loại phim <span class="required">*</span>
                     </label>
-                    @* <select asp-for="Type" class="form-control" asp-items="Html.GetEnumSelectList<FinalCuongFilm.ApplicationCore.Enums.MovieType>()">
+                     <select asp-for="Type" class="form-control" asp-items="Html.GetEnumSelectList<FinalCuongFilm.ApplicationCore.Entities.Enum.MovieType>()">
                         <option value="">-- Chọn loại phim --</option>
-                    </select> *@
+                    </select> 
                     <span asp-validation-for="Type" class="text-danger"></span>
                 </div>
 
@@ -295,9 +295,9 @@
                     <label class="form-label">
                         Trạng thái <span class="required">*</span>
                     </label>
-                    @* <select asp-for="Status" class="form-control" asp-items="Html.GetEnumSelectList<FinalCuongFilm.ApplicationCore.Enums.MovieStatus>()">
+                     <select asp-for="Status" class="form-control" asp-items="Html.GetEnumSelectList<FinalCuongFilm.ApplicationCore.Entities.Enum.MovieStatus>()">
                         <option value="">-- Chọn trạng thái --</option>
-                    </select> *@
+                    </select> *
                     <span asp-validation-for="Status" class="text-danger"></span>
                 </div>
 
@@ -313,7 +313,7 @@
                     <span asp-validation-for="CountryId" class="text-danger"></span>
                 </div>
 
-                <div class="form-group">
+                 <div class="form-group">
                     <label class="form-label">
                         Ngôn ngữ <span class="required">*</span>
                     </label>
@@ -323,7 +323,7 @@
                         </select>
                     </div>
                     <span asp-validation-for="LanguageId" class="text-danger"></span>
-                </div>
+                </div> 
             </div>
 
             <div class="section-title">

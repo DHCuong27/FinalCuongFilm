@@ -20,3 +20,123 @@ html {
 body {
   margin-bottom: 60px;
 }
+/* Netflix Style Navigation */
+.netflix-nav {
+    background: linear-gradient(180deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 100%);
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1000;
+    transition: background-color 0.3s ease;
+    padding: 0;
+}
+
+    .netflix-nav.scrolled {
+        background-color: rgba(20, 20, 20, 0.98);
+    }
+
+    .netflix-nav .navbar-brand {
+        font-size: 2rem;
+        font-weight: 900;
+        color: #e50914 !important;
+        letter-spacing: -1px;
+    }
+
+    .netflix-nav .nav-link {
+        color: #e5e5e5 !important;
+        font-size: 0.95rem;
+        font-weight: 500;
+        padding: 0.5rem 1rem !important;
+        transition: color 0.2s ease;
+    }
+
+        .netflix-nav .nav-link:hover,
+        .netflix-nav .nav-link.active {
+            color: #ffffff !important;
+        }
+
+    .netflix-nav .dropdown-menu {
+        background-color: rgba(0, 0, 0, 0.95);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 4px;
+        padding: 0.5rem;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+        max-height: 500px;
+        overflow-y: auto;
+    }
+
+    .netflix-nav .dropdown-item {
+        color: #e5e5e5;
+        padding: 0.5rem 1rem;
+        border-radius: 3px;
+        transition: background-color 0.2s ease;
+    }
+
+        .netflix-nav .dropdown-item:hover {
+            background-color: rgba(229, 9, 20, 0.2);
+            color: #ffffff;
+        }
+
+.user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 4px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.netflix-search {
+    position: relative;
+}
+
+    .netflix-search input {
+        background-color: rgba(0, 0, 0, 0.75);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        color: white;
+        padding: 0.5rem 2.5rem 0.5rem 1rem;
+        border-radius: 4px;
+        width: 250px;
+        transition: all 0.3s ease;
+    }
+
+        .netflix-search input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .netflix-search input:focus {
+            background-color: rgba(0, 0, 0, 0.95);
+            border-color: white;
+            outline: none;
+            width: 300px;
+        }
+
+    .netflix-search button {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        color: #e5e5e5;
+    }
+
+.mega-menu {
+    min-width: 900px;
+    columns: 4;
+    column-gap: 1rem;
+}
+
+.country-menu {
+    min-width: 500px;
+    columns: 3;
+    column-gap: 1rem;
+}
+
+body {
+    padding-top: 70px;
+}

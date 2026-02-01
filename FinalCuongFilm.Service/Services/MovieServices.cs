@@ -24,9 +24,9 @@ namespace FinalCuongFilm.Service.Services
 				.Include(m => m.Language)
 				.Include(m => m.Movie_Actors).ThenInclude(ma => ma.Actor)
 				.Include(m => m.Movie_Genres).ThenInclude(mg => mg.Genre)
-				.ToListAsync(); // ✅ ToList TRƯỚC
+				.ToListAsync(); 
 
-			// ✅ SAU ĐÓ mới map
+		
 			return movies.Select(m => MapToDto(m)).ToList();
 		}
 
@@ -171,7 +171,7 @@ namespace FinalCuongFilm.Service.Services
 			return await _context.Movies.AnyAsync(m => m.Id == id);
 		}
 
-		// ✅ CHUYỂN THÀNH STATIC METHOD
+		//  CHUYỂN THÀNH STATIC METHOD
 		private static MovieDto MapToDto(Movie movie)
 		{
 			return new MovieDto

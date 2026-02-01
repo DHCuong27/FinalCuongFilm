@@ -4,6 +4,117 @@
     ViewData["Title"] = "Index";
 }
 
+<style>
+    /* Container styling */
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    /* Header section */
+    h1 {
+        font-size: 24px;
+        font-weight: 600;
+        margin-bottom: 20px;
+        color: #333;
+    }
+
+    /* Create button */
+    p a {
+        display: inline-block;
+        padding: 8px 16px;
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 4px;
+        color: #333;
+        text-decoration: none;
+        font-size: 14px;
+        margin-bottom: 20px;
+    }
+
+        p a:hover {
+            background: #e9ecef;
+            border-color: #ced4da;
+        }
+
+    /* Table styling */
+    .table {
+        width: 100%;
+        border-collapse: collapse;
+        background: #fff;
+    }
+
+        .table thead {
+            background: #f8f9fa;
+        }
+
+        .table th {
+            padding: 12px 16px;
+            text-align: left;
+            font-weight: 600;
+            color: #333;
+            border-bottom: 2px solid #dee2e6;
+            font-size: 14px;
+        }
+
+        .table td {
+            padding: 12px 16px;
+            border-bottom: 1px solid #e9ecef;
+            color: #555;
+            font-size: 14px;
+        }
+
+        .table tbody tr:hover {
+            background: #f8f9fa;
+        }
+
+        /* Action links */
+        .table td a {
+            color: #007bff;
+            text-decoration: none;
+            margin: 0 8px 0 0;
+            font-size: 13px;
+        }
+
+            .table td a:hover {
+                text-decoration: underline;
+            }
+
+            /* Separator for action links */
+            .table td a:not(:last-child)::after {
+                content: "|";
+                margin-left: 8px;
+                color: #dee2e6;
+            }
+
+    /* Responsive adjustments */
+    @@media (max-width: 768px) {
+        .container {
+            padding: 15px;
+        }
+
+        h1 {
+            font-size: 20px;
+        }
+
+        .table th,
+        .table td {
+            padding: 10px 12px;
+            font-size: 13px;
+        }
+
+            .table td a {
+                display: block;
+                margin: 5px 0;
+            }
+
+                .table td a:not(:last-child)::after {
+                    content: "";
+                    margin: 0;
+                }
+    }
+</style>
 <h1>Index</h1>
 
 <p>

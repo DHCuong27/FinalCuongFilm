@@ -1,36 +1,190 @@
 ﻿@model FinalCuongFilm.ApplicationCore.Entities.Country
 
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = "Contries Details";
 }
 
-<h1>Details</h1>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>@ViewData["Title"]</title>
+    <style>
+       
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-<div>
-    <h4>Country</h4>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Name)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Name)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.IsoCode)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.IsoCode)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Slug)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Slug)
-        </dd>
-    </dl>
-</div>
-<div>
-    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
-    <a asp-action="Index">Back to List</a>
-</div>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.5;
+            color: #1a1a1a;
+            background: #f8f9fa;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            padding: 30px;
+        }
+
+        /* Header */
+        .header {
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eaeaea;
+        }
+
+            .header h1 {
+                font-size: 22px;
+                font-weight: 600;
+                color: #2c3e50;
+                margin-bottom: 5px;
+            }
+
+            .header h4 {
+                font-size: 15px;
+                font-weight: 500;
+                color: #7f8c8d;
+            }
+
+        /* Details section */
+        .details-grid {
+            display: grid;
+            grid-template-columns: 150px 1fr;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .detail-label {
+            font-weight: 500;
+            color: #555;
+            text-align: right;
+            padding-right: 15px;
+            font-size: 14px;
+        }
+
+        .detail-value {
+            color: #2c3e50;
+            font-size: 15px;
+            padding: 2px 0;
+        }
+
+        /* Actions */
+        .actions {
+            display: flex;
+            gap: 10px;
+            padding-top: 20px;
+            border-top: 1px solid #eaeaea;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: #f8f9fa;
+            color: #2c3e50;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+            .btn:hover {
+                background: #e9ecef;
+                border-color: #ccc;
+            }
+
+        .btn-primary {
+            background: #3498db;
+            border-color: #2980b9;
+            color: white;
+        }
+
+            .btn-primary:hover {
+                background: #2980b9;
+            }
+
+        /* Responsive */
+        @@media (max-width: 768px) {
+            body
+
+        {
+            padding: 10px;
+        }
+
+        .container {
+            padding: 20px;
+            border-radius: 6px;
+        }
+
+        .details-grid {
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+
+        .detail-label {
+            text-align: left;
+            padding-right: 0;
+            font-weight: 600;
+            color: #444;
+        }
+
+        .actions {
+            flex-direction: column;
+        }
+
+        .btn {
+            width: 100%;
+            text-align: center;
+        }
+
+        }
+
+        @@media (max-width: 480px) {
+            .container
+
+        {
+            padding: 15px;
+        }
+
+        .header h1 {
+            font-size: 20px;
+        }
+
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>@Html.DisplayFor(model => model.Name)</h1>
+            <h4>Country Details</h4>
+        </div>
+
+        <div class="details-grid">
+            <div class="detail-label">@Html.DisplayNameFor(model => model.Name)</div>
+            <div class="detail-value">@Html.DisplayFor(model => model.Name)</div>
+
+            <div class="detail-label">@Html.DisplayNameFor(model => model.IsoCode)</div>
+            <div class="detail-value">@Html.DisplayFor(model => model.IsoCode)</div>
+
+            <div class="detail-label">@Html.DisplayNameFor(model => model.Slug)</div>
+            <div class="detail-value">@Html.DisplayFor(model => model.Slug)</div>
+        </div>
+
+        <div class="actions">
+            <a href="@Url.Action("Edit", new { id = Model?.Id })" class="btn btn-primary">Edit</a>
+            <a href="@Url.Action("Index")" class="btn">Back to List</a>
+        </div>
+    </div>
+</body>
+</html>

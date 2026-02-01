@@ -5,6 +5,7 @@ using FinalCuongFilm.Service.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 
 namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 {
@@ -56,7 +57,6 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 			return View();
 		}
 
-		// POST: Admin/Movies/Create
 		[HttpPost]
 		[ValidateAntiForgeryToken]
 		public async Task<IActionResult> Create(MovieCreateDto dto)
@@ -66,15 +66,31 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 				try
 				{
 					await _movieService.CreateAsync(dto);
-					TempData["Success"] = "Tạo phim thành công!";
+					TempData["Success"] = "Thêm phim thành công!";
 					return RedirectToAction(nameof(Index));
+				}
+				catch (DbUpdateException dbEx)
+				{
+					
+					var innerException = dbEx.InnerException?.Message ?? dbEx.Message;
+					ModelState.AddModelError("", $"Lỗi database: {innerException}");
+
+					// Log to console
+					Console.WriteLine($"[ERROR] DbUpdateException: {innerException}");
+					Console.WriteLine($"[STACK] {dbEx.StackTrace}");
 				}
 				catch (Exception ex)
 				{
-					ModelState.AddModelError("", $"Lỗi khi tạo phim: {ex.Message}");
+					// ✅ LOG LỖI CHUNG
+					var innerException = ex.InnerException?.Message ?? ex.Message;
+					ModelState.AddModelError("", $"Lỗi: {innerException}");
+
+					Console.WriteLine($"[ERROR] Exception: {innerException}");
+					Console.WriteLine($"[STACK] {ex.StackTrace}");
 				}
 			}
 
+			// Reload dropdowns
 			await PopulateDropdowns();
 			return View(dto);
 		}

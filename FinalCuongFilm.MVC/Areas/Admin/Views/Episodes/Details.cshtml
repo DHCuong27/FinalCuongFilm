@@ -1,0 +1,62 @@
+﻿@model FinalCuongFilm.Common.DTOs.EpisodeDto
+
+@{
+    ViewData["Title"] = "Chi tiết Episode";
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <h2 class="title-1">Chi tiết Episode</h2>
+    </div>
+</div>
+
+<div class="row m-t-30">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <strong>Thông tin Episode</strong>
+            </div>
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-3">Số tập:</dt>
+                    <dd class="col-sm-9"><strong class="text-primary">Tập @Model.EpisodeNumber</strong></dd>
+
+                    <dt class="col-sm-3">Tiêu đề:</dt>
+                    <dd class="col-sm-9">@Model.Title</dd>
+
+                    <dt class="col-sm-3">Mô tả:</dt>
+                    <dd class="col-sm-9">@(Model.Description ?? "Chưa có mô tả")</dd>
+
+                    <dt class="col-sm-3">Thời lượng:</dt>
+                    <dd class="col-sm-9">@Model.DurationMinutes phút</dd>
+
+                    @if (Model.AirDate.HasValue)
+                    {
+                        <dt class="col-sm-3">Ngày phát sóng:</dt>
+                        <dd class="col-sm-9">@Model.AirDate.Value.ToString("dd/MM/yyyy")</dd>
+                    }
+
+                    <dt class="col-sm-3">Trạng thái:</dt>
+                    <dd class="col-sm-9">
+                        @if (Model.IsActive)
+                        {
+                            <span class="badge badge-success">Active</span>
+                        }
+                        else
+                        {
+                            <span class="badge badge-secondary">Inactive</span>
+                        }
+                    </dd>
+
+                    <dt class="col-sm-3">Lượt xem:</dt>
+                    <dd class="col-sm-9">@Model.ViewCount.ToString("N0")</dd>
+                </dl>
+            </div>
+        </div>
+
+        <div class="m-t-20">
+            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">Chỉnh sửa</a>
+            <a asp-action="Index" class="btn btn-secondary">Quay lại danh sách</a>
+        </div>
+    </div>
+</div>

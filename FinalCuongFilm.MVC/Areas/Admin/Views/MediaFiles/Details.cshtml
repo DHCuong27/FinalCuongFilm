@@ -1,60 +1,109 @@
-﻿@model FinalCuongFilm.ApplicationCore.Entities.MediaFile
+﻿@model FinalCuongFilm.Common.DTOs.MediaFileDto
 
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = "Chi tiết Media File";
 }
 
-<h1>Details</h1>
-
-<div>
-    <h4>MediaFile</h4>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.FileName)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.FileName)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Quality)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Quality)
-        </dd>
-        @* <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.FileFormat)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.FileFormat)
-        </dd> *@
-        <dt class = "col-sm-2">
-            File Size
-        </dt>
-        <dd class = "col-sm-10">
-            <!-- Replace with the correct property or remove if not available -->
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Movie)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Movie.Slug)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Episode)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Episode.Title)
-        </dd>
-        @* <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.CreatedAt)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.CreatedAt)
-        </dd> *@
-    </dl>
+<div class="row">
+    <div class="col-md-12">
+        <h2 class="title-1">@ViewData["Title"]</h2>
+    </div>
 </div>
-<div>
-    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
-    <a asp-action="Index">Back to List</a>
+
+<div class="row m-t-30">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+
+                <h4 class="m-b-20">
+                    <i class="zmdi zmdi-collection-video"></i>
+                    @Model.FileName
+                </h4>
+
+                <dl class="row">
+
+                    <dt class="col-sm-3">Tên file</dt>
+                    <dd class="col-sm-9">@Model.FileName</dd>
+
+                    <dt class="col-sm-3">Loại</dt>
+                    <dd class="col-sm-9">
+                        @if (Model.FileType == "Video")
+                        {
+                            <span class="role admin">Video</span>
+                        }
+                        else if (Model.FileType == "Subtitle")
+                        {
+                            <span class="role user">Subtitle</span>
+                        }
+                        else
+                        {
+                            <span class="role">@Model.FileType</span>
+                        }
+                    </dd>
+
+                    <dt class="col-sm-3">Chất lượng</dt>
+                    <dd class="col-sm-9">@Model.Quality</dd>
+
+                    <dt class="col-sm-3">Kích thước</dt>
+                    <dd class="col-sm-9">@Model.FileSizeFormatted</dd>
+
+                    <dt class="col-sm-3">Phim / Tập</dt>
+                    <dd class="col-sm-9">
+                        @if (Model.EpisodeId.HasValue)
+                        {
+                            <a asp-controller="Episodes"
+                               asp-action="Details"
+                               asp-route-id="@Model.EpisodeId">
+                                Tập @Model.EpisodeNumber: @Model.EpisodeTitle
+                            </a>
+                        }
+                        else if (Model.MovieId.HasValue)
+                        {
+                            <a asp-controller="Movies"
+                               asp-action="Details"
+                               asp-route-id="@Model.MovieId">
+                                @Model.MovieTitle
+                            </a>
+                        }
+                    </dd>
+
+                    <dt class="col-sm-3">Ngày upload</dt>
+                    <dd class="col-sm-9">
+                        @Model.UploadedAt.ToString("dd/MM/yyyy HH:mm")
+                    </dd>
+
+                    <dt class="col-sm-3">File URL</dt>
+                    <dd class="col-sm-9">
+                        <a href="@Model.FileUrl" target="_blank">
+                            @Model.FileUrl
+                        </a>
+                    </dd>
+                </dl>
+
+                @* Preview video nếu là video *@
+                @if (Model.FileType == "Video")
+                {
+                    <hr />
+                    <h5>Preview</h5>
+                    <video controls width="100%" style="max-height:450px">
+                        <source src="@Model.FileUrl" type="video/mp4" />
+                        Trình duyệt của bạn không hỗ trợ video.
+                    </video>
+                }
+
+                <div class="m-t-30">
+                    <a asp-action="Edit" asp-route-id="@Model.Id"
+                       class="btn btn-warning">
+                        <i class="zmdi zmdi-edit"></i> Sửa
+                    </a>
+
+                    <a asp-action="Index"
+                       class="btn btn-secondary">
+                        <i class="zmdi zmdi-arrow-left"></i> Quay lại
+                    </a>
+                </div>
+
+            </div>
+        </div>
+    </div>
 </div>
