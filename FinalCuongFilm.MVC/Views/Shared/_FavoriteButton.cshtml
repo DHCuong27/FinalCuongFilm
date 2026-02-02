@@ -1,4 +1,4 @@
-﻿@model (Guid MovieId, bool IsFavorited)
+﻿@* @model (Guid MovieId, bool IsFavorited)
 
 @if (User.Identity?.IsAuthenticated == true)
 {
@@ -16,4 +16,4 @@ else
        class="btn btn-outline-danger">
         <i class="far fa-heart"></i> Yêu thích
     </a>
-}
+} *@

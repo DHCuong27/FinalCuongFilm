@@ -1,8 +1,9 @@
-﻿@model FinalCuongFilm.Common.DTOs.MovieDto
+﻿@model FinalCuongFilm.MVC.Models.ViewModels.MovieDetailsViewModel
 @using static FinalCuongFilm.ApplicationCore.Entities.Enum
 
 @{
-    ViewData["Title"] = Model.Title;
+    ViewData["Title"] = Model.Movie.Title;
+    Layout = "_LayoutUser";
     var isFavorited = ViewBag.IsFavorited as bool? ?? false;
     var rating = ViewBag.Rating as FinalCuongFilm.Common.DTOs.MovieRatingDto;
     var reviews = ViewBag.Reviews as IEnumerable<FinalCuongFilm.Common.DTOs.ReviewDto>;
@@ -10,146 +11,623 @@
     var episodes = ViewBag.Episodes as IEnumerable<FinalCuongFilm.Common.DTOs.EpisodeDto>;
 }
 
+<style>
+    /* Red Black Theme */
+    :root {
+        --primary-red: #e50914;
+        --dark-red: #b81d24;
+        --black: #000000;
+        --dark-gray: #141414;
+        --medium-gray: #2a2a2a;
+        --light-gray: #404040;
+        --text-white: #ffffff;
+        --text-light: #e5e5e5;
+        --text-gray: #999999;
+    }
+
+    body {
+        background-color: var(--black);
+        color: var(--text-white);
+        font-family: 'Arial', sans-serif;
+    }
+
+    /* Movie Header */
+    .movie-header {
+        background: linear-gradient(to bottom, rgba(20,20,20,0.9) 0%, var(--black) 100%);
+        min-height: 600px;
+        position: relative;
+        margin-top: -70px;
+        padding-top: 100px;
+        border-bottom: 3px solid var(--primary-red);
+    }
+
+    .movie-backdrop {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-size: cover;
+        background-position: center;
+        opacity: 0.3;
+        z-index: 0;
+    }
+
+    .movie-content {
+        position: relative;
+        z-index: 1;
+    }
+
+    /* Poster Container */
+    .poster-container {
+        position: relative;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(229, 9, 20, 0.2);
+        border: 2px solid var(--primary-red);
+    }
+
+    .poster-overlay {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+        padding: 20px;
+        color: var(--text-white);
+    }
+
+    .movie-title-large {
+        font-size: 2.5rem;
+        font-weight: 900;
+        color: var(--text-white);
+        margin-bottom: 0.5rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    /* Info Boxes */
+    .info-box {
+        background: var(--dark-gray);
+        border: 1px solid var(--light-gray);
+        border-radius: 6px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+        .info-box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--primary-red);
+        }
+
+    .info-title {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--primary-red);
+        margin-bottom: 0.5rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .info-value {
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: var(--text-white);
+        margin-bottom: 0.5rem;
+    }
+
+    .info-label {
+        font-size: 0.9rem;
+        color: var(--text-gray);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    /* Stats Section */
+    .stats-section {
+        background: var(--dark-gray);
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        border: 1px solid var(--light-gray);
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .stat-item {
+        text-align: center;
+        padding: 1rem;
+        background: var(--medium-gray);
+        border-radius: 6px;
+        border: 1px solid var(--light-gray);
+        transition: all 0.3s ease;
+    }
+
+        .stat-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(229, 9, 20, 0.2);
+            border-color: var(--primary-red);
+        }
+
+    .stat-number {
+        font-size: 2rem;
+        font-weight: 900;
+        color: var(--primary-red);
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-text {
+        font-size: 0.9rem;
+        color: var(--text-gray);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    /* Cast Section */
+    .cast-section {
+        background: var(--dark-gray);
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        border: 1px solid var(--light-gray);
+    }
+
+    .cast-title {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: var(--text-white);
+        margin-bottom: 1.5rem;
+        text-transform: uppercase;
+        border-bottom: 2px solid var(--primary-red);
+        padding-bottom: 0.5rem;
+        display: inline-block;
+    }
+
+    .cast-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 1rem;
+    }
+
+    .cast-card {
+        background: var(--medium-gray);
+        border-radius: 6px;
+        overflow: hidden;
+        border: 1px solid var(--light-gray);
+        transition: all 0.3s ease;
+    }
+
+        .cast-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary-red);
+            box-shadow: 0 5px 15px rgba(229, 9, 20, 0.2);
+        }
+
+    .cast-avatar {
+        width: 100%;
+        height: 180px;
+        background: var(--light-gray);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--text-white);
+        font-size: 3rem;
+    }
+
+    .cast-info {
+        padding: 1rem;
+        text-align: center;
+    }
+
+    .cast-name {
+        font-weight: 600;
+        color: var(--text-white);
+        margin-bottom: 0.25rem;
+        font-size: 0.95rem;
+    }
+
+    .cast-role {
+        font-size: 0.8rem;
+        color: var(--text-gray);
+    }
+
+    /* Top Movies Section */
+    .top-movies-section {
+        background: var(--dark-gray);
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        border: 1px solid var(--light-gray);
+    }
+
+    .top-movies-title {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: var(--text-white);
+        margin-bottom: 1.5rem;
+        text-transform: uppercase;
+        border-bottom: 2px solid var(--primary-red);
+        padding-bottom: 0.5rem;
+        display: inline-block;
+    }
+
+    .top-movies-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .top-movie-item {
+        background: var(--medium-gray);
+        border-radius: 6px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        border: 1px solid var(--light-gray);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+        .top-movie-item:hover {
+            transform: translateX(5px);
+            border-color: var(--primary-red);
+        }
+
+        .top-movie-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: var(--primary-red);
+        }
+
+    .top-movie-rank {
+        font-size: 1.5rem;
+        font-weight: 900;
+        color: var(--primary-red);
+        margin-right: 1rem;
+        min-width: 30px;
+    }
+
+    .top-movie-content {
+        flex: 1;
+    }
+
+    .top-movie-title {
+        font-weight: 600;
+        color: var(--text-white);
+        margin-bottom: 0.25rem;
+    }
+
+    .top-movie-subtitle {
+        font-size: 0.85rem;
+        color: var(--text-gray);
+        margin-bottom: 0.25rem;
+    }
+
+    .top-movie-meta {
+        font-size: 0.8rem;
+        color: var(--primary-red);
+        font-weight: 500;
+    }
+
+    /* Action Buttons */
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        margin: 2rem 0;
+        flex-wrap: wrap;
+    }
+
+    .btn-action {
+        padding: 0.8rem 1.5rem;
+        font-weight: 600;
+        border-radius: 4px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.9rem;
+    }
+
+    .btn-primary-red {
+        background: var(--primary-red);
+        color: var(--text-white);
+        border: 2px solid var(--primary-red);
+    }
+
+        .btn-primary-red:hover {
+            background: var(--dark-red);
+            border-color: var(--dark-red);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(229, 9, 20, 0.3);
+        }
+
+    .btn-outline-red {
+        background: transparent;
+        color: var(--primary-red);
+        border: 2px solid var(--primary-red);
+    }
+
+        .btn-outline-red:hover {
+            background: rgba(229, 9, 20, 0.1);
+            transform: translateY(-2px);
+        }
+
+    .btn-outline-white {
+        background: transparent;
+        color: var(--text-white);
+        border: 2px solid var(--light-gray);
+    }
+
+        .btn-outline-white:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--text-white);
+            transform: translateY(-2px);
+        }
+
+    /* Description Box */
+    .description-box {
+        background: var(--dark-gray);
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        border: 1px solid var(--light-gray);
+    }
+
+    .description-title {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: var(--primary-red);
+        margin-bottom: 1rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .description-content {
+        color: var(--text-light);
+        line-height: 1.6;
+        font-size: 1rem;
+    }
+
+    /* Responsive */
+    @@media (max-width: 992px) {
+        .stats-grid
+
+    {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .cast-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .movie-title-large {
+        font-size: 2rem;
+    }
+
+    }
+
+    @@media (max-width: 768px) {
+        .movie-header
+
+    {
+        padding-top: 80px;
+        min-height: 500px;
+    }
+
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .cast-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .action-buttons {
+        flex-direction: column;
+    }
+
+    .btn-action {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .movie-title-large {
+        font-size: 1.8rem;
+    }
+
+    }
+
+    @@media (max-width: 576px) {
+        .cast-grid
+
+    {
+        grid-template-columns: 1fr;
+    }
+
+    .info-box {
+        padding: 0.75rem;
+    }
+
+    .info-value {
+        font-size: 1.1rem;
+    }
+
+    }
+</style>
+
 <!-- Movie Header -->
-<div class="movie-header" style="background: linear-gradient(to bottom, rgba(0,0,0,0.7), rgba(0,0,0,0.9)), url('@(Model.PosterUrl ?? "/images/default-bg.jpg")'); background-size: cover; background-position: center;">
-    <div class="container py-5">
+<div class="movie-header">
+    <div class="movie-backdrop" style="background-image: url('@(Model.Movie.PosterUrl ?? "/images/default-bg.jpg")')"></div>
+    <div class="container movie-content py-4">
         <div class="row">
-            <!-- Poster -->
-            <div class="col-md-3">
-                <img src="@(Model.PosterUrl ?? "/images/no-poster.jpg")"
-                     alt="@Model.Title"
-                     class="img-fluid rounded shadow-lg"
-                     style="max-height: 500px; width: 100%; object-fit: cover;">
+            <!-- Poster Column -->
+            <div class="col-lg-4 mb-4 mb-lg-0">
+                <div class="poster-container">
+                    <img src="@(Model.Movie.PosterUrl ?? "/images/no-poster.jpg")"
+                         alt="@Model.Movie.Title"
+                         class="img-fluid w-100">
+                    <div class="poster-overlay">
+                        <div class="movie-title-large">@Model.Movie.Title</div>
+                        <div class="text-white">
+                            <span class="badge bg-danger me-2">@Model.Movie.Type.ToString()</span>
+                            <span class="badge bg-dark me-2">@Model.Movie.Status.ToString()</span>
+                            @if (Model.Movie.ReleaseYear.HasValue)
+                            {
+                                <span class="badge bg-secondary">@Model.Movie.ReleaseYear</span>
+                            }
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <!-- Movie Info -->
-            <div class="col-md-9 text-white">
-                <h1 class="display-4 fw-bold mb-3">@Model.Title</h1>
-
-                <!-- Rating & Stats -->
-                <div class="d-flex align-items-center mb-3">
-                    @if (rating != null && rating.TotalReviews > 0)
-                    {
-                        <div class="me-4">
-                            <div class="d-flex align-items-center">
-                                @for (int i = 1; i <= 5; i++)
+            <!-- Main Info Column -->
+            <div class="col-lg-8">
+                <!-- Info Boxes -->
+                <div class="row mb-4">
+                    <div class="col-md-4 mb-3">
+                        <div class="info-box">
+                            <div class="info-label">DURATION</div>
+                            <div class="info-value">@(Model.Movie.DurationMinutes?.ToString() ?? "N/A") min</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="info-box">
+                            <div class="info-label">RATING</div>
+                            <div class="info-value">
+                                @if (rating != null)
                                 {
-                                    if (i <= Math.Round(rating.AverageRating))
-                                    {
-                                        <i class="fas fa-star text-warning"></i>
-                                    }
-                                    else if (i - 0.5 <= rating.AverageRating)
-                                    {
-                                        <i class="fas fa-star-half-alt text-warning"></i>
-                                    }
-                                    else
-                                    {
-                                        <i class="far fa-star text-warning"></i>
-                                    }
+                                    @rating.AverageRating.ToString("F1")
                                 }
-                                <span class="ms-2 fs-5 fw-bold">@rating.AverageRating.ToString("F1")</span>
-                                <span class="ms-2 text-muted">(@rating.TotalReviews đánh giá)</span>
+                                else
+                                {
+                                    @:N/A
+                                }
                             </div>
                         </div>
-                    }
-
-                    @if (rating != null)
-                    {
-                        <div class="me-4">
-                            <i class="fas fa-heart text-danger"></i>
-                            <span>@rating.TotalFavorites yêu thích</span>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="info-box">
+                            <div class="info-label">VIEWS</div>
+                            <div class="info-value">@Model.Movie.ViewCount.ToString("N0")</div>
                         </div>
-                    }
-
-                    <div>
-                        <i class="fas fa-eye"></i>
-                        <span>@Model.ViewCount.ToString("N0") lượt xem</span>
                     </div>
                 </div>
 
-                <!-- Metadata -->
-                <div class="mb-3">
-                    <span class="badge bg-primary me-2">@Model.Type.ToString()</span>
-                    <span class="badge bg-success me-2">@Model.Status.ToString()</span>
-                    @if (Model.ReleaseYear.HasValue)
+                <!-- Description -->
+                <div class="description-box mb-4">
+                    <div class="description-title">SYNOPSIS</div>
+                    <div class="description-content">
+                        @if (!string.IsNullOrEmpty(Model.Movie.Description))
+                        {
+                            @Model.Movie.Description
+                        }
+                        else
+                        {
+                            <span class="text-muted">No description available.</span>
+                        }
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="action-buttons">
+                    <a href="@Url.Action("Watch", "Movie", new { id = Model.Movie.Slug })"
+                       class="btn-action btn-primary-red">
+                        <i class="fas fa-play"></i> WATCH NOW
+                    </a>
+
+                    @if (!string.IsNullOrEmpty(Model.Movie.TrailerUrl))
                     {
-                        <span class="badge bg-info me-2">@Model.ReleaseYear</span>
+                        <a href="@Model.Movie.TrailerUrl"
+                           target="_blank"
+                           class="btn-action btn-outline-red">
+                            <i class="fab fa-youtube"></i> TRAILER
+                        </a>
                     }
-                    @if (Model.DurationMinutes.HasValue)
+
+                    @if (User.Identity?.IsAuthenticated == true)
                     {
-                        <span class="badge bg-warning text-dark me-2">@Model.DurationMinutes phút</span>
+                        <button type="button"
+                                class="btn-action btn-outline-white favorite-toggle-btn @(isFavorited ? "active" : "")"
+                                data-movie-id="@Model.Movie.Id"
+                                data-is-favorited="@isFavorited.ToString().ToLower()">
+                            <i class="@(isFavorited ? "fas" : "far") fa-heart"></i>
+                            <span class="favorite-text">@(isFavorited ? "FAVORITED" : "ADD TO FAVORITES")</span>
+                        </button>
+                    }
+                    else
+                    {
+                        <a href="@Url.Action("Login", "Account", new { area = "Identity", returnUrl = Context.Request.Path })"
+                           class="btn-action btn-outline-white">
+                            <i class="far fa-heart"></i> ADD TO FAVORITES
+                        </a>
                     }
                 </div>
 
-                <!-- Description -->
-                @if (!string.IsNullOrEmpty(Model.Description))
-                {
-                    <p class="lead">@Model.Description</p>
-                }
-
-                <!-- ✅ ACTION BUTTONS -->
-                <div class="mt-4">
-                    <div class="btn-group" role="group">
-                        <!-- Watch Button -->
-                        <a href="@Url.Action("Watch", "Movies", new { id = Model.Id })"
-                           class="btn btn-danger btn-lg">
-                            <i class="fas fa-play"></i> Xem phim
-                        </a>
-
-                        <!-- Trailer Button -->
-                        @if (!string.IsNullOrEmpty(Model.TrailerUrl))
-                        {
-                            <a href="@Model.TrailerUrl"
-                               target="_blank"
-                               class="btn btn-outline-light btn-lg">
-                                <i class="fab fa-youtube"></i> Trailer
-                            </a>
-                        }
-
-                        <!-- ✅ FAVORITE BUTTON -->
-                        @if (User.Identity?.IsAuthenticated == true)
-                        {
-                            <button type="button"
-                                    class="btn btn-outline-light btn-lg favorite-toggle-btn"
-                                    data-movie-id="@Model.Id"
-                                    data-is-favorited="@isFavorited.ToString().ToLower()">
-                                <i class="@(isFavorited ? "fas" : "far") fa-heart"></i>
-                                <span class="favorite-text">@(isFavorited ? "Đã yêu thích" : "Yêu thích")</span>
-                            </button>
-                        }
-                        else
-                        {
-                            <a href="@Url.Action("Login", "Account", new { area = "Identity", returnUrl = Context.Request.Path })"
-                               class="btn btn-outline-light btn-lg">
-                                <i class="far fa-heart"></i> Yêu thích
-                            </a>
-                        }
-
-                        <!--  REVIEW BUTTON -->
-                        @if (User.Identity?.IsAuthenticated == true)
-                        {
-                            if (userReview != null)
-                            {
-                                <a href="@Url.Action("Edit", "Reviews", new { id = userReview.Id })"
-                                   class="btn btn-outline-warning btn-lg">
-                                    <i class="fas fa-edit"></i> Sửa đánh giá
-                                </a>
-                            }
-                            else
-                            {
-                                <a href="@Url.Action("Create", "Reviews", new { movieId = Model.Id })"
-                                   class="btn btn-outline-warning btn-lg">
-                                    <i class="fas fa-star"></i> Đánh giá
-                                </a>
-                            }
-                        }
-                        else
-                        {
-                            <a href="@Url.Action("Login", "Account", new { area = "Identity", returnUrl = Context.Request.Path })"
-                               class="btn btn-outline-warning btn-lg">
-                                <i class="fas fa-star"></i> Đánh giá
-                            </a>
-                        }
+                <!-- Stats Section -->
+                <div class="stats-section">
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-number">@Model.Movie.ViewCount.ToString("N0")</div>
+                            <div class="stat-text">Total Views</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">
+                                @if (rating != null && rating.TotalReviews > 0)
+                                {
+                                    @rating.AverageRating.ToString("F1")
+                                }
+                                else
+                                {
+                                    @:N/A
+                                }
+                            </div>
+                            <div class="stat-text">Average Rating</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">
+                                @if (rating != null)
+                                {
+                                    @rating.TotalReviews
+                                }
+                                else
+                                {
+                                    @:0
+                                }
+                            </div>
+                            <div class="stat-text">Reviews</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">
+                                @if (rating != null)
+                                {
+                                    @rating.TotalFavorites
+                                }
+                                else
+                                {
+                                    @:0
+                                }
+                            </div>
+                            <div class="stat-text">Favorites</div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -160,211 +638,166 @@
 <!-- Main Content -->
 <div class="container my-5">
     <div class="row">
-        <!-- Main Column -->
+        <!-- Left Column -->
         <div class="col-lg-8">
-            <!-- ✅ RATING OVERVIEW -->
-            @if (rating != null && rating.TotalReviews > 0)
-            {
-                <div class="card mb-4 shadow-sm">
-                    <div class="card-header bg-primary text-white">
-                        <h5 class="mb-0">
-                            <i class="fas fa-chart-bar"></i> Đánh giá tổng quan
-                        </h5>
+            <!-- Cast Section -->
+            <div class="cast-section">
+                <div class="cast-title">MAIN CAST</div>
+                <div class="cast-grid">
+                    <!-- Cast Member 1 -->
+                    <div class="cast-card">
+                        <div class="cast-avatar bg-danger">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="cast-info">
+                            <div class="cast-name">JASON STATHAM</div>
+                            <div class="cast-role">Lead Actor</div>
+                        </div>
                     </div>
-                    <div class="card-body">
-                        <div class="row align-items-center">
-                            <div class="col-md-4 text-center">
-                                <div class="display-3 text-warning fw-bold">@rating.AverageRating.ToString("F1")</div>
-                                <div class="mb-2">
-                                    @for (int i = 1; i <= 5; i++)
-                                    {
-                                        if (i <= Math.Round(rating.AverageRating))
-                                        {
-                                            <i class="fas fa-star text-warning"></i>
-                                        }
-                                        else
-                                        {
-                                            <i class="far fa-star text-warning"></i>
-                                        }
-                                    }
-                                </div>
-                                <p class="text-muted">@rating.TotalReviews đánh giá</p>
-                            </div>
-                            <div class="col-md-8">
-                                @foreach (var star in new[] { 5, 4, 3, 2, 1 })
-                                {
-                                    var count = rating.RatingDistribution.ContainsKey(star) ? rating.RatingDistribution[star] : 0;
-                                    var percentage = rating.TotalReviews > 0 ? (count * 100.0 / rating.TotalReviews) : 0;
 
-                                    <div class="d-flex align-items-center mb-2">
-                                        <span class="me-2" style="width: 60px;">@star sao</span>
-                                        <div class="progress flex-grow-1" style="height: 20px;">
-                                            <div class="progress-bar bg-warning"
-                                                 role="progressbar"
-                                                 style="width: @(percentage)%"
-                                                 aria-valuenow="@count"
-                                                 aria-valuemin="0"
-                                                 aria-valuemax="@rating.TotalReviews">
-                                            </div>
-                                        </div>
-                                        <span class="ms-2 text-muted" style="width: 50px;">@count</span>
-                                    </div>
-                                }
-                            </div>
+                    <!-- Cast Member 2 -->
+                    <div class="cast-card">
+                        <div class="cast-avatar bg-danger">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="cast-info">
+                            <div class="cast-name">SCARLETT JOHANSSON</div>
+                            <div class="cast-role">Lead Actress</div>
+                        </div>
+                    </div>
+
+                    <!-- Cast Member 3 -->
+                    <div class="cast-card">
+                        <div class="cast-avatar bg-danger">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="cast-info">
+                            <div class="cast-name">KEANU REEVES</div>
+                            <div class="cast-role">Supporting Role</div>
+                        </div>
+                    </div>
+
+                    <!-- Cast Member 4 -->
+                    <div class="cast-card">
+                        <div class="cast-avatar bg-danger">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="cast-info">
+                            <div class="cast-name">EMMA STONE</div>
+                            <div class="cast-role">Supporting Role</div>
                         </div>
                     </div>
                 </div>
-            }
+            </div>
 
-            <!-- ✅ REVIEWS SECTION -->
-            @if (reviews != null && reviews.Any())
+            <!-- Episodes (if series) -->
+            @if (Model.Movie.Type == MovieType.Series && episodes != null && episodes.Any())
             {
-                <div class="card mb-4 shadow-sm">
-                    <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0">
-                            <i class="fas fa-comments"></i> Đánh giá từ người xem
-                        </h5>
-                        <a href="@Url.Action("Movie", "Reviews", new { movieId = Model.Id })"
-                           class="btn btn-sm btn-light">
-                            Xem tất cả
-                        </a>
-                    </div>
-                    <div class="card-body">
-                        @foreach (var review in reviews)
+                <div class="top-movies-section">
+                    <div class="top-movies-title">EPISODES LIST</div>
+                    <div class="top-movies-list">
+                        @foreach (var episode in episodes.Take(5))
                         {
-                            <div class="review-item mb-4 pb-4 @(review != reviews.Last() ? "border-bottom" : "")">
-                                <div class="d-flex justify-content-between align-items-start mb-2">
-                                    <div>
-                                        <strong>@review.UserName</strong>
-                                        <div class="mt-1">
-                                            @for (int i = 1; i <= 5; i++)
-                                            {
-                                                if (i <= review.Rating)
-                                                {
-                                                    <i class="fas fa-star text-warning"></i>
-                                                }
-                                                else
-                                                {
-                                                    <i class="far fa-star text-warning"></i>
-                                                }
-                                            }
-                                        </div>
-                                    </div>
-                                    <small class="text-muted">
-                                        @review.CreatedAt.ToString("dd/MM/yyyy")
-                                    </small>
+                            <div class="top-movie-item d-flex align-items-center">
+                                <div class="top-movie-rank">@episode.EpisodeNumber</div>
+                                <div class="top-movie-content">
+                                    <div class="top-movie-title">@episode.Title</div>
+                                    @if (!string.IsNullOrEmpty(episode.Description))
+                                    {
+                                        <div class="top-movie-subtitle">@episode.Description</div>
+                                    }
+                                    <div class="top-movie-meta">Duration: @(episode.DurationMinutes ?? 45) min</div>
                                 </div>
-                                @if (!string.IsNullOrEmpty(review.Comment))
-                                {
-                                    <p class="mb-0">@review.Comment</p>
-                                }
+                                <a href="@Url.Action("WatchEpisode", "Movie", new { id = Model.Movie.Id, episodeNumber = episode.EpisodeNumber })"
+                                   class="btn btn-sm btn-danger ms-3">
+                                    <i class="fas fa-play"></i>
+                                </a>
                             </div>
                         }
                     </div>
                 </div>
             }
-
-            <!-- Episodes (if series) -->
-            @if (Model.Type == MovieType.Series && episodes != null && episodes.Any())
-            {
-                <div class="card mb-4 shadow-sm">
-                    <div class="card-header bg-info text-white">
-                        <h5 class="mb-0">
-                            <i class="fas fa-list-ol"></i> Danh sách tập phim
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="row">
-                            @foreach (var episode in episodes)
-                            {
-                                <div class="col-md-6 mb-3">
-                                    <div class="card h-100">
-                                        <div class="card-body">
-                                            <h6 class="card-title">Tập @episode.EpisodeNumber: @episode.Title</h6>
-                                            @if (!string.IsNullOrEmpty(episode.Description))
-                                            {
-                                                <p class="card-text text-muted small">@episode.Description</p>
-                                            }
-                                            <a href="@Url.Action("WatchEpisode", "Movies", new { id = Model.Id, episodeNumber = episode.EpisodeNumber })"
-                                               class="btn btn-sm btn-primary">
-                                                <i class="fas fa-play"></i> Xem
-                                            </a>
-                                        </div>
-                                    </div>
-                                </div>
-                            }
-                        </div>
-                    </div>
-                </div>
-            }
         </div>
 
-        <!-- Sidebar -->
+        <!-- Right Column -->
         <div class="col-lg-4">
             <!-- Movie Info -->
-            <div class="card mb-4 shadow-sm">
-                <div class="card-header bg-dark text-white">
-                    <h5 class="mb-0">
-                        <i class="fas fa-info-circle"></i> Thông tin phim
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <table class="table table-sm">
-                        <tbody>
-                            @if (Model.ReleaseYear.HasValue)
-                            {
-                                <tr>
-                                    <th style="width: 40%;">Năm phát hành:</th>
-                                    <td>@Model.ReleaseYear</td>
-                                </tr>
-                            }
-                            @if (Model.DurationMinutes.HasValue)
-                            {
-                                <tr>
-                                    <th>Thời lượng:</th>
-                                    <td>@Model.DurationMinutes phút</td>
-                                </tr>
-                            }
-                            @if (!string.IsNullOrEmpty(Model.LanguageName))
-                            {
-                                <tr>
-                                    <th>Ngôn ngữ:</th>
-                                    <td>@Model.LanguageName</td>
-                                </tr>
-                            }
-                            @if (!string.IsNullOrEmpty(Model.CountryName))
-                            {
-                                <tr>
-                                    <th>Quốc gia:</th>
-                                    <td>@Model.CountryName</td>
-                                </tr>
-                            }
-                            <tr>
-                                <th>Loại phim:</th>
-                                <td>@Model.Type.ToString()</td>
-                            </tr>
-                            <tr>
-                                <th>Trạng thái:</th>
-                                <td>
-                                    <span class="badge bg-@(Model.Status == MovieStatus.Completed ? "success" : Model.Status == MovieStatus.Ongoing ? "primary" : "warning")">
-                                        @Model.Status.ToString()
-                                    </span>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+            <div class="info-box mb-4">
+                <div class="info-label">MOVIE INFORMATION</div>
+                <div class="info-value">DETAILS</div>
+                <div class="mt-3">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-gray">Type:</span>
+                        <span class="text-white fw-bold">@Model.Movie.Type.ToString()</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-gray">Status:</span>
+                        <span class="text-white fw-bold">@Model.Movie.Status.ToString()</span>
+                    </div>
+                    @if (Model.Movie.ReleaseYear.HasValue)
+                    {
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-gray">Year:</span>
+                            <span class="text-white fw-bold">@Model.Movie.ReleaseYear</span>
+                        </div>
+                    }
+                    @if (Model.Movie.DurationMinutes.HasValue)
+                    {
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-gray">Duration:</span>
+                            <span class="text-white fw-bold">@Model.Movie.DurationMinutes min</span>
+                        </div>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.Movie.LanguageName))
+                    {
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-gray">Language:</span>
+                            <span class="text-white fw-bold">@Model.Movie.LanguageName</span>
+                        </div>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.Movie.CountryName))
+                    {
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-gray">Country:</span>
+                            <span class="text-white fw-bold">@Model.Movie.CountryName</span>
+                        </div>
+                    }
                 </div>
             </div>
 
-            <!-- Similar Movies (TODO) -->
-            <div class="card shadow-sm">
-                <div class="card-header bg-secondary text-white">
-                    <h5 class="mb-0">
-                        <i class="fas fa-film"></i> Phim liên quan
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <p class="text-muted">Đang cập nhật...</p>
+            <!-- Top Movies This Week -->
+            <div class="top-movies-section">
+                <div class="top-movies-title">TOP MOVIES THIS WEEK</div>
+                <div class="top-movies-list">
+                    <!-- Movie 1 -->
+                    <div class="top-movie-item d-flex align-items-center">
+                        <div class="top-movie-rank">1</div>
+                        <div class="top-movie-content">
+                            <div class="top-movie-title">THE AVENGERS: ENDGAME</div>
+                            <div class="top-movie-subtitle">Action, Adventure, Sci-Fi</div>
+                            <div class="top-movie-meta">Rating: 8.4/10</div>
+                        </div>
+                    </div>
+
+                    <!-- Movie 2 -->
+                    <div class="top-movie-item d-flex align-items-center">
+                        <div class="top-movie-rank">2</div>
+                        <div class="top-movie-content">
+                            <div class="top-movie-title">INCEPTION</div>
+                            <div class="top-movie-subtitle">Action, Sci-Fi, Thriller</div>
+                            <div class="top-movie-meta">Rating: 8.8/10</div>
+                        </div>
+                    </div>
+
+                    <!-- Movie 3 -->
+                    <div class="top-movie-item d-flex align-items-center">
+                        <div class="top-movie-rank">3</div>
+                        <div class="top-movie-content">
+                            <div class="top-movie-title">THE DARK KNIGHT</div>
+                            <div class="top-movie-subtitle">Action, Crime, Drama</div>
+                            <div class="top-movie-meta">Rating: 9.0/10</div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -374,7 +807,7 @@
 @section Scripts {
     <script>
         $(document).ready(function() {
-            // ✅ FAVORITE TOGGLE
+            // FAVORITE TOGGLE
             $('.favorite-toggle-btn').click(function() {
                 const btn = $(this);
                 const movieId = btn.data('movie-id');
@@ -395,69 +828,93 @@
 
                             if (response.isFavorite) {
                                 icon.removeClass('far').addClass('fas');
-                                text.text('Đã yêu thích');
+                                text.text('FAVORITED');
+                                btn.addClass('active');
                                 btn.data('is-favorited', true);
                             } else {
                                 icon.removeClass('fas').addClass('far');
-                                text.text('Yêu thích');
+                                text.text('ADD TO FAVORITES');
+                                btn.removeClass('active');
                                 btn.data('is-favorited', false);
                             }
 
-                            // Show toast
-                            showToast('success', response.message);
+                            // Show notification
+                            showNotification(response.message, response.isFavorite ? 'success' : 'info');
                         } else {
-                            showToast('error', response.message);
+                            showNotification(response.message, 'error');
                         }
                     },
                     error: function() {
-                        showToast('error', 'Có lỗi xảy ra!');
+                        showNotification('An error occurred!', 'error');
                     }
                 });
             });
         });
 
-        function showToast(type, message) {
-            const toast = $(`
-                <div class="alert alert-${type === 'success' ? 'success' : 'danger'} alert-dismissible fade show position-fixed"
-                     style="top: 20px; right: 20px; z-index: 9999; min-width: 300px;"
-                     role="alert">
-                    <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
-                    ${message}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        function showNotification(message, type) {
+            // Remove existing notifications
+            $('.notification-toast').remove();
+
+            const icon = type === 'success' ? 'check-circle' :
+                        type === 'error' ? 'exclamation-circle' : 'info-circle';
+            const color = type === 'success' ? '#2ecc71' :
+                         type === 'error' ? '#e50914' : '#3498db';
+
+            const notification = $(`
+                <div class="notification-toast" style="
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    background: var(--dark-gray);
+                    border-left: 4px solid ${color};
+                    border: 1px solid var(--light-gray);
+                    padding: 1rem;
+                    border-radius: 6px;
+                    display: flex;
+                    align-items: center;
+                    gap: 1rem;
+                    z-index: 9999;
+                    min-width: 300px;
+                    animation: slideIn 0.3s ease;
+                ">
+                    <i class="fas fa-${icon}" style="color: ${color}; font-size: 1.5rem;"></i>
+                    <div style="flex: 1; color: var(--text-white);">${message}</div>
+                    <button class="btn-close" style="color: var(--text-gray); border: none; background: none; cursor: pointer;">
+                        <i class="fas fa-times"></i>
+                    </button>
                 </div>
             `);
 
-            $('body').append(toast);
+            $('body').append(notification);
 
+            // Close button event
+            notification.find('.btn-close').click(function() {
+                notification.fadeOut(300, function() { $(this).remove(); });
+            });
+
+            // Auto remove after 3 seconds
             setTimeout(() => {
-                toast.fadeOut(300, function() { $(this).remove(); });
+                notification.fadeOut(300, function() { $(this).remove(); });
             }, 3000);
         }
+
+        // Slide in animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @@keyframes slideIn {
+                from {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+            }
+        `;
+        document.head.appendChild(style);
     </script>
 }
-
-<style>
-    .movie-header {
-        min-height: 500px;
-        color: white;
-    }
-
-    .favorite-toggle-btn.active {
-        background-color: #dc3545 !important;
-        border-color: #dc3545 !important;
-        color: white !important;
-    }
-
-    .review-item {
-        transition: background-color 0.2s;
-    }
-
-        .review-item:hover {
-            background-color: #f8f9fa;
-            border-radius: 8px;
-            padding: 10px;
-        }
-</style>
 
 @* Anti-forgery token for AJAX *@
 @Html.AntiForgeryToken()

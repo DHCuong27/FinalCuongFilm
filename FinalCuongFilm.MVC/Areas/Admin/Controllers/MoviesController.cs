@@ -48,6 +48,7 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 				return NotFound();
 
 			return View(movie);
+
 		}
 
 		// GET: Admin/Movies/Create

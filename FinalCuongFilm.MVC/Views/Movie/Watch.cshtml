@@ -10,7 +10,7 @@
         : null;
 
     var nextUrl = nextEpisode != null
-        ? Url.Action("Watch", "Movies", new { slug = Model.Movie.Slug, ep = nextEpisode.EpisodeNumber })
+        ? Url.Action("Watch", "Movie", new { slug = Model.Movie.Slug, ep = nextEpisode.EpisodeNumber })
         : "";
 }
 
@@ -282,7 +282,7 @@
             }
         </div>
         <div class="col-lg-3 col-md-4 text-lg-end text-md-end text-start mt-md-0 mt-3">
-            <a asp-controller="Movies" asp-action="Details" asp-route-slug="@Model.Movie.Slug"
+            <a asp-controller="Movie" asp-action="Detail" asp-route-slug="@Model.Movie.Slug"
                class="info-button">
                 <i class="fas fa-info-circle"></i> Thông tin phim
             </a>
@@ -298,7 +298,7 @@
             @foreach (var episode in Model.Episodes)
             {
                 var isActive = Model.CurrentEpisode != null && episode.Id == Model.CurrentEpisode.Id;
-                <a asp-controller="Movies" asp-action="Watch"
+                <a asp-controller="Movie" asp-action="Watch"
                    asp-route-slug="@Model.Movie.Slug"
                    asp-route-ep="@episode.EpisodeNumber"
                    class="episode-btn @(isActive ? "active" : "")">

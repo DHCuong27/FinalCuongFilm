@@ -17,4 +17,6 @@ namespace FinalCuongFilm.MVC.Models.ViewModels
 		public EpisodeDto? CurrentEpisode { get; set; }
 		public List<MediaFileDto> MediaFiles { get; set; } = new();
 	}
+
+	
 }
