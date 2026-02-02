@@ -1,41 +1,150 @@
-﻿@model IEnumerable<FinalCuongFilm.ApplicationCore.Entities.Favorite>
+﻿@model IEnumerable<FinalCuongFilm.Common.DTOs.FavoriteDto>
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Phim yêu thích của tôi";
 }
 
-<h1>Index</h1>
+<div class="container my-5">
+    <h2 class="mb-4">
+        <i class="fas fa-heart text-danger"></i> Phim yêu thích của tôi
+    </h2>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.MovieId)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.CreatedAt)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.MovieId)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.CreatedAt)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-            </td>
-        </tr>
+    @if (Model.Any())
+    {
+        <div class="row">
+            @foreach (var favorite in Model)
+            {
+                <div class="col-md-3 col-sm-6 mb-4">
+                    <div class="card h-100 shadow-sm favorite-card" data-movie-id="@favorite.MovieId">
+                        <div class="position-relative">
+                            <img src="@(favorite.MoviePosterUrl ?? "/images/no-poster.jpg")"
+                                 class="card-img-top"
+                                 alt="@favorite.MovieTitle"
+                                 style="height: 350px; object-fit: cover;">
+
+                            <!-- Remove Favorite Button -->
+                            <button class="btn btn-danger btn-sm position-absolute top-0 end-0 m-2 remove-favorite-btn"
+                                    data-movie-id="@favorite.MovieId">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <a href="@Url.Action("Details", "Movies", new { id = favorite.MovieId })"
+                                   class="text-decoration-none text-dark">
+                                    @favorite.MovieTitle
+                                </a>
+                            </h5>
+                            <p class="card-text text-muted">
+                                <small>
+                                    <i class="far fa-clock"></i>
+                                    Đã thêm: @favorite.CreatedAt.ToString("dd/MM/yyyy")
+                                </small>
+                            </p>
+                        </div>
+
+                        <div class="card-footer bg-transparent">
+                            <a href="@Url.Action("Details", "Movies", new { id = favorite.MovieId })"
+                               class="btn btn-primary btn-sm w-100">
+                                <i class="fas fa-play"></i> Xem phim
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-info text-center" role="alert">
+            <i class="fas fa-info-circle fa-3x mb-3"></i>
+            <h4>Chưa có phim yêu thích</h4>
+            <p>Hãy thêm phim yêu thích để dễ dàng xem lại sau!</p>
+            <a href="@Url.Action("Index", "Home")" class="btn btn-primary">
+                <i class="fas fa-film"></i> Khám phá phim
+            </a>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Remove favorite
+            $('.remove-favorite-btn').click(function(e) {
+                e.preventDefault();
+
+                const movieId = $(this).data('movie-id');
+                const card = $(this).closest('.favorite-card');
+
+                if (confirm('Bạn có chắc muốn xóa phim này khỏi danh sách yêu thích?')) {
+                    $.ajax({
+                        url: '@Url.Action("Remove", "Favorites")',
+                        type: 'POST',
+                        data: {
+                            movieId: movieId,
+                            __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                        },
+                        success: function(response) {
+                            if (response.success) {
+                                // Animate remove
+                                card.fadeOut(300, function() {
+                                    $(this).remove();
+
+                                    // Check if empty
+                                    if ($('.favorite-card').length === 0) {
+                                        location.reload();
+                                    }
+                                });
+
+                                // Show toast
+                                showToast('success', response.message);
+                            } else {
+                                showToast('error', response.message);
+                            }
+                        },
+                        error: function() {
+                            showToast('error', 'Có lỗi xảy ra!');
+                        }
+                    });
+                }
+            });
+        });
+
+        function showToast(type, message) {
+            // Simple toast notification
+            const toast = $(`
+                <div class="alert alert-${type === 'success' ? 'success' : 'danger'} alert-dismissible fade show position-fixed top-0 end-0 m-3" role="alert" style="z-index: 9999;">
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `);
+
+            $('body').append(toast);
+
+            setTimeout(() => {
+                toast.fadeOut(300, function() { $(this).remove(); });
+            }, 3000);
+        }
+    </script>
 }
-    </tbody>
-</table>
+
+<style>
+    .favorite-card {
+        transition: transform 0.2s;
+    }
+
+    .favorite-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .remove-favorite-btn {
+        opacity: 0;
+        transition: opacity 0.2s;
+    }
+
+    .favorite-card:hover .remove-favorite-btn {
+        opacity: 1;
+    }
+</style>

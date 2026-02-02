@@ -10,20 +10,23 @@ namespace FinalCuongFilm.MVC.Controllers
 		private readonly IEpisodeService _episodeService;
 		private readonly IMediaFileService _mediaFileService;
 		private readonly IGenreService _genreService;
+		private readonly ICountryService _countryService;
 
 		public MovieController(
 			IMovieService movieService,
 			IEpisodeService episodeService,
 			IMediaFileService mediaFileService,
-			IGenreService genreService)
+			IGenreService genreService,
+			ICountryService countryService)
 		{
 			_movieService = movieService;
 			_episodeService = episodeService;
 			_mediaFileService = mediaFileService;
 			_genreService = genreService;
+			_countryService = countryService;
 		}
 
-		// GET: /Movies/Details/{slug}
+		// GET: /Movie/Detail/{slug}
 		public async Task<IActionResult> Detail(string slug)
 		{
 			if (string.IsNullOrEmpty(slug))
@@ -52,6 +55,13 @@ namespace FinalCuongFilm.MVC.Controllers
 				.Take(6)
 				.ToList();
 
+			// ✅ Load Genres và Countries cho header navigation
+			var genres = await _genreService.GetAllAsync();
+			var countries = await _countryService.GetAllAsync();
+
+			ViewBag.Genres = genres;
+			ViewBag.Countries = countries;
+
 			var viewModel = new MovieDetailsViewModel
 			{
 				Movie = movie,
@@ -63,7 +73,7 @@ namespace FinalCuongFilm.MVC.Controllers
 			return View(viewModel);
 		}
 
-		// GET: /Movies/Watch/{slug}?ep={episodeNumber}
+		// GET: /Movie/Watch/{slug}?ep={episodeNumber}
 		public async Task<IActionResult> Watch(string slug, int? ep)
 		{
 			if (string.IsNullOrEmpty(slug))
@@ -87,6 +97,13 @@ namespace FinalCuongFilm.MVC.Controllers
 			var mediaFiles = currentEpisode != null
 				? await _mediaFileService.GetByEpisodeIdAsync(currentEpisode.Id)
 				: await _mediaFileService.GetByMovieIdAsync(movie.Id);
+
+			// ✅ Load Genres và Countries cho header navigation
+			var genres = await _genreService.GetAllAsync();
+			var countries = await _countryService.GetAllAsync();
+
+			ViewBag.Genres = genres;
+			ViewBag.Countries = countries;
 
 			var viewModel = new MovieWatchViewModel
 			{

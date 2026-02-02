@@ -1,0 +1,148 @@
+﻿@model IEnumerable<FinalCuongFilm.Common.DTOs.ReviewDto>
+
+@{
+    ViewData["Title"] = "Đánh giá của tôi";
+}
+
+<div class="container my-5">
+    <h2 class="mb-4">
+        <i class="fas fa-comments"></i> Đánh giá của tôi
+    </h2>
+
+    @if (Model.Any())
+    {
+        <div class="row">
+            @foreach (var review in Model)
+            {
+                <div class="col-12 mb-3">
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <div class="row">
+                                <!-- Movie Info -->
+                                <div class="col-md-2">
+                                    <a href="@Url.Action("Details", "Movies", new { id = review.MovieId })">
+                                        <img src="/images/no-poster.jpg"
+                                             alt="@review.MovieTitle"
+                                             class="img-fluid rounded"
+                                             style="max-height: 150px;">
+                                    </a>
+                                </div>
+
+                                <!-- Review Content -->
+                                <div class="col-md-8">
+                                    <h5>
+                                        <a href="@Url.Action("Details", "Movies", new { id = review.MovieId })"
+                                           class="text-decoration-none">
+                                            @review.MovieTitle
+                                        </a>
+                                    </h5>
+
+                                    <!-- Rating Stars -->
+                                    <div class="mb-2">
+                                        @for (int i = 1; i <= 5; i++)
+                                        {
+                                            if (i <= review.Rating)
+                                            {
+                                                <i class="fas fa-star text-warning"></i>
+                                            }
+                                            else
+                                            {
+                                                <i class="far fa-star text-warning"></i>
+                                            }
+                                        }
+                                        <span class="ms-2 text-muted">(@review.Rating/5)</span>
+                                    </div>
+
+                                    <!-- Comment -->
+                                    @if (!string.IsNullOrEmpty(review.Comment))
+                                    {
+                                        <p class="mb-2">@review.Comment</p>
+                                    }
+
+                                    <!-- Status & Date -->
+                                    <div class="text-muted">
+                                        <small>
+                                            <i class="far fa-calendar"></i>
+                                            @review.CreatedAt.ToString("dd/MM/yyyy HH:mm")
+
+                                            @if (review.IsApproved)
+                                            {
+                                                <span class="badge bg-success ms-2">
+                                                    <i class="fas fa-check"></i> Đã duyệt
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-warning text-dark ms-2">
+                                                    <i class="fas fa-clock"></i> Chờ duyệt
+                                                </span>
+                                            }
+                                        </small>
+                                    </div>
+                                </div>
+
+                                <!-- Actions -->
+                                <div class="col-md-2 text-end">
+                                    <a href="@Url.Action("Edit", "Reviews", new { id = review.Id })"
+                                       class="btn btn-sm btn-outline-primary mb-2">
+                                        <i class="fas fa-edit"></i> Sửa
+                                    </a>
+                                    <button class="btn btn-sm btn-outline-danger delete-review-btn"
+                                            data-review-id="@review.Id">
+                                        <i class="fas fa-trash"></i> Xóa
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-info text-center">
+            <i class="fas fa-info-circle fa-3x mb-3"></i>
+            <h4>Bạn chưa có đánh giá nào</h4>
+            <p>Hãy xem phim và chia sẻ cảm nhận của bạn!</p>
+            <a href="@Url.Action("Index", "Home")" class="btn btn-primary">
+                <i class="fas fa-film"></i> Khám phá phim
+            </a>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            $('.delete-review-btn').click(function() {
+                const reviewId = $(this).data('review-id');
+                const card = $(this).closest('.card').parent();
+
+                if (confirm('Bạn có chắc muốn xóa đánh giá này?')) {
+                    $.ajax({
+                        url: '@Url.Action("Delete", "Reviews")',
+                        type: 'POST',
+                        data: {
+                            id: reviewId,
+                            __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                        },
+                        success: function(response) {
+                            if (response.success) {
+                                card.fadeOut(300, function() {
+                                    $(this).remove();
+                                    if ($('.card').length === 0) {
+                                        location.reload();
+                                    }
+                                });
+                                alert(response.message);
+                            } else {
+                                alert(response.message);
+                            }
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+}

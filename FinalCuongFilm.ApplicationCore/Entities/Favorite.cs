@@ -1,24 +1,30 @@
-﻿//using FinalCuongFilm.ApplicationCore.Entities.Identity;
-using System;
-using System.Collections.Generic;
+﻿using Microsoft.AspNetCore.Identity;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FinalCuongFilm.ApplicationCore.Entities
 {
+	[Table("Favorites")]
 	public class Favorite
 	{
 		[Key]
 		public Guid Id { get; set; } = Guid.NewGuid();
-		
 
+		// Foreign Keys
+		[Required]
+		public string UserId { get; set; } = string.Empty; 
+
+		[Required]
 		public Guid MovieId { get; set; }
-		[ForeignKey("MovieId")]
 
-
+		// Timestamps
 		public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+		// Navigation Properties
+		[ForeignKey("UserId")]
+		public IdentityUser User { get; set; } = null!;
+
+		[ForeignKey("MovieId")]
+		public Movie Movie { get; set; } = null!;
 	}
 }

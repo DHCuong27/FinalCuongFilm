@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -42,6 +43,18 @@ namespace FinalCuongFilm.ApplicationCore.Entities
 		public ICollection<Movie_Tag> Movie_Tags { get; set; } = new List<Movie_Tag>();
 		public ICollection<Review> Reviews { get; set; } = new List<Review>();
 		public ICollection<MediaFile> MediaFiles { get; set; } = new List<MediaFile>();
+		 public ICollection<Favorite> Favorites { get; set; } = new List<Favorite>();
+
+		[NotMapped]
+		public double AverageRating => Reviews.Any()
+	   ? Math.Round(Reviews.Where(r => r.IsApproved).Average(r => r.Rating), 1)
+	   : 0;
+
+		[NotMapped]
+		public int TotalReviews => Reviews.Count(r => r.IsApproved);
+
+		[NotMapped]
+		public int TotalFavorites => Favorites.Count;
 
 	}
 }

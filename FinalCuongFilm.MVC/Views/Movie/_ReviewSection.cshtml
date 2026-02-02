@@ -1,0 +1,388 @@
+﻿@using FinalCuongFilm.Common.DTOs
+
+<style>
+    /* Review Section Styles */
+    .reviews-section {
+        background-color: var(--netflix-gray);
+        padding: 3rem 4rem;
+        margin-top: 2rem;
+    }
+
+    .reviews-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+    }
+
+    .reviews-stats {
+        display: flex;
+        align-items: center;
+        gap: 2rem;
+    }
+
+    .average-score {
+        font-size: 3rem;
+        font-weight: 700;
+        color: var(--netflix-red);
+    }
+
+    .score-details {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .stars {
+        color: #ffd700;
+        font-size: 1.5rem;
+    }
+
+    .review-count {
+        color: var(--netflix-light-gray);
+        font-size: 0.9rem;
+    }
+
+    .write-review-btn {
+        background-color: var(--netflix-red);
+        color: white;
+        border: none;
+        padding: 0.8rem 2rem;
+        border-radius: 4px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+        .write-review-btn:hover {
+            background-color: #f40612;
+        }
+
+    .review-form {
+        background-color: rgba(255, 255, 255, 0.1);
+        padding: 2rem;
+        border-radius: 8px;
+        margin-bottom: 2rem;
+        display: none;
+    }
+
+        .review-form.active {
+            display: block;
+        }
+
+    .rating-input {
+        display: flex;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+    }
+
+        .rating-input .star {
+            font-size: 2rem;
+            color: #666;
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+
+            .rating-input .star.active,
+            .rating-input .star:hover {
+                color: #ffd700;
+            }
+
+    .review-textarea {
+        width: 100%;
+        min-height: 100px;
+        background-color: rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: white;
+        padding: 1rem;
+        border-radius: 4px;
+        font-size: 1rem;
+        resize: vertical;
+    }
+
+        .review-textarea:focus {
+            outline: none;
+            border-color: var(--netflix-red);
+        }
+
+    .review-item {
+        background-color: rgba(255, 255, 255, 0.05);
+        padding: 1.5rem;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+        border-left: 3px solid var(--netflix-red);
+    }
+
+    .review-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+
+    .reviewer-info {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .reviewer-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 600;
+    }
+
+    .reviewer-name {
+        font-weight: 600;
+        color: white;
+    }
+
+    .review-date {
+        color: var(--netflix-light-gray);
+        font-size: 0.85rem;
+    }
+
+    .review-score {
+        background-color: var(--netflix-red);
+        color: white;
+        padding: 0.3rem 0.8rem;
+        border-radius: 20px;
+        font-weight: 600;
+    }
+
+    .review-comment {
+        color: #d2d2d2;
+        line-height: 1.6;
+    }
+
+    .review-actions {
+        margin-top: 1rem;
+        display: flex;
+        gap: 1rem;
+    }
+
+        .review-actions button {
+            background: none;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+            .review-actions button:hover {
+                border-color: var(--netflix-red);
+                background-color: rgba(229, 9, 20, 0.2);
+            }
+</style>
+
+<div class="reviews-section">
+    <div class="reviews-header">
+        <div class="reviews-stats">
+            @if (ViewBag.ReviewCount > 0)
+            {
+                <div class="average-score">@ViewBag.AverageScore.ToString("F1")</div>
+                <div class="score-details">
+                    <div class="stars">
+                        @for (int i = 0; i < (int)Math.Round(ViewBag.AverageScore / 2); i++)
+                        {
+                            <i class="fas fa-star"></i>
+                        }
+                        @if (ViewBag.AverageScore % 2 >= 0.5)
+                        {
+                            <i class="fas fa-star-half-alt"></i>
+                        }
+                    </div>
+                    <div class="review-count">@ViewBag.ReviewCount Reviews</div>
+                </div>
+            }
+            else
+            {
+                <h3>No Reviews Yet</h3>
+            }
+        </div>
+
+        @if (User.Identity.IsAuthenticated)
+        {
+            <button class="write-review-btn" onclick="toggleReviewForm()">
+                @if (ViewBag.UserReview != null)
+                {
+                    <text>Edit Your Review</text>
+                }
+                else
+                {
+                    <text>Write a Review</text>
+                }
+            </button>
+        }
+    </div>
+
+    @if (User.Identity.IsAuthenticated)
+    {
+        <div class="review-form" id="reviewForm">
+            <h4>@(ViewBag.UserReview != null ? "Edit Your Review" : "Write Your Review")</h4>
+            <div class="rating-input" id="ratingInput">
+                @for (int i = 1; i <= 10; i++)
+                {
+                    <span class="star" data-rating="@i" onclick="setRating(@i)">★</span>
+                }
+            </div>
+            <input type="hidden" id="selectedRating" value="@(ViewBag.UserReview?.Score ?? 0)" />
+            <textarea class="review-textarea" id="reviewComment" placeholder="Share your thoughts about this movie...">@(ViewBag.UserReview?.Comment)</textarea>
+            <div style="margin-top: 1rem; display: flex; gap: 1rem;">
+                <button class="write-review-btn" onclick="submitReview()">
+                    @(ViewBag.UserReview != null ? "Update Review" : "Submit Review")
+                </button>
+                @if (ViewBag.UserReview != null)
+                {
+                    <button class="write-review-btn" style="background-color: #666;" onclick="deleteReview()">Delete Review</button>
+                }
+                <button class="write-review-btn" style="background-color: #666;" onclick="toggleReviewForm()">Cancel</button>
+            </div>
+        </div>
+    }
+
+    <div class="reviews-list">
+        @foreach (var review in (IEnumerable<ReviewDto>)ViewBag.Reviews)
+        {
+            <div class="review-item">
+                <div class="review-header">
+                    <div class="reviewer-info">
+                        <div class="reviewer-avatar">
+                            @review.UserName.Substring(0, 1).ToUpper()
+                        </div>
+                        <div>
+                            <div class="reviewer-name">@review.UserName</div>
+                            <div class="review-date">
+                                @review.CreatedAt.ToString("MMM dd, yyyy")
+                                @if (review.UpdatedAt != null)
+                                {
+                                    <span>(Edited)</span>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                    <div class="review-score">@review.Rating/10</div>
+                </div>
+                @if (!string.IsNullOrEmpty(review.Comment))
+                {
+                    <div class="review-comment">@review.Comment</div>
+                }
+            </div>
+        }
+    </div>
+</div>
+
+<script>
+    let currentRating = @(ViewBag.UserReview?.Score ?? 0);
+
+    function toggleReviewForm() {
+        const form = document.getElementById('reviewForm');
+        form.classList.toggle('active');
+        
+        // Update stars on show
+        if (form.classList.contains('active')) {
+            updateStars(currentRating);
+        }
+    }
+
+    function setRating(rating) {
+        currentRating = rating;
+        document.getElementById('selectedRating').value = rating;
+        updateStars(rating);
+    }
+
+    function updateStars(rating) {
+        const stars = document.querySelectorAll('.rating-input .star');
+        stars.forEach((star, index) => {
+            if (index < rating) {
+                star.classList.add('active');
+            } else {
+                star.classList.remove('active');
+            }
+        });
+    }
+
+    async function submitReview() {
+        const rating = parseInt(document.getElementById('selectedRating').value);
+        const comment = document.getElementById('reviewComment').value;
+        const movieId = '@Model.Movie.Id';
+        const userReviewId = '@(ViewBag.UserReview?.Id ?? Guid.Empty)';
+
+        if (rating === 0) {
+            alert('Please select a rating');
+            return;
+        }
+
+        const isUpdate = userReviewId !== '@Guid.Empty';
+        const url = isUpdate ? '/Movie/UpdateReview' : '/Movie/SubmitReview';
+        const data = isUpdate 
+            ? { reviewId: userReviewId, score: rating, comment: comment }
+            : { movieId: movieId, score: rating, comment: comment };
+
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            });
+
+            const result = await response.json();
+            
+            if (result.success) {
+                alert(result.message);
+                location.reload();
+            } else {
+                alert(result.message);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('An error occurred');
+        }
+    }
+
+    async function deleteReview() {
+        if (!confirm('Are you sure you want to delete your review?')) {
+            return;
+        }
+
+        const userReviewId = '@(ViewBag.UserReview?.Id)';
+
+        try {
+            const response = await fetch('/Movie/DeleteReview', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ reviewId: userReviewId })
+            });
+
+            const result = await response.json();
+            
+            if (result.success) {
+                alert(result.message);
+                location.reload();
+            } else {
+                alert(result.message);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('An error occurred');
+        }
+    }
+
+    // Initialize stars on page load if editing
+    window.addEventListener('DOMContentLoaded', function() {
+        if (currentRating > 0) {
+            updateStars(currentRating);
+        }
+    });
+</script>

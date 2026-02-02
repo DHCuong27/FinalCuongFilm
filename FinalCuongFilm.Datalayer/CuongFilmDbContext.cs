@@ -158,15 +158,22 @@ namespace FinalCuongFilm.DataLayer
 			});
 
 			// Favorite
-			modelBuilder.Entity<Favorite>(entity =>
-			{
-				entity.ToTable("Favorites");
-				entity.HasKey(f => f.Id);
+			modelBuilder.Entity<Favorite>()
+		  .HasIndex(f => new { f.UserId, f.MovieId })
+		  .IsUnique(); // Một user chỉ favorite 1 movie 1 lần
 
-				entity.Property(f => f.CreatedAt)
-					.HasDefaultValueSql("GETUTCDATE()");
+			modelBuilder.Entity<Favorite>()
+				.HasOne(f => f.User)
+				.WithMany()
+				.HasForeignKey(f => f.UserId)
+				.OnDelete(DeleteBehavior.Cascade);
 
-						});
+			modelBuilder.Entity<Favorite>()
+				.HasOne(f => f.Movie)
+				.WithMany(m => m.Favorites)
+				.HasForeignKey(f => f.MovieId)
+				.OnDelete(DeleteBehavior.Cascade);
+
 
 			// Genre
 			modelBuilder.Entity<Genre>(entity =>
@@ -272,28 +279,27 @@ namespace FinalCuongFilm.DataLayer
 			// Review
 			modelBuilder.Entity<Review>(entity =>
 			{
-				entity.ToTable("Reviews");
-				entity.HasKey(r => r.Id);
+				modelBuilder.Entity<Review>()
+		   .HasIndex(r => new { r.UserId, r.MovieId }); // Có thể review nhiều lần
 
-				entity.Property(r => r.Score)
-					.IsRequired();
+				modelBuilder.Entity<Review>()
+					.HasOne(r => r.User)
+					.WithMany()
+					.HasForeignKey(r => r.UserId)
+					.OnDelete(DeleteBehavior.Cascade);
 
-				entity.Property(r => r.Comment)
-					.HasMaxLength(MaxLengths.COMMENT);
-
-				entity.Property(r => r.CreatedAt)
-					.HasDefaultValueSql("GETUTCDATE()");
-
-				entity.Property(r => r.UpdatedAt)
-					.IsRequired(false);
-
-				// Relationship với Movie
-				entity.HasOne(r => r.Movie)
+				modelBuilder.Entity<Review>()
+					.HasOne(r => r.Movie)
 					.WithMany(m => m.Reviews)
 					.HasForeignKey(r => r.MovieId)
 					.OnDelete(DeleteBehavior.Cascade);
 
-				// Không cần định nghĩa User relationship ở đây
+				// Indexes for performance
+				modelBuilder.Entity<Review>()
+					.HasIndex(r => r.Rating);
+
+				modelBuilder.Entity<Review>()
+					.HasIndex(r => r.IsApproved);
 			});
 
 			// SearchSuggestion

@@ -1,0 +1,185 @@
+﻿@model FinalCuongFilm.Common.DTOs.ReviewCreateDto
+
+@{
+    ViewData["Title"] = "Đánh giá phim";
+    var movie = ViewBag.Movie as FinalCuongFilm.Common.DTOs.MovieDto;
+}
+
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-star"></i> Đánh giá phim
+                    </h4>
+                </div>
+
+                <div class="card-body">
+                    <!-- Movie Info -->
+                    <div class="mb-4 p-3 bg-light rounded">
+                        <div class="d-flex align-items-center">
+                            <img src="@(movie?.PosterUrl ?? "/images/no-poster.jpg")"
+                                 alt="@movie?.Title"
+                                 style="width: 80px; height: 120px; object-fit: cover;"
+                                 class="rounded me-3">
+                            <div>
+                                <h5 class="mb-1">@movie?.Title</h5>
+                                <p class="text-muted mb-0">
+                                    @movie?.ReleaseYear | @movie?.DurationMinutes phút
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Review Form -->
+                    <form asp-action="Create" method="post">
+                        <input type="hidden" asp-for="MovieId" />
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                        <!-- Rating -->
+                        <div class="mb-4">
+                            <label class="form-label">
+                                Đánh giá của bạn <span class="text-danger">*</span>
+                            </label>
+                            <div class="star-rating">
+                                @for (int i = 5; i >= 1; i--)
+                                {
+                                    <input type="radio"
+                                           id="star@(i)"
+                                           name="Rating"
+                                           value="@i"
+                                           asp-for="Rating" />
+                                    <label for="star@(i)">
+                                        <i class="fas fa-star"></i>
+                                    </label>
+                                }
+                            </div>
+                            <span asp-validation-for="Rating" class="text-danger"></span>
+                            <div class="mt-2">
+                                <span id="rating-text" class="text-muted"></span>
+                            </div>
+                        </div>
+
+                        <!-- Comment -->
+                        <div class="mb-4">
+                            <label asp-for="Comment" class="form-label">Nhận xét của bạn</label>
+                            <textarea asp-for="Comment"
+                                      class="form-control"
+                                      rows="5"
+                                      placeholder="Chia sẻ suy nghĩ của bạn về bộ phim này..."
+                                      maxlength="1000"></textarea>
+                            <span asp-validation-for="Comment" class="text-danger"></span>
+                            <div class="form-text">
+                                <span id="char-count">0</span>/1000 ký tự
+                            </div>
+                        </div>
+
+                        <!-- Buttons -->
+                        <div class="d-flex justify-content-between">
+                            <a href="@Url.Action("Details", "Movies", new { id = Model.MovieId })"
+                               class="btn btn-secondary">
+                                <i class="fas fa-times"></i> Hủy
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane"></i> Gửi đánh giá
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Info Alert -->
+            <div class="alert alert-info mt-3">
+                <i class="fas fa-info-circle"></i>
+                <strong>Lưu ý:</strong> Đánh giá của bạn sẽ được kiểm duyệt trước khi hiển thị công khai.
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        $(document).ready(function() {
+            // Star rating hover effect
+            const ratingTexts = {
+                1: '⭐ Tệ',
+                2: '⭐⭐ Không hay',
+                3: '⭐⭐⭐ Bình thường',
+                4: '⭐⭐⭐⭐ Hay',
+                5: '⭐⭐⭐⭐⭐ Xuất sắc'
+            };
+
+            $('.star-rating label').hover(
+                function() {
+                    const value = $(this).prev('input').val();
+                    $('#rating-text').text(ratingTexts[value]);
+
+                    // Highlight stars
+                    $(this).addClass('hover');
+                    $(this).prevAll('label').addClass('hover');
+                    $(this).nextAll('label').removeClass('hover');
+                },
+                function() {
+                    $('.star-rating label').removeClass('hover');
+                    const selectedValue = $('input[name="Rating"]:checked').val();
+                    if (selectedValue) {
+                        $('#rating-text').text(ratingTexts[selectedValue]);
+                    } else {
+                        $('#rating-text').text('');
+                    }
+                }
+            );
+
+            // On rating change
+            $('input[name="Rating"]').change(function() {
+                const value = $(this).val();
+                $('#rating-text').text(ratingTexts[value]);
+
+                // Highlight selected
+                $(this).next('label').addClass('selected');
+                $(this).next('label').prevAll('label').addClass('selected');
+                $(this).next('label').nextAll('label').removeClass('selected');
+            });
+
+            // Character counter
+            $('#Comment').on('input', function() {
+                const count = $(this).val().length;
+                $('#char-count').text(count);
+            });
+        });
+    </script>
+}
+
+<style>
+    .star-rating {
+        display: flex;
+        flex-direction: row-reverse;
+        justify-content: flex-end;
+        font-size: 2rem;
+    }
+
+        .star-rating input {
+            display: none;
+        }
+
+        .star-rating label {
+            cursor: pointer;
+            color: #ddd;
+            transition: color 0.2s;
+        }
+
+            .star-rating label:hover,
+            .star-rating label.hover,
+            .star-rating label.selected {
+                color: #ffc107;
+            }
+
+        .star-rating input:checked ~ label {
+            color: #ffc107;
+        }
+</style>
