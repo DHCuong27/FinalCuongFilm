@@ -1,4 +1,5 @@
-﻿@{
+﻿@model IEnumerable<FinalCuongFilm.Common.DTOs.MovieDto>
+@{
     ViewData["Title"] = "Trang chủ";
     Layout = "_LayoutUser";
 
@@ -10,12 +11,11 @@
     /* Netflix Style CSS - Cải tiến */
     :root {
         --netflix-red: #e50914;
-        --netflix-dark: #0f0f0f; /* Tối hơn một chút để chữ nổi bật */
-        --netflix-dark-bg: #1a1a1a; /* Cho các phần nền */
+        --netflix-dark: #0f0f0f;
+        --netflix-dark-bg: #1a1a1a;
         --netflix-gray: #2d2d2d;
-        --netflix-light-gray: #b3b3b3; /* Sáng hơn cho dễ đọc */
+        --netflix-light-gray: #b3b3b3;
         --netflix-white: #ffffff;
-        --netflix-gradient: linear-gradient(180deg, rgba(0,0,0,0.7) 0%, rgba(20,20,20,0.5) 50%, #141414 100%);
     }
 
     body {
@@ -27,7 +27,7 @@
         line-height: 1.6;
     }
 
-    /* Hero Banner Cải tiến */
+    /* Hero Banner */
     .hero-banner {
         position: relative;
         background: linear-gradient(180deg, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.5) 50%, rgba(20,20,20,0.3) 100%), url('https://images.unsplash.com/photo-1536440136628-849c177e76a1?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');
@@ -42,25 +42,25 @@
         overflow: hidden;
     }
 
-        .hero-banner::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 100px;
-            background: linear-gradient(180deg, transparent 0%, var(--netflix-dark) 100%);
-            z-index: 1;
-        }
+    .hero-banner::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 100px;
+        background: linear-gradient(180deg, transparent 0%, var(--netflix-dark) 100%);
+        z-index: 1;
+    }
 
-        .hero-banner .container {
-            z-index: 2;
-            position: relative;
-            width: 100%;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 2rem;
-        }
+    .hero-banner .container {
+        z-index: 2;
+        position: relative;
+        width: 100%;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 2rem;
+    }
 
     .hero-content {
         max-width: 650px;
@@ -109,41 +109,14 @@
         overflow: hidden;
     }
 
-        .netflix-btn::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 0;
-            height: 0;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.2);
-            transform: translate(-50%, -50%);
-            transition: width 0.6s, height 0.6s;
-        }
+    .netflix-btn:hover {
+        background-color: #f40612;
+        color: white;
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(229, 9, 20, 0.4);
+    }
 
-        .netflix-btn:hover {
-            background-color: #f40612;
-            color: white;
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(229, 9, 20, 0.4);
-        }
-
-            .netflix-btn:hover::before {
-                width: 300px;
-                height: 300px;
-            }
-
-        .netflix-btn i {
-            font-size: 1.4rem;
-            transition: transform 0.3s ease;
-        }
-
-        .netflix-btn:hover i {
-            transform: scale(1.1);
-        }
-
-    /* Section Header Cải tiến */
+    /* Section Header */
     .section-header {
         display: flex;
         align-items: center;
@@ -154,33 +127,33 @@
         position: relative;
     }
 
-        .section-header::after {
-            content: '';
-            position: absolute;
-            bottom: -2px;
-            left: 0;
-            width: 100px;
-            height: 2px;
-            background: var(--netflix-red);
-        }
+    .section-header::after {
+        content: '';
+        position: absolute;
+        bottom: -2px;
+        left: 0;
+        width: 100px;
+        height: 2px;
+        background: var(--netflix-red);
+    }
 
-        .section-header i {
-            font-size: 2rem;
-            color: var(--netflix-red);
-            background: rgba(229, 9, 20, 0.1);
-            padding: 0.8rem;
-            border-radius: 8px;
-        }
+    .section-header i {
+        font-size: 2rem;
+        color: var(--netflix-red);
+        background: rgba(229, 9, 20, 0.1);
+        padding: 0.8rem;
+        border-radius: 8px;
+    }
 
-        .section-header h2 {
-            font-size: 2rem;
-            font-weight: 800;
-            margin: 0;
-            color: white;
-            letter-spacing: -0.5px;
-        }
+    .section-header h2 {
+        font-size: 2rem;
+        font-weight: 800;
+        margin: 0;
+        color: white;
+        letter-spacing: -0.5px;
+    }
 
-    /* Movies Row Cải tiến */
+    /* Movies Row */
     .movies-row-container {
         position: relative;
         margin-bottom: 4rem;
@@ -196,9 +169,9 @@
         scroll-behavior: smooth;
     }
 
-        .movies-row::-webkit-scrollbar {
-            display: none;
-        }
+    .movies-row::-webkit-scrollbar {
+        display: none;
+    }
 
     .scroll-arrow {
         position: absolute;
@@ -237,19 +210,22 @@
         transform: translateY(-50%) scale(1.1);
     }
 
-    /* Movie Card Cải tiến */
+    /* Movie Card */
     .movie-card {
         flex: 0 0 auto;
         width: 220px;
         transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         position: relative;
         cursor: pointer;
+        background: transparent;
+        border: none;
+        box-shadow: none;
     }
 
-        .movie-card:hover {
-            transform: scale(1.08);
-            z-index: 20;
-        }
+    .movie-card:hover {
+        transform: scale(1.08);
+        z-index: 20;
+    }
 
     .movie-poster {
         position: relative;
@@ -342,16 +318,16 @@
         text-overflow: ellipsis;
     }
 
-        .movie-title a {
-            color: white;
-            text-decoration: none;
-            transition: color 0.2s ease;
-            display: block;
-        }
+    .movie-title a {
+        color: white;
+        text-decoration: none;
+        transition: color 0.2s ease;
+        display: block;
+    }
 
-            .movie-title a:hover {
-                color: var(--netflix-red);
-            }
+    .movie-title a:hover {
+        color: var(--netflix-red);
+    }
 
     .movie-meta {
         display: flex;
@@ -361,15 +337,15 @@
         color: var(--netflix-light-gray);
     }
 
-        .movie-meta span {
-            display: flex;
-            align-items: center;
-            gap: 0.3rem;
-        }
+    .movie-meta span {
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+    }
 
-        .movie-meta i {
-            color: var(--netflix-red);
-        }
+    .movie-meta i {
+        color: var(--netflix-red);
+    }
 
     .view-badge {
         position: absolute;
@@ -388,9 +364,9 @@
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
     }
 
-        .view-badge i {
-            font-size: 0.9rem;
-        }
+    .view-badge i {
+        font-size: 0.9rem;
+    }
 
     /* No Movies Alert */
     .netflix-alert {
@@ -404,21 +380,21 @@
         animation: fadeIn 0.5s ease;
     }
 
-        .netflix-alert i {
-            color: var(--netflix-red);
-            font-size: 2rem;
-            margin-bottom: 1rem;
-        }
+    .netflix-alert i {
+        color: var(--netflix-red);
+        font-size: 2rem;
+        margin-bottom: 1rem;
+    }
 
-        .netflix-alert h3 {
-            font-size: 1.5rem;
-            margin-bottom: 0.5rem;
-        }
+    .netflix-alert h3 {
+        font-size: 1.5rem;
+        margin-bottom: 0.5rem;
+    }
 
-        .netflix-alert p {
-            color: var(--netflix-light-gray);
-            margin: 0;
-        }
+    .netflix-alert p {
+        color: var(--netflix-light-gray);
+        margin: 0;
+    }
 
     /* Container */
     .container {
@@ -427,15 +403,138 @@
         padding: 0 2rem;
     }
 
+    /* Grid Layout for Index view */
+    .row {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin: 2rem 0;
+    }
 
+    .card {
+        background: var(--netflix-dark-bg);
+        border: 1px solid var(--netflix-gray);
+        border-radius: 8px;
+        overflow: hidden;
+        transition: transform 0.3s;
+    }
+
+    .card:hover {
+        transform: translateY(-5px);
+    }
+
+    .card-img-top {
+        width: 100%;
+        height: 350px;
+        object-fit: cover;
+    }
+
+    .favorite-icon-btn {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: rgba(0, 0, 0, 0.7);
+        border: none;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        opacity: 0;
+        transition: opacity 0.3s;
+    }
+
+    .card:hover .favorite-icon-btn {
+        opacity: 1;
+    }
+
+    .favorite-icon-btn:hover {
+        background: var(--netflix-red);
+    }
+
+    .badge {
+        padding: 0.5rem 0.8rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .card-body {
+        padding: 1.5rem;
+    }
+
+    .card-title a {
+        color: white;
+        text-decoration: none;
+        font-size: 1.1rem;
+        font-weight: 600;
+        display: block;
+        margin-bottom: 0.5rem;
+    }
+
+    .card-title a:hover {
+        color: var(--netflix-red);
+    }
+
+    .card-text {
+        color: var(--netflix-light-gray);
+        font-size: 0.9rem;
+    }
+
+    .card-footer {
+        padding: 1rem 1.5rem;
+        background: var(--netflix-gray);
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .btn-primary {
+        background-color: var(--netflix-red);
+        border-color: var(--netflix-red);
+        color: white;
+        font-weight: 600;
+        padding: 0.6rem 1rem;
+        border-radius: 6px;
+    }
+
+    .btn-primary:hover {
+        background-color: #f40612;
+        border-color: #f40612;
+    }
+
+    .text-warning {
+        color: #ffc107 !important;
+    }
+
+    .text-muted {
+        color: var(--netflix-light-gray) !important;
+    }
+
+    .text-dark {
+        color: white !important;
+    }
+
+    @@keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    @@keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
 </style>
 
 <!-- HERO BANNER -->
 <div class="hero-banner">
     <div class="container">
         <div class="hero-content">
-            @* <h1>Chào mừng đến CuongFilm</h1> *@
-            @* <p class="lead">Khám phá thế giới điện ảnh với hàng ngàn bộ phim chất lượng cao hoàn toàn miễn phí</p> *@
             <a asp-controller="Search" asp-action="Index" class="netflix-btn">
                 <i class="fas fa-search"></i> Tìm kiếm phim
             </a>
@@ -491,6 +590,13 @@
                                 }
                             </div>
                         </div>
+
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            <button class="favorite-icon-btn" data-movie-id="@movie.Id">
+                                <i class="far fa-heart"></i>
+                            </button>
+                        }
                     </div>
                 }
             </div>
@@ -561,6 +667,13 @@
                                 }
                             </div>
                         </div>
+
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            <button class="favorite-icon-btn" data-movie-id="@movie.Id">
+                                <i class="far fa-heart"></i>
+                            </button>
+                        }
                     </div>
                 }
             </div>
@@ -568,6 +681,81 @@
             <button class="scroll-arrow scroll-right" onclick="scrollRight('popular')">
                 <i class="fas fa-chevron-right"></i>
             </button>
+        </div>
+    </div>
+}
+
+<!-- PHIM TỪ MODEL (dạng grid) -->
+@if (Model != null && Model.Any())
+{
+    <div class="container" style="margin-top: 4rem;">
+        <div class="section-header">
+            <i class="fas fa-film"></i>
+            <h2>Tất Cả Phim</h2>
+        </div>
+
+        <div class="row">
+            @foreach (var movie in Model.Take(12))
+            {
+                <div class="card">
+                    <div class="position-relative">
+                        <a asp-controller="Movie" asp-action="Detail" asp-route-slug="@movie.Slug">
+                            <img src="@(movie.PosterUrl ?? "https://via.placeholder.com/300x450/2d2d2d/ffffff?text=No+Poster")" 
+                                 class="card-img-top" 
+                                 alt="@movie.Title">
+                        </a>
+
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            <button class="favorite-icon-btn" data-movie-id="@movie.Id">
+                                <i class="far fa-heart"></i>
+                            </button>
+                        }
+
+                        <span class="badge bg-danger position-absolute top-0 start-0 m-2">HD</span>
+
+                        <span class="badge bg-dark position-absolute bottom-0 end-0 m-2">
+                            <i class="fas fa-eye"></i> @movie.ViewCount.ToString("N0")
+                        </span>
+                    </div>
+
+                    <div class="card-body">
+                        <h6 class="card-title">
+                            <a asp-controller="Movie" asp-action="Detail" asp-route-slug="@movie.Slug">
+                                @movie.Title
+                            </a>
+                        </h6>
+
+                        <div class="mb-2">
+                            <small class="text-warning">
+                                @for (int i = 1; i <= 5; i++)
+                                {
+                                    <i class="@(i <= 4 ? "fas" : "far") fa-star"></i>
+                                }
+                                <span class="text-muted">4.0</span>
+                            </small>
+                        </div>
+
+                        <p class="card-text">
+                            @if (movie.ReleaseYear.HasValue)
+                            {
+                                <span>@movie.ReleaseYear</span>
+                            }
+                            @if (movie.DurationMinutes.HasValue)
+                            {
+                                <span> • @movie.DurationMinutes phút</span>
+                            }
+                        </p>
+                    </div>
+
+                    <div class="card-footer">
+                        <a asp-controller="Movie" asp-action="Watch" asp-route-slug="@movie.Slug" 
+                           class="btn btn-primary w-100">
+                            <i class="fas fa-play"></i> Xem phim
+                        </a>
+                    </div>
+                </div>
+            }
         </div>
     </div>
 }
@@ -608,5 +796,40 @@
                 }
             });
         });
+
+        // Favorite functionality
+        const favoriteButtons = document.querySelectorAll('.favorite-icon-btn');
+        favoriteButtons.forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const movieId = this.getAttribute('data-movie-id');
+                const icon = this.querySelector('i');
+                
+                fetch('@Url.Action("Toggle", "Favorites")', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                    },
+                    body: JSON.stringify({ movieId: movieId })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        if (data.isFavorite) {
+                            icon.classList.remove('far');
+                            icon.classList.add('fas');
+                        } else {
+                            icon.classList.remove('fas');
+                            icon.classList.add('far');
+                        }
+                    }
+                });
+            });
+        });
     });
 </script>
+
+@Html.AntiForgeryToken()

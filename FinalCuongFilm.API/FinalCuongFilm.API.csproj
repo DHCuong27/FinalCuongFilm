@@ -7,7 +7,17 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.23" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="8.0.23" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.23" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.15.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\FinalCuongFilm.Common\FinalCuongFilm.Common.csproj" />
+    <ProjectReference Include="..\FinalCuongFilm.DataLayer\FinalCuongFilm.DataLayer.csproj" />
+    <ProjectReference Include="..\FinalCuongFilm.Service\FinalCuongFilm.Service.csproj" />
   </ItemGroup>
 
 </Project>

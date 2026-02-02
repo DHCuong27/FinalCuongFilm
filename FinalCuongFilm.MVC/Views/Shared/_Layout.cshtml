@@ -1,331 +1,101 @@
 ﻿<!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
-	<meta charset="utf-8">
-	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<title>CuongPhim</title>
-	<link href="../Layout_CuongPhim/css/bootstrap.min.css" rel="stylesheet">
-	<link href="../Layout_CuongPhim/css/font-awesome.min.css" rel="stylesheet">
-	<link href="../Layout_CuongPhim/css/global.css" rel="stylesheet">
-	<link href="../Layout_CuongPhim/css/index.css" rel="stylesheet">
-	<link rel="icon" type="image/png" href="@Url.Content("../Layout_CuongPhim/img/Logo/LogoCCP.png")" />
-	<link href="https://fonts.googleapis.com/css2?family=Rajdhani&display=swap" rel="stylesheet">
-	<script src="../Layout_CuongPhim/js/bootstrap.bundle.min.js"></script>
-	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-	<script src="https://accounts.google.com/gsi/client" async defer></script>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - CuongFilm</title>
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
 <body>
-	<!-- Header -->
-	<nav class="navbar navbar-expand-lg navbar-dark bg-dark px-3">
-		<!-- Logo -->
-		<a class="navbar-brand d-flex align-items-center" href="/">
-			<img src="~/Layout_CuongPhim/../Layout_CuongPhim/img/Logo/LogoCCP.png" alt="CuongPhim Logo" height="40" class="me-2">
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <div class="container">
+                <a class="navbar-brand" href="/">
+                    <i class="fas fa-film"></i> CuongFilm
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav me-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Home" asp-action="Index">Trang chủ</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Movies" asp-action="Index">Phim</a>
+                        </li>
+                    </ul>
 
-			<!-- Tên + Slogan -->
-			<div class="d-flex flex-column">
-				<span class="fw-bold text-danger">CuongPhim</span>
-				<div class="d-flex flex-column brand-box">
-					<small class="slogan">Here we go!</small>
-				</div>
-			</div>
+                    <ul class="navbar-nav">
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Favorites" asp-action="Index">
+                                    <i class="fas fa-heart"></i> Yêu thích
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Reviews" asp-action="MyReviews">
+                                    <i class="fas fa-star"></i> Đánh giá của tôi
+                                </a>
+                            </li>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                                    <i class="fas fa-user"></i> @User.Identity.Name
+                                </a>
+                                <ul class="dropdown-menu">
+                                    <li>
+                                        <a class="dropdown-item" asp-area="Identity" asp-page="/Account/Manage/Index">Tài khoản</a>
+                                    </li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <form asp-area="Identity" asp-page="/Account/Logout" method="post">
+                                            <button type="submit" class="dropdown-item">Đăng xuất</button>
+                                        </form>
+                                    </li>
+                                </ul>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="Identity" asp-page="/Account/Login">Đăng nhập</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="Identity" asp-page="/Account/Register">Đăng ký</a>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
 
-		</a>
+    <main>
+        @RenderBody()
+    </main>
 
-		<!-- Toggle cho mobile -->
-		<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar"
-				aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
-			<span class="navbar-toggler-icon"></span>
-		</button>
+    <footer class="bg-dark text-white py-4 mt-5">
+        <div class="container text-center">
+            <p>&copy; 2024 CuongFilm. All rights reserved.</p>
+        </div>
+    </footer>
 
-		<!-- Nội dung navbar -->
-		<div class="collapse navbar-collapse" id="mainNavbar">
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
 
-			<!-- Menu trái -->
-			<ul class="navbar-nav me-auto mb-2 mb-lg-0">
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
+    <script src="~/js/site.js" asp-append-version="true"></script>
 
-				<!-- Topics -->
-				<li class="nav-item dropdown">
-					<a class="nav-link dropdown-toggle" href="#" id="topicDropdown" role="button"
-					   data-bs-toggle="dropdown" aria-expanded="false">
-						Topics
-					</a>
-
-					<ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="topicDropdown">
-						<li><a class="dropdown-item" href="@Url.Action("topics", "film", new { topicSlug = "marvel" })">Marvel</a></li>
-						<li><a class="dropdown-item" href="@Url.Action("topics", "film", new { topicSlug = "sitcom" })">SitCom</a></li>
-						<li><a class="dropdown-item" href="@Url.Action("topics", "film", new { topicSlug = "xuyen-khong" })">Time Travel</a></li>
-						<li><a class="dropdown-item" href="@Url.Action("topics", "film", new { topicSlug = "co-trang" })">Historical</a></li>
-						<li><a class="dropdown-item" href="@Url.Action("topics", "film", new { topicSlug = "tham-vong" })">Ambition</a></li>
-						<li><a class="dropdown-item" href="@Url.Action("topics", "film", new { topicSlug = "phu-thuy" })">Witchcraft</a></li>
-						<li><a class="dropdown-item" href="@Url.Action("topics", "film", new { topicSlug = "long-tieng" })">Dubbed</a></li>
-						<li><a class="dropdown-item" href="@Url.Action("topics", "film", new { topicSlug = "top-imdb" })">Top IMDb</a></li>
-						<li><a class="dropdown-item" href="@Url.Action("topics", "film", new { topicSlug = "de-xuat" })">Recommended</a></li>
-					</ul>
-				</li>
-
-				<!-- Genres -->
-				<li class="nav-item dropdown">
-					<a class="nav-link dropdown-toggle" href="#" id="genreDropdown" role="button"
-					   data-bs-toggle="dropdown" aria-expanded="false">
-						Genres
-					</a>
-					<ul class="dropdown-menu dropdown-menu-dark p-3" aria-labelledby="genreDropdown"
-						style="width:900px; columns:4;">
-						<li><a class="dropdown-item" href="@Url.Action("genre", "film", new { genreSlug = "hanh-dong" })">Action</a></li>
-						<li><a class="dropdown-item" href="@Url.Action("genre", "film", new { genreSlug = "kinh-di" })">Horror</a></li>
-						<li><a class="dropdown-item" href="@Url.Action("genre", "film", new { genreSlug = "hai" })">Comedy</a></li>
-						<li><a class="dropdown-item" href="@Url.Action("genre", "film", new { genreSlug = "tinh-cam" })">Romance</a></li>
-						<li><a class="dropdown-item" href="@Url.Action("genre", "film", new { genreSlug = "hoat-hinh" })">Animation</a></li>
-						<li><a class="dropdown-item" href="@Url.Action("genre", "film", new { genreSlug = "chien-tranh" })">War</a></li>
-						<li><a class="dropdown-item" href="@Url.Action("genre", "film", new { genreSlug = "vien-tuong" })">Science Fiction</a></li>
-						<li><a class="dropdown-item" href="@Url.Action("genre", "film", new { genreSlug = "co-trang" })">Historical</a></li>
-						<li><a class="dropdown-item" href="@Url.Action("genre", "film", new { genreSlug = "phieu-luu" })">Adventure</a></li>
-						<li><a class="dropdown-item" href="@Url.Action("genre", "film", new { genreSlug = "tai-lieu" })">Documentary</a></li>
-						<li><a class="dropdown-item" href="@Url.Action("genre", "film", new { genreSlug = "am-nhac" })">Music</a></li>
-						<li><a class="dropdown-item" href="@Url.Action("genre", "film", new { genreSlug = "gia-dinh" })">Family</a></li>
-						<li><a class="dropdown-item" href="@Url.Action("genre", "film", new { genreSlug = "giang-sinh" })">Christmas</a></li>
-						<li><a class="dropdown-item" href="@Url.Action("genre", "film", new { genreSlug = "gia-tuong" })">Fantasy</a></li>
-						<li><a class="dropdown-item" href="@Url.Action("genre", "film", new { genreSlug = "hoang-cung" })">Royal Palace</a></li>
-						<li><a class="dropdown-item" href="@Url.Action("genre", "film", new { genreSlug = "hinh-su" })">Crime</a></li>
-						<li><a class="dropdown-item" href="@Url.Action("genre", "film", new { genreSlug = "hoc-duong" })">School</a></li>
-						<li><a class="dropdown-item" href="@Url.Action("genre", "film", new { genreSlug = "khoa-hoc" })">Science</a></li>
-						<li><a class="dropdown-item" href="@Url.Action("genre", "film", new { genreSlug = "kinh-dien" })">Classic</a></li>
-						<li><a class="dropdown-item" href="@Url.Action("genre", "film", new { genreSlug = "kich-noi" })">Drama</a></li>
-						<li><a class="dropdown-item" href="@Url.Action("genre", "film", new { genreSlug = "ky-ao" })">Mystery</a></li>
-						<li><a class="dropdown-item" href="@Url.Action("genre", "film", new { genreSlug = "live-action" })">Live Action</a></li>
-						<li><a class="dropdown-item" href="@Url.Action("genre", "film", new { genreSlug = "lang-man" })">Romantic</a></li>
-						<li><a class="dropdown-item" href="@Url.Action("genre", "film", new { genreSlug = "lich-su" })">History</a></li>
-						<li><a class="dropdown-item" href="@Url.Action("genre", "film", new { genreSlug = "marvel" })">Marvel</a></li>
-						<li><a class="dropdown-item" href="@Url.Action("genre", "film", new { genreSlug = "mien-vien-tay" })">Western</a></li>
-						<li><a class="dropdown-item" href="@Url.Action("genre", "film", new { genreSlug = "nghe-nghiep" })">Professional</a></li>
-						<li><a class="dropdown-item" href="@Url.Action("genre", "film", new { genreSlug = "nguoi-mau" })">Model</a></li>
-						<li><a class="dropdown-item" href="@Url.Action("genre", "film", new { genreSlug = "nhac-kich" })">Musical</a></li>
-						<li><a class="dropdown-item" href="@Url.Action("genre", "film", new { genreSlug = "phep-thuat" })">Magic</a></li>
-						<li><a class="dropdown-item" href="@Url.Action("genre", "film", new { genreSlug = "sieu-anh-hung" })">Superhero</a></li>
-						<li><a class="dropdown-item" href="@Url.Action("genre", "film", new { genreSlug = "thieu-nhi" })">Children</a></li>
-						<li><a class="dropdown-item" href="@Url.Action("genre", "film", new { genreSlug = "than-thoai" })">Mythology</a></li>
-						<li><a class="dropdown-item" href="@Url.Action("genre", "film", new { genreSlug = "the-thao" })">Sports</a></li>
-						<li><a class="dropdown-item" href="@Url.Action("genre", "film", new { genreSlug = "tuoi-tre" })">Youth</a></li>
-						<li><a class="dropdown-item" href="@Url.Action("genre", "film", new { genreSlug = "tam-ly" })">Psychology</a></li>
-						<li><a class="dropdown-item" href="@Url.Action("genre", "film", new { genreSlug = "tap-luyen" })">Training</a></li>
-						<li><a class="dropdown-item" href="@Url.Action("genre", "film", new { genreSlug = "vo-thuat" })">Martial Arts</a></li>
-						<li><a class="dropdown-item" href="@Url.Action("genre", "film", new { genreSlug = "xuyen-khong" })">Time Travel</a></li>
-						<li><a class="dropdown-item" href="@Url.Action("genre", "film", new { genreSlug = "dau-thuong" })">Tragedy</a></li>
-						<li><a class="dropdown-item" href="@Url.Action("genre", "film", new { genreSlug = "doi-thuong" })">Slice of Life</a></li>
-						<li><a class="dropdown-item" href="@Url.Action("genre", "film", new { genreSlug = "am-thuc" })">Culinary</a></li>
-					</ul>
-				</li>
-
-				<!-- Countries -->
-				<li class="nav-item dropdown">
-					<a class="nav-link dropdown-toggle" href="#" id="countryDropdown" role="button"
-					   data-bs-toggle="dropdown" aria-expanded="false">
-						Countries
-					</a>
-					<ul class="dropdown-menu dropdown-menu-dark p-3" aria-labelledby="countryDropdown"
-						style="width:500px; columns:3;">
-						<li><a class="dropdown-item" href="@Url.Action("countries", "film", new { countryCode = "gb" })">UK</a></li>
-						<li><a class="dropdown-item" href="@Url.Action("countries", "film", new { countryCode = "ca" })">Canada</a></li>
-						<li><a class="dropdown-item" href="@Url.Action("countries", "film", new { countryCode = "kr" })">South Korea</a></li>
-						<li><a class="dropdown-item" href="@Url.Action("countries", "film", new { countryCode = "hk" })">Hong Kong</a></li>
-						<li><a class="dropdown-item" href="@Url.Action("countries", "film", new { countryCode = "us" })">USA</a></li>
-						<li><a class="dropdown-item" href="@Url.Action("countries", "film", new { countryCode = "jp" })">Japan</a></li>
-						<li><a class="dropdown-item" href="@Url.Action("countries", "film", new { countryCode = "fr" })">France</a></li>
-						<li><a class="dropdown-item" href="@Url.Action("countries", "film", new { countryCode = "th" })">Thailand</a></li>
-						<li><a class="dropdown-item" href="@Url.Action("countries", "film", new { countryCode = "cn" })">China</a></li>
-						<li><a class="dropdown-item" href="@Url.Action("countries", "film", new { countryCode = "au" })">Australia</a></li>
-						<li><a class="dropdown-item" href="@Url.Action("countries", "film", new { countryCode = "tw" })">Taiwan</a></li>
-						<li><a class="dropdown-item" href="@Url.Action("countries", "film", new { countryCode = "de" })">Germany</a></li>
-					</ul>
-				</li>
-
-				<!-- Other links -->
-				<li class="nav-item"><a class="nav-link" href="@Url.Action("phimle", "film")">Movies</a></li>
-				<li class="nav-item"><a class="nav-link" href="@Url.Action("phimbo", "film")">TV Series</a></li>
-				<li class="nav-item"><a class="nav-link" href="#">Schedule</a></li>
-				<li class="nav-item"><a class="nav-link active" aria-current="page" href="@Url.Action("wt", "film")">Watch Together</a></li>
-				<li class="nav-item"><a class="nav-link" href="@Url.Action("actors", "actors")">Actors</a></li>
-			</ul>
-
-			<!-- Ô Search -->
-			<form class="d-flex search-box" role="search">
-				<input class="form-control me-2" type="search" placeholder="Search movies, actors..." aria-label="Search">
-				<button type="submit">Search</button>
-			</form>
-
-		</div> <!-- ĐÂY LÀ THẺ ĐÓNG BỊ THIẾU - ĐÓNG CHO collapse navbar-collapse -->
-		@await Html.PartialAsync("_LoginPartial")
-	</nav>
-
-	@RenderBody()
-
-
-	<section id="footer">
-		<div class="footer_m clearfix">
-			<div class="container">
-				<div class="row footer_1">
-					<div class="col-md-4">
-						<div class="footer_1i">
-							<h3><a class="text-white" href="~/Layout_CuongPhim/img/Logo/LogoCCP.png"><i class="fa fa-video-camera col_red me-1"></i> Planet</a></h3>
-							<p class="mt-3">Lorem ipsum dolor sit amet consect etur adi pisicing elit sed do eiusmod tempor incididunt. Lorem ipsum dolor sit amet consect etur. </p>
-							<h6 class="fw-normal">
-								<i class="fa fa-map-marker fs-5 align-middle col_red me-1"></i> 5311 Ceaver Sidge Td.
-								Pakland, DE 13507
-							</h6>
-							<h6 class="fw-normal mt-3"><i class="fa fa-envelope fs-5 align-middle col_red me-1"></i> info@gmail.com</h6>
-							<h6 class="fw-normal mt-3 mb-0"><i class="fa fa-phone fs-5 align-middle col_red me-1"></i>  +123 123 456</h6>
-						</div>
-					</div>
-					<div class="col-md-4">
-						<div class="footer_1i">
-							<h4>Flickr <span class="col_red">Stream</span></h4>
-							<div class="footer_1i1 row mt-4">
-								<div class="col-md-3 col-3">
-									<div class="footer_1i1i">
-										<div class="grid clearfix">
-											<figure class="effect-jazz mb-0">
-												<a href="#"><img src="../Layout_CuongPhim/img/4.jpg" height="70" class="w-100" alt="abc"></a>
-											</figure>
-										</div>
-									</div>
-								</div>
-								<div class="col-md-3 col-3">
-									<div class="footer_1i1i">
-										<div class="grid clearfix">
-											<figure class="effect-jazz mb-0">
-												<a href="#"><img src="../Layout_CuongPhim/img/5.jpg" height="70" class="w-100" alt="abc"></a>
-											</figure>
-										</div>
-									</div>
-								</div>
-								<div class="col-md-3 col-3">
-									<div class="footer_1i1i">
-										<div class="grid clearfix">
-											<figure class="effect-jazz mb-0">
-												<a href="#"><img src="../Layout_CuongPhim/img/6.jpg" height="70" class="w-100" alt="abc"></a>
-											</figure>
-										</div>
-									</div>
-								</div>
-								<div class="col-md-3 col-3">
-									<div class="footer_1i1i">
-										<div class="grid clearfix">
-											<figure class="effect-jazz mb-0">
-												<a href="#"><img src="../Layout_CuongPhim/img/7.jpg" height="70" class="w-100" alt="abc"></a>
-											</figure>
-										</div>
-									</div>
-								</div>
-							</div>
-							<div class="footer_1i1 row mt-3">
-								<div class="col-md-3 col-3">
-									<div class="footer_1i1i">
-										<div class="grid clearfix">
-											<figure class="effect-jazz mb-0">
-												<a href="#"><img src="../Layout_CuongPhim/img/8.jpg" height="70" class="w-100" alt="abc"></a>
-											</figure>
-										</div>
-									</div>
-								</div>
-								<div class="col-md-3 col-3">
-									<div class="footer_1i1i">
-										<div class="grid clearfix">
-											<figure class="effect-jazz mb-0">
-												<a href="#"><img src="../Layout_CuongPhim/img/9.jpg" height="70" class="w-100" alt="abc"></a>
-											</figure>
-										</div>
-									</div>
-								</div>
-								<div class="col-md-3 col-3">
-									<div class="footer_1i1i">
-										<div class="grid clearfix">
-											<figure class="effect-jazz mb-0">
-												<a href="#"><img src="../Layout_CuongPhim/img/10.jpg" height="70" class="w-100" alt="abc"></a>
-											</figure>
-										</div>
-									</div>
-								</div>
-								<div class="col-md-3 col-3">
-									<div class="footer_1i1i">
-										<div class="grid clearfix">
-											<figure class="effect-jazz mb-0">
-												<a href="#"><img src="../Layout_CuongPhim/img/11.jpg" height="70" class="w-100" alt="abc"></a>
-											</figure>
-										</div>
-									</div>
-								</div>
-							</div>
-						</div>
-					</div>
-					<div class="col-md-4">
-						<div class="footer_1i">
-							<h4>Sign  <span class="col_red">Newsletter</span></h4>
-							<p class="mt-3">Subscribe to our newsletter list to get latest news and updates from us</p>
-							<div class="input-group">
-								<input type="text" class="form-control bg-black" placeholder="Email">
-								<span class="input-group-btn">
-									<button class="btn btn text-white bg_red rounded-0 border-0" type="button">
-										Subscribe
-									</button>
-								</span>
-							</div>
-							<ul class="social-network social-circle mb-0 mt-4">
-								<li><a href="#" class="icoRss" title="Rss"><i class="fa fa-instagram"></i></a></li>
-								<li><a href="#" class="icoFacebook" title="Facebook"><i class="fa fa-facebook"></i></a></li>
-								<li><a href="#" class="icoTwitter" title="Twitter"><i class="fa fa-twitter"></i></a></li>
-								<li><a href="#" class="icoGoogle" title="Google +"><i class="fa fa-youtube"></i></a></li>
-								<li><a href="#" class="icoLinkedin" title="Linkedin"><i class="fa fa-linkedin"></i></a></li>
-							</ul>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
-	</section>
-
-	<section id="footer_b" class="pt-3 pb-3 bg_grey">
-		<div class="container">
-			<div class="row footer_1">
-				<div class="col-md-8">
-					<div class="footer_1l">
-						<p class="mb-0">© 2013 Your Website Name. All Rights Reserved | Design by <a class="col_red" href="http://www.templateonweb.com">TemplateOnWeb</a></p>
-					</div>
-				</div>
-				<div class="col-md-4">
-					<div class="footer_1r">
-						<ul class="mb-0">
-							<li class="d-inline-block me-2"><a href="#">Home</a></li>
-							<li class="d-inline-block me-2"><a href="#">Features</a></li>
-							<li class="d-inline-block me-2"><a href="#">Pages</a></li>
-							<li class="d-inline-block me-2"><a href="#">Portfolio</a></li>
-							<li class="d-inline-block me-2"><a href="#">Blog</a></li>
-							<li class="d-inline-block"><a href="#">Contact</a></li>
-						</ul>
-					</div>
-				</div>
-			</div>
-		</div>
-	</section>
-	@RenderSection("Scripts", required: false)
-	<script>
-		window.onscroll = function() {myFunction()};
-
-		var navbar_sticky = document.getElementById("navbar_sticky");
-		var sticky = navbar_sticky.offsetTop;
-		var navbar_height = document.querySelector('.navbar').offsetHeight;
-
-		function myFunction() {
-		  if (window.pageYOffset >= sticky + navbar_height) {
-			navbar_sticky.classList.add("sticky")
-			document.body.style.paddingTop = navbar_height + 'px';
-		  } else {
-			navbar_sticky.classList.remove("sticky");
-			document.body.style.paddingTop = '0'
-		  }
-		}
-	</script>
-
+    @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

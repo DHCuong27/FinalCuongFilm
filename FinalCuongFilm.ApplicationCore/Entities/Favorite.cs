@@ -12,7 +12,7 @@ namespace FinalCuongFilm.ApplicationCore.Entities
 
 		// Foreign Keys
 		[Required]
-		public string UserId { get; set; } = string.Empty; 
+		public string UserId { get; set; } = string.Empty; // AspNetUsers.Id
 
 		[Required]
 		public Guid MovieId { get; set; }

@@ -1,0 +1,32 @@
+﻿@model FinalCuongFilm.Common.DTOs.MovieRatingDto
+
+@if (Model != null && Model.TotalReviews > 0)
+{
+    <div class="movie-rating">
+        <div class="d-flex align-items-center">
+            @for (int i = 1; i <= 5; i++)
+            {
+                if (i <= Math.Round(Model.AverageRating))
+                {
+                    <i class="fas fa-star text-warning"></i>
+                }
+                else if (i - 0.5 <= Model.AverageRating)
+                {
+                    <i class="fas fa-star-half-alt text-warning"></i>
+                }
+                else
+                {
+                    <i class="far fa-star text-warning"></i>
+                }
+            }
+            <span class="ms-2 fw-bold">@Model.AverageRating.ToString("F1")</span>
+            <span class="ms-2 text-muted">(@Model.TotalReviews)</span>
+        </div>
+    </div>
+}
+else
+{
+    <div class="text-muted">
+        <i class="far fa-star"></i> Chưa có đánh giá
+    </div>
+}
