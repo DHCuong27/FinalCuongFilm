@@ -71,8 +71,8 @@ namespace FinalCuongFilm.MVC.Controllers
 			}
 
 			// Get approved reviews
-			var reviews = await _reviewService.GetMovieReviewsAsync(id, approvedOnly: true);
-			ViewBag.Reviews = reviews.Take(5); // Top 5 reviews
+			var reviews = await _reviewService.GetMovieReviewsAsync(movie.Id, approvedOnly: false);
+			ViewBag.Reviews = reviews.Take(5);
 
 			// Check if user already reviewed
 			ViewBag.UserReview = null;

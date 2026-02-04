@@ -76,9 +76,9 @@ namespace FinalCuongFilm.DataLayer
 					.OnDelete(DeleteBehavior.Restrict);
 
 				entity.HasOne(m => m.Language)
-					  .WithMany(l => l.Movies)
-					  .HasForeignKey(m => m.LanguageId)
-					  .OnDelete(DeleteBehavior.Restrict);
+					.WithMany(l => l.Movies)
+					.HasForeignKey(m => m.LanguageId)
+					.OnDelete(DeleteBehavior.Restrict);
 			});
 
 			// Actor
@@ -149,7 +149,7 @@ namespace FinalCuongFilm.DataLayer
 				entity.HasOne(e => e.Movie)
 					.WithMany(m => m.Episodes)
 					.HasForeignKey(e => e.MovieId)
-					.OnDelete(DeleteBehavior.Cascade); 
+					.OnDelete(DeleteBehavior.Cascade);
 
 				// Index cho performance
 				entity.HasIndex(e => e.MovieId);
@@ -157,23 +157,24 @@ namespace FinalCuongFilm.DataLayer
 					.IsUnique(); // Đảm bảo không trùng số tập trong 1 phim
 			});
 
-			// Favorite
-			modelBuilder.Entity<Favorite>()
-		  .HasIndex(f => new { f.UserId, f.MovieId })
-		  .IsUnique(); // Một user chỉ favorite 1 movie 1 lần
+			// ✅ Favorite - XÓA relationship với User
+			modelBuilder.Entity<Favorite>(entity =>
+			{
+				entity.ToTable("Favorites");
+				entity.HasKey(f => f.Id);
 
-			modelBuilder.Entity<Favorite>()
-				.HasOne(f => f.User)
-				.WithMany()
-				.HasForeignKey(f => f.UserId)
-				.OnDelete(DeleteBehavior.Cascade);
+				// ✅ CHỈ GIỮ: Index unique và relationship với Movie
+				entity.HasIndex(f => new { f.UserId, f.MovieId })
+					.IsUnique(); // Một user chỉ favorite 1 movie 1 lần
 
-			modelBuilder.Entity<Favorite>()
-				.HasOne(f => f.Movie)
-				.WithMany(m => m.Favorites)
-				.HasForeignKey(f => f.MovieId)
-				.OnDelete(DeleteBehavior.Cascade);
+				// ❌ REMOVED: HasOne với User (vì User ở DbContext khác)
+				// entity.HasOne(f => f.User)...
 
+				entity.HasOne(f => f.Movie)
+					.WithMany(m => m.Favorites)
+					.HasForeignKey(f => f.MovieId)
+					.OnDelete(DeleteBehavior.Cascade);
+			});
 
 			// Genre
 			modelBuilder.Entity<Genre>(entity =>
@@ -224,82 +225,81 @@ namespace FinalCuongFilm.DataLayer
 				entity.HasKey(m => m.Id);
 
 				entity.Property(m => m.Id)
-					  .HasColumnName("Id")
-					  .IsRequired();
+					.HasColumnName("Id")
+					.IsRequired();
 
 				// File info
 				entity.Property(m => m.FileName)
-					  .IsRequired()
-					  .HasMaxLength(MaxLengths.FILE_NAME);
+					.IsRequired()
+					.HasMaxLength(MaxLengths.FILE_NAME);
 
 				entity.Property(m => m.FileUrl)
-					  .IsRequired()
-					  .HasMaxLength(500);
+					.IsRequired()
+					.HasMaxLength(500);
 
 				entity.Property(m => m.FilePath)
-					  .HasMaxLength(500);
+					.HasMaxLength(500);
 
 				entity.Property(m => m.FileType)
-					  .IsRequired()
-					  .HasMaxLength(20); // video, subtitle
+					.IsRequired()
+					.HasMaxLength(20); // video, subtitle
 
 				entity.Property(m => m.Quality)
-					  .HasMaxLength(20); // 1080p, 720p...
+					.HasMaxLength(20); // 1080p, 720p...
 
 				entity.Property(m => m.Language)
-					  .HasMaxLength(10); // vi, en...
+					.HasMaxLength(10); // vi, en...
 
 				entity.Property(m => m.FileSizeBytes)
-					  .HasColumnName("FileSizeInBytes")
-					  .IsRequired(false);
+					.HasColumnName("FileSizeInBytes")
+					.IsRequired(false);
 
 				entity.Property(m => m.UploadedAt)
-					  .HasColumnName("CreatedAt")
-					  .HasDefaultValueSql("GETUTCDATE()")
-					  .IsRequired();
+					.HasColumnName("CreatedAt")
+					.HasDefaultValueSql("GETUTCDATE()")
+					.IsRequired();
 
-				
 				// Relationships
-			
-
 				entity.HasOne(m => m.Movie)
 					.WithMany(m => m.MediaFiles)
 					.HasForeignKey(m => m.MovieId)
-					.OnDelete(DeleteBehavior.Restrict); // hoặc NoAction
-
+					.OnDelete(DeleteBehavior.Restrict);
 
 				entity.HasOne(m => m.Episode)
-						 .WithMany(e => e.MediaFiles)
-						.HasForeignKey(m => m.EpisodeId)
-						.OnDelete(DeleteBehavior.Cascade);
-
+					.WithMany(e => e.MediaFiles)
+					.HasForeignKey(m => m.EpisodeId)
+					.OnDelete(DeleteBehavior.Cascade);
 			});
 
-
-			// Review
+			// ✅ Review - XÓA relationship với User
 			modelBuilder.Entity<Review>(entity =>
 			{
-				modelBuilder.Entity<Review>()
-		   .HasIndex(r => new { r.UserId, r.MovieId }); // Có thể review nhiều lần
+				entity.ToTable("Reviews");
+				entity.HasKey(r => r.Id);
 
-				modelBuilder.Entity<Review>()
-					.HasOne(r => r.User)
-					.WithMany()
-					.HasForeignKey(r => r.UserId)
-					.OnDelete(DeleteBehavior.Cascade);
+				// Properties
+				entity.Property(r => r.Rating)
+					.IsRequired();
 
-				modelBuilder.Entity<Review>()
-					.HasOne(r => r.Movie)
+				entity.Property(r => r.Comment)
+					.HasMaxLength(1000);
+
+				entity.Property(r => r.IsApproved)
+					.HasDefaultValue(false);
+
+				entity.Property(r => r.CreatedAt)
+					.HasDefaultValueSql("GETUTCDATE()");
+
+				// Index và relationship với Movie
+				entity.HasIndex(r => new { r.UserId, r.MovieId });
+				entity.HasIndex(r => r.Rating);
+				entity.HasIndex(r => r.IsApproved);
+
+
+				entity.HasOne(r => r.Movie)
 					.WithMany(m => m.Reviews)
 					.HasForeignKey(r => r.MovieId)
 					.OnDelete(DeleteBehavior.Cascade);
-
-				// Indexes for performance
-				modelBuilder.Entity<Review>()
-					.HasIndex(r => r.Rating);
-
-				modelBuilder.Entity<Review>()
-					.HasIndex(r => r.IsApproved);
 			});
 
 			// SearchSuggestion
@@ -344,7 +344,6 @@ namespace FinalCuongFilm.DataLayer
 
 				entity.Property(x => x.WatchedAt)
 					.IsRequired();
-
 			});
 
 			// ===== Many-to-many relationships =====

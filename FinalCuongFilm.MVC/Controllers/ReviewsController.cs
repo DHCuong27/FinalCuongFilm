@@ -10,13 +10,16 @@ namespace FinalCuongFilm.MVC.Controllers
 	{
 		private readonly IReviewService _reviewService;
 		private readonly IMovieService _movieService;
+		private readonly ILogger<ReviewsController> _logger;
 
 		public ReviewsController(
 			IReviewService reviewService,
-			IMovieService movieService)
+			IMovieService movieService,
+			ILogger<ReviewsController> logger)
 		{
 			_reviewService = reviewService;
 			_movieService = movieService;
+			_logger = logger;
 		}
 
 		// GET: /Reviews/Movie/{movieId}
@@ -28,7 +31,8 @@ namespace FinalCuongFilm.MVC.Controllers
 				return NotFound();
 			}
 
-			var reviews = await _reviewService.GetMovieReviewsAsync(movieId, approvedOnly: true);
+			// ✅ Lấy tất cả reviews (không cần approve)
+			var reviews = await _reviewService.GetMovieReviewsAsync(movieId, approvedOnly: false);
 			var rating = await _reviewService.GetMovieRatingAsync(movieId);
 
 			ViewBag.Movie = movie;
@@ -53,68 +57,83 @@ namespace FinalCuongFilm.MVC.Controllers
 			return View(reviews);
 		}
 
-		// GET: /Reviews/Create?movieId={id}
-		[Authorize]
-		public async Task<IActionResult> Create(Guid movieId)
-		{
-			var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-			if (userId == null)
-			{
-				return RedirectToAction("Login", "Account", new { area = "Identity" });
-			}
-
-			var movie = await _movieService.GetByIdAsync(movieId);
-			if (movie == null)
-			{
-				return NotFound();
-			}
-
-			// Check if user already reviewed
-			var existingReview = await _reviewService.GetUserReviewForMovieAsync(userId, movieId);
-			if (existingReview != null)
-			{
-				TempData["Error"] = "Bạn đã đánh giá phim này rồi!";
-				return RedirectToAction("Edit", new { id = existingReview.Id });
-			}
-
-			ViewBag.Movie = movie;
-			return View(new ReviewCreateDto { MovieId = movieId });
-		}
-
-		// POST: /Reviews/Create
+		// ✅ POST: /Reviews/Create - AJAX endpoint
 		[HttpPost]
 		[Authorize]
 		[ValidateAntiForgeryToken]
-		public async Task<IActionResult> Create(ReviewCreateDto dto)
+		public async Task<IActionResult> Create([FromForm] ReviewCreateDto dto)
 		{
-			var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-			if (userId == null)
+			try
 			{
-				return RedirectToAction("Login", "Account", new { area = "Identity" });
-			}
+				var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+				if (string.IsNullOrEmpty(userId))
+				{
+					_logger.LogWarning("User tried to create review without being authenticated");
+					return Json(new { success = false, message = "Vui lòng đăng nhập" });
+				}
 
-			if (ModelState.IsValid)
+				_logger.LogInformation("User {UserId} creating review for movie {MovieId}", userId, dto.MovieId);
+
+				if (!ModelState.IsValid)
+				{
+					var errors = ModelState.Values
+						.SelectMany(v => v.Errors)
+						.Select(e => e.ErrorMessage)
+						.ToList();
+					
+					_logger.LogWarning("ModelState invalid: {Errors}", string.Join(", ", errors));
+					return Json(new { success = false, message = string.Join(", ", errors) });
+				}
+
+				// Validate rating
+				if (dto.Rating < 1 || dto.Rating > 5)
+				{
+					return Json(new { success = false, message = "Rating phải từ 1 đến 5 sao" });
+				}
+
+				// Create review
+				var review = await _reviewService.CreateReviewAsync(userId, dto);
+				_logger.LogInformation("Review created successfully with ID {ReviewId}", review.Id);
+				
+				// ✅ Auto approve ngay lập tức
+				await _reviewService.ApproveReviewAsync(review.Id);
+				_logger.LogInformation("Review {ReviewId} auto-approved", review.Id);
+				
+				// Lấy thông tin user
+				var userName = User.Identity?.Name ?? "Anonymous";
+				
+				return Json(new
+				{
+					success = true,
+					message = "Đánh giá của bạn đã được đăng!",
+					review = new
+					{
+						id = review.Id,
+						userName = userName,
+						rating = dto.Rating,
+						comment = dto.Comment ?? string.Empty,
+						createdAt = DateTime.Now.ToString("dd/MM/yyyy")
+					}
+				});
+			}
+			catch (InvalidOperationException ex)
 			{
-				try
-				{
-					var review = await _reviewService.CreateReviewAsync(userId, dto);
-
-					TempData["Success"] = "Đánh giá của bạn đã được gửi và đang chờ duyệt!";
-					return RedirectToAction("Details", "Movies", new { id = dto.MovieId });
-				}
-				catch (InvalidOperationException ex)
-				{
-					ModelState.AddModelError("", ex.Message);
-				}
-				catch (Exception ex)
-				{
-					ModelState.AddModelError("", "Có lỗi xảy ra: " + ex.Message);
-				}
+				_logger.LogWarning(ex, "Invalid operation when creating review");
+				return Json(new { success = false, message = ex.Message });
 			}
-
-			var movie = await _movieService.GetByIdAsync(dto.MovieId);
-			ViewBag.Movie = movie;
-			return View(dto);
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error creating review for movie {MovieId}. Inner exception: {InnerException}", 
+					dto.MovieId, 
+					ex.InnerException?.Message ?? "None");
+				
+				return Json(new 
+				{ 
+					success = false, 
+					message = $"Có lỗi xảy ra: {ex.Message}",
+					details = ex.InnerException?.Message 
+				});
+			}
 		}
 
 		// GET: /Reviews/Edit/{id}
@@ -165,70 +184,80 @@ namespace FinalCuongFilm.MVC.Controllers
 				return NotFound();
 			}
 
+			var reviews = await _reviewService.GetUserReviewsAsync(userId);
+			var review = reviews.FirstOrDefault(r => r.Id == id);
+
+			if (review == null)
+			{
+				return NotFound();
+			}
+
 			if (ModelState.IsValid)
 			{
 				try
 				{
-					var success = await _reviewService.UpdateReviewAsync(userId, dto);
-
-					if (success)
+					var result = await _reviewService.UpdateReviewAsync(userId, dto);
+					if (result)
 					{
-						TempData["Success"] = "Đánh giá đã được cập nhật!";
-						return RedirectToAction(nameof(MyReviews));
+						// ✅ Auto approve lại sau khi update
+						await _reviewService.ApproveReviewAsync(id);
+						
+						TempData["Success"] = "Cập nhật đánh giá thành công!";
+						
+						// Redirect về trang detail của phim
+						var movie = await _movieService.GetByIdAsync(review.MovieId);
+						return RedirectToAction("Detail", "Movie", new { slug = movie.Slug });
 					}
-
-					return NotFound();
 				}
 				catch (Exception ex)
 				{
+					_logger.LogError(ex, "Error updating review {ReviewId}", id);
 					ModelState.AddModelError("", "Có lỗi xảy ra: " + ex.Message);
 				}
 			}
 
+			var movieData = await _movieService.GetByIdAsync(review.MovieId);
+			ViewBag.Movie = movieData;
+
 			return View(dto);
 		}
 
-		// POST: /Reviews/Delete/{id}
+		// ✅ POST: /Reviews/Delete/{id} - AJAX endpoint
 		[HttpPost]
 		[Authorize]
 		[ValidateAntiForgeryToken]
 		public async Task<IActionResult> Delete(Guid id)
 		{
-			var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-			if (userId == null)
-			{
-				return Json(new { success = false, message = "Vui lòng đăng nhập!" });
-			}
-
 			try
 			{
-				var success = await _reviewService.DeleteReviewAsync(userId, id);
-
-				if (success)
+				var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+				if (userId == null)
 				{
-					return Json(new { success = true, message = "Đã xóa đánh giá!" });
+					return Json(new { success = false, message = "Vui lòng đăng nhập" });
 				}
 
-				return Json(new { success = false, message = "Không tìm thấy đánh giá!" });
-			}
-			catch (Exception ex)
-			{
-				return Json(new { success = false, message = "Có lỗi xảy ra: " + ex.Message });
-			}
-		}
+				var reviews = await _reviewService.GetUserReviewsAsync(userId);
+				var review = reviews.FirstOrDefault(r => r.Id == id);
 
-		// GET: /Reviews/GetRating/{movieId} (AJAX)
-		[HttpGet]
-		public async Task<IActionResult> GetRating(Guid movieId)
-		{
-			try
-			{
-				var rating = await _reviewService.GetMovieRatingAsync(movieId);
-				return Json(new { success = true, data = rating });
+				if (review == null)
+				{
+					return Json(new { success = false, message = "Không tìm thấy đánh giá" });
+				}
+
+				var result = await _reviewService.DeleteReviewAsync(userId, id);
+				if (result)
+				{
+					return Json(new { success = true, message = "Đã xóa đánh giá" });
+				}
+				else
+				{
+					return Json(new { success = false, message = "Không thể xóa đánh giá" });
+				}
 			}
 			catch (Exception ex)
 			{
-				return Json(new { success = false, message = ex.Message });
+				_logger.LogError(ex, "Error deleting review {ReviewId}", id);
+				return Json(new { success = false, message = "Có lỗi xảy ra: " + ex.Message });
 			}
 		}
 	}

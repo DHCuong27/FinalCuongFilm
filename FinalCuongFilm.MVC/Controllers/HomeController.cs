@@ -2,6 +2,8 @@
 using FinalCuongFilm.MVC.Models;
 using FinalCuongFilm.Service.Interfaces;
 using System.Diagnostics;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 
 namespace FinalCuongFilm.MVC.Controllers
 {
@@ -11,17 +13,20 @@ namespace FinalCuongFilm.MVC.Controllers
 		private readonly IMovieService _movieService;
 		private readonly IGenreService _genreService;
 		private readonly ICountryService _countryService;
+		private readonly IFavoriteService _favoriteService;
 
 		public HomeController(
 			ILogger<HomeController> logger,
 			IMovieService movieService,
 			IGenreService genreService,
-			ICountryService countryService)
+			ICountryService countryService,
+			IFavoriteService favoriteService)
 		{
 			_logger = logger;
 			_movieService = movieService;
 			_genreService = genreService;
 			_countryService = countryService;
+			_favoriteService = favoriteService;
 		}
 
 		public async Task<IActionResult> Index()
@@ -57,30 +62,33 @@ namespace FinalCuongFilm.MVC.Controllers
 		}
 
 		// Profile
+		[Authorize]
 		public IActionResult Profile()
 		{
-			if (!User.Identity.IsAuthenticated)
-				return RedirectToPage("/Account/Login", new { area = "Identity" });
-
 			return View();
 		}
 
 		// Continue Watching
+		[Authorize]
 		public IActionResult ContinueWatching()
 		{
-			if (!User.Identity.IsAuthenticated)
-				return RedirectToPage("/Account/Login", new { area = "Identity" });
-
 			return View();
 		}
 
-		// My List
-		public IActionResult MyList()
+		//  My List - Hiển thị favorites
+		[Authorize]
+		public async Task<IActionResult> MyList()
 		{
-			if (!User.Identity.IsAuthenticated)
+			var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+			if (userId == null)
+			{
 				return RedirectToPage("/Account/Login", new { area = "Identity" });
+			}
 
-			return View();
+			var favorites = await _favoriteService.GetUserFavoritesAsync(userId);
+
+			ViewData["Title"] = "Danh sách của tôi";
+			return View(favorites);
 		}
 
 		public IActionResult Privacy()

@@ -1,8 +1,10 @@
 ﻿using FinalCuongFilm.ApplicationCore.Entities;
+using FinalCuongFilm.ApplicationCore.Entities.Identity;
 using FinalCuongFilm.Common.DTOs;
 using FinalCuongFilm.Datalayer;
 using FinalCuongFilm.DataLayer;
 using FinalCuongFilm.Service.Interfaces;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace FinalCuongFilm.Service.Services
@@ -10,26 +12,31 @@ namespace FinalCuongFilm.Service.Services
 	public class FavoriteService : IFavoriteService
 	{
 		private readonly CuongFilmDbContext _context;
+		private readonly UserManager<CuongFilmUser> _userManager;
 
-		public FavoriteService(CuongFilmDbContext context)
+		public FavoriteService(CuongFilmDbContext context, UserManager<CuongFilmUser> userManager)
 		{
 			_context = context;
+			_userManager = userManager;
 		}
 
 		public async Task<IEnumerable<FavoriteDto>> GetUserFavoritesAsync(string userId)
 		{
 			var favorites = await _context.Favorites
 				.Include(f => f.Movie)
-				.Include(f => f.User)
 				.Where(f => f.UserId == userId)
 				.OrderByDescending(f => f.CreatedAt)
 				.ToListAsync();
+
+			// Lấy username từ UserManager
+			var user = await _userManager.FindByIdAsync(userId);
+			var userName = user?.UserName ?? "Unknown";
 
 			return favorites.Select(f => new FavoriteDto
 			{
 				Id = f.Id,
 				UserId = f.UserId,
-				UserName = f.User.UserName ?? "",
+				UserName = userName,
 				MovieId = f.MovieId,
 				MovieTitle = f.Movie.Title,
 				MoviePosterUrl = f.Movie.PosterUrl,
@@ -61,6 +68,13 @@ namespace FinalCuongFilm.Service.Services
 				throw new KeyNotFoundException("Không tìm thấy phim!");
 			}
 
+			// ✅ Check user exists
+			var user = await _userManager.FindByIdAsync(userId);
+			if (user == null)
+			{
+				throw new InvalidOperationException("User không tồn tại!");
+			}
+
 			var favorite = new Favorite
 			{
 				UserId = userId,
@@ -75,6 +89,7 @@ namespace FinalCuongFilm.Service.Services
 			{
 				Id = favorite.Id,
 				UserId = userId,
+				UserName = user.UserName ?? "Unknown",
 				MovieId = movieId,
 				MovieTitle = movie.Title,
 				MoviePosterUrl = movie.PosterUrl,

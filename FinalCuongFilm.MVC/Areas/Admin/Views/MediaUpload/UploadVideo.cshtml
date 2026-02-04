@@ -1,0 +1,291 @@
+﻿@{
+    ViewData["Title"] = "Upload Video";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-upload"></i> Upload Video lên Azure
+                    </h3>
+                    <div class="card-tools">
+                        <button type="button" class="btn btn-sm btn-info" onclick="testConnection()">
+                            <i class="fas fa-check-circle"></i> Test Connection
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card-body">
+                    <form id="uploadForm" enctype="multipart/form-data">
+                        @Html.AntiForgeryToken()
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Chọn Phim <span class="text-danger">*</span></label>
+                                    <select id="movieSelect" class="form-control" required>
+                                        <option value="">-- Chọn phim --</option>
+                                        @if (ViewBag.Movies != null)
+                                        {
+                                            foreach (var movie in ViewBag.Movies)
+                                            {
+                                                <option value="@movie.Id" data-type="@movie.Type">
+                                                    @movie.Title (@movie.Type)
+                                                </option>
+                                            }
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Chất lượng</label>
+                                    <select id="qualitySelect" class="form-control">
+                                        <option value="1080p">1080p (Full HD)</option>
+                                        <option value="720p">720p (HD)</option>
+                                        <option value="480p">480p (SD)</option>
+                                        <option value="360p">360p</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row" id="episodeSection" style="display: none;">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Số tập <span class="text-danger">*</span></label>
+                                    <input type="number" id="episodeNumber" class="form-control" min="1" placeholder="VD: 1, 2, 3...">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Chọn File Video <span class="text-danger">*</span></label>
+                            <div class="custom-file">
+                                <input type="file"
+                                       id="videoFile"
+                                       class="custom-file-input"
+                                       accept="video/*,.mp4,.mkv,.avi,.webm"
+                                       required>
+                                <label class="custom-file-label" for="videoFile">Chọn video...</label>
+                            </div>
+                            <small class="form-text text-muted">
+                                Định dạng: MP4, MKV, AVI, WebM. Kích thước tối đa: 5GB
+                            </small>
+                        </div>
+
+                        <div class="form-group">
+                            <div id="fileInfo" class="alert alert-info" style="display: none;">
+                                <strong>File đã chọn:</strong>
+                                <div id="fileName"></div>
+                                <div id="fileSize"></div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-primary btn-lg" id="uploadBtn">
+                                <i class="fas fa-cloud-upload-alt"></i> Upload Video
+                            </button>
+                            <a href="@Url.Action("Index", "Movies")" class="btn btn-secondary btn-lg">
+                                <i class="fas fa-times"></i> Hủy
+                            </a>
+                        </div>
+                    </form>
+
+                    <!-- Progress Bar -->
+                    <div id="uploadProgress" style="display: none;">
+                        <div class="progress" style="height: 30px;">
+                            <div id="progressBar"
+                                 class="progress-bar progress-bar-striped progress-bar-animated"
+                                 role="progressbar"
+                                 style="width: 0%">
+                                0%
+                            </div>
+                        </div>
+                        <div class="text-center mt-2">
+                            <small id="uploadStatus">Đang upload...</small>
+                        </div>
+                    </div>
+
+                    <!-- Upload Result -->
+                    <div id="uploadResult" class="mt-3"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Update file label when file selected
+            $('#videoFile').on('change', function() {
+                const fileName = $(this).val().split('\\').pop();
+                $(this).next('.custom-file-label').html(fileName);
+
+                const file = this.files[0];
+                if (file) {
+                    const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
+                    const sizeGB = (file.size / (1024 * 1024 * 1024)).toFixed(2);
+
+                    $('#fileName').text(`Tên: ${file.name}`);
+                    $('#fileSize').text(`Kích thước: ${sizeGB > 1 ? sizeGB + ' GB' : sizeMB + ' MB'}`);
+                    $('#fileInfo').show();
+
+                    if (file.size > 5 * 1024 * 1024 * 1024) {
+                        alert('File vượt quá 5GB!');
+                        $(this).val('');
+                    }
+                }
+            });
+
+            // Show/hide episode section based on movie type
+            $('#movieSelect').on('change', function() {
+                const selectedOption = $(this).find(':selected');
+                const movieType = selectedOption.data('type');
+
+                if (movieType === 'Series') {
+                    $('#episodeSection').show();
+                    $('#episodeNumber').prop('required', true);
+                } else {
+                    $('#episodeSection').hide();
+                    $('#episodeNumber').prop('required', false);
+                }
+            });
+
+            // Handle form submission
+            $('#uploadForm').on('submit', function(e) {
+                e.preventDefault();
+
+                const movieId = $('#movieSelect').val();
+                const videoFile = $('#videoFile')[0].files[0];
+                const quality = $('#qualitySelect').val();
+                const episodeNumber = $('#episodeNumber').val();
+
+                if (!movieId || !videoFile) {
+                    alert('Vui lòng chọn phim và file video');
+                    return;
+                }
+
+                const formData = new FormData();
+                formData.append('MovieId', movieId);
+                formData.append('VideoFile', videoFile);
+                formData.append('Quality', quality);
+
+                if (episodeNumber) {
+                    formData.append('EpisodeNumber', episodeNumber);
+                }
+
+                uploadVideo(formData);
+            });
+        });
+
+        function uploadVideo(formData) {
+            const xhr = new XMLHttpRequest();
+
+            // Disable form
+            $('#uploadBtn').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Đang upload...');
+            $('#uploadProgress').show();
+            $('#uploadResult').empty();
+
+            // Upload progress
+            xhr.upload.addEventListener('progress', function(e) {
+                if (e.lengthComputable) {
+                    const percentComplete = (e.loaded / e.total) * 100;
+                    $('#progressBar')
+                        .css('width', percentComplete + '%')
+                        .text(percentComplete.toFixed(1) + '%');
+
+                    const uploadedMB = (e.loaded / (1024 * 1024)).toFixed(2);
+                    const totalMB = (e.total / (1024 * 1024)).toFixed(2);
+                    $('#uploadStatus').text(`Đã upload: ${uploadedMB} MB / ${totalMB} MB`);
+                }
+            });
+
+            // Upload complete
+            xhr.addEventListener('load', function() {
+                if (xhr.status === 200) {
+                    try {
+                        const response = JSON.parse(xhr.responseText);
+
+                        if (response.success) {
+                            $('#uploadResult').html(`
+                                <div class="alert alert-success">
+                                    <i class="fas fa-check-circle"></i> ${response.message}
+                                    <br><small>URL: ${response.videoUrl}</small>
+                                </div>
+                            `);
+
+                            // Reset form
+                            $('#uploadForm')[0].reset();
+                            $('#fileInfo').hide();
+                            $('.custom-file-label').html('Chọn video...');
+
+                            setTimeout(() => {
+                                window.location.href = '@Url.Action("Index", "Movies")';
+                            }, 2000);
+                        } else {
+                            $('#uploadResult').html(`
+                                <div class="alert alert-danger">
+                                    <i class="fas fa-exclamation-triangle"></i> ${response.message}
+                                </div>
+                            `);
+                        }
+                    } catch (e) {
+                        $('#uploadResult').html(`
+                            <div class="alert alert-danger">
+                                <i class="fas fa-exclamation-triangle"></i> Lỗi parse response
+                            </div>
+                        `);
+                    }
+                } else {
+                    $('#uploadResult').html(`
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-triangle"></i> Lỗi upload: ${xhr.status}
+                        </div>
+                    `);
+                }
+
+                // Re-enable form
+                $('#uploadBtn').prop('disabled', false).html('<i class="fas fa-cloud-upload-alt"></i> Upload Video');
+                $('#uploadProgress').hide();
+            });
+
+            // Upload error
+            xhr.addEventListener('error', function() {
+                $('#uploadResult').html(`
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle"></i> Lỗi kết nối khi upload
+                    </div>
+                `);
+                $('#uploadBtn').prop('disabled', false).html('<i class="fas fa-cloud-upload-alt"></i> Upload Video');
+                $('#uploadProgress').hide();
+            });
+
+            // Send request
+            xhr.open('POST', '@Url.Action("UploadVideo", "MediaUpload", new { area = "Admin" })');
+            xhr.send(formData);
+        }
+
+        function testConnection() {
+            $.ajax({
+                url: '@Url.Action("TestConnection", "MediaUpload", new { area = "Admin" })',
+                type: 'GET',
+                success: function(response) {
+                    if (response.success) {
+                        alert('✅ ' + response.message + '\n\nTest URL: ' + response.testUrl);
+                    } else {
+                        alert('❌ ' + response.message + '\n\nDetails: ' + response.details);
+                    }
+                },
+                error: function() {
+                    alert('❌ Lỗi khi test connection');
+                }
+            });
+        }
+    </script>
+}

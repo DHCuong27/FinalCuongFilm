@@ -8,7 +8,9 @@
     var rating = ViewBag.Rating as FinalCuongFilm.Common.DTOs.MovieRatingDto;
     var reviews = ViewBag.Reviews as IEnumerable<FinalCuongFilm.Common.DTOs.ReviewDto>;
     var userReview = ViewBag.UserReview as FinalCuongFilm.Common.DTOs.ReviewDto;
-    var currentUrl = $"/Movie/Detail/{Model.Movie.Slug}";
+
+    // ✅ FIX: Tạo returnUrl đúng - encode để tránh lỗi
+    var currentUrl = Url.Action("Detail", "Movie", new { slug = Model.Movie.Slug });
 }
 
 <style>
@@ -292,6 +294,7 @@
 
         .top-movie-compact:hover {
             background: var(--bg-hover);
+            color: var(--text-primary);
         }
 
     .top-rank-compact {
@@ -386,12 +389,6 @@
         display: flex;
         align-items: center;
         gap: 0.5rem;
-    }
-
-    .description-text {
-        font-size: 0.95rem;
-        line-height: 1.7;
-        color: var(--text-secondary);
     }
 
     /* Info Grid */
@@ -681,10 +678,6 @@
             color: var(--text-primary);
         }
 
-        .review-action-btn.active {
-            color: var(--netflix-red);
-        }
-
     /* Episodes Section */
     .episodes-section {
         margin-top: 2rem;
@@ -909,6 +902,19 @@
     }
 
     }
+
+    .alert-info {
+        background: rgba(52, 152, 219, 0.1);
+        border: 1px solid rgba(52, 152, 219, 0.3);
+        border-radius: 6px;
+        padding: 1rem;
+        color: var(--text-primary);
+        margin-bottom: 1rem;
+    }
+
+        .alert-info i {
+            color: #3498db;
+        }
 </style>
 
 <!-- Hero Banner -->
@@ -976,6 +982,15 @@
                             <span>@(isFavorited ? "Đã yêu thích" : "Yêu thích")</span>
                         </button>
                     }
+                    else
+                    {
+                        <!-- ✅ FIX: Sử dụng currentUrl đã encode -->
+                        <a href="/Identity/Account/Login?returnUrl=@Uri.EscapeDataString(currentUrl)"
+                           class="btn-hero btn-hero-secondary">
+                            <i class="far fa-heart"></i>
+                            Yêu thích
+                        </a>
+                    }
                 </div>
             </div>
         </div>
@@ -1019,8 +1034,9 @@
                     }
                     else
                     {
-                        <a href="@Url.Action("Login", "Account", new { area = "Identity", returnUrl = currentUrl })"
-                           class="btn-hero btn-hero-secondary">
+                        <!-- ✅ FIX: Sử dụng currentUrl đã encode -->
+                        <a href="/Identity/Account/Login?returnUrl=@Uri.EscapeDataString(currentUrl)"
+                           class="btn-action btn-outline">
                             <i class="far fa-heart"></i>
                             Yêu thích
                         </a>
@@ -1217,7 +1233,7 @@
                                         <div class="episode-duration">@episode.DurationMinutes phút</div>
                                     }
 
-                                    <button class="btn-play-ep">
+                                    <button class="btn-play-ep" type="button">
                                         <i class="fas fa-play"></i>
                                     </button>
                                 </a>
@@ -1289,7 +1305,7 @@
                 {
                     @if (userReview != null)
                     {
-                        <div class="alert alert-info">
+                        <div class="alert-info">
                             <i class="fas fa-check-circle"></i> Bạn đã đánh giá phim này.
                             <a href="@Url.Action("Edit", "Reviews", new { id = userReview.Id })" style="color: var(--netflix-red); margin-left: 1rem;">
                                 <i class="fas fa-edit"></i> Chỉnh sửa
@@ -1299,6 +1315,7 @@
                     else
                     {
                         <form id="reviewForm" asp-controller="Reviews" asp-action="Create" method="post">
+                            @Html.AntiForgeryToken()
                             <input type="hidden" name="MovieId" value="@Model.Movie.Id" />
 
                             <div class="mb-3">
@@ -1310,6 +1327,7 @@
                                         <label for="star@(i)"><i class="fas fa-star"></i></label>
                                     }
                                 </div>
+                                <span id="ratingError" class="text-danger" style="display: none;">Vui lòng chọn số sao</span>
                             </div>
 
                             <div class="mb-3">
@@ -1335,8 +1353,9 @@
                     <div class="login-prompt">
                         <i class="fas fa-user-lock"></i>
                         <p>Đăng nhập để đánh giá phim này</p>
-                        <a href="@Url.Action("Login", "Account", new { area = "Identity", returnUrl = currentUrl })"
-                           class="btn-submit-review" style="text-decoration: none;">
+                        <!-- ✅ FIX: Sử dụng currentUrl đã encode -->
+                        <a href="/Identity/Account/Login?returnUrl=@Uri.EscapeDataString(currentUrl)"
+                           class="btn-submit-review" style="text-decoration: none; display: inline-block;">
                             <i class="fas fa-sign-in-alt"></i> Đăng nhập
                         </a>
                     </div>
@@ -1349,13 +1368,13 @@
                 <div class="info-section">
                     <h2 class="section-title">
                         <i class="fas fa-comments"></i>
-                        Nhận xét từ người xem (@reviews.Count())
+                        Nhận xét từ người xem (<span id="reviewCount">@reviews.Count()</span>)
                     </h2>
 
                     <div class="reviews-list">
                         @foreach (var review in reviews)
                         {
-                            <div class="review-item">
+                            <div class="review-item" id="review-@review.Id">
                                 <div class="review-header">
                                     <div class="review-author">
                                         <div class="author-avatar">
@@ -1389,11 +1408,11 @@
                                 }
 
                                 <div class="review-actions">
-                                    <button class="review-action-btn">
+                                    <button class="review-action-btn" type="button">
                                         <i class="far fa-thumbs-up"></i>
                                         <span>Hữu ích</span>
                                     </button>
-                                    <button class="review-action-btn">
+                                    <button class="review-action-btn" type="button">
                                         <i class="far fa-flag"></i>
                                         <span>Báo cáo</span>
                                     </button>
@@ -1406,12 +1425,25 @@
                     {
                         <div class="text-center mt-3">
                             <a href="@Url.Action("Movie", "Reviews", new { movieId = Model.Movie.Id })"
-                               class="btn-action btn-outline" style="display: inline-flex;">
+                               class="btn-action btn-outline" style="display: inline-flex; text-decoration: none;">
                                 Xem tất cả đánh giá
                                 <i class="fas fa-arrow-right"></i>
                             </a>
                         </div>
                     }
+                </div>
+            }
+            else
+            {
+                <!-- Empty reviews placeholder -->
+                <div class="info-section" id="emptyReviewsSection">
+                    <h2 class="section-title">
+                        <i class="fas fa-comments"></i>
+                        Nhận xét từ người xem (0)
+                    </h2>
+                    <div class="reviews-list" style="display: none;">
+                        <!-- Reviews will be added here dynamically -->
+                    </div>
                 </div>
             }
         </div>
@@ -1421,6 +1453,8 @@
 @section Scripts {
     <script>
         $(document).ready(function() {
+            console.log('Detail page loaded - AJAX review enabled');
+
             // Character counter
             $('#commentText').on('input', function() {
                 const count = $(this).val().length;
@@ -1468,16 +1502,207 @@
                 });
             });
 
-            // Review form validation
+            // ✅ AJAX Review Form Submit
             $('#reviewForm').on('submit', function(e) {
+                e.preventDefault(); // ✅ QUAN TRỌNG: Ngăn form submit bình thường
+
+                console.log('Form submitted via AJAX');
+
                 const rating = $('input[name="Rating"]:checked').val();
                 if (!rating) {
-                    e.preventDefault();
+                    $('#ratingError').show();
                     showToast('Vui lòng chọn số sao đánh giá', 'error');
                     return false;
+                } else {
+                    $('#ratingError').hide();
                 }
+
+                const formData = $(this).serialize();
+                const submitBtn = $(this).find('.btn-submit-review');
+
+                console.log('Sending data:', formData);
+
+                // Disable button
+                submitBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Đang gửi...');
+
+                $.ajax({
+                    url: '@Url.Action("Create", "Reviews")',
+                    type: 'POST',
+                    data: formData,
+                    dataType: 'json',
+                    success: function(response) {
+                        console.log('Response received:', response);
+
+                        if (response.success) {
+                            showToast(response.message, 'success');
+
+                            // ✅ Thêm review mới vào đầu danh sách
+                            addReviewToList(response.review);
+
+                            // ✅ Reset form
+                            $('#reviewForm')[0].reset();
+                            $('#charCount').text('0');
+
+                            // ✅ Cập nhật số lượng reviews
+                            updateReviewCount();
+
+                            // ✅ Ẩn form và hiện thông báo đã review
+                            $('#reviewForm').parent().html(`
+                                <div class="alert-info">
+                                    <i class="fas fa-check-circle"></i> Bạn đã đánh giá phim này.
+                                    <button class="btn btn-link text-danger" style="padding: 0; border: none; background: none; cursor: pointer;" onclick="deleteReview('${response.review.id}'); return false;">
+                                        <i class="fas fa-trash"></i> Xóa đánh giá
+                                    </button>
+                                </div>
+                            `);
+                        } else {
+                            showToast(response.message, 'error');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('AJAX Error:', xhr.responseText);
+                        showToast('Có lỗi xảy ra khi gửi đánh giá!', 'error');
+                    },
+                    complete: function() {
+                        submitBtn.prop('disabled', false).html('<i class="fas fa-paper-plane"></i> Gửi đánh giá');
+                    }
+                });
+            });
+
+            // Star rating click
+            $('.star-rating-input input').on('change', function() {
+                $('#ratingError').hide();
             });
         });
+
+        // ✅ Function thêm review vào danh sách
+        function addReviewToList(review) {
+            console.log('Adding review to list:', review);
+
+            const firstLetter = review.userName.charAt(0).toUpperCase();
+            const stars = generateStars(review.rating);
+
+            const reviewHtml = `
+                <div class="review-item" id="review-${review.id}" style="opacity: 0; animation: fadeIn 0.5s ease forwards;">
+                    <div class="review-header">
+                        <div class="review-author">
+                            <div class="author-avatar">
+                                ${firstLetter}
+                            </div>
+                            <div class="author-info">
+                                <h4>${review.userName}</h4>
+                                <div class="review-rating">
+                                    ${stars}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="review-date">
+                            ${review.createdAt}
+                        </div>
+                    </div>
+                    ${review.comment ? `<div class="review-content">${escapeHtml(review.comment)}</div>` : ''}
+                    <div class="review-actions">
+                        <button class="review-action-btn" type="button">
+                            <i class="far fa-thumbs-up"></i>
+                            <span>Hữu ích</span>
+                        </button>
+                        <button class="review-action-btn" type="button">
+                            <i class="far fa-flag"></i>
+                            <span>Báo cáo</span>
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            // Kiểm tra xem có danh sách reviews không
+            let reviewsList = $('.reviews-list');
+            if (reviewsList.length > 0 && reviewsList.is(':visible')) {
+                reviewsList.prepend(reviewHtml);
+                console.log('Review added to existing list');
+            } else {
+                // Nếu chưa có reviews, tạo section mới
+                const newSection = `
+                    <div class="info-section" id="reviews-section">
+                        <h2 class="section-title">
+                            <i class="fas fa-comments"></i>
+                            Nhận xét từ người xem (<span id="reviewCount">1</span>)
+                        </h2>
+                        <div class="reviews-list">
+                            ${reviewHtml}
+                        </div>
+                    </div>
+                `;
+
+                // Thêm sau phần review form
+                $('#review-section').after(newSection);
+                console.log('New reviews section created');
+            }
+        }
+
+        // ✅ Generate star HTML
+        function generateStars(rating) {
+            let stars = '';
+            for (let i = 1; i <= 5; i++) {
+                if (i <= rating) {
+                    stars += '<i class="fas fa-star"></i>';
+                } else {
+                    stars += '<i class="far fa-star"></i>';
+                }
+            }
+            return stars;
+        }
+
+        // ✅ Escape HTML để tránh XSS
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // ✅ Update review count
+        function updateReviewCount() {
+            const currentCount = $('.reviews-list .review-item').length;
+            $('#reviewCount').text(currentCount);
+
+            // Update stat card
+            const reviewStatCard = $('.stat-card').eq(2);
+            if (reviewStatCard.length) {
+                reviewStatCard.find('.stat-number').text(currentCount);
+            }
+
+            console.log('Review count updated:', currentCount);
+        }
+
+        // ✅ Delete review function
+        function deleteReview(reviewId) {
+            if (!confirm('Bạn có chắc muốn xóa đánh giá này?')) {
+                return;
+            }
+
+            $.ajax({
+                url: '@Url.Action("Delete", "Reviews")',
+                type: 'POST',
+                data: {
+                    id: reviewId,
+                    __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                },
+                success: function(response) {
+                    if (response.success) {
+                        showToast(response.message, 'success');
+
+                        // Reload để hiện lại form
+                        setTimeout(() => {
+                            location.reload();
+                        }, 1000);
+                    } else {
+                        showToast(response.message, 'error');
+                    }
+                },
+                error: function() {
+                    showToast('Có lỗi xảy ra khi xóa đánh giá!', 'error');
+                }
+            });
+        }
 
         function showToast(message, type) {
             $('.toast-notification').remove();
@@ -1498,7 +1723,25 @@
                 toast.fadeOut(300, function() { $(this).remove(); });
             }, 3000);
         }
+
+        // ✅ Thêm CSS animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @@keyframes fadeIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(-20px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+        `;
+        document.head.appendChild(style);
     </script>
 }
+
+@Html.AntiForgeryToken()
 
 @Html.AntiForgeryToken()

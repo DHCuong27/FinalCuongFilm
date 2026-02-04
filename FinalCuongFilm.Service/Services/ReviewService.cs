@@ -1,25 +1,28 @@
 ﻿using FinalCuongFilm.ApplicationCore.Entities;
+using FinalCuongFilm.ApplicationCore.Entities.Identity; // ✅ THÊM
 using FinalCuongFilm.Common.DTOs;
 using FinalCuongFilm.Datalayer;
 using FinalCuongFilm.DataLayer;
 using FinalCuongFilm.Service.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 
 namespace FinalCuongFilm.Service.Services
 {
 	public class ReviewService : IReviewService
 	{
 		private readonly CuongFilmDbContext _context;
+		private readonly UserManager<CuongFilmUser> _userManager; // ✅ ĐỔI từ IdentityUser thành CuongFilmUser
 
-		public ReviewService(CuongFilmDbContext context)
+		public ReviewService(CuongFilmDbContext context, UserManager<CuongFilmUser> userManager)
 		{
 			_context = context;
+			_userManager = userManager;
 		}
 
 		public async Task<IEnumerable<ReviewDto>> GetMovieReviewsAsync(Guid movieId, bool approvedOnly = true)
 		{
 			var query = _context.Reviews
-				.Include(r => r.User)
 				.Include(r => r.Movie)
 				.Where(r => r.MovieId == movieId);
 
@@ -32,29 +35,78 @@ namespace FinalCuongFilm.Service.Services
 				.OrderByDescending(r => r.CreatedAt)
 				.ToListAsync();
 
-			return reviews.Select(r => MapToDto(r));
+			// Lấy username từ UserManager
+			var reviewDtos = new List<ReviewDto>();
+			foreach (var review in reviews)
+			{
+				var user = await _userManager.FindByIdAsync(review.UserId);
+				reviewDtos.Add(new ReviewDto
+				{
+					Id = review.Id,
+					UserId = review.UserId,
+					UserName = user?.UserName ?? "Unknown",
+					MovieId = review.MovieId,
+					MovieTitle = review.Movie.Title,
+					Rating = review.Rating,
+					Comment = review.Comment,
+					IsApproved = review.IsApproved,
+					CreatedAt = review.CreatedAt,
+					UpdatedAt = review.UpdatedAt
+				});
+			}
+
+			return reviewDtos;
 		}
 
 		public async Task<IEnumerable<ReviewDto>> GetUserReviewsAsync(string userId)
 		{
 			var reviews = await _context.Reviews
-				.Include(r => r.User)
 				.Include(r => r.Movie)
 				.Where(r => r.UserId == userId)
 				.OrderByDescending(r => r.CreatedAt)
 				.ToListAsync();
 
-			return reviews.Select(r => MapToDto(r));
+			var user = await _userManager.FindByIdAsync(userId);
+			var userName = user?.UserName ?? "Unknown";
+
+			return reviews.Select(r => new ReviewDto
+			{
+				Id = r.Id,
+				UserId = r.UserId,
+				UserName = userName,
+				MovieId = r.MovieId,
+				MovieTitle = r.Movie.Title,
+				Rating = r.Rating,
+				Comment = r.Comment,
+				IsApproved = r.IsApproved,
+				CreatedAt = r.CreatedAt,
+				UpdatedAt = r.UpdatedAt
+			});
 		}
 
 		public async Task<ReviewDto?> GetUserReviewForMovieAsync(string userId, Guid movieId)
 		{
 			var review = await _context.Reviews
-				.Include(r => r.User)
 				.Include(r => r.Movie)
 				.FirstOrDefaultAsync(r => r.UserId == userId && r.MovieId == movieId);
 
-			return review == null ? null : MapToDto(review);
+			if (review == null) return null;
+
+			var user = await _userManager.FindByIdAsync(userId);
+
+			return new ReviewDto
+			{
+				Id = review.Id,
+				UserId = review.UserId,
+				UserName = user?.UserName ?? "Unknown",
+				MovieId = review.MovieId,
+				MovieTitle = review.Movie.Title,
+				Rating = review.Rating,
+				Comment = review.Comment,
+				IsApproved = review.IsApproved,
+				CreatedAt = review.CreatedAt,
+				UpdatedAt = review.UpdatedAt
+			};
 		}
 
 		public async Task<ReviewDto> CreateReviewAsync(string userId, ReviewCreateDto dto)
@@ -75,24 +127,42 @@ namespace FinalCuongFilm.Service.Services
 				throw new KeyNotFoundException("Không tìm thấy phim!");
 			}
 
+			// Check user exists
+			var user = await _userManager.FindByIdAsync(userId);
+			if (user == null)
+			{
+				throw new InvalidOperationException("User không tồn tại!");
+			}
+
 			var review = new Review
 			{
 				UserId = userId,
 				MovieId = dto.MovieId,
 				Rating = dto.Rating,
 				Comment = dto.Comment,
-				IsApproved = false, // Chờ admin duyệt
+				IsApproved = false,
 				CreatedAt = DateTime.UtcNow
 			};
 
 			_context.Reviews.Add(review);
 			await _context.SaveChangesAsync();
 
-			// Load navigation properties
-			await _context.Entry(review).Reference(r => r.User).LoadAsync();
+			// Load movie navigation
 			await _context.Entry(review).Reference(r => r.Movie).LoadAsync();
 
-			return MapToDto(review);
+			return new ReviewDto
+			{
+				Id = review.Id,
+				UserId = review.UserId,
+				UserName = user.UserName ?? "Unknown",
+				MovieId = review.MovieId,
+				MovieTitle = review.Movie.Title,
+				Rating = review.Rating,
+				Comment = review.Comment,
+				IsApproved = review.IsApproved,
+				CreatedAt = review.CreatedAt,
+				UpdatedAt = review.UpdatedAt
+			};
 		}
 
 		public async Task<bool> UpdateReviewAsync(string userId, ReviewUpdateDto dto)
@@ -108,7 +178,7 @@ namespace FinalCuongFilm.Service.Services
 			review.Rating = dto.Rating;
 			review.Comment = dto.Comment;
 			review.UpdatedAt = DateTime.UtcNow;
-			review.IsApproved = false; // Reset approval status
+			review.IsApproved = false;
 
 			await _context.SaveChangesAsync();
 
@@ -179,23 +249,6 @@ namespace FinalCuongFilm.Service.Services
 				TotalReviews = approvedReviews.Count,
 				TotalFavorites = movie.Favorites.Count,
 				RatingDistribution = ratingDistribution
-			};
-		}
-
-		private static ReviewDto MapToDto(Review review)
-		{
-			return new ReviewDto
-			{
-				Id = review.Id,
-				UserId = review.UserId,
-				UserName = review.User?.UserName ?? "",
-				MovieId = review.MovieId,
-				MovieTitle = review.Movie?.Title ?? "",
-				Rating = review.Rating,
-				Comment = review.Comment,
-				IsApproved = review.IsApproved,
-				CreatedAt = review.CreatedAt,
-				UpdatedAt = review.UpdatedAt
 			};
 		}
 	}

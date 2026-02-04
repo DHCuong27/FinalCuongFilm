@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace FinalCuongFilm.ApplicationCore.Entities
@@ -30,10 +29,6 @@ namespace FinalCuongFilm.ApplicationCore.Entities
 		// Timestamps
 		public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 		public DateTime? UpdatedAt { get; set; }
-
-		// Navigation Properties
-		[ForeignKey("UserId")]
-		public IdentityUser User { get; set; } = null!;
 
 		[ForeignKey("MovieId")]
 		public Movie Movie { get; set; } = null!;

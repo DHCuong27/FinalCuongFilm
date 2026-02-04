@@ -223,5 +223,10 @@ namespace FinalCuongFilm.Service.Services
 				EpisodeNumber = mediaFile.Episode?.EpisodeNumber
 			};
 		}
+
+		public Task<MediaFileDto?> GetSubtitlesAsync(Guid mediaFileId, string language)
+		{
+			throw new NotImplementedException();
+		}
 	}
 }
