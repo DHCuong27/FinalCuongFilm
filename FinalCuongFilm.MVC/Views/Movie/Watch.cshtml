@@ -68,6 +68,7 @@
         cursor: pointer;
         margin-bottom: 15px;
         position: relative;
+        border-radius: 3px;
     }
 
     .progress-filled {
@@ -75,6 +76,7 @@
         background: var(--netflix-red);
         width: 0%;
         transition: width 0.1s;
+        border-radius: 3px;
     }
 
     .progress-buffered {
@@ -84,6 +86,7 @@
         height: 100%;
         background: rgba(255,255,255,0.5);
         width: 0%;
+        border-radius: 3px;
     }
 
     .controls-row {
@@ -128,6 +131,7 @@
     .volume-slider {
         width: 80px;
         height: 5px;
+        cursor: pointer;
     }
 
     /* Loading Spinner */
@@ -137,6 +141,7 @@
         left: 50%;
         transform: translate(-50%, -50%);
         display: none;
+        z-index: 10;
     }
 
     .spinner {
@@ -149,12 +154,9 @@
     }
 
     @@keyframes spin {
-        to
-
-    {
-        transform: rotate(360deg);
-    }
-
+        to {
+            transform: rotate(360deg);
+        }
     }
 
     /* Movie Info */
@@ -263,6 +265,7 @@
         padding: 10px;
         display: none;
         min-width: 120px;
+        margin-bottom: 10px;
     }
 
         .quality-menu.show {
@@ -289,7 +292,7 @@
 <div class="watch-container">
     <!-- Video Player -->
     <div class="video-player-wrapper" id="videoWrapper">
-        <video id="videoPlayer" class="video-player" preload="metadata">
+        <video id="videoPlayer" class="video-player" preload="metadata" playsinline>
             <source src="" type="video/mp4">
             Your browser does not support the video tag.
         </video>
@@ -447,8 +450,8 @@
                 if (data.success) {
                     video.src = data.url;
 
-                    // Load saved progress
-                    await loadProgress();
+                    // Load saved progress (if implemented)
+                    // await loadProgress();
 
                     setupEventListeners();
                     showLoading(false);
@@ -489,8 +492,8 @@
             $('#videoWrapper').mousemove(showControls);
             $('#videoWrapper').click(togglePlay);
 
-            // Save progress every 10 seconds
-            setInterval(saveProgress, 10000);
+            // Save progress every 10 seconds (if implemented)
+            // setInterval(saveProgress, 10000);
         }
 
         function togglePlay() {
@@ -615,6 +618,8 @@
         }
 
         function formatTime(seconds) {
+            if (isNaN(seconds)) return '0:00';
+
             const h = Math.floor(seconds / 3600);
             const m = Math.floor((seconds % 3600) / 60);
             const s = Math.floor(seconds % 60);
@@ -629,44 +634,12 @@
             $('#loadingSpinner').css('display', show ? 'block' : 'none');
         }
 
-        async function saveProgress() {
-            if (!video || video.paused || video.ended) return;
-
-            try {
-                await fetch('/Stream/UpdateProgress', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
-                    },
-                    body: JSON.stringify({
-                        movieId: movieId,
-                        episodeId: episodeId !== '@Guid.Empty' ? episodeId : null,
-                        currentTime: video.currentTime,
-                        duration: video.duration
-                    })
-                });
-            } catch (error) {
-                console.error('Error saving progress:', error);
+        // Close quality menu when clicking outside
+        $(document).click(function(e) {
+            if (!$(e.target).closest('.quality-selector').length) {
+                $('#qualityMenu').removeClass('show');
             }
-        }
-
-        async function loadProgress() {
-            try {
-                const url = `/Stream/Progress/${movieId}` + (episodeId !== '@Guid.Empty' ? `?episodeId=${episodeId}` : '');
-                const response = await fetch(url);
-                const data = await response.json();
-
-                if (data.success && data.currentTime > 0) {
-                    video.currentTime = data.currentTime;
-                }
-            } catch (error) {
-                console.error('Error loading progress:', error);
-            }
-        }
-
-        // Cleanup on page unload
-        window.addEventListener('beforeunload', saveProgress);
+        });
     </script>
 }
 

@@ -51,6 +51,7 @@ namespace FinalCuongFilm.Service.Services
 			return mediaFiles.Select(m => MapToDto(m)).ToList();
 		}
 
+
 		public async Task<IEnumerable<MediaFileDto>> GetByEpisodeIdAsync(Guid episodeId)
 		{
 			var mediaFiles = await _context.MediaFiles
@@ -153,6 +154,24 @@ namespace FinalCuongFilm.Service.Services
 			return await CreateAsync(createDto);
 		}
 
+		// Thêm vào class MediaFileService
+		public async Task<MediaFileDto?> GetSubtitlesAsync(Guid mediaFileId, string language)
+		{
+			var mediaFile = await _context.MediaFiles.FindAsync(mediaFileId);
+			if (mediaFile == null)
+				return null;
+
+			// Find subtitle for same movie/episode with specified language
+			var subtitle = await _context.MediaFiles
+				.Where(m => m.FileType == "subtitle"
+					&& m.Language == language
+					&& ((m.MovieId == mediaFile.MovieId && m.EpisodeId == null && mediaFile.EpisodeId == null)
+						|| (m.EpisodeId == mediaFile.EpisodeId && mediaFile.EpisodeId != null)))
+				.FirstOrDefaultAsync();
+
+			return subtitle == null ? null : MapToDto(subtitle);
+		}
+
 		public async Task<bool> UpdateAsync(MediaFileUpdateDto dto)
 		{
 			var mediaFile = await _context.MediaFiles.FindAsync(dto.Id);
@@ -224,9 +243,9 @@ namespace FinalCuongFilm.Service.Services
 			};
 		}
 
-		public Task<MediaFileDto?> GetSubtitlesAsync(Guid mediaFileId, string language)
-		{
-			throw new NotImplementedException();
-		}
+		//public Task<MediaFileDto?> GetSubtitlesAsync(Guid mediaFileId, string language)
+		//{
+		//	throw new NotImplementedException();
+		//}
 	}
 }

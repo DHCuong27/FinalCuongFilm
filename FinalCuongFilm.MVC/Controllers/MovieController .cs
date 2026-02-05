@@ -1,6 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using FinalCuongFilm.MVC.Models.ViewModels;
 using FinalCuongFilm.Service.Interfaces;
-using FinalCuongFilm.MVC.Models.ViewModels;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
 namespace FinalCuongFilm.MVC.Controllers
@@ -168,57 +169,66 @@ namespace FinalCuongFilm.MVC.Controllers
 		}
 
 		// GET: /Movies/Watch/{slug}?ep={episodeNumber} - Đã hợp nhất từ MovieController
-		public async Task<IActionResult> Watch(string slug, int? ep)
+		// GET: /Movie/Watch/{slug}?ep=1
+		[AllowAnonymous]
+		public async Task<IActionResult> Watch(string slug, int? ep = null)
 		{
-			if (string.IsNullOrEmpty(slug))
-				return NotFound();
-
-			var allMovies = await _movieService.GetAllAsync();
-			var movie = allMovies.FirstOrDefault(m => m.Slug == slug && m.IsActive);
-
+			var movie = await _movieService.GetBySlugAsync(slug);
 			if (movie == null)
-				return NotFound();
-
-			// TODO: Tăng view count
-			// await _movieService.IncrementViewCountAsync(movie.Id);
-
-			var episodes = await _episodeService.GetByMovieIdAsync(movie.Id);
-			var episodesList = episodes.Where(e => e.IsActive).OrderBy(e => e.EpisodeNumber).ToList();
-
-			// Xác định episode cần xem
-			var currentEpisode = ep.HasValue
-				? episodesList.FirstOrDefault(e => e.EpisodeNumber == ep.Value)
-				: episodesList.FirstOrDefault();
-
-			// Lấy media files
-			var mediaFiles = currentEpisode != null
-				? await _mediaFileService.GetByEpisodeIdAsync(currentEpisode.Id)
-				: await _mediaFileService.GetByMovieIdAsync(movie.Id);
-
-			// Lấy genres và countries cho navigation
-			var genres = await _genreService.GetAllAsync();
-			var countries = await _countryService.GetAllAsync();
-
-			ViewBag.Genres = genres;
-			ViewBag.Countries = countries;
-
-			// Kiểm tra favorite
-			var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-			ViewBag.IsFavorited = false;
-			if (userId != null)
 			{
-				ViewBag.IsFavorited = await _favoriteService.IsFavoriteAsync(userId, movie.Id);
+				return NotFound();
 			}
 
-			var viewModel = new MovieWatchViewModel
-			{
-				Movie = movie,
-				Episodes = episodesList,
-				CurrentEpisode = currentEpisode,
-				MediaFiles = mediaFiles.Where(m => m.FileType == "Video").ToList()
-			};
+			// Increment view count
+			await _movieService.IncrementViewCountAsync(movie.Id);
 
-			return View(viewModel);
+			FinalCuongFilm.Common.DTOs.MediaFileDto? mediaFile = null;
+			FinalCuongFilm.Common.DTOs.EpisodeDto? currentEpisode = null;
+
+			if (movie.Type == FinalCuongFilm.ApplicationCore.Entities.Enum.MovieType.Series)
+			{
+				// Get episodes
+				var episodes = await _episodeService.GetByMovieIdAsync(movie.Id);
+
+				if (!episodes.Any())
+				{
+					TempData["Error"] = "Phim chưa có tập nào!";
+					return RedirectToAction("Detail", new { slug });
+				}
+
+				// Get current episode
+				var episodeNumber = ep ?? 1;
+				currentEpisode = episodes.FirstOrDefault(e => e.EpisodeNumber == episodeNumber);
+
+				if (currentEpisode == null)
+				{
+					currentEpisode = episodes.OrderBy(e => e.EpisodeNumber).First();
+				}
+
+				// Get media file for episode
+				var mediaFiles = await _mediaFileService.GetByEpisodeIdAsync(currentEpisode.Id);
+				mediaFile = mediaFiles.FirstOrDefault(m => m.FileType == "video");
+
+				ViewBag.Episodes = episodes;
+				ViewBag.CurrentEpisode = currentEpisode;
+			}
+			else
+			{
+				// Movie type - get media file
+				var mediaFiles = await _mediaFileService.GetByMovieIdAsync(movie.Id);
+				mediaFile = mediaFiles.FirstOrDefault(m => m.FileType == "video");
+			}
+
+			if (mediaFile == null)
+			{
+				TempData["Error"] = "Video chưa được upload!";
+				return RedirectToAction("Detail", new { slug });
+			}
+
+			ViewBag.Movie = movie;
+			ViewBag.MediaFile = mediaFile;
+
+			return View();
 		}
 
 		// Tùy chọn: Giữ lại phương thức Watch cũ bằng ID nếu cần

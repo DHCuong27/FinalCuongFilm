@@ -1,5 +1,6 @@
 ﻿using FinalCuongFilm.ApplicationCore.Entities;
 using FinalCuongFilm.Common.DTOs;
+using FinalCuongFilm.Common.Helpers;
 using FinalCuongFilm.DataLayer;
 using FinalCuongFilm.Service.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -23,14 +24,14 @@ namespace FinalCuongFilm.Service.Services
 			var movies = await _context.Movies
 				.Include(m => m.Country)
 				.Include(m => m.Language)
-				.Include(m => m.Movie_Genres)
-					.ThenInclude(mg => mg.Genre)
-				.Include(m => m.Movie_Actors)
-					.ThenInclude(ma => ma.Actor)
+				.Include(m => m.Movie_Actors).ThenInclude(ma => ma.Actor)
+				.Include(m => m.Movie_Genres).ThenInclude(mg => mg.Genre)
+				.Include(m => m.Reviews)
+				.Include(m => m.Favorites)
 				.OrderByDescending(m => m.CreatedAt)
 				.ToListAsync();
 
-			return movies.Select(m => MapToDto(m));
+			return movies.Select(m => MapToDto(m)).ToList();
 		}
 
 		public async Task<MovieDto?> GetByIdAsync(Guid id)
@@ -38,10 +39,8 @@ namespace FinalCuongFilm.Service.Services
 			var movie = await _context.Movies
 				.Include(m => m.Country)
 				.Include(m => m.Language)
-				.Include(m => m.Movie_Genres)
-					.ThenInclude(mg => mg.Genre)
-				.Include(m => m.Movie_Actors)
-					.ThenInclude(ma => ma.Actor)
+				.Include(m => m.Movie_Actors).ThenInclude(ma => ma.Actor)
+				.Include(m => m.Movie_Genres).ThenInclude(mg => mg.Genre)
 				.Include(m => m.Reviews)
 				.Include(m => m.Favorites)
 				.FirstOrDefaultAsync(m => m.Id == id);
@@ -55,10 +54,8 @@ namespace FinalCuongFilm.Service.Services
 			var movie = await _context.Movies
 				.Include(m => m.Country)
 				.Include(m => m.Language)
-				.Include(m => m.Movie_Genres)
-					.ThenInclude(mg => mg.Genre)
-				.Include(m => m.Movie_Actors)
-					.ThenInclude(ma => ma.Actor)
+				.Include(m => m.Movie_Actors).ThenInclude(ma => ma.Actor)
+				.Include(m => m.Movie_Genres).ThenInclude(mg => mg.Genre)
 				.Include(m => m.Reviews)
 				.Include(m => m.Favorites)
 				.FirstOrDefaultAsync(m => m.Slug == slug);
@@ -90,12 +87,65 @@ namespace FinalCuongFilm.Service.Services
 			}
 		}
 
+		// ✅ THÊM METHOD MỚI
+		public async Task<IEnumerable<MovieDto>> GetLatestAsync(int count = 12)
+		{
+			var movies = await _context.Movies
+				.Include(m => m.Country)
+				.Include(m => m.Language)
+				.Include(m => m.Movie_Genres).ThenInclude(mg => mg.Genre)
+				.Include(m => m.Reviews)
+				.Include(m => m.Favorites)
+				.Where(m => m.IsActive)
+				.OrderByDescending(m => m.CreatedAt)
+				.Take(count)
+				.ToListAsync();
+
+			return movies.Select(m => MapToDto(m));
+		}
+
+		// ✅ THÊM METHOD MỚI
+		public async Task<IEnumerable<MovieDto>> GetPopularAsync(int count = 12)
+		{
+			var movies = await _context.Movies
+				.Include(m => m.Country)
+				.Include(m => m.Language)
+				.Include(m => m.Movie_Genres).ThenInclude(mg => mg.Genre)
+				.Include(m => m.Reviews)
+				.Include(m => m.Favorites)
+				.Where(m => m.IsActive)
+				.OrderByDescending(m => m.ViewCount)
+				.Take(count)
+				.ToListAsync();
+
+			return movies.Select(m => MapToDto(m));
+		}
+
+		// ✅ THÊM METHOD MỚI
+		public async Task<IEnumerable<MovieDto>> GetByGenreAsync(Guid genreId)
+		{
+			var movies = await _context.Movies
+				.Include(m => m.Country)
+				.Include(m => m.Language)
+				.Include(m => m.Movie_Genres).ThenInclude(mg => mg.Genre)
+				.Include(m => m.Reviews)
+				.Include(m => m.Favorites)
+				.Where(m => m.Movie_Genres.Any(mg => mg.GenreId == genreId) && m.IsActive)
+				.OrderByDescending(m => m.CreatedAt)
+				.ToListAsync();
+
+			return movies.Select(m => MapToDto(m));
+		}
+
 		public async Task<MovieDto> CreateAsync(MovieCreateDto dto)
 		{
+			var slug = SlugHelper.GenerateSlug(dto.Title);
+
 			var movie = new Movie
 			{
+				Id = Guid.NewGuid(),
 				Title = dto.Title,
-				Slug = GenerateSlug(dto.Title),
+				Slug = slug,
 				Description = dto.Description,
 				ReleaseYear = dto.ReleaseYear,
 				DurationMinutes = dto.DurationMinutes,
@@ -106,29 +156,14 @@ namespace FinalCuongFilm.Service.Services
 				IsActive = dto.IsActive,
 				LanguageId = dto.LanguageId,
 				CountryId = dto.CountryId,
-				ViewCount = 0,
-				CreatedAt = DateTime.UtcNow
+				CreatedAt = DateTime.UtcNow,
+				ViewCount = 0
 			};
 
 			_context.Movies.Add(movie);
-			await _context.SaveChangesAsync();
 
-			// Add genres
-			if (dto.GenreIds != null && dto.GenreIds.Any())
-			{
-				foreach (var genreId in dto.GenreIds)
-				{
-					_context.Movie_Genres.Add(new Movie_Genre
-					{
-						MovieId = movie.Id,
-						GenreId = genreId
-					});
-				}
-				await _context.SaveChangesAsync();
-			}
-
-			// Add actors
-			if (dto.ActorIds != null && dto.ActorIds.Any())
+			// Thêm actors
+			if (dto.ActorIds != null)
 			{
 				foreach (var actorId in dto.ActorIds)
 				{
@@ -138,20 +173,40 @@ namespace FinalCuongFilm.Service.Services
 						ActorId = actorId
 					});
 				}
-				await _context.SaveChangesAsync();
 			}
 
-			return await GetByIdAsync(movie.Id) ?? throw new Exception("Failed to retrieve created movie");
+			// Thêm genres
+			if (dto.GenreIds != null)
+			{
+				foreach (var genreId in dto.GenreIds)
+				{
+					_context.Movie_Genres.Add(new Movie_Genre
+					{
+						MovieId = movie.Id,
+						GenreId = genreId
+					});
+				}
+			}
+
+			await _context.SaveChangesAsync();
+
+			return await GetByIdAsync(movie.Id) ?? throw new Exception("Failed to create movie");
 		}
 
 		public async Task<bool> UpdateAsync(MovieUpdateDto dto)
 		{
-			var movie = await _context.Movies.FindAsync(dto.Id);
+			var movie = await _context.Movies
+				.Include(m => m.Movie_Actors)
+				.Include(m => m.Movie_Genres)
+				.FirstOrDefaultAsync(m => m.Id == dto.Id);
+
 			if (movie == null)
 				return false;
 
+			var slug = SlugHelper.GenerateSlug(dto.Title);
+
 			movie.Title = dto.Title;
-			movie.Slug = GenerateSlug(dto.Title);
+			movie.Slug = slug;
 			movie.Description = dto.Description;
 			movie.ReleaseYear = dto.ReleaseYear;
 			movie.DurationMinutes = dto.DurationMinutes;
@@ -163,22 +218,6 @@ namespace FinalCuongFilm.Service.Services
 			movie.LanguageId = dto.LanguageId;
 			movie.CountryId = dto.CountryId;
 			movie.UpdatedAt = DateTime.UtcNow;
-
-			// Update genres
-			if (dto.GenreIds != null)
-			{
-				var existingGenres = _context.Movie_Genres.Where(mg => mg.MovieId == movie.Id);
-				_context.Movie_Genres.RemoveRange(existingGenres);
-
-				foreach (var genreId in dto.GenreIds)
-				{
-					_context.Movie_Genres.Add(new Movie_Genre
-					{
-						MovieId = movie.Id,
-						GenreId = genreId
-					});
-				}
-			}
 
 			// Update actors
 			if (dto.ActorIds != null)
@@ -192,6 +231,22 @@ namespace FinalCuongFilm.Service.Services
 					{
 						MovieId = movie.Id,
 						ActorId = actorId
+					});
+				}
+			}
+
+			// Update genres
+			if (dto.GenreIds != null)
+			{
+				var existingGenres = _context.Movie_Genres.Where(mg => mg.MovieId == movie.Id);
+				_context.Movie_Genres.RemoveRange(existingGenres);
+
+				foreach (var genreId in dto.GenreIds)
+				{
+					_context.Movie_Genres.Add(new Movie_Genre
+					{
+						MovieId = movie.Id,
+						GenreId = genreId
 					});
 				}
 			}
@@ -211,133 +266,9 @@ namespace FinalCuongFilm.Service.Services
 			return true;
 		}
 
-		public async Task<IEnumerable<MovieDto>> SearchAsync(string keyword)
+		public async Task<bool> ExistsAsync(Guid id)
 		{
-			var movies = await _context.Movies
-				.Include(m => m.Country)
-				.Include(m => m.Language)
-				.Include(m => m.Movie_Genres)
-					.ThenInclude(mg => mg.Genre)
-				.Where(m => m.Title.Contains(keyword) ||
-						   m.Description!.Contains(keyword))
-				.ToListAsync();
-
-			return movies.Select(m => MapToDto(m));
-		}
-
-		public async Task<IEnumerable<MovieDto>> GetByGenreAsync(Guid genreId)
-		{
-			var movies = await _context.Movies
-				.Include(m => m.Country)
-				.Include(m => m.Language)
-				.Include(m => m.Movie_Genres)
-					.ThenInclude(mg => mg.Genre)
-				.Where(m => m.Movie_Genres.Any(mg => mg.GenreId == genreId))
-				.ToListAsync();
-
-			return movies.Select(m => MapToDto(m));
-		}
-
-		public async Task<IEnumerable<MovieDto>> GetByCountryAsync(Guid countryId)
-		{
-			var movies = await _context.Movies
-				.Include(m => m.Country)
-				.Include(m => m.Language)
-				.Include(m => m.Movie_Genres)
-					.ThenInclude(mg => mg.Genre)
-				.Where(m => m.CountryId == countryId)
-				.ToListAsync();
-
-			return movies.Select(m => MapToDto(m));
-		}
-
-		public async Task<IEnumerable<MovieDto>> GetLatestAsync(int count = 12)
-		{
-			var movies = await _context.Movies
-				.Include(m => m.Country)
-				.Include(m => m.Language)
-				.Include(m => m.Movie_Genres)
-					.ThenInclude(mg => mg.Genre)
-				.Where(m => m.IsActive)
-				.OrderByDescending(m => m.CreatedAt)
-				.Take(count)
-				.ToListAsync();
-
-			return movies.Select(m => MapToDto(m));
-		}
-
-		public async Task<IEnumerable<MovieDto>> GetPopularAsync(int count = 12)
-		{
-			var movies = await _context.Movies
-				.Include(m => m.Country)
-				.Include(m => m.Language)
-				.Include(m => m.Movie_Genres)
-					.ThenInclude(mg => mg.Genre)
-				.Where(m => m.IsActive)
-				.OrderByDescending(m => m.ViewCount)
-				.Take(count)
-				.ToListAsync();
-
-			return movies.Select(m => MapToDto(m));
-		}
-
-		// ✅ HELPER METHODS
-		private static string GenerateSlug(string title)
-		{
-			if (string.IsNullOrWhiteSpace(title))
-				return string.Empty;
-
-			// Convert to lowercase
-			string slug = title.ToLowerInvariant();
-
-			// Remove Vietnamese accents
-			slug = RemoveVietnameseAccents(slug);
-
-			// Replace spaces with hyphens
-			slug = slug.Replace(" ", "-");
-
-			// Remove invalid characters
-			slug = System.Text.RegularExpressions.Regex.Replace(slug, @"[^a-z0-9\-]", "");
-
-			// Remove duplicate hyphens
-			slug = System.Text.RegularExpressions.Regex.Replace(slug, @"-+", "-");
-
-			// Trim hyphens from start and end
-			slug = slug.Trim('-');
-
-			return slug;
-		}
-
-		private static string RemoveVietnameseAccents(string text)
-		{
-			string[] vietnameseChars = new string[]
-			{
-				"aAeEoOuUiIdDyY",
-				"áàạảãâấầậẩẫăắằặẳẵ",
-				"ÁÀẠẢÃÂẤẦẬẨẪĂẮẰẶẲẴ",
-				"éèẹẻẽêếềệểễ",
-				"ÉÈẸẺẼÊẾỀỆỂỄ",
-				"óòọỏõôốồộổỗơớờợởỡ",
-				"ÓÒỌỎÕÔỐỒỘỔỖƠỚỜỢỞỠ",
-				"úùụủũưứừựửữ",
-				"ÚÙỤỦŨƯỨỪỰỬỮ",
-				"íìịỉĩ",
-				"ÍÌỊỈĨ",
-				"đ",
-				"Đ",
-				"ýỳỵỷỹ",
-				"ÝỲỴỶỸ"
-			};
-
-			for (int i = 1; i < vietnameseChars.Length; i++)
-			{
-				for (int j = 0; j < vietnameseChars[i].Length; j++)
-				{
-					text = text.Replace(vietnameseChars[i][j], vietnameseChars[0][i - 1]);
-				}
-			}
-
-			return text;
+			return await _context.Movies.AnyAsync(m => m.Id == id);
 		}
 
 		private static MovieDto MapToDto(Movie movie)
@@ -377,11 +308,6 @@ namespace FinalCuongFilm.Service.Services
 				//TotalReviews = movie.Reviews?.Count(r => r.IsApproved) ?? 0,
 				//TotalFavorites = movie.Favorites?.Count ?? 0
 			};
-		}
-
-		public Task<bool> ExistsAsync(Guid id)
-		{
-			throw new NotImplementedException();
 		}
 	}
 }

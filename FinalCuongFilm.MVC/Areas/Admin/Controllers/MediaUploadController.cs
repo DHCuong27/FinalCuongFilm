@@ -12,20 +12,17 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 		private readonly IAzureBlobService _azureBlobService;
 		private readonly IMediaFileService _mediaFileService;
 		private readonly IMovieService _movieService;
-		private readonly IEpisodeService _episodeService;
 		private readonly ILogger<MediaUploadController> _logger;
 
 		public MediaUploadController(
 			IAzureBlobService azureBlobService,
 			IMediaFileService mediaFileService,
 			IMovieService movieService,
-			IEpisodeService episodeService,
 			ILogger<MediaUploadController> logger)
 		{
 			_azureBlobService = azureBlobService;
 			_mediaFileService = mediaFileService;
 			_movieService = movieService;
-			_episodeService = episodeService;
 			_logger = logger;
 		}
 
@@ -43,7 +40,7 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 		[HttpPost]
 		[RequestSizeLimit(5_000_000_000)] // 5GB
 		[RequestFormLimits(MultipartBodyLengthLimit = 5_000_000_000)]
-		public async Task<IActionResult> UploadVideo(VideoUploadDto dto)
+		public async Task<IActionResult> UploadVideo([FromForm] VideoUploadDto dto)
 		{
 			if (!ModelState.IsValid)
 			{
@@ -129,7 +126,9 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 					Status = movie.Status,
 					IsActive = movie.IsActive,
 					LanguageId = movie.LanguageId,
-					CountryId = movie.CountryId
+					CountryId = movie.CountryId,
+					ActorIds = movie.SelectedActorIds,
+					GenreIds = movie.SelectedGenreIds
 				};
 
 				await _movieService.UpdateAsync(updateDto);
@@ -144,51 +143,6 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 			catch (Exception ex)
 			{
 				_logger.LogError(ex, "Error uploading poster");
-				return Json(new { success = false, message = ex.Message });
-			}
-		}
-
-		// POST: Admin/MediaUpload/UploadSubtitle
-		[HttpPost]
-		public async Task<IActionResult> UploadSubtitle(IFormFile subtitleFile, Guid movieId, string language)
-		{
-			try
-			{
-				var movie = await _movieService.GetByIdAsync(movieId);
-				if (movie == null)
-				{
-					return Json(new { success = false, message = "Không tìm thấy phim" });
-				}
-
-				var subtitleUrl = await _azureBlobService.UploadSubtitleAsync(
-					subtitleFile,
-					movie.Slug,
-					language
-				);
-
-				// Save subtitle to database
-				var mediaFileDto = new MediaFileCreateDto
-				{
-					FileName = subtitleFile.FileName,
-					FileUrl = subtitleUrl,
-					FileType = "subtitle",
-					Language = language,
-					FileSizeBytes = subtitleFile.Length,
-					MovieId = movieId
-				};
-
-				await _mediaFileService.CreateAsync(mediaFileDto);
-
-				return Json(new
-				{
-					success = true,
-					message = "Upload phụ đề thành công!",
-					subtitleUrl = subtitleUrl
-				});
-			}
-			catch (Exception ex)
-			{
-				_logger.LogError(ex, "Error uploading subtitle");
 				return Json(new { success = false, message = ex.Message });
 			}
 		}

@@ -273,6 +273,12 @@
                                 <i class="fas fa-photo-video"></i>MediaFiles
                             </a>
                         </li>
+
+                        <li class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "MediaUpload" ? "active" : "")">
+                            <a asp-area="Admin" asp-controller="MediaUpload" asp-action="UploadVideo">
+                                <i class="fas fa-photo-video"></i>MediaUpload
+                            </a>
+                        </li>
                         @* <li style="border-top: 1px solid rgba(255,255,255,0.1); margin-top: 10px; padding-top: 10px;">
                             <a href="/">
                                 <i class="fas fa-home"></i>Về trang chủ
@@ -338,6 +344,12 @@
                         <li class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "MediaFiles" ? "active" : "")">
                             <a asp-area="Admin" asp-controller="MediaFiles" asp-action="Index">
                                 <i class="fas fa-photo-video"></i>Manage MediaFiles
+                            </a>
+                        </li>
+
+                        <li class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "MediaUpload" ? "active" : "")">
+                            <a asp-area="Admin" asp-controller="MediaUpload" asp-action="UploadVideo">
+                                <i class="fas fa-photo-video"></i>Manage MediaUpload
                             </a>
                         </li>
 
@@ -457,6 +469,7 @@
 
     <!-- Jquery JS-->
     <script src="~/Layout_Admin/vendor/jquery-3.2.1.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <!-- Bootstrap JS-->
     <script src="~/Layout_Admin/vendor/bootstrap-4.1/popper.min.js"></script>
     <script src="~/Layout_Admin/vendor/bootstrap-4.1/bootstrap.min.js"></script>
