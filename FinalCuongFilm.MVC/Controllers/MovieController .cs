@@ -170,67 +170,90 @@ namespace FinalCuongFilm.MVC.Controllers
 
 		// GET: /Movies/Watch/{slug}?ep={episodeNumber} - Đã hợp nhất từ MovieController
 		// GET: /Movie/Watch/{slug}?ep=1
+		// GET: /Movie/Watch/{slug}?ep=1
 		[AllowAnonymous]
 		public async Task<IActionResult> Watch(string slug, int? ep = null)
 		{
-			var movie = await _movieService.GetBySlugAsync(slug);
-			if (movie == null)
+			if (string.IsNullOrEmpty(slug))
 			{
-				return NotFound();
+				TempData["Error"] = "Không tìm thấy phim!";
+				return RedirectToAction("Index", "Home");
 			}
 
-			// Increment view count
-			await _movieService.IncrementViewCountAsync(movie.Id);
-
-			FinalCuongFilm.Common.DTOs.MediaFileDto? mediaFile = null;
-			FinalCuongFilm.Common.DTOs.EpisodeDto? currentEpisode = null;
-
-			if (movie.Type == FinalCuongFilm.ApplicationCore.Entities.Enum.MovieType.Series)
+			try
 			{
-				// Get episodes
-				var episodes = await _episodeService.GetByMovieIdAsync(movie.Id);
+				// Get movie by slug
+				var allMovies = await _movieService.GetAllAsync();
+				var movie = allMovies.FirstOrDefault(m => m.Slug == slug && m.IsActive);
 
-				if (!episodes.Any())
+				if (movie == null)
 				{
-					TempData["Error"] = "Phim chưa có tập nào!";
+					TempData["Error"] = "Không tìm thấy phim!";
+					return RedirectToAction("Index", "Home");
+				}
+
+				// Prepare view model
+				var viewModel = new MovieDetailsViewModel
+				{
+					Movie = movie
+				};
+
+				FinalCuongFilm.Common.DTOs.MediaFileDto? mediaFile = null;
+				FinalCuongFilm.Common.DTOs.EpisodeDto? currentEpisode = null;
+
+				if (movie.Type == ApplicationCore.Entities.Enum.MovieType.Series)
+				{
+					// Get episodes
+					var episodes = await _episodeService.GetByMovieIdAsync(movie.Id);
+					viewModel.Episodes = episodes.Where(e => e.IsActive).OrderBy(e => e.EpisodeNumber).ToList();
+
+					if (!viewModel.Episodes.Any())
+					{
+						TempData["Error"] = "Phim chưa có tập nào!";
+						return RedirectToAction("Detail", new { slug });
+					}
+
+					// Get current episode
+					var episodeNumber = ep ?? 1;
+					currentEpisode = viewModel.Episodes.FirstOrDefault(e => e.EpisodeNumber == episodeNumber);
+
+					if (currentEpisode == null)
+					{
+						currentEpisode = viewModel.Episodes.First();
+					}
+
+					// Get media file for episode
+					var episodeMediaFiles = await _mediaFileService.GetByEpisodeIdAsync(currentEpisode.Id);
+					mediaFile = episodeMediaFiles.FirstOrDefault(m => m.FileType == "video");
+
+					ViewBag.CurrentEpisode = currentEpisode;
+					ViewBag.Episodes = viewModel.Episodes; // THÊM
+				}
+				else
+				{
+					// Movie type - get media file
+					var movieMediaFiles = await _mediaFileService.GetByMovieIdAsync(movie.Id);
+					mediaFile = movieMediaFiles.FirstOrDefault(m => m.FileType == "video");
+				}
+
+				if (mediaFile == null)
+				{
+					TempData["Error"] = "Video chưa được upload! Vui lòng liên hệ Admin.";
 					return RedirectToAction("Detail", new { slug });
 				}
 
-				// Get current episode
-				var episodeNumber = ep ?? 1;
-				currentEpisode = episodes.FirstOrDefault(e => e.EpisodeNumber == episodeNumber);
+				// THÊM CÁC VIEWBAG CẦN THIẾT
+				ViewBag.Movie = movie;
+				ViewBag.MediaFile = mediaFile;
 
-				if (currentEpisode == null)
-				{
-					currentEpisode = episodes.OrderBy(e => e.EpisodeNumber).First();
-				}
-
-				// Get media file for episode
-				var mediaFiles = await _mediaFileService.GetByEpisodeIdAsync(currentEpisode.Id);
-				mediaFile = mediaFiles.FirstOrDefault(m => m.FileType == "video");
-
-				ViewBag.Episodes = episodes;
-				ViewBag.CurrentEpisode = currentEpisode;
+				return View(viewModel);
 			}
-			else
+			catch (Exception ex)
 			{
-				// Movie type - get media file
-				var mediaFiles = await _mediaFileService.GetByMovieIdAsync(movie.Id);
-				mediaFile = mediaFiles.FirstOrDefault(m => m.FileType == "video");
+				TempData["Error"] = $"Có lỗi xảy ra: {ex.Message}";
+				return RedirectToAction("Index", "Home");
 			}
-
-			if (mediaFile == null)
-			{
-				TempData["Error"] = "Video chưa được upload!";
-				return RedirectToAction("Detail", new { slug });
-			}
-
-			ViewBag.Movie = movie;
-			ViewBag.MediaFile = mediaFile;
-
-			return View();
 		}
-
 		// Tùy chọn: Giữ lại phương thức Watch cũ bằng ID nếu cần
 		public async Task<IActionResult> WatchById(Guid id)
 		{

@@ -9,7 +9,7 @@
     var reviews = ViewBag.Reviews as IEnumerable<FinalCuongFilm.Common.DTOs.ReviewDto>;
     var userReview = ViewBag.UserReview as FinalCuongFilm.Common.DTOs.ReviewDto;
 
-    // ✅ FIX: Tạo returnUrl đúng - encode để tránh lỗi
+    //  FIX: Tạo returnUrl đúng - encode để tránh lỗi
     var currentUrl = Url.Action("Detail", "Movie", new { slug = Model.Movie.Slug });
 }
 
@@ -984,7 +984,7 @@
                     }
                     else
                     {
-                        <!-- ✅ FIX: Sử dụng currentUrl đã encode -->
+                        <!--  FIX: Sử dụng currentUrl đã encode -->
                         <a href="/Identity/Account/Login?returnUrl=@Uri.EscapeDataString(currentUrl)"
                            class="btn-hero btn-hero-secondary">
                             <i class="far fa-heart"></i>
@@ -1034,7 +1034,7 @@
                     }
                     else
                     {
-                        <!-- ✅ FIX: Sử dụng currentUrl đã encode -->
+                        <!--  FIX: Sử dụng currentUrl đã encode -->
                         <a href="/Identity/Account/Login?returnUrl=@Uri.EscapeDataString(currentUrl)"
                            class="btn-action btn-outline">
                             <i class="far fa-heart"></i>
@@ -1353,7 +1353,7 @@
                     <div class="login-prompt">
                         <i class="fas fa-user-lock"></i>
                         <p>Đăng nhập để đánh giá phim này</p>
-                        <!-- ✅ FIX: Sử dụng currentUrl đã encode -->
+                        <!--  FIX: Sử dụng currentUrl đã encode -->
                         <a href="/Identity/Account/Login?returnUrl=@Uri.EscapeDataString(currentUrl)"
                            class="btn-submit-review" style="text-decoration: none; display: inline-block;">
                             <i class="fas fa-sign-in-alt"></i> Đăng nhập
@@ -1502,9 +1502,9 @@
                 });
             });
 
-            // ✅ AJAX Review Form Submit
+            //  AJAX Review Form Submit
             $('#reviewForm').on('submit', function(e) {
-                e.preventDefault(); // ✅ QUAN TRỌNG: Ngăn form submit bình thường
+                e.preventDefault(); //  QUAN TRỌNG: Ngăn form submit bình thường
 
                 console.log('Form submitted via AJAX');
 
@@ -1536,17 +1536,17 @@
                         if (response.success) {
                             showToast(response.message, 'success');
 
-                            // ✅ Thêm review mới vào đầu danh sách
+                            //  Thêm review mới vào đầu danh sách
                             addReviewToList(response.review);
 
-                            // ✅ Reset form
+                            //  Reset form
                             $('#reviewForm')[0].reset();
                             $('#charCount').text('0');
 
-                            // ✅ Cập nhật số lượng reviews
+                            //  Cập nhật số lượng reviews
                             updateReviewCount();
 
-                            // ✅ Ẩn form và hiện thông báo đã review
+                            //  Ẩn form và hiện thông báo đã review
                             $('#reviewForm').parent().html(`
                                 <div class="alert-info">
                                     <i class="fas fa-check-circle"></i> Bạn đã đánh giá phim này.
@@ -1575,7 +1575,7 @@
             });
         });
 
-        // ✅ Function thêm review vào danh sách
+        //  Function thêm review vào danh sách
         function addReviewToList(review) {
             console.log('Adding review to list:', review);
 
@@ -1639,7 +1639,7 @@
             }
         }
 
-        // ✅ Generate star HTML
+        //  Generate star HTML
         function generateStars(rating) {
             let stars = '';
             for (let i = 1; i <= 5; i++) {
@@ -1652,14 +1652,14 @@
             return stars;
         }
 
-        // ✅ Escape HTML để tránh XSS
+        //  Escape HTML để tránh XSS
         function escapeHtml(text) {
             const div = document.createElement('div');
             div.textContent = text;
             return div.innerHTML;
         }
 
-        // ✅ Update review count
+        //  Update review count
         function updateReviewCount() {
             const currentCount = $('.reviews-list .review-item').length;
             $('#reviewCount').text(currentCount);
@@ -1673,7 +1673,7 @@
             console.log('Review count updated:', currentCount);
         }
 
-        // ✅ Delete review function
+        //  Delete review function
         function deleteReview(reviewId) {
             if (!confirm('Bạn có chắc muốn xóa đánh giá này?')) {
                 return;
@@ -1724,7 +1724,7 @@
             }, 3000);
         }
 
-        // ✅ Thêm CSS animation
+        //  Thêm CSS animation
         const style = document.createElement('style');
         style.textContent = `
             @@keyframes fadeIn {
