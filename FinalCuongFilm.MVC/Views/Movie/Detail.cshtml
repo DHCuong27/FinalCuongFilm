@@ -915,6 +915,39 @@
         .alert-info i {
             color: #3498db;
         }
+
+    /* ✅ FIX: Ensure buttons are clickable */
+    .btn-hero, .btn-action {
+        pointer-events: auto !important;
+        cursor: pointer !important;
+        position: relative;
+        z-index: 100;
+    }
+
+    .btn-hero-primary, .btn-watch {
+        pointer-events: auto !important;
+        cursor: pointer !important;
+    }
+
+    /* ✅ FIX: Prevent layout issues */
+    .hero-actions {
+        position: relative;
+        z-index: 100;
+    }
+
+    .quick-actions {
+        position: relative;
+        z-index: 100;
+    }
+
+    /* ✅ FIX: Ensure hero content is on top */
+    .hero-content {
+        z-index: 10 !important;
+    }
+
+    .hero-inner {
+        z-index: 11 !important;
+    }
 </style>
 
 <!-- Hero Banner -->
@@ -959,7 +992,9 @@
                 }
 
                 <div class="hero-actions">
-                    <a href="@Url.Action("Watch", "Movie", new { slug = Model.Movie.Slug })" class="btn-hero btn-hero-primary">
+                    <a href="@Url.Action("Watch", "Movie", new { slug = Model.Movie.Slug })" 
+                       class="btn-hero btn-hero-primary"
+                       onclick="console.log('Watch button clicked'); return true;">
                         <i class="fas fa-play"></i>
                         Xem Ngay
                     </a>
@@ -1009,7 +1044,9 @@
                     Thao tác nhanh
                 </h3>
                 <div class="quick-actions">
-                    <a href="@Url.Action("Watch", "Movie", new { slug = Model.Movie.Slug })" class="btn-action btn-watch">
+                    <a href="@Url.Action("Watch", "Movie", new { slug = Model.Movie.Slug })" 
+                       class="btn-action btn-watch"
+                       onclick="console.log('Sidebar watch button clicked'); return true;">
                         <i class="fas fa-play"></i>
                         Xem Ngay
                     </a>
@@ -1454,6 +1491,21 @@
     <script>
         $(document).ready(function() {
             console.log('Detail page loaded - AJAX review enabled');
+
+            // ✅ DEBUG: Log when page loads
+            console.log('✅ Detail page fully loaded');
+            
+            // Check if watch buttons exist
+            const watchButtons = $('a[href*="Watch"]');
+            console.log('Found watch buttons:', watchButtons.length);
+            
+            watchButtons.each(function(index) {
+                console.log(`Button ${index + 1}:`, {
+                    href: $(this).attr('href'),
+                    text: $(this).text().trim(),
+                    visible: $(this).is(':visible')
+                });
+            });
 
             // Character counter
             $('#commentText').on('input', function() {
