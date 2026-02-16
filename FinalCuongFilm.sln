@@ -7,7 +7,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinalCuongFilm.MVC", "Final
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinalCuongFilm.ApplicationCore", "FinalCuongFilm.ApplicationCore\FinalCuongFilm.ApplicationCore.csproj", "{C3756CC4-58B7-43E2-B7CF-B35A09886510}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinalCuongFilm.DataLayer", "FinalCuongFilm.DataLayer\FinalCuongFilm.DataLayer.csproj", "{0E71CF49-8E5E-46FB-826D-4D1DC3A171EB}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinalCuongFilm.Datalayer", "FinalCuongFilm.Datalayer\FinalCuongFilm.Datalayer.csproj", "{0E71CF49-8E5E-46FB-826D-4D1DC3A171EB}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinalCuongFilm.Common", "FinalCuongFilm.Common\FinalCuongFilm.Common.csproj", "{4E1A8003-B063-47B4-B86F-9AFFD17AFEF4}"
 EndProject
