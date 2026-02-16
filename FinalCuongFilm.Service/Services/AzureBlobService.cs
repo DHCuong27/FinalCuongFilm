@@ -158,6 +158,26 @@ namespace FinalCuongFilm.Service.Services
 			}
 		}
 
+		public async Task DeleteFileAsync(string fileUrl)
+		{
+			try
+			{
+				var uri = new Uri(fileUrl);
+				var blobUriBuilder = new BlobUriBuilder(uri);
+
+				var containerClient = _blobServiceClient.GetBlobContainerClient(blobUriBuilder.BlobContainerName);
+				var blobClient = containerClient.GetBlobClient(blobUriBuilder.BlobName);
+
+				await blobClient.DeleteIfExistsAsync();
+				_logger.LogInformation("Deleted file from Azure: {FileUrl}", fileUrl);
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error deleting file from Azure: {FileUrl}", fileUrl);
+				throw;
+			}
+		}
+
 		public async Task<string> GetStreamingUrlAsync(string blobUrl, int expiryHours = 24)
 		{
 			try
