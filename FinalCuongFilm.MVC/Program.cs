@@ -96,6 +96,7 @@ builder.Services.Configure<FormOptions>(options =>
 
 	app.MapRazorPages();
 
+
 	app.MapControllerRoute(
 		name: "areas",
 		pattern: "{area:exists}/{controller=Admin}/{action=Index}/{id?}");

@@ -819,54 +819,48 @@
 
     /* Responsive */
     @@media (max-width: 992px) {
-        .hero-inner
+        .hero-inner {
+            flex-direction: column;
+            align-items: flex-start;
+        }
 
-    {
-        flex-direction: column;
-        align-items: flex-start;
-    }
+        .movie-layout {
+            grid-template-columns: 1fr;
+        }
 
-    .movie-layout {
-        grid-template-columns: 1fr;
-    }
+        .sidebar-column {
+            position: relative;
+            top: 0;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
 
-    .sidebar-column {
-        position: relative;
-        top: 0;
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 1rem;
-    }
+        .rating-overview {
+            grid-template-columns: 1fr;
+        }
 
-    .rating-overview {
-        grid-template-columns: 1fr;
-    }
+        .episode-item {
+            grid-template-columns: 50px 1fr auto;
+        }
 
-    .episode-item {
-        grid-template-columns: 50px 1fr auto;
-    }
-
-    .episode-thumb {
-        display: none;
-    }
-
+        .episode-thumb {
+            display: none;
+        }
     }
 
     @@media (max-width: 768px) {
-        .hero-title
+        .hero-title {
+            font-size: 2rem;
+        }
 
-    {
-        font-size: 2rem;
-    }
+        .sidebar-column {
+            grid-template-columns: 1fr;
+        }
 
-    .sidebar-column {
-        grid-template-columns: 1fr;
-    }
-
-    .stats-cards {
-        grid-template-columns: repeat(2, 1fr);
-    }
-
+        .stats-cards {
+            grid-template-columns: repeat(2, 1fr);
+        }
     }
 
     /* Toast Notification */
@@ -889,18 +883,15 @@
     }
 
     @@keyframes slideIn {
-        from
+        from {
+            transform: translateX(400px);
+            opacity: 0;
+        }
 
-    {
-        transform: translateX(400px);
-        opacity: 0;
-    }
-
-    to {
-        transform: translateX(0);
-        opacity: 1;
-    }
-
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
     }
 
     .alert-info {
@@ -916,7 +907,7 @@
             color: #3498db;
         }
 
-    /* ✅ FIX: Ensure buttons are clickable */
+    /*  FIX: Ensure buttons are clickable */
     .btn-hero, .btn-action {
         pointer-events: auto !important;
         cursor: pointer !important;
@@ -929,7 +920,7 @@
         cursor: pointer !important;
     }
 
-    /* ✅ FIX: Prevent layout issues */
+    /*  FIX: Prevent layout issues */
     .hero-actions {
         position: relative;
         z-index: 100;
@@ -940,7 +931,7 @@
         z-index: 100;
     }
 
-    /* ✅ FIX: Ensure hero content is on top */
+    /*  FIX: Ensure hero content is on top */
     .hero-content {
         z-index: 10 !important;
     }
@@ -992,7 +983,7 @@
                 }
 
                 <div class="hero-actions">
-                    <a href="@Url.Action("Watch", "Movie", new { slug = Model.Movie.Slug })" 
+                    <a href="@Url.Action("Watch", "Movie", new { slug = Model.Movie.Slug })"
                        class="btn-hero btn-hero-primary"
                        onclick="console.log('Watch button clicked'); return true;">
                         <i class="fas fa-play"></i>
@@ -1044,7 +1035,7 @@
                     Thao tác nhanh
                 </h3>
                 <div class="quick-actions">
-                    <a href="@Url.Action("Watch", "Movie", new { slug = Model.Movie.Slug })" 
+                    <a href="@Url.Action("Watch", "Movie", new { slug = Model.Movie.Slug })"
                        class="btn-action btn-watch"
                        onclick="console.log('Sidebar watch button clicked'); return true;">
                         <i class="fas fa-play"></i>
@@ -1492,13 +1483,13 @@
         $(document).ready(function() {
             console.log('Detail page loaded - AJAX review enabled');
 
-            // ✅ DEBUG: Log when page loads
-            console.log('✅ Detail page fully loaded');
-            
+            //  DEBUG: Log when page loads
+            console.log(' Detail page fully loaded');
+
             // Check if watch buttons exist
             const watchButtons = $('a[href*="Watch"]');
             console.log('Found watch buttons:', watchButtons.length);
-            
+
             watchButtons.each(function(index) {
                 console.log(`Button ${index + 1}:`, {
                     href: $(this).attr('href'),
@@ -1556,7 +1547,7 @@
 
             //  AJAX Review Form Submit
             $('#reviewForm').on('submit', function(e) {
-                e.preventDefault(); //  QUAN TRỌNG: Ngăn form submit bình thường
+                e.preventDefault(); 
 
                 console.log('Form submitted via AJAX');
 
