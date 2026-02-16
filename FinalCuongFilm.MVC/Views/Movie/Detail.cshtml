@@ -983,9 +983,8 @@
                 }
 
                 <div class="hero-actions">
-                    <a href="@Url.Action("Watch", "Movie", new { slug = Model.Movie.Slug })"
-                       class="btn-hero btn-hero-primary"
-                       onclick="console.log('Watch button clicked'); return true;">
+                    <a href="/Movie/Watch/@Model.Movie.Slug" 
+                       class="btn-hero btn-hero-primary">
                         <i class="fas fa-play"></i>
                         Xem Ngay
                     </a>
@@ -1035,7 +1034,7 @@
                     Thao tác nhanh
                 </h3>
                 <div class="quick-actions">
-                    <a href="@Url.Action("Watch", "Movie", new { slug = Model.Movie.Slug })"
+                    <a href="@Url.Action("Watch", "Movie", new { slug = Model.Movie.Slug })" 
                        class="btn-action btn-watch"
                        onclick="console.log('Sidebar watch button clicked'); return true;">
                         <i class="fas fa-play"></i>
@@ -1240,7 +1239,7 @@
                         <div class="episodes-list">
                             @foreach (var episode in Model.Episodes)
                             {
-                                <a href="@Url.Action("Watch", "Movie", new { slug = Model.Movie.Slug, ep = episode.EpisodeNumber })"
+                                <a href="/Movie/Watch/@Model.Movie.Slug?ep=@episode.EpisodeNumber"
                                    class="episode-item">
                                     <div class="episode-number">@episode.EpisodeNumber</div>
 
