@@ -88,6 +88,11 @@ return NotFound();
 var dto = new MediaFileUpdateDto
 {
 Id = mediaFile.Id,
+FileName = mediaFile.FileName,
+FileUrl = mediaFile.FileUrl,
+FilePath = mediaFile.FilePath,
+FileSizeBytes = mediaFile.FileSizeBytes,
+FileType = mediaFile.FileType,
 Quality = mediaFile.Quality,
 Language = mediaFile.Language,
 MovieId = mediaFile.MovieId,
@@ -186,16 +191,25 @@ return RedirectToAction(nameof(Delete), new { id });
 private async Task PopulateDropdowns(Guid? movieId, Guid? episodeId)
 {
 var movies = await _movieService.GetAllAsync();
-ViewBag.Movies = movies;
+ViewBag.MovieId = new Microsoft.AspNetCore.Mvc.Rendering.SelectList(movies, "Id", "Title", movieId);
 
 if (movieId.HasValue)
 {
 var episodes = await _episodeService.GetByMovieIdAsync(movieId.Value);
-ViewBag.Episodes = episodes;
+ViewBag.EpisodeId = new Microsoft.AspNetCore.Mvc.Rendering.SelectList(
+episodes.Select(e => new {
+e.Id,
+Display = $"Tập {e.EpisodeNumber}: {e.Title}"
+}),
+"Id",
+"Display",
+episodeId
+);
 }
-
-ViewBag.SelectedMovieId = movieId;
-ViewBag.SelectedEpisodeId = episodeId;
+else
+{
+ViewBag.EpisodeId = new Microsoft.AspNetCore.Mvc.Rendering.SelectList(System.Linq.Enumerable.Empty<object>(), "Id", "Display");
+}
 }
 
 
