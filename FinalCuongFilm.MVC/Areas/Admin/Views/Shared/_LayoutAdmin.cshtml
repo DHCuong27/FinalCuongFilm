@@ -268,15 +268,10 @@
                                 <i class="fas fa-list-ol"></i>Episodes
                             </a>
                         </li>
-                        <li class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "MediaFiles" ? "active" : "")">
-                            <a asp-area="Admin" asp-controller="MediaFiles" asp-action="Index">
-                                <i class="fas fa-photo-video"></i>MediaFiles
-                            </a>
-                        </li>
 
                         <li class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "MediaUpload" ? "active" : "")">
-                            <a asp-area="Admin" asp-controller="MediaUpload" asp-action="UploadVideo">
-                                <i class="fas fa-photo-video"></i>MediaUpload
+                            <a asp-area="Admin" asp-controller="MediaUpload" asp-action="Index">
+                                <i class="fas fa-photo-video"></i>Quản lý Media
                             </a>
                         </li>
                         @* <li style="border-top: 1px solid rgba(255,255,255,0.1); margin-top: 10px; padding-top: 10px;">
@@ -341,15 +336,10 @@
                                 <i class="fas fa-list-ol"></i>Manage Episodes
                             </a>
                         </li>
-                        <li class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "MediaFiles" ? "active" : "")">
-                            <a asp-area="Admin" asp-controller="MediaFiles" asp-action="Index">
-                                <i class="fas fa-photo-video"></i>Manage MediaFiles
-                            </a>
-                        </li>
 
                         <li class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "MediaUpload" ? "active" : "")">
-                            <a asp-area="Admin" asp-controller="MediaUpload" asp-action="UploadVideo">
-                                <i class="fas fa-photo-video"></i>Manage MediaUpload
+                            <a asp-area="Admin" asp-controller="MediaUpload" asp-action="Index">
+                                <i class="fas fa-photo-video"></i>Quản lý Media
                             </a>
                         </li>
 

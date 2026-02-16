@@ -9,6 +9,7 @@ namespace FinalCuongFilm.Service.Interfaces
 		Task<string> UploadPosterAsync(IFormFile file, string movieSlug);
 		Task<string> UploadSubtitleAsync(IFormFile file, string movieSlug, string language);
 		Task<bool> DeleteAsync(string blobUrl);
+		Task DeleteFileAsync(string fileUrl);
 		Task<string> GetStreamingUrlAsync(string blobUrl, int expiryHours = 24);
 		Task<bool> ExistsAsync(string blobUrl);
 		Task<BlobMetadata> GetMetadataAsync(string blobUrl);
