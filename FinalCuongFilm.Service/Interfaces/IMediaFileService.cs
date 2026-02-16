@@ -8,9 +8,8 @@ namespace FinalCuongFilm.Service.Interfaces
         Task<MediaFileDto?> GetByIdAsync(Guid id);
         Task<IEnumerable<MediaFileDto>> GetByMovieIdAsync(Guid movieId);
         Task<IEnumerable<MediaFileDto>> GetByEpisodeIdAsync(Guid episodeId);
-        Task<MediaFileDto?> GetSubtitlesAsync(Guid mediaFileId, string language); // ✅ THÊM
+        Task<MediaFileDto?> GetSubtitlesAsync(Guid mediaFileId, string language);
         Task<MediaFileDto> CreateAsync(MediaFileCreateDto dto);
-        Task<MediaFileDto> UploadAsync(MediaFileUploadDto dto);
         Task<bool> UpdateAsync(MediaFileUpdateDto dto);
         Task<bool> DeleteAsync(Guid id);
     }

@@ -3,31 +3,18 @@ using FinalCuongFilm.Common.DTOs;
 using FinalCuongFilm.Datalayer;
 using FinalCuongFilm.DataLayer;
 using FinalCuongFilm.Service.Interfaces;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 
 namespace FinalCuongFilm.Service.Services
 {
 	public class MediaFileService : IMediaFileService
 	{
 		private readonly CuongFilmDbContext _context;
-		private readonly string _uploadPath;
 
 		
-			public MediaFileService(CuongFilmDbContext context, IConfiguration configuration)
+			public MediaFileService(CuongFilmDbContext context)
 			{
 				_context = context;
-
-				// Lấy path từ appsettings.json
-				var webRootPath = configuration["FileUpload:WebRootPath"] ?? "wwwroot";
-				_uploadPath = Path.Combine(webRootPath, "uploads", "media");
-
-				if (!Directory.Exists(_uploadPath))
-				{
-					Directory.CreateDirectory(_uploadPath);
-				}
 			}
 
 			public async Task<IEnumerable<MediaFileDto>> GetAllAsync()
@@ -100,58 +87,6 @@ namespace FinalCuongFilm.Service.Services
 			await _context.SaveChangesAsync();
 
 			return await GetByIdAsync(mediaFile.Id) ?? throw new Exception("Failed to create media file");
-		}
-
-		public async Task<MediaFileDto> UploadAsync(MediaFileUploadDto dto)
-		{
-			if (dto.File == null || dto.File.Length == 0)
-			{
-				throw new InvalidOperationException("File không hợp lệ.");
-			}
-
-			// Validate file extension
-			var allowedExtensions = new[] { ".mp4", ".mkv", ".avi", ".mov", ".webm", ".srt", ".vtt" };
-			var extension = Path.GetExtension(dto.File.FileName).ToLowerInvariant();
-
-			if (!allowedExtensions.Contains(extension))
-			{
-				throw new InvalidOperationException($"Định dạng file không được hỗ trợ. Chỉ chấp nhận: {string.Join(", ", allowedExtensions)}");
-			}
-
-			// Validate: Phải có MovieId HOẶC EpisodeId
-			if (!dto.MovieId.HasValue && !dto.EpisodeId.HasValue)
-			{
-				throw new InvalidOperationException("Phải chọn Phim hoặc Tập phim.");
-			}
-
-			// Tạo tên file unique
-			var uniqueFileName = $"{Guid.NewGuid()}{extension}";
-			var filePath = Path.Combine(_uploadPath, uniqueFileName);
-
-			// Lưu file vào server
-			using (var stream = new FileStream(filePath, FileMode.Create))
-			{
-				await dto.File.CopyToAsync(stream);
-			}
-
-			// Tạo URL để truy cập file
-			var fileUrl = $"/uploads/media/{uniqueFileName}";
-
-			// Tạo MediaFile entity
-			var createDto = new MediaFileCreateDto
-			{
-				FileName = dto.File.FileName,
-				FileUrl = fileUrl,
-				FilePath = filePath,
-				FileSizeBytes = dto.File.Length,
-				FileType = dto.FileType,
-				Quality = dto.Quality,
-				Language = dto.Language,
-				MovieId = dto.MovieId,
-				EpisodeId = dto.EpisodeId
-			};
-
-			return await CreateAsync(createDto);
 		}
 
 		// Thêm vào class MediaFileService
