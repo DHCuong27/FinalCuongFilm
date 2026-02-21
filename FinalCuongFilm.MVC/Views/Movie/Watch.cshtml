@@ -622,7 +622,7 @@
         if (video) {
             // Video Events
             video.addEventListener('loadedmetadata', function() {
-                console.log('✅ Video metadata loaded');
+                console.log(' Video metadata loaded');
                 console.log('Duration:', video.duration);
                 console.log('Video size:', video.videoWidth, 'x', video.videoHeight);
             });
@@ -634,7 +634,7 @@
             });
 
             video.addEventListener('canplay', function() {
-                console.log('✅ Video can play');
+                console.log(' Video can play');
             });
 
             video.addEventListener('waiting', function() {
@@ -723,6 +723,18 @@
                 console.log('👋 Page hidden, pausing video');
                 video.pause();
             }
+        });
+
+                $(document).ready(function() {
+            video = document.getElementById('videoPlayer');
+
+            if (!video) {
+                console.error('❌ Video element not found!');
+                return;
+            }
+
+            //  MUST CALL THIS!
+            initializePlayer();
         });
     </script>
 </body>

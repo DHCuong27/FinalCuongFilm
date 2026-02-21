@@ -1,6 +1,6 @@
-﻿using FinalCuongFilm.ApplicationCore.Entities;
+﻿using AutoMapper;
+using FinalCuongFilm.ApplicationCore.Entities;
 using FinalCuongFilm.Common.DTOs;
-using FinalCuongFilm.Common.Helpers;
 using FinalCuongFilm.DataLayer;
 using FinalCuongFilm.Service.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -11,12 +11,20 @@ namespace FinalCuongFilm.Service.Services
 	public class MovieService : IMovieService
 	{
 		private readonly CuongFilmDbContext _context;
+		private readonly IMapper _mapper;
 		private readonly ILogger<MovieService> _logger;
+		private readonly IAzureBlobService _azureBlobService;
 
-		public MovieService(CuongFilmDbContext context, ILogger<MovieService> logger)
+		public MovieService(
+			CuongFilmDbContext context,
+			IMapper mapper,
+			ILogger<MovieService> logger,
+			IAzureBlobService azureBlobService)
 		{
 			_context = context;
+			_mapper = mapper;
 			_logger = logger;
+			_azureBlobService = azureBlobService;
 		}
 
 		public async Task<IEnumerable<MovieDto>> GetAllAsync()
@@ -24,14 +32,13 @@ namespace FinalCuongFilm.Service.Services
 			var movies = await _context.Movies
 				.Include(m => m.Country)
 				.Include(m => m.Language)
-				.Include(m => m.Movie_Actors).ThenInclude(ma => ma.Actor)
-				.Include(m => m.Movie_Genres).ThenInclude(mg => mg.Genre)
-				.Include(m => m.Reviews)
-				.Include(m => m.Favorites)
+				.Include(m => m.Movie_Genres)
+					.ThenInclude(mg => mg.Genre)
+				.Where(m => m.IsActive)
 				.OrderByDescending(m => m.CreatedAt)
 				.ToListAsync();
 
-			return movies.Select(m => MapToDto(m)).ToList();
+			return _mapper.Map<IEnumerable<MovieDto>>(movies);
 		}
 
 		public async Task<MovieDto?> GetByIdAsync(Guid id)
@@ -39,275 +46,278 @@ namespace FinalCuongFilm.Service.Services
 			var movie = await _context.Movies
 				.Include(m => m.Country)
 				.Include(m => m.Language)
-				.Include(m => m.Movie_Actors).ThenInclude(ma => ma.Actor)
-				.Include(m => m.Movie_Genres).ThenInclude(mg => mg.Genre)
-				.Include(m => m.Reviews)
-				.Include(m => m.Favorites)
+				.Include(m => m.Movie_Genres)
+					.ThenInclude(mg => mg.Genre)
+				.Include(m => m.Movie_Actors)
+					.ThenInclude(ma => ma.Actor)
+				.Include(m => m.Movie_Tags)
+					.ThenInclude(mt => mt.Tag)
 				.FirstOrDefaultAsync(m => m.Id == id);
 
-			return movie == null ? null : MapToDto(movie);
+			return _mapper.Map<MovieDto>(movie);
 		}
 
-		// ✅ THÊM METHOD MỚI
 		public async Task<MovieDto?> GetBySlugAsync(string slug)
 		{
 			var movie = await _context.Movies
 				.Include(m => m.Country)
 				.Include(m => m.Language)
-				.Include(m => m.Movie_Actors).ThenInclude(ma => ma.Actor)
-				.Include(m => m.Movie_Genres).ThenInclude(mg => mg.Genre)
-				.Include(m => m.Reviews)
-				.Include(m => m.Favorites)
-				.FirstOrDefaultAsync(m => m.Slug == slug);
+				.Include(m => m.Movie_Genres)
+					.ThenInclude(mg => mg.Genre)
+				.FirstOrDefaultAsync(m => m.Slug == slug && m.IsActive);
 
-			return movie == null ? null : MapToDto(movie);
+			return _mapper.Map<MovieDto>(movie);
 		}
 
-		// ✅ THÊM METHOD MỚI
-		public async Task<bool> IncrementViewCountAsync(Guid id)
+		public async Task<MovieDto> CreateAsync(MovieCreateDto dto)
 		{
+			var movie = _mapper.Map<Movie>(dto);
+			movie.CreatedAt = DateTime.UtcNow;
+			movie.IsActive = true;
+
+			_context.Movies.Add(movie);
+			await _context.SaveChangesAsync();
+
+			_logger.LogInformation($" Created movie: {movie.Title} (ID: {movie.Id})");
+
+			return _mapper.Map<MovieDto>(movie);
+		}
+
+		public async Task<MovieDto?> UpdateAsync(Guid id, MovieUpdateDto dto)
+		{
+			var movie = await _context.Movies.FindAsync(id);
+
+			if (movie == null)
+			{
+				_logger.LogWarning($"Movie with ID {id} not found");
+				return null;
+			}
+
+			_mapper.Map(dto, movie);
+			movie.UpdatedAt = DateTime.UtcNow;
+
+			await _context.SaveChangesAsync();
+
+			_logger.LogInformation($" Updated movie: {movie.Title} (ID: {movie.Id})");
+
+			return _mapper.Map<MovieDto>(movie);
+		}
+
+		//  DELETE WITH MANUAL MediaFiles DELETION
+		public async Task<bool> DeleteAsync(Guid id)
+		{
+			using var transaction = await _context.Database.BeginTransactionAsync();
+
 			try
 			{
-				var movie = await _context.Movies.FindAsync(id);
+				_logger.LogInformation($"🗑️ Starting delete movie with ID: {id}");
+
+				var movie = await _context.Movies
+					.Include(m => m.MediaFiles)
+					.Include(m => m.Episodes)
+						.ThenInclude(e => e.MediaFiles)
+					.Include(m => m.Favorites)
+					.Include(m => m.Reviews)
+					.Include(m => m.Movie_Actors)
+					.Include(m => m.Movie_Genres)
+					.Include(m => m.Movie_Tags)
+					.FirstOrDefaultAsync(m => m.Id == id);
+
 				if (movie == null)
+				{
+					_logger.LogWarning($"Movie with ID {id} not found");
+					await transaction.RollbackAsync();
 					return false;
+				}
 
-				movie.ViewCount++;
+				_logger.LogInformation($"Found movie: {movie.Title}");
+
+				// 1. Delete Episode MediaFiles
+				if (movie.Episodes != null && movie.Episodes.Any())
+				{
+					_logger.LogInformation($"Processing {movie.Episodes.Count} episodes");
+
+					foreach (var episode in movie.Episodes)
+					{
+						if (episode.MediaFiles != null && episode.MediaFiles.Any())
+						{
+							_logger.LogInformation($"   Deleting {episode.MediaFiles.Count} media files for Episode {episode.EpisodeNumber}");
+
+							foreach (var mediaFile in episode.MediaFiles.ToList())
+							{
+								try
+								{
+									await _azureBlobService.DeleteAsync(mediaFile.FileUrl);
+									_logger.LogInformation($"      Deleted blob: {mediaFile.FileName}");
+								}
+								catch (Exception ex)
+								{
+									_logger.LogWarning(ex, $"      Failed to delete blob: {mediaFile.FileUrl}");
+								}
+							}
+
+							_context.MediaFiles.RemoveRange(episode.MediaFiles);
+						}
+					}
+				}
+
+				// 2. Delete Movie MediaFiles
+				if (movie.MediaFiles != null && movie.MediaFiles.Any())
+				{
+					_logger.LogInformation($"   Deleting {movie.MediaFiles.Count} movie media files");
+
+					foreach (var mediaFile in movie.MediaFiles.ToList())
+					{
+						try
+						{
+							await _azureBlobService.DeleteAsync(mediaFile.FileUrl);
+							_logger.LogInformation($"      Deleted blob: {mediaFile.FileName}");
+						}
+						catch (Exception ex)
+						{
+							_logger.LogWarning(ex, $"      Failed to delete blob: {mediaFile.FileUrl}");
+						}
+					}
+
+					_context.MediaFiles.RemoveRange(movie.MediaFiles);
+				}
+
+				// 3. Delete Many-to-many relationships
+				if (movie.Movie_Actors != null && movie.Movie_Actors.Any())
+				{
+					_logger.LogInformation($"   Removing {movie.Movie_Actors.Count} actor relationships");
+					_context.Movie_Actors.RemoveRange(movie.Movie_Actors);
+				}
+
+				if (movie.Movie_Genres != null && movie.Movie_Genres.Any())
+				{
+					_logger.LogInformation($"   Removing {movie.Movie_Genres.Count} genre relationships");
+					_context.Movie_Genres.RemoveRange(movie.Movie_Genres);
+				}
+
+				if (movie.Movie_Tags != null && movie.Movie_Tags.Any())
+				{
+					_logger.LogInformation($"   Removing {movie.Movie_Tags.Count} tag relationships");
+					_context.Movie_Tags.RemoveRange(movie.Movie_Tags);
+				}
+
+				// 4. Delete Movie (CASCADE will auto-delete Episodes, Favorites, Reviews)
+				_context.Movies.Remove(movie);
+
 				await _context.SaveChangesAsync();
+				await transaction.CommitAsync();
 
-				_logger.LogInformation("Incremented view count for movie {MovieId}. New count: {ViewCount}",
-					id, movie.ViewCount);
-
+				_logger.LogInformation($" Successfully deleted movie: {movie.Title}");
 				return true;
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError(ex, "Error incrementing view count for movie {MovieId}", id);
-				return false;
+				_logger.LogError(ex, $"❌ Error deleting movie: {id}");
+				await transaction.RollbackAsync();
+				throw;
 			}
 		}
 
-		// ✅ THÊM METHOD MỚI
-		public async Task<IEnumerable<MovieDto>> GetLatestAsync(int count = 12)
+		public async Task<IEnumerable<MovieDto>> SearchAsync(string keyword)
 		{
 			var movies = await _context.Movies
 				.Include(m => m.Country)
 				.Include(m => m.Language)
-				.Include(m => m.Movie_Genres).ThenInclude(mg => mg.Genre)
-				.Include(m => m.Reviews)
-				.Include(m => m.Favorites)
-				.Where(m => m.IsActive)
-				.OrderByDescending(m => m.CreatedAt)
-				.Take(count)
-				.ToListAsync();
-
-			return movies.Select(m => MapToDto(m));
-		}
-
-		// ✅ THÊM METHOD MỚI
-		public async Task<IEnumerable<MovieDto>> GetPopularAsync(int count = 12)
-		{
-			var movies = await _context.Movies
-				.Include(m => m.Country)
-				.Include(m => m.Language)
-				.Include(m => m.Movie_Genres).ThenInclude(mg => mg.Genre)
-				.Include(m => m.Reviews)
-				.Include(m => m.Favorites)
-				.Where(m => m.IsActive)
+				.Where(m => m.IsActive && (
+					m.Title.Contains(keyword) ||
+					m.Description.Contains(keyword)
+				))
 				.OrderByDescending(m => m.ViewCount)
-				.Take(count)
 				.ToListAsync();
 
-			return movies.Select(m => MapToDto(m));
+			return _mapper.Map<IEnumerable<MovieDto>>(movies);
 		}
 
-		// ✅ THÊM METHOD MỚI
 		public async Task<IEnumerable<MovieDto>> GetByGenreAsync(Guid genreId)
 		{
 			var movies = await _context.Movies
 				.Include(m => m.Country)
 				.Include(m => m.Language)
-				.Include(m => m.Movie_Genres).ThenInclude(mg => mg.Genre)
-				.Include(m => m.Reviews)
-				.Include(m => m.Favorites)
-				.Where(m => m.Movie_Genres.Any(mg => mg.GenreId == genreId) && m.IsActive)
-				.OrderByDescending(m => m.CreatedAt)
+				.Include(m => m.Movie_Genres)
+				.Where(m => m.IsActive && m.Movie_Genres.Any(mg => mg.GenreId == genreId))
+				.OrderByDescending(m => m.ViewCount)
 				.ToListAsync();
 
-			return movies.Select(m => MapToDto(m));
+			return _mapper.Map<IEnumerable<MovieDto>>(movies);
 		}
 
-		public async Task<MovieDto> CreateAsync(MovieCreateDto dto)
+		public async Task<IEnumerable<MovieDto>> GetByCountryAsync(Guid countryId)
 		{
-			var slug = SlugHelper.GenerateSlug(dto.Title);
+			var movies = await _context.Movies
+				.Include(m => m.Country)
+				.Include(m => m.Language)
+				.Where(m => m.IsActive && m.CountryId == countryId)
+				.OrderByDescending(m => m.ViewCount)
+				.ToListAsync();
 
-			var movie = new Movie
-			{
-				Id = Guid.NewGuid(),
-				Title = dto.Title,
-				Slug = slug,
-				Description = dto.Description,
-				ReleaseYear = dto.ReleaseYear,
-				DurationMinutes = dto.DurationMinutes,
-				PosterUrl = dto.PosterUrl,
-				TrailerUrl = dto.TrailerUrl,
-				Type = dto.Type,
-				Status = dto.Status,
-				IsActive = dto.IsActive,
-				LanguageId = dto.LanguageId,
-				CountryId = dto.CountryId,
-				CreatedAt = DateTime.UtcNow,
-				ViewCount = 0
-			};
-
-			_context.Movies.Add(movie);
-
-			// Thêm actors
-			if (dto.ActorIds != null)
-			{
-				foreach (var actorId in dto.ActorIds)
-				{
-					_context.Movie_Actors.Add(new Movie_Actor
-					{
-						MovieId = movie.Id,
-						ActorId = actorId
-					});
-				}
-			}
-
-			// Thêm genres
-			if (dto.GenreIds != null)
-			{
-				foreach (var genreId in dto.GenreIds)
-				{
-					_context.Movie_Genres.Add(new Movie_Genre
-					{
-						MovieId = movie.Id,
-						GenreId = genreId
-					});
-				}
-			}
-
-			await _context.SaveChangesAsync();
-
-			return await GetByIdAsync(movie.Id) ?? throw new Exception("Failed to create movie");
+			return _mapper.Map<IEnumerable<MovieDto>>(movies);
 		}
 
-		public async Task<bool> UpdateAsync(MovieUpdateDto dto)
-		{
-			var movie = await _context.Movies
-				.Include(m => m.Movie_Actors)
-				.Include(m => m.Movie_Genres)
-				.FirstOrDefaultAsync(m => m.Id == dto.Id);
-
-			if (movie == null)
-				return false;
-
-			var slug = SlugHelper.GenerateSlug(dto.Title);
-
-			movie.Title = dto.Title;
-			movie.Slug = slug;
-			movie.Description = dto.Description;
-			movie.ReleaseYear = dto.ReleaseYear;
-			movie.DurationMinutes = dto.DurationMinutes;
-			movie.PosterUrl = dto.PosterUrl;
-			movie.TrailerUrl = dto.TrailerUrl;
-			movie.Type = dto.Type;
-			movie.Status = dto.Status;
-			movie.IsActive = dto.IsActive;
-			movie.LanguageId = dto.LanguageId;
-			movie.CountryId = dto.CountryId;
-			movie.UpdatedAt = DateTime.UtcNow;
-
-			// Update actors
-			if (dto.ActorIds != null)
-			{
-				var existingActors = _context.Movie_Actors.Where(ma => ma.MovieId == movie.Id);
-				_context.Movie_Actors.RemoveRange(existingActors);
-
-				foreach (var actorId in dto.ActorIds)
-				{
-					_context.Movie_Actors.Add(new Movie_Actor
-					{
-						MovieId = movie.Id,
-						ActorId = actorId
-					});
-				}
-			}
-
-			// Update genres
-			if (dto.GenreIds != null)
-			{
-				var existingGenres = _context.Movie_Genres.Where(mg => mg.MovieId == movie.Id);
-				_context.Movie_Genres.RemoveRange(existingGenres);
-
-				foreach (var genreId in dto.GenreIds)
-				{
-					_context.Movie_Genres.Add(new Movie_Genre
-					{
-						MovieId = movie.Id,
-						GenreId = genreId
-					});
-				}
-			}
-
-			await _context.SaveChangesAsync();
-			return true;
-		}
-
-		public async Task<bool> DeleteAsync(Guid id)
+		public async Task IncrementViewCountAsync(Guid id)
 		{
 			var movie = await _context.Movies.FindAsync(id);
-			if (movie == null)
-				return false;
 
-			_context.Movies.Remove(movie);
-			await _context.SaveChangesAsync();
-			return true;
-		}
-
-		public async Task<bool> ExistsAsync(Guid id)
-		{
-			return await _context.Movies.AnyAsync(m => m.Id == id);
-		}
-
-		private static MovieDto MapToDto(Movie movie)
-		{
-			return new MovieDto
+			if (movie != null)
 			{
-				Id = movie.Id,
-				Title = movie.Title,
-				Slug = movie.Slug,
-				Description = movie.Description,
-				ReleaseYear = movie.ReleaseYear,
-				DurationMinutes = movie.DurationMinutes,
-				PosterUrl = movie.PosterUrl,
-				TrailerUrl = movie.TrailerUrl,
-				ViewCount = movie.ViewCount,
-				Type = movie.Type,
-				Status = movie.Status,
-				IsActive = movie.IsActive,
-				//CreatedAt = movie.CreatedAt,
-				//UpdatedAt = movie.UpdatedAt,
+				movie.ViewCount++;
+				await _context.SaveChangesAsync();
+			}
+		}
 
-				LanguageId = movie.LanguageId,
-				LanguageName = movie.Language?.Name,
+		public async Task<IEnumerable<MovieDto>> GetPopularMoviesAsync(int count = 10)
+		{
+			var movies = await _context.Movies
+				.Include(m => m.Country)
+				.Include(m => m.Language)
+				.Where(m => m.IsActive)
+				.OrderByDescending(m => m.ViewCount)
+				.Take(count)
+				.ToListAsync();
 
-				CountryId = movie.CountryId,
-				CountryName = movie.Country?.Name,
+			return _mapper.Map<IEnumerable<MovieDto>>(movies);
+		}
 
-				SelectedGenreIds = movie.Movie_Genres?.Select(mg => mg.GenreId).ToList() ?? new List<Guid>(),
-				//GenreNames = movie.Movie_Genres?.Select(mg => mg.Genre.Name).ToList() ?? new List<string>(),
+		public async Task<IEnumerable<MovieDto>> GetLatestMoviesAsync(int count = 10)
+		{
+			var movies = await _context.Movies
+				.Include(m => m.Country)
+				.Include(m => m.Language)
+				.Where(m => m.IsActive)
+				.OrderByDescending(m => m.CreatedAt)
+				.Take(count)
+				.ToListAsync();
 
-				SelectedActorIds = movie.Movie_Actors?.Select(ma => ma.ActorId).ToList() ?? new List<Guid>(),
-				//ActorNames = movie.Movie_Actors?.Select(ma => ma.Actor.Name).ToList() ?? new List<string>(),
+			return _mapper.Map<IEnumerable<MovieDto>>(movies);
+		}
 
-				//AverageRating = movie.Reviews?.Any() == true
-				//	? Math.Round(movie.Reviews.Where(r => r.IsApproved).Average(r => r.Rating), 1)
-				//	: 0,
-				//TotalReviews = movie.Reviews?.Count(r => r.IsApproved) ?? 0,
-				//TotalFavorites = movie.Favorites?.Count ?? 0
-			};
+		public Task<bool> UpdateAsync(MovieUpdateDto dto)
+		{
+			throw new NotImplementedException();
+		}
+
+		public Task<bool> ExistsAsync(Guid id)
+		{
+			throw new NotImplementedException();
+		}
+
+		Task<bool> IMovieService.IncrementViewCountAsync(Guid id)
+		{
+			throw new NotImplementedException();
+		}
+
+		public Task<IEnumerable<MovieDto>> GetLatestAsync(int count = 12)
+		{
+			throw new NotImplementedException();
+		}
+
+		public Task<IEnumerable<MovieDto>> GetPopularAsync(int count = 12)
+		{
+			throw new NotImplementedException();
 		}
 	}
 }

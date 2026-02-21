@@ -29,7 +29,6 @@ namespace FinalCuongFilm.Service.Services
 			_blobServiceClient = new BlobServiceClient(connectionString);
 			_logger = logger;
 
-			// ✅ FIX: Gọi async method đúng cách
 			_ = EnsureContainersExistAsync();
 		}
 
@@ -37,35 +36,41 @@ namespace FinalCuongFilm.Service.Services
 		{
 			try
 			{
-				// ✅ FIX: Tạo container PRIVATE (không public)
-				await CreateContainerIfNotExistsAsync(VIDEO_CONTAINER);
-				await CreateContainerIfNotExistsAsync(POSTER_CONTAINER);
-				await CreateContainerIfNotExistsAsync(SUBTITLE_CONTAINER);
+				// ✅ Create containers with PUBLIC access
+				await CreateContainerIfNotExistsAsync(VIDEO_CONTAINER, PublicAccessType.Blob);
+				await CreateContainerIfNotExistsAsync(POSTER_CONTAINER, PublicAccessType.Blob);
+				await CreateContainerIfNotExistsAsync(SUBTITLE_CONTAINER, PublicAccessType.Blob);
+
+				_logger.LogInformation("✅ All containers created/updated with PUBLIC access");
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError(ex, "Error creating containers");
+				_logger.LogError(ex, "❌ Error creating containers");
 			}
 		}
 
-		// ✅ FIX: Bỏ PublicAccessType parameter
-		private async Task CreateContainerIfNotExistsAsync(string containerName)
+		private async Task CreateContainerIfNotExistsAsync(string containerName, PublicAccessType accessType = PublicAccessType.Blob)
 		{
 			try
 			{
 				var containerClient = _blobServiceClient.GetBlobContainerClient(containerName);
 
-				// Tạo container với access level = Private (default)
-				var response = await containerClient.CreateIfNotExistsAsync();
+				var response = await containerClient.CreateIfNotExistsAsync(accessType);
 
 				if (response != null && response.Value != null)
 				{
-					_logger.LogInformation("Created container: {ContainerName}", containerName);
+					_logger.LogInformation($"Created container: {containerName} with access: {accessType}");
+				}
+				else
+				{
+					// Container exists, update access level
+					await containerClient.SetAccessPolicyAsync(accessType);
+					_logger.LogInformation($"Updated container: {containerName} to access: {accessType}");
 				}
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError(ex, "Error creating container {ContainerName}", containerName);
+				_logger.LogError(ex, $"Error with container {containerName}");
 				throw;
 			}
 		}
@@ -79,9 +84,11 @@ namespace FinalCuongFilm.Service.Services
 			var containerClient = _blobServiceClient.GetBlobContainerClient(containerName);
 			var blobClient = containerClient.GetBlobClient(fileName);
 
+			var contentType = GetContentType(Path.GetExtension(file.FileName));
 			var blobHttpHeaders = new BlobHttpHeaders
 			{
-				ContentType = file.ContentType
+				ContentType = contentType,
+				CacheControl = "public, max-age=31536000"
 			};
 
 			using var stream = file.OpenReadStream();
@@ -90,7 +97,7 @@ namespace FinalCuongFilm.Service.Services
 				HttpHeaders = blobHttpHeaders
 			});
 
-			_logger.LogInformation("Uploaded {FileName} to {Container}", fileName, containerName);
+			_logger.LogInformation($"Uploaded {fileName} to {containerName} with ContentType: {contentType}");
 
 			return blobClient.Uri.ToString();
 		}
@@ -99,14 +106,12 @@ namespace FinalCuongFilm.Service.Services
 		{
 			var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
 			if (!AllowedVideoExtensions.Contains(extension))
-				throw new ArgumentException($"Invalid video format. Allowed: {string.Join(", ", AllowedVideoExtensions)}");
+				throw new ArgumentException($"Invalid video format: {extension}");
 
-			if (file.Length > 5_000_000_000) // 5GB limit
-				throw new ArgumentException("File size exceeds 5GB limit");
-
+			var timestamp = DateTime.UtcNow.ToString("yyyyMMddHHmmss");
 			var fileName = episodeNumber.HasValue
-				? $"{movieSlug}/ep-{episodeNumber:D3}{extension}"
-				: $"{movieSlug}/movie{extension}";
+				? $"{movieSlug}/episodes/ep{episodeNumber:D3}-{timestamp}{extension}"
+				: $"{movieSlug}/movie-{timestamp}{extension}";
 
 			return await UploadAsync(file, VIDEO_CONTAINER, fileName);
 		}
@@ -115,12 +120,11 @@ namespace FinalCuongFilm.Service.Services
 		{
 			var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
 			if (!AllowedImageExtensions.Contains(extension))
-				throw new ArgumentException($"Invalid image format. Allowed: {string.Join(", ", AllowedImageExtensions)}");
+				throw new ArgumentException($"Invalid image format: {extension}");
 
-			if (file.Length > 10_000_000) // 10MB limit
-				throw new ArgumentException("Image size exceeds 10MB limit");
+			var timestamp = DateTime.UtcNow.ToString("yyyyMMddHHmmss");
+			var fileName = $"{movieSlug}/poster-{timestamp}{extension}";
 
-			var fileName = $"{movieSlug}/poster{extension}";
 			return await UploadAsync(file, POSTER_CONTAINER, fileName);
 		}
 
@@ -128,54 +132,12 @@ namespace FinalCuongFilm.Service.Services
 		{
 			var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
 			if (!AllowedSubtitleExtensions.Contains(extension))
-				throw new ArgumentException($"Invalid subtitle format. Allowed: {string.Join(", ", AllowedSubtitleExtensions)}");
+				throw new ArgumentException($"Invalid subtitle format: {extension}");
 
-			var fileName = $"{movieSlug}/subtitles/{language}{extension}";
+			var timestamp = DateTime.UtcNow.ToString("yyyyMMddHHmmss");
+			var fileName = $"{movieSlug}/subtitles/{language}-{timestamp}{extension}";
+
 			return await UploadAsync(file, SUBTITLE_CONTAINER, fileName);
-		}
-
-		public async Task<bool> DeleteAsync(string blobUrl)
-		{
-			try
-			{
-				var uri = new Uri(blobUrl);
-				var blobUriBuilder = new BlobUriBuilder(uri);
-
-				var containerClient = _blobServiceClient.GetBlobContainerClient(blobUriBuilder.BlobContainerName);
-				var blobClient = containerClient.GetBlobClient(blobUriBuilder.BlobName);
-
-				var response = await blobClient.DeleteIfExistsAsync();
-
-				_logger.LogInformation("Deleted blob {BlobName} from {Container}",
-					blobUriBuilder.BlobName, blobUriBuilder.BlobContainerName);
-
-				return response.Value;
-			}
-			catch (Exception ex)
-			{
-				_logger.LogError(ex, "Error deleting blob {BlobUrl}", blobUrl);
-				return false;
-			}
-		}
-
-		public async Task DeleteFileAsync(string fileUrl)
-		{
-			try
-			{
-				var uri = new Uri(fileUrl);
-				var blobUriBuilder = new BlobUriBuilder(uri);
-
-				var containerClient = _blobServiceClient.GetBlobContainerClient(blobUriBuilder.BlobContainerName);
-				var blobClient = containerClient.GetBlobClient(blobUriBuilder.BlobName);
-
-				await blobClient.DeleteIfExistsAsync();
-				_logger.LogInformation("Deleted file from Azure: {FileUrl}", fileUrl);
-			}
-			catch (Exception ex)
-			{
-				_logger.LogError(ex, "Error deleting file from Azure: {FileUrl}", fileUrl);
-				throw;
-			}
 		}
 
 		public async Task<string> GetStreamingUrlAsync(string blobUrl, int expiryHours = 24)
@@ -183,20 +145,24 @@ namespace FinalCuongFilm.Service.Services
 			try
 			{
 				var uri = new Uri(blobUrl);
-				var blobUriBuilder = new BlobUriBuilder(uri);
+				var blobClient = new BlobClient(uri, null);
 
-				var containerClient = _blobServiceClient.GetBlobContainerClient(blobUriBuilder.BlobContainerName);
-				var blobClient = containerClient.GetBlobClient(blobUriBuilder.BlobName);
-
-				// Check if blob exists
 				if (!await blobClient.ExistsAsync())
-					throw new FileNotFoundException($"Blob not found: {blobUrl}");
+				{
+					_logger.LogWarning($"Blob not found: {blobUrl}");
+					return blobUrl;
+				}
 
-				// ✅ Generate SAS token cho private blob
+				if (!blobClient.CanGenerateSasUri)
+				{
+					_logger.LogWarning("Cannot generate SAS token. Returning direct URL");
+					return blobUrl;
+				}
+
 				var sasBuilder = new BlobSasBuilder
 				{
-					BlobContainerName = blobUriBuilder.BlobContainerName,
-					BlobName = blobUriBuilder.BlobName,
+					BlobContainerName = blobClient.BlobContainerName,
+					BlobName = blobClient.Name,
 					Resource = "b",
 					StartsOn = DateTimeOffset.UtcNow.AddMinutes(-5),
 					ExpiresOn = DateTimeOffset.UtcNow.AddHours(expiryHours)
@@ -205,14 +171,37 @@ namespace FinalCuongFilm.Service.Services
 				sasBuilder.SetPermissions(BlobSasPermissions.Read);
 
 				var sasUri = blobClient.GenerateSasUri(sasBuilder);
+				_logger.LogInformation($"✅ Generated SAS URL (expires in {expiryHours}h)");
 
 				return sasUri.ToString();
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError(ex, "Error generating streaming URL for {BlobUrl}", blobUrl);
-				throw;
+				_logger.LogError(ex, $"Error generating SAS URL for: {blobUrl}");
+				return blobUrl;
 			}
+		}
+
+		public async Task<bool> DeleteAsync(string blobUrl)
+		{
+			try
+			{
+				var uri = new Uri(blobUrl);
+				var blobClient = new BlobClient(uri, null);
+
+				var response = await blobClient.DeleteIfExistsAsync();
+				return response.Value;
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, $"Error deleting blob: {blobUrl}");
+				return false;
+			}
+		}
+
+		public Task DeleteFileAsync(string fileUrl)
+		{
+			return DeleteAsync(fileUrl);
 		}
 
 		public async Task<bool> ExistsAsync(string blobUrl)
@@ -220,11 +209,7 @@ namespace FinalCuongFilm.Service.Services
 			try
 			{
 				var uri = new Uri(blobUrl);
-				var blobUriBuilder = new BlobUriBuilder(uri);
-
-				var containerClient = _blobServiceClient.GetBlobContainerClient(blobUriBuilder.BlobContainerName);
-				var blobClient = containerClient.GetBlobClient(blobUriBuilder.BlobName);
-
+				var blobClient = new BlobClient(uri, null);
 				return await blobClient.ExistsAsync();
 			}
 			catch
@@ -235,30 +220,39 @@ namespace FinalCuongFilm.Service.Services
 
 		public async Task<BlobMetadata> GetMetadataAsync(string blobUrl)
 		{
-			try
+			var uri = new Uri(blobUrl);
+			var blobClient = new BlobClient(uri, null);
+
+			var properties = await blobClient.GetPropertiesAsync();
+
+			return new BlobMetadata
 			{
-				var uri = new Uri(blobUrl);
-				var blobUriBuilder = new BlobUriBuilder(uri);
+				FileName = Path.GetFileName(uri.LocalPath),
+				FileSize = properties.Value.ContentLength,
+				ContentType = properties.Value.ContentType,
+				LastModified = properties.Value.LastModified.DateTime,
+				Url = blobUrl
+			};
+		}
 
-				var containerClient = _blobServiceClient.GetBlobContainerClient(blobUriBuilder.BlobContainerName);
-				var blobClient = containerClient.GetBlobClient(blobUriBuilder.BlobName);
-
-				var properties = await blobClient.GetPropertiesAsync();
-
-				return new BlobMetadata
-				{
-					FileName = blobUriBuilder.BlobName,
-					FileSize = properties.Value.ContentLength,
-					ContentType = properties.Value.ContentType,
-					LastModified = properties.Value.LastModified.DateTime,
-					Url = blobClient.Uri.ToString()
-				};
-			}
-			catch (Exception ex)
+		private string GetContentType(string fileExtension)
+		{
+			return fileExtension.ToLowerInvariant() switch
 			{
-				_logger.LogError(ex, "Error getting metadata for {BlobUrl}", blobUrl);
-				throw;
-			}
+				".mp4" => "video/mp4",
+				".webm" => "video/webm",
+				".ogg" => "video/ogg",
+				".mov" => "video/quicktime",
+				".avi" => "video/x-msvideo",
+				".mkv" => "video/x-matroska",
+				".m4v" => "video/x-m4v",
+				".jpg" or ".jpeg" => "image/jpeg",
+				".png" => "image/png",
+				".webp" => "image/webp",
+				".srt" => "text/plain",
+				".vtt" => "text/vtt",
+				_ => "application/octet-stream"
+			};
 		}
 	}
 }

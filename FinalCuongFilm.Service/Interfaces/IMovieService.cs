@@ -14,6 +14,7 @@ namespace FinalCuongFilm.Service.Interfaces
 		Task<bool> IncrementViewCountAsync(Guid id); 
 		Task<IEnumerable<MovieDto>> GetLatestAsync(int count = 12); 
 		Task<IEnumerable<MovieDto>> GetPopularAsync(int count = 12);
-		Task<IEnumerable<MovieDto>> GetByGenreAsync(Guid genreId); 
+		Task<IEnumerable<MovieDto>> GetByGenreAsync(Guid genreId);
+		//Task<MovieDto?> UpdateAsync(Guid id, UpdateMovieDto dto);
 	}
 }
