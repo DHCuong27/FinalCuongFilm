@@ -2,6 +2,7 @@
 	using FinalCuongFilm.DataLayer;
 	using FinalCuongFilm.MVC.Data;
 	using FinalCuongFilm.Service.Interfaces;      
+	using FinalCuongFilm.Service.Mappings;
 	using FinalCuongFilm.Service.Services;
 	using Microsoft.AspNetCore.Http.Features;
 	using Microsoft.AspNetCore.Identity;
@@ -42,6 +43,9 @@
 		options.LogoutPath = "/Identity/Account/Logout";
 		options.AccessDeniedPath = "/Identity/Account/AccessDenied";
 	});
+
+	// AutoMapper
+	builder.Services.AddAutoMapper(cfg => cfg.AddProfile<MappingProfile>());
 
 	//  Services
 	builder.Services.AddScoped<IMovieService, MovieService>();
