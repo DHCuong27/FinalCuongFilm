@@ -16,7 +16,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\FinalCuongFilm.Common\FinalCuongFilm.Common.csproj" />
-    <ProjectReference Include="..\FinalCuongFilm.DataLayer\FinalCuongFilm.DataLayer.csproj" />
+    <ProjectReference Include="..\FinalCuongFilm.Datalayer\FinalCuongFilm.Datalayer.csproj" />
   </ItemGroup>
 
 </Project>
