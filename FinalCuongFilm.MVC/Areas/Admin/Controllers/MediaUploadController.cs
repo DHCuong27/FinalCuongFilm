@@ -213,6 +213,16 @@ ViewBag.EpisodeId = new Microsoft.AspNetCore.Mvc.Rendering.SelectList(System.Lin
 }
 
 
+		private string NormalizeAzureUrl(string url)
+		{
+			if (string.IsNullOrEmpty(url)) return url;
+			if (!url.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+			{
+				url = "https://" + url;
+			}
+			return url.Trim();
+		}
+
 		// GET: Admin/MediaUpload/UploadVideo
 		public async Task<IActionResult> UploadVideo(Guid? movieId = null)
 		{
@@ -236,53 +246,57 @@ ViewBag.EpisodeId = new Microsoft.AspNetCore.Mvc.Rendering.SelectList(System.Lin
 
 			try
 			{
-				_logger.LogInformation("Starting video upload for movie {MovieId}", dto.MovieId);
-
 				var movie = await _movieService.GetByIdAsync(dto.MovieId);
 				if (movie == null)
 				{
 					return Json(new { success = false, message = "Không tìm thấy phim" });
 				}
 
-				// Upload video to Azure
-				var videoUrl = await _azureBlobService.UploadVideoAsync(
-					dto.VideoFile,
-					movie.Slug,
-					dto.EpisodeNumber
-				);
+				string videoUrl;
+				long fileSize = 0;
+				string fileName;
 
-				// Save to database
+				if (!string.IsNullOrEmpty(dto.ManualUrl))
+				{
+					videoUrl = NormalizeAzureUrl(dto.ManualUrl);
+					fileName = "Manual URL";
+					_logger.LogInformation("Using manual URL: {Url}", videoUrl);
+				}
+				else if (dto.VideoFile != null && dto.VideoFile.Length > 0)
+				{
+					videoUrl = await _azureBlobService.UploadVideoAsync(
+						dto.VideoFile,
+						movie.Slug,
+						dto.EpisodeNumber
+					);
+					fileName = dto.VideoFile.FileName;
+					fileSize = dto.VideoFile.Length;
+				}
+				else
+				{
+					return Json(new { success = false, message = "Vui lòng chọn file hoặc nhập URL" });
+				}
+
 				var mediaFileDto = new MediaFileCreateDto
 				{
-					FileName = dto.VideoFile.FileName,
+					FileName = fileName,
 					FileUrl = videoUrl,
 					FileType = "video",
 					Quality = dto.Quality,
 					Language = dto.Language ?? "vi",
-					FileSizeBytes = dto.VideoFile.Length,
+					FileSizeBytes = fileSize,
 					MovieId = dto.MovieId,
 					EpisodeId = dto.EpisodeId
 				};
 
 				await _mediaFileService.CreateAsync(mediaFileDto);
 
-				_logger.LogInformation("Video uploaded successfully: {VideoUrl}", videoUrl);
-
-				return Json(new
-				{
-					success = true,
-					message = "Upload video thành công!",
-					videoUrl = videoUrl
-				});
+				return Json(new { success = true, message = "Thêm video thành công!", videoUrl });
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError(ex, "Error uploading video");
-				return Json(new
-				{
-					success = false,
-					message = "Lỗi upload: " + ex.Message
-				});
+				_logger.LogError(ex, "Error processing video");
+				return Json(new { success = false, message = "Lỗi: " + ex.Message });
 			}
 		}
 
@@ -377,7 +391,8 @@ ViewBag.EpisodeId = new Microsoft.AspNetCore.Mvc.Rendering.SelectList(System.Lin
 		public Guid MovieId { get; set; }
 		public Guid? EpisodeId { get; set; }
 		public int? EpisodeNumber { get; set; }
-		public IFormFile VideoFile { get; set; } = null!;
+		public IFormFile? VideoFile { get; set; }
+		public string? ManualUrl { get; set; }
 		public string Quality { get; set; } = "1080p";
 		public string? Language { get; set; }
 	}
