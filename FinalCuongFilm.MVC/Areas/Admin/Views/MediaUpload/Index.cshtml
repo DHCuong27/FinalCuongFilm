@@ -23,11 +23,11 @@
                 }
             </h2>
             <div>
-                <a asp-action="Upload" asp-route-movieId="@movieId" asp-route-episodeId="@episodeId" class="au-btn au-btn-icon au-btn--green">
-                    <i class="zmdi zmdi-upload"></i>Upload File
+                <a asp-action="UploadVideo" asp-route-movieId="@movieId" class="au-btn au-btn-icon au-btn--green">
+                    <i class="zmdi zmdi-upload"></i>Upload Video
                 </a>
-                <a asp-action="Create" asp-route-movieId="@movieId" asp-route-episodeId="@episodeId" class="au-btn au-btn-icon au-btn--blue">
-                    <i class="zmdi zmdi-plus"></i>Thêm URL
+                <a asp-action="UploadVideo" asp-route-movieId="@movieId" class="au-btn au-btn-icon au-btn--blue">
+                    <i class="zmdi zmdi-plus"></i>Nhập URL Video
                 </a>
             </div>
         </div>

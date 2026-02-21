@@ -101,7 +101,18 @@ builder.Services.Configure<FormOptions>(options =>
 		name: "areas",
 		pattern: "{area:exists}/{controller=Admin}/{action=Index}/{id?}");
 
-	app.MapControllerRoute(
+// Movie routes
+app.MapControllerRoute(
+	name: "movieWatch",
+	pattern: "Movie/Watch/{slug}",
+	defaults: new { controller = "Movie", action = "Watch" });
+
+app.MapControllerRoute(
+	name: "movieDetail",
+	pattern: "Movie/Detail/{slug}",
+	defaults: new { controller = "Movie", action = "Detail" });
+
+app.MapControllerRoute(
 		name: "default",
 		pattern: "{controller=Home}/{action=Index}/{id?}");
 

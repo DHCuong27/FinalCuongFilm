@@ -16,6 +16,8 @@ namespace FinalCuongFilm.MVC.Controllers
 		private readonly IGenreService _genreService;
 		private readonly ICountryService _countryService;
 
+		private readonly ILogger<MovieController> _logger;
+
 		public MovieController(
 			IMovieService movieService,
 			IFavoriteService favoriteService,
@@ -23,7 +25,8 @@ namespace FinalCuongFilm.MVC.Controllers
 			IEpisodeService episodeService,
 			IMediaFileService mediaFileService,
 			IGenreService genreService,
-			ICountryService countryService)
+			ICountryService countryService,
+			ILogger<MovieController> logger) 
 		{
 			_movieService = movieService;
 			_favoriteService = favoriteService;
@@ -32,6 +35,7 @@ namespace FinalCuongFilm.MVC.Controllers
 			_mediaFileService = mediaFileService;
 			_genreService = genreService;
 			_countryService = countryService;
+			_logger = logger; 
 		}
 
 		// GET: /Movies
@@ -92,7 +96,7 @@ namespace FinalCuongFilm.MVC.Controllers
 			return View(movie);
 		}
 
-		// GET: /Movies/Detail/{slug} - Đã hợp nhất từ MovieController
+		// GET: /Movies/Detail/{slug}
 		public async Task<IActionResult> Detail(string slug)
 		{
 			if (string.IsNullOrEmpty(slug))
@@ -172,140 +176,127 @@ namespace FinalCuongFilm.MVC.Controllers
 		[AllowAnonymous]
 		public async Task<IActionResult> Watch(string slug, int? ep = null)
 		{
-			// ✅ LOG để debug
-			Console.WriteLine("========================================");
-			Console.WriteLine($"[WATCH] Action called with slug: {slug}, ep: {ep}");
-			Console.WriteLine("========================================");
+			_logger.LogInformation("=== WATCH ACTION START ===");
+			_logger.LogInformation($"Slug: {slug}, Episode: {ep}");
 
 			if (string.IsNullOrEmpty(slug))
 			{
-				Console.WriteLine("[ERROR] Slug is null or empty");
+				_logger.LogError("Slug is null or empty");
 				TempData["Error"] = "Không tìm thấy phim!";
 				return RedirectToAction("Index", "Home");
 			}
 
 			try
 			{
-				// Get movie by slug
+				// Get all movies
 				var allMovies = await _movieService.GetAllAsync();
-				Console.WriteLine($"[DEBUG] Total movies in database: {allMovies.Count()}");
+				_logger.LogInformation($"Total movies: {allMovies.Count()}");
 
+				// Find movie by slug
 				var movie = allMovies.FirstOrDefault(m =>
-					m.Slug.Equals(slug, StringComparison.OrdinalIgnoreCase) && m.IsActive);
+					m.Slug.Equals(slug, StringComparison.OrdinalIgnoreCase) &&
+					m.IsActive);
 
 				if (movie == null)
 				{
-					Console.WriteLine($"[ERROR] Movie not found with slug: '{slug}'");
-					Console.WriteLine("[DEBUG] Available slugs (first 10):");
-
-					foreach (var m in allMovies.Where(m => m.IsActive).Take(10))
-					{
-						Console.WriteLine($"  - '{m.Slug}' (Title: {m.Title})");
-					}
-
-					TempData["Error"] = $"Không tìm thấy phim với slug: {slug}";
+					_logger.LogError($"Movie not found with slug: {slug}");
+					TempData["Error"] = $"Không tìm thấy phim: {slug}";
 					return RedirectToAction("Index", "Home");
 				}
 
-				Console.WriteLine($"[SUCCESS] Movie found: {movie.Title} (ID: {movie.Id}, Type: {movie.Type})");
+				_logger.LogInformation($"Movie found: {movie.Title} (ID: {movie.Id})");
 
-				// ✅ SET ViewBag NGAY LẬP TỨC
-				ViewBag.Movie = movie;
-
-				FinalCuongFilm.Common.DTOs.MediaFileDto? mediaFile = null;
+				// Initialize variables
+				FinalCuongFilm.Common.DTOs.MediaFileDto? selectedMediaFile = null;
 				FinalCuongFilm.Common.DTOs.EpisodeDto? currentEpisode = null;
-				List<FinalCuongFilm.Common.DTOs.EpisodeDto> episodesList = new();
+				List<FinalCuongFilm.Common.DTOs.EpisodeDto> allEpisodes = new();
 
+				// Handle Series vs Movie
 				if (movie.Type == ApplicationCore.Entities.Enum.MovieType.Series)
 				{
-					Console.WriteLine("[INFO] Processing Series type movie");
+					_logger.LogInformation("Processing SERIES");
 
-					// Get episodes
+					// Get all episodes
 					var episodes = await _episodeService.GetByMovieIdAsync(movie.Id);
-					episodesList = episodes.Where(e => e.IsActive).OrderBy(e => e.EpisodeNumber).ToList();
+					allEpisodes = episodes
+						.Where(e => e.IsActive)
+						.OrderBy(e => e.EpisodeNumber)
+						.ToList();
 
-					Console.WriteLine($"[DEBUG] Found {episodesList.Count} active episodes");
+					_logger.LogInformation($"Found {allEpisodes.Count} episodes");
 
-					if (!episodesList.Any())
+					if (!allEpisodes.Any())
 					{
-						Console.WriteLine("[WARNING] No episodes found for this series");
+						_logger.LogWarning("No episodes found");
 						TempData["Error"] = "Phim chưa có tập nào!";
 						return RedirectToAction("Detail", new { slug });
 					}
 
-					// Get current episode
-					var episodeNumber = ep ?? 1;
-					currentEpisode = episodesList.FirstOrDefault(e => e.EpisodeNumber == episodeNumber);
+					// Determine current episode
+					int targetEpisodeNumber = ep ?? 1;
+					currentEpisode = allEpisodes
+						.FirstOrDefault(e => e.EpisodeNumber == targetEpisodeNumber);
 
 					if (currentEpisode == null)
 					{
-						Console.WriteLine($"[WARNING] Episode {episodeNumber} not found, using first episode");
-						currentEpisode = episodesList.First();
+						_logger.LogWarning($"Episode {targetEpisodeNumber} not found, using first episode");
+						currentEpisode = allEpisodes.First();
 					}
 
-					Console.WriteLine($"[DEBUG] Current episode: #{currentEpisode.EpisodeNumber} - {currentEpisode.Title}");
+					_logger.LogInformation($"Current episode: #{currentEpisode.EpisodeNumber} - {currentEpisode.Title}");
 
-					// Get media file for episode
+					// Get media file for this episode
 					var episodeMediaFiles = await _mediaFileService.GetByEpisodeIdAsync(currentEpisode.Id);
-					mediaFile = episodeMediaFiles.FirstOrDefault(m => m.FileType == "video");
+					selectedMediaFile = episodeMediaFiles
+						.Where(m => m.FileType == "video")
+						.OrderByDescending(m => m.Quality)
+						.FirstOrDefault();
 
-					Console.WriteLine($"[DEBUG] Media files for episode: {episodeMediaFiles.Count()}");
-
-					ViewBag.CurrentEpisode = currentEpisode;
-					ViewBag.Episodes = episodesList;
+					_logger.LogInformation($"Episode has {episodeMediaFiles.Count()} media files");
 				}
 				else
 				{
-					Console.WriteLine("[INFO] Processing Movie type");
+					_logger.LogInformation("Processing MOVIE");
 
 					// Get media file for movie
 					var movieMediaFiles = await _mediaFileService.GetByMovieIdAsync(movie.Id);
-					mediaFile = movieMediaFiles.FirstOrDefault(m => m.FileType == "video");
+					selectedMediaFile = movieMediaFiles
+						.Where(m => m.FileType == "video")
+						.OrderByDescending(m => m.Quality)
+						.FirstOrDefault();
 
-					Console.WriteLine($"[DEBUG] Media files for movie: {movieMediaFiles.Count()}");
+					_logger.LogInformation($"Movie has {movieMediaFiles.Count()} media files");
 				}
 
-				if (mediaFile == null)
+				// Check if media file exists
+				if (selectedMediaFile == null)
 				{
-					Console.WriteLine("[ERROR] No video file found!");
-					TempData["Error"] = "Video chưa được upload! Vui lòng liên hệ Admin.";
+					_logger.LogError("No video media file found!");
+					TempData["Error"] = "Video chưa được upload! Vui lòng thử lại sau.";
 					return RedirectToAction("Detail", new { slug });
 				}
 
-				Console.WriteLine($"[SUCCESS] Media file found: {mediaFile.FileName}");
-				Console.WriteLine($"  - Type: {mediaFile.FileType}");
-				Console.WriteLine($"  - URL: {mediaFile.FileUrl}");
-				Console.WriteLine($"  - Quality: {mediaFile.Quality}");
+				_logger.LogInformation($"Selected media file: {selectedMediaFile.FileName}");
+				_logger.LogInformation($"File URL: {selectedMediaFile.FileUrl}");
+				_logger.LogInformation($"Quality: {selectedMediaFile.Quality}");
 
-				ViewBag.MediaFile = mediaFile;
+				// Set ViewBag data
+				ViewBag.Movie = movie;
+				ViewBag.MediaFile = selectedMediaFile;
+				ViewBag.CurrentEpisode = currentEpisode;
+				ViewBag.Episodes = allEpisodes;
 
-				// ✅ Prepare view model
-				var viewModel = new MovieDetailsViewModel
-				{
-					Movie = movie,
-					Episodes = episodesList
-				};
+				_logger.LogInformation("=== WATCH ACTION SUCCESS - Returning View ===");
 
-				Console.WriteLine("[SUCCESS] Returning Watch view");
-				Console.WriteLine("========================================");
-
-				return View(viewModel);
+				return View();
 			}
 			catch (Exception ex)
 			{
-				Console.WriteLine("========================================");
-				Console.WriteLine($"[EXCEPTION] Error in Watch action:");
-				Console.WriteLine($"  Message: {ex.Message}");
-				Console.WriteLine($"  StackTrace: {ex.StackTrace}");
-				Console.WriteLine("========================================");
-
-				TempData["Error"] = $"Có lỗi xảy ra: {ex.Message}";
+				_logger.LogError(ex, "EXCEPTION in Watch action");
+				TempData["Error"] = $"Lỗi: {ex.Message}";
 				return RedirectToAction("Index", "Home");
 			}
 		}
-
-
-
 
 		// Tùy chọn: Giữ lại phương thức Watch cũ bằng ID nếu cần
 		public async Task<IActionResult> WatchById(Guid id)

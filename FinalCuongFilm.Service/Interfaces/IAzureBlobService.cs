@@ -15,6 +15,7 @@ namespace FinalCuongFilm.Service.Interfaces
 		Task<BlobMetadata> GetMetadataAsync(string blobUrl);
 	}
 
+
 	public class BlobMetadata
 	{
 		public string FileName { get; set; } = string.Empty;

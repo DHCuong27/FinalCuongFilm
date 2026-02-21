@@ -29,188 +29,188 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 			_logger = logger;
 		}
 
-// GET: Admin/MediaUpload/Index
-public async Task<IActionResult> Index(Guid? movieId, Guid? episodeId, string fileType = null)
-{
-IEnumerable<MediaFileDto> mediaFiles;
+		// GET: Admin/MediaUpload/Index
+		public async Task<IActionResult> Index(Guid? movieId, Guid? episodeId, string fileType = null)
+		{
+			IEnumerable<MediaFileDto> mediaFiles;
 
-if (episodeId.HasValue)
-{
-mediaFiles = await _mediaFileService.GetByEpisodeIdAsync(episodeId.Value);
-var episode = await _episodeService.GetByIdAsync(episodeId.Value);
-ViewBag.EpisodeTitle = $"Tập {episode?.EpisodeNumber}: {episode?.Title}";
-ViewBag.EpisodeId = episodeId.Value;
-ViewBag.MovieId = episode?.MovieId;
-}
-else if (movieId.HasValue)
-{
-mediaFiles = await _mediaFileService.GetByMovieIdAsync(movieId.Value);
-var movie = await _movieService.GetByIdAsync(movieId.Value);
-ViewBag.MovieTitle = movie?.Title;
-ViewBag.MovieId = movieId.Value;
-}
-else
-{
-mediaFiles = await _mediaFileService.GetAllAsync();
-}
+			if (episodeId.HasValue)
+			{
+				mediaFiles = await _mediaFileService.GetByEpisodeIdAsync(episodeId.Value);
+				var episode = await _episodeService.GetByIdAsync(episodeId.Value);
+				ViewBag.EpisodeTitle = $"Tập {episode?.EpisodeNumber}: {episode?.Title}";
+				ViewBag.EpisodeId = episodeId.Value;
+				ViewBag.MovieId = episode?.MovieId;
+			}
+			else if (movieId.HasValue)
+			{
+				mediaFiles = await _mediaFileService.GetByMovieIdAsync(movieId.Value);
+				var movie = await _movieService.GetByIdAsync(movieId.Value);
+				ViewBag.MovieTitle = movie?.Title;
+				ViewBag.MovieId = movieId.Value;
+			}
+			else
+			{
+				mediaFiles = await _mediaFileService.GetAllAsync();
+			}
 
-// Filter by file type if specified
-if (!string.IsNullOrEmpty(fileType))
-{
-mediaFiles = mediaFiles.Where(m => m.FileType == fileType);
-}
+			// Filter by file type if specified
+			if (!string.IsNullOrEmpty(fileType))
+			{
+				mediaFiles = mediaFiles.Where(m => m.FileType == fileType);
+			}
 
-ViewBag.FileType = fileType;
-return View(mediaFiles);
-}
+			ViewBag.FileType = fileType;
+			return View(mediaFiles);
+		}
 
-// GET: Admin/MediaUpload/Details/{id}
-public async Task<IActionResult> Details(Guid id)
-{
-var mediaFile = await _mediaFileService.GetByIdAsync(id);
-if (mediaFile == null)
-{
-return NotFound();
-}
+		// GET: Admin/MediaUpload/Details/{id}
+		public async Task<IActionResult> Details(Guid id)
+		{
+			var mediaFile = await _mediaFileService.GetByIdAsync(id);
+			if (mediaFile == null)
+			{
+				return NotFound();
+			}
 
-return View(mediaFile);
-}
+			return View(mediaFile);
+		}
 
-// GET: Admin/MediaUpload/Edit/{id}
-public async Task<IActionResult> Edit(Guid id)
-{
-var mediaFile = await _mediaFileService.GetByIdAsync(id);
-if (mediaFile == null)
-{
-return NotFound();
-}
+		// GET: Admin/MediaUpload/Edit/{id}
+		public async Task<IActionResult> Edit(Guid id)
+		{
+			var mediaFile = await _mediaFileService.GetByIdAsync(id);
+			if (mediaFile == null)
+			{
+				return NotFound();
+			}
 
-var dto = new MediaFileUpdateDto
-{
-Id = mediaFile.Id,
-FileName = mediaFile.FileName,
-FileUrl = mediaFile.FileUrl,
-FilePath = mediaFile.FilePath,
-FileSizeBytes = mediaFile.FileSizeBytes,
-FileType = mediaFile.FileType,
-Quality = mediaFile.Quality,
-Language = mediaFile.Language,
-MovieId = mediaFile.MovieId,
-EpisodeId = mediaFile.EpisodeId
-};
+			var dto = new MediaFileUpdateDto
+			{
+				Id = mediaFile.Id,
+				FileName = mediaFile.FileName,
+				FileUrl = mediaFile.FileUrl,
+				FilePath = mediaFile.FilePath,
+				FileSizeBytes = mediaFile.FileSizeBytes,
+				FileType = mediaFile.FileType,
+				Quality = mediaFile.Quality,
+				Language = mediaFile.Language,
+				MovieId = mediaFile.MovieId,
+				EpisodeId = mediaFile.EpisodeId
+			};
 
-await PopulateDropdowns(mediaFile.MovieId, mediaFile.EpisodeId);
-return View(dto);
-}
+			await PopulateDropdowns(mediaFile.MovieId, mediaFile.EpisodeId);
+			return View(dto);
+		}
 
-// POST: Admin/MediaUpload/Edit/{id}
-[HttpPost]
-[ValidateAntiForgeryToken]
-public async Task<IActionResult> Edit(Guid id, MediaFileUpdateDto dto)
-{
-if (id != dto.Id)
-{
-return NotFound();
-}
+		// POST: Admin/MediaUpload/Edit/{id}
+		[HttpPost]
+		[ValidateAntiForgeryToken]
+		public async Task<IActionResult> Edit(Guid id, MediaFileUpdateDto dto)
+		{
+			if (id != dto.Id)
+			{
+				return NotFound();
+			}
 
-if (ModelState.IsValid)
-{
-try
-{
-await _mediaFileService.UpdateAsync(dto);
-TempData["Success"] = "Cập nhật file thành công!";
+			if (ModelState.IsValid)
+			{
+				try
+				{
+					await _mediaFileService.UpdateAsync(dto);
+					TempData["Success"] = "Cập nhật file thành công!";
 
-return RedirectToAction(nameof(Index), new { movieId = dto.MovieId });
-}
-catch (Exception ex)
-{
-_logger.LogError(ex, "Error updating media file {Id}", id);
-ModelState.AddModelError("", $"Lỗi: {ex.Message}");
-}
-}
+					return RedirectToAction(nameof(Index), new { movieId = dto.MovieId });
+				}
+				catch (Exception ex)
+				{
+					_logger.LogError(ex, "Error updating media file {Id}", id);
+					ModelState.AddModelError("", $"Lỗi: {ex.Message}");
+				}
+			}
 
-await PopulateDropdowns(dto.MovieId, dto.EpisodeId);
-return View(dto);
-}
+			await PopulateDropdowns(dto.MovieId, dto.EpisodeId);
+			return View(dto);
+		}
 
-// GET: Admin/MediaUpload/Delete/{id}
-public async Task<IActionResult> Delete(Guid id)
-{
-var mediaFile = await _mediaFileService.GetByIdAsync(id);
-if (mediaFile == null)
-{
-return NotFound();
-}
+		// GET: Admin/MediaUpload/Delete/{id}
+		public async Task<IActionResult> Delete(Guid id)
+		{
+			var mediaFile = await _mediaFileService.GetByIdAsync(id);
+			if (mediaFile == null)
+			{
+				return NotFound();
+			}
 
-return View(mediaFile);
-}
+			return View(mediaFile);
+		}
 
-// POST: Admin/MediaUpload/Delete/{id}
-[HttpPost, ActionName("Delete")]
-[ValidateAntiForgeryToken]
-public async Task<IActionResult> DeleteConfirmed(Guid id)
-{
-try
-{
-var mediaFile = await _mediaFileService.GetByIdAsync(id);
-if (mediaFile == null)
-{
-return NotFound();
-}
+		// POST: Admin/MediaUpload/Delete/{id}
+		[HttpPost, ActionName("Delete")]
+		[ValidateAntiForgeryToken]
+		public async Task<IActionResult> DeleteConfirmed(Guid id)
+		{
+			try
+			{
+				var mediaFile = await _mediaFileService.GetByIdAsync(id);
+				if (mediaFile == null)
+				{
+					return NotFound();
+				}
 
-// Delete from Azure Blob Storage
-if (!string.IsNullOrEmpty(mediaFile.FileUrl))
-{
-try
-{
-await _azureBlobService.DeleteFileAsync(mediaFile.FileUrl);
-_logger.LogInformation("Deleted file from Azure: {FileUrl}", mediaFile.FileUrl);
-}
-catch (Exception ex)
-{
-_logger.LogWarning(ex, "Failed to delete file from Azure: {FileUrl}", mediaFile.FileUrl);
-// Continue to delete from DB even if Azure deletion fails
-}
-}
+				// Delete from Azure Blob Storage
+				if (!string.IsNullOrEmpty(mediaFile.FileUrl))
+				{
+					try
+					{
+						await _azureBlobService.DeleteFileAsync(mediaFile.FileUrl);
+						_logger.LogInformation("Deleted file from Azure: {FileUrl}", mediaFile.FileUrl);
+					}
+					catch (Exception ex)
+					{
+						_logger.LogWarning(ex, "Failed to delete file from Azure: {FileUrl}", mediaFile.FileUrl);
+						// Continue to delete from DB even if Azure deletion fails
+					}
+				}
 
-// Delete from database
-await _mediaFileService.DeleteAsync(id);
+				// Delete from database
+				await _mediaFileService.DeleteAsync(id);
 
-TempData["Success"] = "Xóa file thành công!";
+				TempData["Success"] = "Xóa file thành công!";
 
-return RedirectToAction(nameof(Index), new { movieId = mediaFile.MovieId });
-}
-catch (Exception ex)
-{
-_logger.LogError(ex, "Error deleting media file {Id}", id);
-TempData["Error"] = $"Lỗi khi xóa file: {ex.Message}";
-return RedirectToAction(nameof(Delete), new { id });
-}
-}
+				return RedirectToAction(nameof(Index), new { movieId = mediaFile.MovieId });
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error deleting media file {Id}", id);
+				TempData["Error"] = $"Lỗi khi xóa file: {ex.Message}";
+				return RedirectToAction(nameof(Delete), new { id });
+			}
+		}
 
-private async Task PopulateDropdowns(Guid? movieId, Guid? episodeId)
-{
-var movies = await _movieService.GetAllAsync();
-ViewBag.MovieId = new Microsoft.AspNetCore.Mvc.Rendering.SelectList(movies, "Id", "Title", movieId);
+		private async Task PopulateDropdowns(Guid? movieId, Guid? episodeId)
+		{
+			var movies = await _movieService.GetAllAsync();
+			ViewBag.MovieId = new Microsoft.AspNetCore.Mvc.Rendering.SelectList(movies, "Id", "Title", movieId);
 
-if (movieId.HasValue)
-{
-var episodes = await _episodeService.GetByMovieIdAsync(movieId.Value);
-ViewBag.EpisodeId = new Microsoft.AspNetCore.Mvc.Rendering.SelectList(
-episodes.Select(e => new {
-e.Id,
-Display = $"Tập {e.EpisodeNumber}: {e.Title}"
-}),
-"Id",
-"Display",
-episodeId
-);
-}
-else
-{
-ViewBag.EpisodeId = new Microsoft.AspNetCore.Mvc.Rendering.SelectList(System.Linq.Enumerable.Empty<object>(), "Id", "Display");
-}
-}
+			if (movieId.HasValue)
+			{
+				var episodes = await _episodeService.GetByMovieIdAsync(movieId.Value);
+				ViewBag.EpisodeId = new Microsoft.AspNetCore.Mvc.Rendering.SelectList(
+				episodes.Select(e => new {
+					e.Id,
+					Display = $"Tập {e.EpisodeNumber}: {e.Title}"
+				}),
+				"Id",
+				"Display",
+				episodeId
+				);
+			}
+			else
+			{
+				ViewBag.EpisodeId = new Microsoft.AspNetCore.Mvc.Rendering.SelectList(System.Linq.Enumerable.Empty<object>(), "Id", "Display");
+			}
+		}
 
 
 		private string NormalizeAzureUrl(string url)
