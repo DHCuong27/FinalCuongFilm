@@ -362,19 +362,33 @@
                             </div>
                         </div>
 
-                        <div class="form-group">
+                        <div class="form-group mb-3">
+                            <label class="form-label fw-bold">Phương thức:</label>
+                            <div class="btn-group w-100" role="group">
+                                <input type="radio" class="btn-check" name="uploadMethod" id="uploadFile" checked>
+                                <label class="btn btn-outline-primary" for="uploadFile">Upload File</label>
+                                <input type="radio" class="btn-check" name="uploadMethod" id="uploadUrl">
+                                <label class="btn btn-outline-primary" for="uploadUrl">Nhập URL</label>
+                            </div>
+                        </div>
+
+                        <div id="fileUploadSection" class="form-group">
                             <label>Chọn File Video <span class="text-danger">*</span></label>
                             <div class="custom-file">
                                 <input type="file"
                                        id="videoFile"
                                        class="custom-file-input"
-                                       accept="video/*,.mp4,.mkv,.avi,.webm"
-                                       required>
+                                       accept="video/*,.mp4,.mkv,.avi,.webm">
                                 <label class="custom-file-label" for="videoFile">Chọn video...</label>
                             </div>
                             <small class="form-text text-muted">
                                 Định dạng: MP4, MKV, AVI, WebM. Kích thước tối đa: 5GB
                             </small>
+                        </div>
+
+                        <div id="urlUploadSection" class="form-group mb-3" style="display: none;">
+                            <label for="manualUrl" class="form-label fw-bold">Video URL</label>
+                            <input type="url" class="form-control" id="manualUrl" name="ManualUrl" placeholder="https://...blob.core.windows.net/videos/movie.mp4">
                         </div>
 
                         <div class="form-group">
@@ -425,6 +439,19 @@
     <script>
         $(document).ready(function() {
             console.log('jQuery loaded:', typeof jQuery); // Should show "function"
+
+            // Toggle upload method
+            document.querySelectorAll('input[name="uploadMethod"]').forEach(radio => {
+                radio.addEventListener('change', function() {
+                    if (this.id === 'uploadFile') {
+                        document.getElementById('fileUploadSection').style.display = 'block';
+                        document.getElementById('urlUploadSection').style.display = 'none';
+                    } else {
+                        document.getElementById('fileUploadSection').style.display = 'none';
+                        document.getElementById('urlUploadSection').style.display = 'block';
+                    }
+                });
+            });
 
             // Test Connection button
             window.testConnection = function() {
@@ -488,23 +515,42 @@
                 e.preventDefault();
 
                 const movieId = $('#movieSelect').val();
-                const videoFile = $('#videoFile')[0].files[0];
                 const quality = $('#qualitySelect').val();
                 const episodeNumber = $('#episodeNumber').val();
+                const useUrl = document.getElementById('uploadUrl').checked;
+                const manualUrl = $('#manualUrl').val();
+                const videoFile = $('#videoFile')[0].files[0];
 
-                if (!movieId || !videoFile) {
-                    alert('Vui lòng chọn phim và file video');
+                if (!movieId) {
+                    alert('Vui lòng chọn phim');
                     return;
+                }
+
+                if (useUrl) {
+                    if (!manualUrl) {
+                        alert('Vui lòng nhập URL video');
+                        return;
+                    }
+                } else {
+                    if (!videoFile) {
+                        alert('Vui lòng chọn file video');
+                        return;
+                    }
                 }
 
                 const formData = new FormData();
                 formData.append('MovieId', movieId);
-                formData.append('VideoFile', videoFile);
                 formData.append('Quality', quality);
                 formData.append('__RequestVerificationToken', $('input[name="__RequestVerificationToken"]').val());
 
                 if (episodeNumber) {
                     formData.append('EpisodeNumber', episodeNumber);
+                }
+
+                if (useUrl) {
+                    formData.append('ManualUrl', manualUrl);
+                } else {
+                    formData.append('VideoFile', videoFile);
                 }
 
                 uploadVideo(formData);
