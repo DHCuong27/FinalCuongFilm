@@ -46,7 +46,7 @@ namespace FinalCuongFilm.MVC.Controllers
 		}
 
 		// GET: /Movies/Details/{id} - Giữ lại cho API hoặc back-office
-		public async Task<IActionResult> Details(Guid id)
+		public async Task<IActionResult> Detail(Guid id)
 		{
 			var movie = await _movieService.GetByIdAsync(id);
 			if (movie == null || !movie.IsActive)
