@@ -45,57 +45,6 @@ namespace FinalCuongFilm.MVC.Controllers
 			return View(movies.Where(m => m.IsActive));
 		}
 
-		// GET: /Movies/Details/{id} - Giữ lại cho API hoặc back-office
-		public async Task<IActionResult> Detail(Guid id)
-		{
-			var movie = await _movieService.GetByIdAsync(id);
-			if (movie == null || !movie.IsActive)
-			{
-				return NotFound();
-			}
-
-			// Get user ID
-			var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-			// Check if user favorited this movie
-			ViewBag.IsFavorited = false;
-			if (userId != null)
-			{
-				ViewBag.IsFavorited = await _favoriteService.IsFavoriteAsync(userId, id);
-			}
-
-			// Get movie rating and reviews
-			try
-			{
-				var rating = await _reviewService.GetMovieRatingAsync(id);
-				ViewBag.Rating = rating;
-			}
-			catch
-			{
-				ViewBag.Rating = null;
-			}
-
-			// Get approved reviews
-			var reviews = await _reviewService.GetMovieReviewsAsync(movie.Id, approvedOnly: false);
-			ViewBag.Reviews = reviews.Take(5);
-
-			// Check if user already reviewed
-			ViewBag.UserReview = null;
-			if (userId != null)
-			{
-				ViewBag.UserReview = await _reviewService.GetUserReviewForMovieAsync(userId, id);
-			}
-
-			// Get episodes (if series)
-			if (movie.Type == ApplicationCore.Entities.Enum.MovieType.Series)
-			{
-				var episodes = await _episodeService.GetByMovieIdAsync(id);
-				ViewBag.Episodes = episodes.Where(e => e.IsActive).OrderBy(e => e.EpisodeNumber);
-			}
-
-			return View(movie);
-		}
-
 		// GET: /Movies/Detail/{slug}
 		public async Task<IActionResult> Detail(string slug)
 		{
