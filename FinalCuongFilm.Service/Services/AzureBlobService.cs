@@ -36,12 +36,12 @@ namespace FinalCuongFilm.Service.Services
 		{
 			try
 			{
-				// ✅ Create containers with PUBLIC access
-				await CreateContainerIfNotExistsAsync(VIDEO_CONTAINER, PublicAccessType.Blob);
-				await CreateContainerIfNotExistsAsync(POSTER_CONTAINER, PublicAccessType.Blob);
-				await CreateContainerIfNotExistsAsync(SUBTITLE_CONTAINER, PublicAccessType.Blob);
+				// ✅ FIX: Create PRIVATE containers (no public access)
+				await CreateContainerIfNotExistsAsync(VIDEO_CONTAINER, PublicAccessType.None);
+				await CreateContainerIfNotExistsAsync(POSTER_CONTAINER, PublicAccessType.None);
+				await CreateContainerIfNotExistsAsync(SUBTITLE_CONTAINER, PublicAccessType.None);
 
-				_logger.LogInformation("✅ All containers created/updated with PUBLIC access");
+				_logger.LogInformation("✅ All containers created with PRIVATE access. SAS tokens will be used for access.");
 			}
 			catch (Exception ex)
 			{
@@ -49,7 +49,7 @@ namespace FinalCuongFilm.Service.Services
 			}
 		}
 
-		private async Task CreateContainerIfNotExistsAsync(string containerName, PublicAccessType accessType = PublicAccessType.Blob)
+		private async Task CreateContainerIfNotExistsAsync(string containerName, PublicAccessType accessType = PublicAccessType.None)
 		{
 			try
 			{
@@ -63,9 +63,7 @@ namespace FinalCuongFilm.Service.Services
 				}
 				else
 				{
-					// Container exists, update access level
-					await containerClient.SetAccessPolicyAsync(accessType);
-					_logger.LogInformation($"Updated container: {containerName} to access: {accessType}");
+					_logger.LogInformation($"Container already exists: {containerName}");
 				}
 			}
 			catch (Exception ex)
@@ -145,7 +143,10 @@ namespace FinalCuongFilm.Service.Services
 			try
 			{
 				var uri = new Uri(blobUrl);
-				var blobClient = new BlobClient(uri, null);
+				var blobUriBuilder = new BlobUriBuilder(uri);
+
+				var containerClient = _blobServiceClient.GetBlobContainerClient(blobUriBuilder.BlobContainerName);
+				var blobClient = containerClient.GetBlobClient(blobUriBuilder.BlobName);
 
 				if (!await blobClient.ExistsAsync())
 				{
@@ -161,8 +162,8 @@ namespace FinalCuongFilm.Service.Services
 
 				var sasBuilder = new BlobSasBuilder
 				{
-					BlobContainerName = blobClient.BlobContainerName,
-					BlobName = blobClient.Name,
+					BlobContainerName = blobUriBuilder.BlobContainerName,
+					BlobName = blobUriBuilder.BlobName,
 					Resource = "b",
 					StartsOn = DateTimeOffset.UtcNow.AddMinutes(-5),
 					ExpiresOn = DateTimeOffset.UtcNow.AddHours(expiryHours)
@@ -171,7 +172,7 @@ namespace FinalCuongFilm.Service.Services
 				sasBuilder.SetPermissions(BlobSasPermissions.Read);
 
 				var sasUri = blobClient.GenerateSasUri(sasBuilder);
-				_logger.LogInformation($"✅ Generated SAS URL (expires in {expiryHours}h)");
+				_logger.LogInformation($"✅ Generated SAS URL for {blobUriBuilder.BlobName} (expires in {expiryHours}h)");
 
 				return sasUri.ToString();
 			}
@@ -187,9 +188,18 @@ namespace FinalCuongFilm.Service.Services
 			try
 			{
 				var uri = new Uri(blobUrl);
-				var blobClient = new BlobClient(uri, null);
+				var blobUriBuilder = new BlobUriBuilder(uri);
+
+				var containerClient = _blobServiceClient.GetBlobContainerClient(blobUriBuilder.BlobContainerName);
+				var blobClient = containerClient.GetBlobClient(blobUriBuilder.BlobName);
 
 				var response = await blobClient.DeleteIfExistsAsync();
+
+				if (response.Value)
+				{
+					_logger.LogInformation($"Deleted blob: {blobUriBuilder.BlobName}");
+				}
+
 				return response.Value;
 			}
 			catch (Exception ex)
@@ -209,7 +219,11 @@ namespace FinalCuongFilm.Service.Services
 			try
 			{
 				var uri = new Uri(blobUrl);
-				var blobClient = new BlobClient(uri, null);
+				var blobUriBuilder = new BlobUriBuilder(uri);
+
+				var containerClient = _blobServiceClient.GetBlobContainerClient(blobUriBuilder.BlobContainerName);
+				var blobClient = containerClient.GetBlobClient(blobUriBuilder.BlobName);
+
 				return await blobClient.ExistsAsync();
 			}
 			catch
@@ -221,13 +235,16 @@ namespace FinalCuongFilm.Service.Services
 		public async Task<BlobMetadata> GetMetadataAsync(string blobUrl)
 		{
 			var uri = new Uri(blobUrl);
-			var blobClient = new BlobClient(uri, null);
+			var blobUriBuilder = new BlobUriBuilder(uri);
+
+			var containerClient = _blobServiceClient.GetBlobContainerClient(blobUriBuilder.BlobContainerName);
+			var blobClient = containerClient.GetBlobClient(blobUriBuilder.BlobName);
 
 			var properties = await blobClient.GetPropertiesAsync();
 
 			return new BlobMetadata
 			{
-				FileName = Path.GetFileName(uri.LocalPath),
+				FileName = blobUriBuilder.BlobName,
 				FileSize = properties.Value.ContentLength,
 				ContentType = properties.Value.ContentType,
 				LastModified = properties.Value.LastModified.DateTime,

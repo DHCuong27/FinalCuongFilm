@@ -45,7 +45,7 @@
 	});
 
 	// AutoMapper
-	builder.Services.AddAutoMapper(cfg => cfg.AddProfile<MappingProfile>());
+	builder.Services.AddAutoMapper(cfg => cfg.AddMaps(typeof(MappingProfile)));
 
 	//  Services
 	builder.Services.AddScoped<IMovieService, MovieService>();
