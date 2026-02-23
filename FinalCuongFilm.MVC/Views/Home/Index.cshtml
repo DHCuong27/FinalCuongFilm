@@ -555,7 +555,7 @@
                 @foreach (var movie in latestMovies)
                 {
                     <div class="movie-card">
-                        <!--  FIXED: asp-controller="Movie" -->
+                     
                         <a asp-controller="Movie" asp-action="Detail" asp-route-slug="@movie.Slug">
                             <div class="movie-poster">
                                 <img src="@(string.IsNullOrEmpty(movie.PosterUrl) ? "https://via.placeholder.com/300x450/2d2d2d/ffffff?text=No+Poster" : movie.PosterUrl)"
@@ -762,80 +762,5 @@
     </div>
 }
 
-<script>
-    function scrollLeft(section) {
-        const row = document.getElementById(`${section}-movies-row`);
-        if (row) {
-            row.scrollBy({ left: -300, behavior: 'smooth' });
-        }
-    }
-
-    function scrollRight(section) {
-        const row = document.getElementById(`${section}-movies-row`);
-        if (row) {
-            row.scrollBy({ left: 300, behavior: 'smooth' });
-        }
-    }
-
-    document.addEventListener('DOMContentLoaded', function() {
-        const rows = document.querySelectorAll('.movies-row');
-        rows.forEach(row => {
-            row.addEventListener('scroll', function() {
-                const leftArrow = this.parentElement.querySelector('.scroll-left');
-                const rightArrow = this.parentElement.querySelector('.scroll-right');
-
-                if (this.scrollLeft <= 10) {
-                    leftArrow.style.opacity = '0.5';
-                } else {
-                    leftArrow.style.opacity = '1';
-                }
-
-                if (this.scrollWidth - this.clientWidth - this.scrollLeft <= 10) {
-                    rightArrow.style.opacity = '0.5';
-                } else {
-                    rightArrow.style.opacity = '1';
-                }
-            });
-        });
-
-        // Favorite functionality
-        const favoriteButtons = document.querySelectorAll('.favorite-icon-btn');
-        favoriteButtons.forEach(btn => {
-            btn.addEventListener('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                
-                const movieId = this.getAttribute('data-movie-id');
-                const icon = this.querySelector('i');
-                
-                const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
-                
-                fetch('/Favorites/Toggle', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'RequestVerificationToken': token || ''
-                    },
-                    body: JSON.stringify({ movieId: movieId })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        if (data.isFavorite) {
-                            icon.classList.remove('far');
-                            icon.classList.add('fas');
-                            icon.style.color = '#e50914';
-                        } else {
-                            icon.classList.remove('fas');
-                            icon.classList.add('far');
-                            icon.style.color = 'white';
-                        }
-                    }
-                })
-                .catch(error => console.error('Error:', error));
-            });
-        });
-    });
-</script>
 
 @Html.AntiForgeryToken()

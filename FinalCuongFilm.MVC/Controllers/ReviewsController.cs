@@ -31,7 +31,7 @@ namespace FinalCuongFilm.MVC.Controllers
 				return NotFound();
 			}
 
-			// ✅ Lấy tất cả reviews (không cần approve)
+			//  Lấy tất cả reviews (không cần approve)
 			var reviews = await _reviewService.GetMovieReviewsAsync(movieId, approvedOnly: false);
 			var rating = await _reviewService.GetMovieRatingAsync(movieId);
 
@@ -57,7 +57,7 @@ namespace FinalCuongFilm.MVC.Controllers
 			return View(reviews);
 		}
 
-		// ✅ POST: /Reviews/Create - AJAX endpoint
+		//  POST: /Reviews/Create - AJAX endpoint
 		[HttpPost]
 		[Authorize]
 		[ValidateAntiForgeryToken]
@@ -95,7 +95,7 @@ namespace FinalCuongFilm.MVC.Controllers
 				var review = await _reviewService.CreateReviewAsync(userId, dto);
 				_logger.LogInformation("Review created successfully with ID {ReviewId}", review.Id);
 				
-				// ✅ Auto approve ngay lập tức
+				//  Auto approve ngay lập tức
 				await _reviewService.ApproveReviewAsync(review.Id);
 				_logger.LogInformation("Review {ReviewId} auto-approved", review.Id);
 				
@@ -199,7 +199,7 @@ namespace FinalCuongFilm.MVC.Controllers
 					var result = await _reviewService.UpdateReviewAsync(userId, dto);
 					if (result)
 					{
-						// ✅ Auto approve lại sau khi update
+						//  Auto approve lại sau khi update
 						await _reviewService.ApproveReviewAsync(id);
 						
 						TempData["Success"] = "Cập nhật đánh giá thành công!";
@@ -222,7 +222,7 @@ namespace FinalCuongFilm.MVC.Controllers
 			return View(dto);
 		}
 
-		// ✅ POST: /Reviews/Delete/{id} - AJAX endpoint
+		//  POST: /Reviews/Delete/{id} - AJAX endpoint
 		[HttpPost]
 		[Authorize]
 		[ValidateAntiForgeryToken]

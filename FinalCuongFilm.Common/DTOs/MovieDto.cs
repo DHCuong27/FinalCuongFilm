@@ -23,6 +23,8 @@ namespace FinalCuongFilm.Common.DTOs
 		public string? CountryName { get; set; }
 		public string? LanguageName { get; set; }
 
+		public string? GenreName { get; set; }
+
 		// Collections cho many-to-many
 		public List<Guid> SelectedActorIds { get; set; } = new();
 		public List<Guid> SelectedGenreIds { get; set; } = new();

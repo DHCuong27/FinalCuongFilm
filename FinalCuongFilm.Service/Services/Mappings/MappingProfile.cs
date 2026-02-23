@@ -14,7 +14,7 @@ namespace FinalCuongFilm.Service.Mappings
 			CreateMap<Movie, MovieDto>()
 				.ForMember(dest => dest.CountryName, opt => opt.MapFrom(src => src.Country != null ? src.Country.Name : null))
 				.ForMember(dest => dest.LanguageName, opt => opt.MapFrom(src => src.Language != null ? src.Language.Name : null))
-				//.ForMember(dest => dest.GenreNames, opt => opt.MapFrom(src => src.Movie_Genres.Select(mg => mg.Genre.Name).ToList()))
+				.ForMember(dest => dest.GenreName, opt => opt.MapFrom(src => src.Movie_Genres.Select(mg => mg.Genre.Name).ToList()))
 				.ForMember(dest => dest.SelectedGenreIds, opt => opt.MapFrom(src => src.Movie_Genres.Select(mg => mg.GenreId).ToList()));
 
 			// MovieDto → Movie
@@ -118,9 +118,9 @@ namespace FinalCuongFilm.Service.Mappings
 			//CreateMap<Tag, TagDto>().ReverseMap();
 
 			//  ADD: TagCreateDto → Tag
-			//CreateMap<TagCreateDto, Tag>()
-			//	.ForMember(dest => dest.Id, opt => opt.Ignore())
-			//	.ForMember(dest => dest.Movie_Tags, opt => opt.Ignore());
+			CreateMap<TagCreateDto, Tag>()
+				.ForMember(dest => dest.Id, opt => opt.Ignore())
+				.ForMember(dest => dest.Movie_Tags, opt => opt.Ignore());
 
 			// ===== Review Mappings =====
 			CreateMap<Review, ReviewDto>().ReverseMap();
