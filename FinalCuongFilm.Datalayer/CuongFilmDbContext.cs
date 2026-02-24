@@ -11,24 +11,24 @@ namespace FinalCuongFilm.DataLayer
 		{
 		}
 
-		//  Core tables 
+		// Core tables 
 		public DbSet<Movie> Movies { get; set; }
 		public DbSet<Episode> Episodes { get; set; }
 		public DbSet<MediaFile> MediaFiles { get; set; }
 
-		//  Metadata 
+		// Metadata 
 		public DbSet<Actor> Actors { get; set; }
 		public DbSet<Genre> Genres { get; set; }
 		public DbSet<Tag> Tags { get; set; }
 		public DbSet<Country> Countries { get; set; }
 		public DbSet<Language> Languages { get; set; }
 
-		//  Many-to-many 
-		public DbSet<Movie_Actor> Movie_Actors { get; set; }
-		public DbSet<Movie_Genre> Movie_Genres { get; set; }
-		public DbSet<Movie_Tag> Movie_Tags { get; set; }
+		// Many-to-many 
+		public DbSet<MovieActor> Movie_Actors { get; set; }
+		public DbSet<MovieGenre> Movie_Genres { get; set; }
+		public DbSet<MovieTag> Movie_Tags { get; set; }
 
-		//  User interaction 
+		// User interaction 
 		public DbSet<Review> Reviews { get; set; }
 		public DbSet<Favorite> Favorites { get; set; }
 		public DbSet<WatchHistory> WatchHistories { get; set; }
@@ -38,7 +38,7 @@ namespace FinalCuongFilm.DataLayer
 		{
 			base.OnModelCreating(modelBuilder);
 
-			//  Movie Configuration 
+			// Movie Configuration 
 			modelBuilder.Entity<Movie>(entity =>
 			{
 				entity.ToTable("Movies");
@@ -82,25 +82,23 @@ namespace FinalCuongFilm.DataLayer
 					.HasForeignKey(m => m.LanguageId)
 					.OnDelete(DeleteBehavior.Restrict);
 
-		
+				// Xóa Movie -> Xóa Episodes (Cascade là hợp lý vì không bị lặp vòng)
 				entity.HasMany(m => m.Episodes)
 					.WithOne(e => e.Movie)
 					.HasForeignKey(e => e.MovieId)
 					.OnDelete(DeleteBehavior.Cascade);
 
-			
+				// FIXED: Giữ ClientSetNull để tránh lỗi Multiple Cascade Paths với SQL Server
 				entity.HasMany(m => m.MediaFiles)
 					.WithOne(mf => mf.Movie)
 					.HasForeignKey(mf => mf.MovieId)
 					.OnDelete(DeleteBehavior.ClientSetNull);
 
-				
 				entity.HasMany(m => m.Favorites)
 					.WithOne(f => f.Movie)
 					.HasForeignKey(f => f.MovieId)
 					.OnDelete(DeleteBehavior.Cascade);
 
-			
 				entity.HasMany(m => m.Reviews)
 					.WithOne(r => r.Movie)
 					.HasForeignKey(r => r.MovieId)
@@ -115,7 +113,7 @@ namespace FinalCuongFilm.DataLayer
 				entity.HasIndex(x => x.ViewCount);
 			});
 
-			//  Episode Configuration 
+			// Episode Configuration 
 			modelBuilder.Entity<Episode>(entity =>
 			{
 				entity.ToTable("Episodes");
@@ -141,7 +139,7 @@ namespace FinalCuongFilm.DataLayer
 				entity.Property(e => e.CreatedAt)
 					.HasDefaultValueSql("GETUTCDATE()");
 
-			
+				// FIXED: Giữ ClientSetNull để tránh lỗi Multiple Cascade Paths với SQL Server
 				entity.HasMany(e => e.MediaFiles)
 					.WithOne(mf => mf.Episode)
 					.HasForeignKey(mf => mf.EpisodeId)
@@ -156,7 +154,7 @@ namespace FinalCuongFilm.DataLayer
 				entity.HasIndex(e => e.IsActive);
 			});
 
-			//  MediaFile Configuration 
+			// MediaFile Configuration 
 			modelBuilder.Entity<MediaFile>(entity =>
 			{
 				entity.ToTable("MediaFiles");
@@ -197,11 +195,9 @@ namespace FinalCuongFilm.DataLayer
 				entity.HasIndex(m => m.MovieId);
 				entity.HasIndex(m => m.EpisodeId);
 				entity.HasIndex(m => m.FileType);
-
-				// NOTE: Relationships already configured in Movie and Episode
 			});
 
-			//  Actor Configuration 
+			// Actor Configuration 
 			modelBuilder.Entity<Actor>(entity =>
 			{
 				entity.ToTable("Actors");
@@ -228,7 +224,7 @@ namespace FinalCuongFilm.DataLayer
 					.IsUnique();
 			});
 
-			//  Country Configuration 
+			// Country Configuration 
 			modelBuilder.Entity<Country>(entity =>
 			{
 				entity.ToTable("Countries");
@@ -251,7 +247,7 @@ namespace FinalCuongFilm.DataLayer
 				entity.HasIndex(x => x.IsoCode);
 			});
 
-			//  Genre Configuration 
+			// Genre Configuration 
 			modelBuilder.Entity<Genre>(entity =>
 			{
 				entity.ToTable("Genres");
@@ -272,7 +268,7 @@ namespace FinalCuongFilm.DataLayer
 					.IsUnique();
 			});
 
-			//  Language Configuration 
+			// Language Configuration 
 			modelBuilder.Entity<Language>(entity =>
 			{
 				entity.ToTable("Languages");
@@ -290,7 +286,7 @@ namespace FinalCuongFilm.DataLayer
 					.IsUnique();
 			});
 
-			//  Tag Configuration 
+			// Tag Configuration 
 			modelBuilder.Entity<Tag>(entity =>
 			{
 				entity.ToTable("Tags");
@@ -308,7 +304,7 @@ namespace FinalCuongFilm.DataLayer
 					.IsUnique();
 			});
 
-			//  Favorite Configuration 
+			// Favorite Configuration 
 			modelBuilder.Entity<Favorite>(entity =>
 			{
 				entity.ToTable("Favorites");
@@ -321,17 +317,14 @@ namespace FinalCuongFilm.DataLayer
 				entity.Property(f => f.CreatedAt)
 					.HasDefaultValueSql("GETUTCDATE()");
 
-			
 				entity.HasIndex(f => new { f.UserId, f.MovieId })
 					.IsUnique();
 
 				entity.HasIndex(f => f.UserId);
 				entity.HasIndex(f => f.MovieId);
-
-		
 			});
 
-			//  Review Configuration 
+			// Review Configuration 
 			modelBuilder.Entity<Review>(entity =>
 			{
 				entity.ToTable("Reviews");
@@ -358,12 +351,9 @@ namespace FinalCuongFilm.DataLayer
 				entity.HasIndex(r => r.Rating);
 				entity.HasIndex(r => r.IsApproved);
 				entity.HasIndex(r => r.CreatedAt);
-
-			
 			});
 
-			//  WatchHistory Configuration 
-			
+			// WatchHistory Configuration 
 			modelBuilder.Entity<WatchHistory>(entity =>
 			{
 				entity.ToTable("WatchHistories");
@@ -377,7 +367,7 @@ namespace FinalCuongFilm.DataLayer
 				entity.HasIndex(x => x.WatchedAt);
 			});
 
-			//  SearchSuggestion Configuration 
+			// SearchSuggestion Configuration 
 			modelBuilder.Entity<SearchSuggestion>(entity =>
 			{
 				entity.ToTable("SearchSuggestions");
@@ -394,8 +384,8 @@ namespace FinalCuongFilm.DataLayer
 				entity.HasIndex(x => x.CreatedAt);
 			});
 
-			//  Many-to-many: Movie_Actor 
-			modelBuilder.Entity<Movie_Actor>(entity =>
+			// Many-to-many: Movie_Actor 
+			modelBuilder.Entity<MovieActor>(entity =>
 			{
 				entity.ToTable("Movie_Actors");
 
@@ -417,8 +407,8 @@ namespace FinalCuongFilm.DataLayer
 				entity.HasIndex(x => x.ActorId);
 			});
 
-			//  Many-to-many: Movie_Genre 
-			modelBuilder.Entity<Movie_Genre>(entity =>
+			// Many-to-many: Movie_Genre 
+			modelBuilder.Entity<MovieGenre>(entity =>
 			{
 				entity.ToTable("Movie_Genres");
 
@@ -440,8 +430,8 @@ namespace FinalCuongFilm.DataLayer
 				entity.HasIndex(x => x.GenreId);
 			});
 
-			//  Many-to-many: Movie_Tag 
-			modelBuilder.Entity<Movie_Tag>(entity =>
+			// Many-to-many: Movie_Tag 
+			modelBuilder.Entity<MovieTag>(entity =>
 			{
 				entity.ToTable("Movie_Tags");
 

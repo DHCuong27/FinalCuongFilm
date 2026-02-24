@@ -4,6 +4,7 @@ using FinalCuongFilm.DataLayer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FinalCuongFilm.Datalayer.Migrations
 {
     [DbContext(typeof(CuongFilmDbContext))]
-    partial class CuongFilmDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260223082749_FixDeleteBehavior")]
+    partial class FixDeleteBehavior
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -372,7 +375,7 @@ namespace FinalCuongFilm.Datalayer.Migrations
                     b.ToTable("Movies", (string)null);
                 });
 
-            modelBuilder.Entity("FinalCuongFilm.ApplicationCore.Entities.MovieActor", b =>
+            modelBuilder.Entity("FinalCuongFilm.ApplicationCore.Entities.Movie_Actor", b =>
                 {
                     b.Property<Guid>("MovieId")
                         .HasColumnType("uniqueidentifier");
@@ -389,7 +392,7 @@ namespace FinalCuongFilm.Datalayer.Migrations
                     b.ToTable("Movie_Actors", (string)null);
                 });
 
-            modelBuilder.Entity("FinalCuongFilm.ApplicationCore.Entities.MovieGenre", b =>
+            modelBuilder.Entity("FinalCuongFilm.ApplicationCore.Entities.Movie_Genre", b =>
                 {
                     b.Property<Guid>("MovieId")
                         .HasColumnType("uniqueidentifier");
@@ -406,7 +409,7 @@ namespace FinalCuongFilm.Datalayer.Migrations
                     b.ToTable("Movie_Genres", (string)null);
                 });
 
-            modelBuilder.Entity("FinalCuongFilm.ApplicationCore.Entities.MovieTag", b =>
+            modelBuilder.Entity("FinalCuongFilm.ApplicationCore.Entities.Movie_Tag", b =>
                 {
                     b.Property<Guid>("MovieId")
                         .HasColumnType("uniqueidentifier");
@@ -603,7 +606,7 @@ namespace FinalCuongFilm.Datalayer.Migrations
                     b.Navigation("Language");
                 });
 
-            modelBuilder.Entity("FinalCuongFilm.ApplicationCore.Entities.MovieActor", b =>
+            modelBuilder.Entity("FinalCuongFilm.ApplicationCore.Entities.Movie_Actor", b =>
                 {
                     b.HasOne("FinalCuongFilm.ApplicationCore.Entities.Actor", "Actor")
                         .WithMany("Movie_Actors")
@@ -622,7 +625,7 @@ namespace FinalCuongFilm.Datalayer.Migrations
                     b.Navigation("Movie");
                 });
 
-            modelBuilder.Entity("FinalCuongFilm.ApplicationCore.Entities.MovieGenre", b =>
+            modelBuilder.Entity("FinalCuongFilm.ApplicationCore.Entities.Movie_Genre", b =>
                 {
                     b.HasOne("FinalCuongFilm.ApplicationCore.Entities.Genre", "Genre")
                         .WithMany("Movie_Genres")
@@ -641,7 +644,7 @@ namespace FinalCuongFilm.Datalayer.Migrations
                     b.Navigation("Movie");
                 });
 
-            modelBuilder.Entity("FinalCuongFilm.ApplicationCore.Entities.MovieTag", b =>
+            modelBuilder.Entity("FinalCuongFilm.ApplicationCore.Entities.Movie_Tag", b =>
                 {
                     b.HasOne("FinalCuongFilm.ApplicationCore.Entities.Movie", "Movie")
                         .WithMany("Movie_Tags")

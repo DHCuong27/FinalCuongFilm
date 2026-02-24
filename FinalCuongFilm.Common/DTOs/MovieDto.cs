@@ -33,6 +33,7 @@ namespace FinalCuongFilm.Common.DTOs
 	public class MovieCreateDto
 	{
 		public string Title { get; set; } = string.Empty;
+		public string? Slug { get; set; }
 		public string? Description { get; set; }
 		public int? ReleaseYear { get; set; }
 		public int? DurationMinutes { get; set; }
