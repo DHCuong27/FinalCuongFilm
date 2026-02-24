@@ -38,9 +38,9 @@ namespace FinalCuongFilm.ApplicationCore.Entities
 		public Country? Country { get; set; } 
 
 		public ICollection<Episode> Episodes { get; set; } = new List<Episode>();
-		public ICollection<Movie_Actor> Movie_Actors { get; set; } = new List<Movie_Actor>();
-		public ICollection<Movie_Genre> Movie_Genres { get; set; } = new List<Movie_Genre>();
-		public ICollection<Movie_Tag> Movie_Tags { get; set; } = new List<Movie_Tag>();
+		public ICollection<MovieActor> Movie_Actors { get; set; } = new List<MovieActor>();
+		public ICollection<MovieGenre> Movie_Genres { get; set; } = new List<MovieGenre>();
+		public ICollection<MovieTag> Movie_Tags { get; set; } = new List<MovieTag>();
 		public ICollection<Review> Reviews { get; set; } = new List<Review>();
 		public ICollection<MediaFile> MediaFiles { get; set; } = new List<MediaFile>();
 		 public ICollection<Favorite> Favorites { get; set; } = new List<Favorite>();

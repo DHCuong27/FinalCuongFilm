@@ -7,16 +7,15 @@ using System.Threading.Tasks;
 
 namespace FinalCuongFilm.ApplicationCore.Entities
 {
-	public class Movie_Actor
+	public class MovieGenre
 	{
-		
 		public Guid MovieId { get; set; }
 		[ForeignKey("MovieId")]
-		public Movie? Movie { get; set; } 
+		public Movie? Movie { get; set; }
 
-		public Guid ActorId { get; set; }
-		[ForeignKey("ActorId")]
-		public Actor? Actor { get; set; } 
+		public Guid GenreId { get; set; }
+		[ForeignKey("GenreId")]
+		public Genre? Genre { get; set; }
 	}
 
 

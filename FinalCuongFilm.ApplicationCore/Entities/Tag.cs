@@ -14,6 +14,6 @@ namespace FinalCuongFilm.ApplicationCore.Entities
 		public string Name { get; set; } = string.Empty;
 		public string Slug { get; set; } = string.Empty!;
 
-		public ICollection<Movie_Tag> Movie_Tags { get; set; } = new List<Movie_Tag>();
+		public ICollection<MovieTag> Movie_Tags { get; set; } = new List<MovieTag>();
 	}
 }

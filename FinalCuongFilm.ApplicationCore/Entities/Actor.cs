@@ -23,6 +23,6 @@ namespace FinalCuongFilm.ApplicationCore.Entities
 		public string? Gender { get; set; }
 
 		//public ICollection<Movie> Movies { get; set; } = new List<Movie>();
-		public ICollection<Movie_Actor> Movie_Actors { get; set; } = new List<Movie_Actor>();
+		public ICollection<MovieActor> Movie_Actors { get; set; } = new List<MovieActor>();
 	}
 }
