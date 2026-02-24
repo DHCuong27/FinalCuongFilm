@@ -100,23 +100,11 @@ app.UseAuthorization();
 
 app.MapRazorPages();
 
-//  AREA ROUTES FIRST
 app.MapControllerRoute(
 	name: "areas",
 	pattern: "{area:exists}/{controller=Admin}/{action=Index}/{id?}");
 
-//  MOVIE CUSTOM ROUTES - MUST BE BEFORE DEFAULT!
-app.MapControllerRoute(
-	name: "movieWatch",
-	pattern: "Movie/Watch/{slug}",
-	defaults: new { controller = "Movie", action = "Watch" });
 
-app.MapControllerRoute(
-	name: "movieDetail",
-	pattern: "Movie/Detail/{slug}",
-	defaults: new { controller = "Movie", action = "Detail" });
-
-//  DEFAULT ROUTE - MUST BE LAST!
 app.MapControllerRoute(
 	name: "default",
 	pattern: "{controller=Home}/{action=Index}/{id?}");

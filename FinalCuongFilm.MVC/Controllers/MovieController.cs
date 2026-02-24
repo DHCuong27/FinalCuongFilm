@@ -125,13 +125,13 @@ namespace FinalCuongFilm.MVC.Controllers
 		[AllowAnonymous]
 		public async Task<IActionResult> Watch(string slug, int? ep = null)
 		{
-			_logger.LogInformation("=== WATCH ACTION START ===");
+			_logger.LogInformation(" WATCH ACTION START ");
 			_logger.LogInformation($"Slug: {slug}, Episode: {ep}");
 
 			if (string.IsNullOrEmpty(slug))
 			{
 				_logger.LogError("Slug is null or empty");
-				TempData["Error"] = "Không tìm thấy phim!";
+				TempData["Error"] = "Movie Not Found!";
 				return RedirectToAction("Index", "Home");
 			}
 

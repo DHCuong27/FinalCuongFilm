@@ -82,7 +82,7 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 				}
 				catch (Exception ex)
 				{
-					// ✅ LOG LỖI CHUNG
+					//  LOG LỖI CHUNG
 					var innerException = ex.InnerException?.Message ?? ex.Message;
 					ModelState.AddModelError("", $"Lỗi: {innerException}");
 

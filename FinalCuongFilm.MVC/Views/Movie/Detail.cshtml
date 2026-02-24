@@ -1,4 +1,5 @@
-﻿@model FinalCuongFilm.MVC.Models.ViewModels.MovieDetailsViewModel
+﻿@using FinalCuongFilm.ApplicationCore.Entities
+@model FinalCuongFilm.MVC.Models.ViewModels.MovieDetailsViewModel
 @using static FinalCuongFilm.ApplicationCore.Entities.Enum
 
 @{
@@ -959,7 +960,7 @@
                 }
 
                 <div class="hero-actions">
-                    <!-- ✅ NÚT HERO - ĐÚNG FORMAT -->
+                    <!--  NÚT HERO - ĐÚNG FORMAT -->
                     <a href="/Movie/Watch/@Model.Movie.Slug"
                        class="btn-hero btn-hero-primary">
                         <i class="fas fa-play"></i>
@@ -997,54 +998,6 @@
         </div>
     </div>
 </div>
-
-<!-- Main Container -->
-<div class="movie-container">
-    <div class="movie-layout">
-        <!-- Left Sidebar -->
-        <div class="sidebar-column">
-            <!-- Quick Actions -->
-            <div class="sidebar-section">
-                <h3 class="sidebar-title">
-                    <i class="fas fa-bolt"></i>
-                    Thao tác nhanh
-                </h3>
-                <div class="quick-actions">
-                    <!-- ✅ NÚT SIDEBAR - ĐÚNG FORMAT -->
-                    <a href="/Movie/Watch/@Model.Movie.Slug"
-                       class="btn-action btn-watch">
-                        <i class="fas fa-play"></i>
-                        Xem Ngay
-                    </a>
-
-                    @if (!string.IsNullOrEmpty(Model.Movie.TrailerUrl))
-                    {
-                        <a href="@Model.Movie.TrailerUrl" target="_blank" class="btn-action btn-outline">
-                            <i class="fab fa-youtube"></i>
-                            Trailer
-                        </a>
-                    }
-
-                    @if (User.Identity?.IsAuthenticated == true)
-                    {
-                        <button type="button"
-                                class="btn-action btn-outline favorite-toggle-btn-sidebar @(isFavorited ? "active" : "")"
-                                data-movie-id="@Model.Movie.Id"
-                                data-is-favorited="@isFavorited.ToString().ToLower()">
-                            <i class="@(isFavorited ? "fas" : "far") fa-heart"></i>
-                            <span>@(isFavorited ? "Đã yêu thích" : "Yêu thích")</span>
-                        </button>
-                    }
-                    else
-                    {
-                        <a href="/Identity/Account/Login?returnUrl=@Uri.EscapeDataString(currentUrl)"
-                           class="btn-action btn-outline">
-                            <i class="far fa-heart"></i>
-                            Yêu thích
-                        </a>
-                    }
-                </div>
-            </div>
 
             <!-- Movie Info -->
             <div class="sidebar-section">
@@ -1214,11 +1167,11 @@
                         <div class="episodes-list">
                             @foreach (var episode in Model.Episodes)
                             {
-                                <!-- ✅ EPISODE LINK - ĐÚNG FORMAT -->
-                                <a href="/Movie/Watch/@Model.Movie.Slug?ep=@episode.EpisodeNumber"
-                                   class="episode-item">
+                                <!--  EPISODE LINK - ĐÚNG FORMAT -->
+                                
+                                          <a asp-controller="Movie" asp-action="Watch" asp-route-slug="@Model.Movie.Slug" class="episode-item">
                                     <div class="episode-number">@episode.EpisodeNumber</div>
-
+                                    
                                     <div class="episode-thumb">
                                         <i class="fas fa-play-circle"></i>
                                     </div>
@@ -1446,13 +1399,12 @@
                 </div>
             }
         </div>
-    </div>
-</div>
+
 
 @section Scripts {
     <script>
         $(document).ready(function() {
-            console.log('✅ Detail page loaded - AJAX review enabled');
+            console.log(' Detail page loaded - AJAX review enabled');
 
             // DEBUG: Log watch buttons
             const watchButtons = $('a[href*="Watch"]');
@@ -1693,4 +1645,4 @@
     </script>
 }
 
-@Html.AntiForgeryToken()
+@Html.AntiForgeryToken()s

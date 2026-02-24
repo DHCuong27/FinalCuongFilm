@@ -8,8 +8,11 @@
 <html>
 <head>
     <title>@ViewData["Title"]</title>
+</head>
+
+<body>
     <style>
-       
+
         * {
             margin: 0;
             padding: 0;
@@ -115,55 +118,47 @@
 
         /* Responsive */
         @@media (max-width: 768px) {
-            body
+            body {
+                padding: 10px;
+            }
 
-        {
-            padding: 10px;
-        }
+            .container {
+                padding: 20px;
+                border-radius: 6px;
+            }
 
-        .container {
-            padding: 20px;
-            border-radius: 6px;
-        }
+            .details-grid {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
 
-        .details-grid {
-            grid-template-columns: 1fr;
-            gap: 10px;
-        }
+            .detail-label {
+                text-align: left;
+                padding-right: 0;
+                font-weight: 600;
+                color: #444;
+            }
 
-        .detail-label {
-            text-align: left;
-            padding-right: 0;
-            font-weight: 600;
-            color: #444;
-        }
+            .actions {
+                flex-direction: column;
+            }
 
-        .actions {
-            flex-direction: column;
-        }
-
-        .btn {
-            width: 100%;
-            text-align: center;
-        }
-
+            .btn {
+                width: 100%;
+                text-align: center;
+            }
         }
 
         @@media (max-width: 480px) {
-            .container
+            .container {
+                padding: 15px;
+            }
 
-        {
-            padding: 15px;
-        }
-
-        .header h1 {
-            font-size: 20px;
-        }
-
+            .header h1 {
+                font-size: 20px;
+            }
         }
     </style>
-</head>
-<body>
     <div class="container">
         <div class="header">
             <h1>@Html.DisplayFor(model => model.Name)</h1>

@@ -235,6 +235,15 @@
 
                 <div class="form-grid-full">
                     <div class="form-group">
+                        <label class="form-label">Slug</label>
+                        <input asp-for="Slug" class="form-control" type="text"  />
+                        <span asp-validation-for="Slug" class="text-danger"></span>
+                        @* <small class="form-text"></small> *@
+                    </div>
+                </div>
+
+                <div class="form-grid-full">
+                    <div class="form-group">
                         <label class="form-label">Mô tả</label>
                         <textarea asp-for="Description" class="form-control" placeholder="Nhập mô tả phim..."></textarea>
                         <span asp-validation-for="Description" class="text-danger"></span>
@@ -252,6 +261,7 @@
                     <input asp-for="DurationMinutes" class="form-control" type="number" min="1" placeholder="120" />
                     <span asp-validation-for="DurationMinutes" class="text-danger"></span>
                 </div>
+
             </div>
 
             <div class="section-title">
@@ -449,6 +459,84 @@
                     submitBtn.disabled = true;
                 }
             });
+        });
+   
+        document.addEventListener('DOMContentLoaded', function () {
+
+           
+            const titleInput = document.querySelector('input[name="Title"]');
+            const slugInput = document.querySelector('input[name="Slug"]');
+
+            function generateSlug(text) {
+                return text
+                    .toLowerCase()
+                    .normalize("NFD")
+                    .replace(/[\u0300-\u036f]/g, "") // bỏ dấu tiếng Việt
+                    .replace(/đ/g, "d")
+                    .replace(/[^a-z0-9\s-]/g, "")
+                    .trim()
+                    .replace(/\s+/g, "-")
+                    .replace(/-+/g, "-");
+            }
+
+            if (titleInput && slugInput) {
+                titleInput.addEventListener('input', function () {
+                    slugInput.value = generateSlug(this.value);
+                });
+            }
+
+           
+            function updateSelectTags(selectId, tagContainerId) {
+                const select = document.getElementById(selectId);
+                const tagContainer = document.getElementById(tagContainerId);
+
+                if (!select || !tagContainer) return;
+
+                function updateTags() {
+                    tagContainer.innerHTML = '';
+                    const selectedOptions = Array.from(select.selectedOptions);
+
+                    selectedOptions.forEach(option => {
+                        const tag = document.createElement('div');
+                        tag.className = 'select-tag';
+                        tag.innerHTML = `
+                            ${option.text}
+                            <span class="select-tag-remove" data-value="${option.value}">×</span>
+                        `;
+                        tagContainer.appendChild(tag);
+                    });
+                }
+
+                updateTags();
+                select.addEventListener('change', updateTags);
+
+                tagContainer.addEventListener('click', function (e) {
+                    if (e.target.classList.contains('select-tag-remove')) {
+                        const value = e.target.getAttribute('data-value');
+                        const option = select.querySelector(`option[value="${value}"]`);
+                        if (option) {
+                            option.selected = false;
+                            updateTags();
+                        }
+                    }
+                });
+            }
+
+            updateSelectTags('ActorIds', 'actorTags');
+            updateSelectTags('GenreIds', 'genreTags');
+
+            // ==============================
+            // FORM SUBMIT LOADING
+            // ==============================
+            const form = document.querySelector('form');
+            form.addEventListener('submit', function () {
+                const submitBtn = this.querySelector('button[type="submit"]');
+                if (submitBtn) {
+                    submitBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Đang xử lý...';
+                    submitBtn.disabled = true;
+                }
+            });
+
         });
     </script>
 }

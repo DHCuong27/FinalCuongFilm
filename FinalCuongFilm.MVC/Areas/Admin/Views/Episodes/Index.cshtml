@@ -1,7 +1,7 @@
 ﻿@model IEnumerable<FinalCuongFilm.Common.DTOs.EpisodeDto>
 
 @{
-    ViewData["Title"] = "Quản lý Tập phim";
+    ViewData["Title"] = "Manages Episodes";
     var movieId = ViewBag.MovieId as Guid?;
     var movieTitle = ViewBag.MovieTitle as string;
 }
@@ -17,7 +17,7 @@
                 }
             </h2>
             <a asp-action="Create" asp-route-movieId="@movieId" class="au-btn au-btn-icon au-btn--blue">
-                <i class="zmdi zmdi-plus"></i>Thêm tập mới
+                <i class="zmdi zmdi-plus"></i>Add New Episode
             </a>
         </div>
     </div>
@@ -28,7 +28,7 @@
     <div class="row m-t-15">
         <div class="col-md-12">
             <a asp-action="Index" class="btn btn-sm btn-secondary">
-                <i class="fa fa-arrow-left"></i> Xem tất cả tập phim
+                <i class="fa fa-arrow-left"></i> All Episodes
             </a>
         </div>
     </div>
