@@ -123,6 +123,7 @@ namespace FinalCuongFilm.MVC.Controllers
 
 		// GET: /Movie/Watch/{slug}?ep=1
 		[AllowAnonymous]
+		[Route("Movie/Watch/{slug}")]
 		public async Task<IActionResult> Watch(string slug, int? ep = null)
 		{
 			_logger.LogInformation(" WATCH ACTION START ");
@@ -152,6 +153,15 @@ namespace FinalCuongFilm.MVC.Controllers
 					TempData["Error"] = $"Không tìm thấy phim: {slug}";
 					return RedirectToAction("Index", "Home");
 				}
+
+
+
+				// Lấy genres và countries cho navigation
+				var genres = await _genreService.GetAllAsync();
+				var countries = await _countryService.GetAllAsync();
+
+				ViewBag.Genres = genres;
+				ViewBag.Countries = countries;
 
 				_logger.LogInformation($"Movie found: {movie.Title} (ID: {movie.Id})");
 

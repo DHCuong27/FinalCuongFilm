@@ -920,6 +920,12 @@
 
 <!-- Hero Banner -->
 <div class="hero-banner">
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger" style="margin: 20px; z-index: 999; position: relative;">
+            <strong>Lỗi:</strong> @TempData["Error"]
+        </div>
+    }
     <img src="@(Model.Movie.PosterUrl ?? "/images/default-bg.jpg")"
          alt="@Model.Movie.Title"
          class="hero-backdrop">
