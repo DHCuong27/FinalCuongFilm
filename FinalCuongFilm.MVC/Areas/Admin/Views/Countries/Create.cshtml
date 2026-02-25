@@ -4,6 +4,88 @@
     ViewData["Title"] = "Create";
 }
 
+<style>
+    /* Basic CSS - No colors, just structure */
+    body {
+        font-family: Arial, Helvetica, sans-serif;
+        margin: 20px;
+    }
+
+    h1, h4 {
+        margin-bottom: 10px;
+    }
+
+    hr {
+        margin: 20px 0;
+        border: 1px solid #ddd;
+    }
+
+    .row {
+        margin: 15px 0;
+    }
+
+    .col-md-4 {
+        width: 33.33%;
+    }
+
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+    .control-label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        box-sizing: border-box;
+    }
+
+        .form-control:focus {
+            outline: 1px solid #666;
+        }
+
+    .btn-primary {
+        padding: 8px 16px;
+        background-color: #333;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+        .btn-primary:hover {
+            background-color: #555;
+        }
+
+    .text-danger {
+        color: #ff0000;
+        font-size: 12px;
+        margin-top: 3px;
+        display: block;
+    }
+
+    a {
+        color: #0066cc;
+        text-decoration: none;
+    }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+    .auto-generate-badge {
+        font-size: 11px;
+        color: #666;
+        margin-left: 5px;
+    }
+</style>
+
 <h1>Create</h1>
 
 <h4>Country</h4>
@@ -14,18 +96,21 @@
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
                 <label asp-for="Name" class="control-label"></label>
-                <input asp-for="Name" class="form-control" />
+                <input asp-for="Name" class="form-control" id="countryName" placeholder="Enter country name..." />
                 <span asp-validation-for="Name" class="text-danger"></span>
+                <span class="auto-generate-badge" id="nameIndicator"></span>
             </div>
             <div class="form-group">
                 <label asp-for="IsoCode" class="control-label"></label>
-                <input asp-for="IsoCode" class="form-control" />
+                <input asp-for="IsoCode" class="form-control" id="isoCode" placeholder="Auto-generated from name..." readonly />
                 <span asp-validation-for="IsoCode" class="text-danger"></span>
+                <span class="auto-generate-badge" id="isoIndicator">Auto-generating...</span>
             </div>
             <div class="form-group">
                 <label asp-for="Slug" class="control-label"></label>
-                <input asp-for="Slug" class="form-control" />
+                <input asp-for="Slug" class="form-control" id="slug" placeholder="Auto-generated from name..." readonly />
                 <span asp-validation-for="Slug" class="text-danger"></span>
+                <span class="auto-generate-badge" id="slugIndicator">Auto-generating...</span>
             </div>
             <div class="form-group">
                 <input type="submit" value="Create" class="btn btn-primary" />
@@ -39,5 +124,145 @@
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        (function() {
+            // DOM elements
+            const nameInput = document.getElementById('countryName');
+            const isoCodeInput = document.getElementById('isoCode');
+            const slugInput = document.getElementById('slug');
+
+            // Indicator elements
+            const nameIndicator = document.getElementById('nameIndicator');
+            const isoIndicator = document.getElementById('isoIndicator');
+            const slugIndicator = document.getElementById('slugIndicator');
+
+            // Debounce timer
+            let debounceTimer;
+
+            // Function to generate IsoCode from name
+            function generateIsoCode(name) {
+                if (!name || name.trim() === '') {
+                    return '';
+                }
+
+                // Take first 3 letters, uppercase
+                let iso = name.trim()
+                    .substring(0, 3)
+                    .toUpperCase();
+
+                // Remove diacritics and special characters
+                iso = iso.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+                // Remove any non-alphanumeric characters
+                iso = iso.replace(/[^A-Z]/g, '');
+
+                // Pad with 'X' if less than 3 characters
+                while (iso.length < 3) {
+                    iso += 'X';
+                }
+
+                return iso;
+            }
+
+            // Function to generate Slug from name
+            function generateSlug(name) {
+                if (!name || name.trim() === '') {
+                    return '';
+                }
+
+                let slug = name.trim()
+                    .toLowerCase()
+                    // Remove diacritics
+                    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+                    // Replace spaces and special characters with hyphens
+                    .replace(/[^a-z0-9\s-]/g, '')
+                    .replace(/\s+/g, '-')
+                    // Remove multiple hyphens
+                    .replace(/-+/g, '-')
+                    // Remove leading/trailing hyphens
+                    .replace(/^-+|-+$/g, '');
+
+                return slug;
+            }
+
+            // Update fields in real-time
+            function updateFields() {
+                const name = nameInput.value;
+
+                // Generate new values
+                const newIsoCode = generateIsoCode(name);
+                const newSlug = generateSlug(name);
+
+                // Update fields
+                isoCodeInput.value = newIsoCode;
+                slugInput.value = newSlug;
+
+                // Update indicators
+                if (name.trim() !== '') {
+                    nameIndicator.textContent = '✓ Auto-generating';
+                } else {
+                    nameIndicator.textContent = '';
+                }
+
+                if (newIsoCode) {
+                    isoIndicator.textContent = '✓ Generated';
+                } else {
+                    isoIndicator.textContent = 'Enter name to generate';
+                }
+
+                if (newSlug) {
+                    slugIndicator.textContent = '✓ Generated';
+                } else {
+                    slugIndicator.textContent = 'Enter name to generate';
+                }
+            }
+
+            // Debounced update function
+            function debouncedUpdate() {
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(updateFields, 100);
+            }
+
+            // Event listeners
+            nameInput.addEventListener('input', debouncedUpdate);
+
+            // Initial update if there's existing text
+            if (nameInput.value) {
+                updateFields();
+            }
+
+            // Add tooltips for readonly fields
+            isoCodeInput.title = 'Auto-generated from country name';
+            slugInput.title = 'Auto-generated from country name';
+
+            // Prevent manual editing of readonly fields
+            isoCodeInput.addEventListener('keydown', (e) => {
+                e.preventDefault();
+                alert('IsoCode is auto-generated from the country name');
+            });
+
+            slugInput.addEventListener('keydown', (e) => {
+                e.preventDefault();
+                alert('Slug is auto-generated from the country name');
+            });
+
+            // Form validation
+            document.querySelector('form').addEventListener('submit', (e) => {
+                const name = nameInput.value.trim();
+
+                if (!name) {
+                    e.preventDefault();
+                    alert('Please enter a country name');
+                    nameInput.focus();
+                    return false;
+                }
+
+                return true;
+            });
+        })();
+    </script>
 }

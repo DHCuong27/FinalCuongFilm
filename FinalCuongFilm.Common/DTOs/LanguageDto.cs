@@ -10,6 +10,7 @@
 	public class LanguageCreateDto
 	{
 		public string Name { get; set; } = string.Empty;
+		public string Slug { get; set; } = string.Empty;	
 	}
 
 	public class LanguageUpdateDto : LanguageCreateDto

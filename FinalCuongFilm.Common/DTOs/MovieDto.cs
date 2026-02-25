@@ -44,6 +44,7 @@ namespace FinalCuongFilm.Common.DTOs
 		public bool IsActive { get; set; } = true;
 		public Guid LanguageId { get; set; }
 		public Guid CountryId { get; set; }
+
 		public List<Guid> ActorIds { get; set; } = new();
 		public List<Guid> GenreIds { get; set; } = new();
 	}

@@ -4,6 +4,184 @@
     ViewData["Title"] = "Thêm Ngôn ngữ Mới";
 }
 
+<style>
+    /* Netflix-style basic CSS */
+    body {
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        background-color: #f3f3f3;
+        margin: 0;
+        padding: 20px;
+    }
+
+    .title-1 {
+        font-size: 2.2rem;
+        font-weight: 500;
+        color: #333;
+        margin-bottom: 20px;
+        letter-spacing: -0.5px;
+    }
+
+    .card {
+        background-color: #fff;
+        border-radius: 4px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+    }
+
+    .card-header {
+        padding: 15px 20px;
+        background-color: #fff;
+        border-bottom: 2px solid #e50914;
+        font-weight: 500;
+        font-size: 1.2rem;
+        color: #333;
+    }
+
+    .card-body {
+        padding: 20px;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-control-label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 500;
+        color: #333;
+        font-size: 0.95rem;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 10px 12px;
+        font-size: 1rem;
+        line-height: 1.5;
+        color: #333;
+        background-color: #fff;
+        border: 1px solid #ddd;
+        border-radius: 2px;
+        transition: border-color 0.15s ease-in-out;
+        box-sizing: border-box;
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #e50914;
+            box-shadow: 0 0 0 2px rgba(229, 9, 20, 0.1);
+        }
+
+        .form-control[readonly] {
+            background-color: #f9f9f9;
+            color: #666;
+            cursor: not-allowed;
+        }
+
+    .text-danger {
+        color: #e50914;
+        font-size: 0.85rem;
+        margin-top: 5px;
+        display: block;
+    }
+
+    .btn {
+        display: inline-block;
+        font-weight: 400;
+        text-align: center;
+        white-space: nowrap;
+        vertical-align: middle;
+        border: 1px solid transparent;
+        padding: 10px 20px;
+        font-size: 0.95rem;
+        line-height: 1.5;
+        border-radius: 2px;
+        transition: all 0.15s ease-in-out;
+        cursor: pointer;
+        text-decoration: none;
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    }
+
+    .btn-primary {
+        color: #fff;
+        background-color: #e50914;
+        border-color: #e50914;
+    }
+
+        .btn-primary:hover {
+            background-color: #b2070f;
+            border-color: #b2070f;
+        }
+
+    .btn-secondary {
+        color: #333;
+        background-color: #fff;
+        border-color: #ddd;
+    }
+
+        .btn-secondary:hover {
+            background-color: #f5f5f5;
+            border-color: #ccc;
+        }
+
+    .btn-sm {
+        padding: 8px 16px;
+        font-size: 0.85rem;
+    }
+
+    .fa {
+        margin-right: 5px;
+    }
+
+    .row {
+        margin-left: -10px;
+        margin-right: -10px;
+    }
+
+    .col-md-12, .col-md-6 {
+        padding-left: 10px;
+        padding-right: 10px;
+        box-sizing: border-box;
+    }
+
+    .col-md-12 {
+        width: 100%;
+    }
+
+    .col-md-6 {
+        width: 50%;
+    }
+
+    .m-t-30 {
+        margin-top: 30px;
+    }
+
+    .badge-info {
+        display: inline-block;
+        padding: 3px 8px;
+        background-color: #e6f3ff;
+        color: #0066cc;
+        border-radius: 2px;
+        font-size: 0.8rem;
+        margin-left: 10px;
+    }
+
+    /* Auto-generate indicator */
+    .auto-generate-hint {
+        font-size: 0.8rem;
+        color: #666;
+        margin-top: 5px;
+        font-style: italic;
+    }
+
+    .generating {
+        background-color: #fff3cd;
+        border-color: #ffc107;
+        transition: background-color 0.3s ease;
+    }
+</style>
+
 <div class="row">
     <div class="col-md-12">
         <h2 class="title-1">@ViewData["Title"]</h2>
@@ -17,17 +195,38 @@
                 <strong>Thông tin ngôn ngữ</strong>
             </div>
             <div class="card-body card-block">
-                <form asp-action="Create" method="post">
+                <form asp-action="Create" method="post" id="languageForm">
                     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
                     <div class="form-group">
-                        <label asp-for="Name" class="form-control-label">Tên ngôn ngữ <span class="text-danger">*</span></label>
-                        <input asp-for="Name" class="form-control" placeholder="Ví dụ: Tiếng Việt, English, 日本語..." />
+                        <label asp-for="Name" class="form-control-label">
+                            Tên ngôn ngữ <span class="text-danger">*</span>
+                            <span class="badge-info" id="nameStatus"></span>
+                        </label>
+                        <input asp-for="Name" class="form-control" id="languageName"
+                               placeholder="Ví dụ: Tiếng Việt, English, 日本語..."
+                               autocomplete="off" />
                         <span asp-validation-for="Name" class="text-danger"></span>
+                        <div class="auto-generate-hint" id="nameHint">
+                            Nhập tên ngôn ngữ để tự động tạo slug
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="Slug" class="form-control-label">
+                            Slug <span class="badge-info" id="slugStatus"></span>
+                        </label>
+                        <input asp-for="Slug" class="form-control" id="languageSlug"
+                               placeholder="Tự động tạo từ tên ngôn ngữ..."
+                               readonly />
+                        <span asp-validation-for="Slug" class="text-danger"></span>
+                        <div class="auto-generate-hint" id="slugHint">
+                            Slug sẽ được tự động tạo từ tên ngôn ngữ
+                        </div>
                     </div>
 
                     <div class="form-actions form-group">
-                        <button type="submit" class="btn btn-primary btn-sm">
+                        <button type="submit" class="btn btn-primary btn-sm" id="submitBtn">
                             <i class="fa fa-save"></i> Lưu
                         </button>
                         <a asp-action="Index" class="btn btn-secondary btn-sm">
@@ -44,4 +243,157 @@
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
+
+    <script>
+        (function() {
+            // DOM elements
+            const nameInput = document.getElementById('languageName');
+            const slugInput = document.getElementById('languageSlug');
+
+            // Status elements
+            const nameStatus = document.getElementById('nameStatus');
+            const slugStatus = document.getElementById('slugStatus');
+            const nameHint = document.getElementById('nameHint');
+            const slugHint = document.getElementById('slugHint');
+
+            // Submit button
+            const submitBtn = document.getElementById('submitBtn');
+
+            // Debounce timer
+            let debounceTimer;
+
+            // Function to generate slug from language name
+            function generateSlug(name) {
+                if (!name || name.trim() === '') {
+                    return '';
+                }
+
+                let slug = name.trim()
+                    .toLowerCase()
+                    // Remove diacritics (dấu tiếng Việt)
+                    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+                    // Replace đ with d
+                    .replace(/đ/g, 'd')
+                    // Replace special characters with hyphens
+                    .replace(/[^a-z0-9\s-]/g, '')
+                    // Replace spaces with hyphens
+                    .replace(/\s+/g, '-')
+                    // Remove multiple hyphens
+                    .replace(/-+/g, '-')
+                    // Remove leading/trailing hyphens
+                    .replace(/^-+|-+$/g, '');
+
+                return slug;
+            }
+
+            // Update slug in real-time
+            function updateSlug() {
+                const name = nameInput.value;
+
+                // Add generating class for visual feedback
+                slugInput.classList.add('generating');
+
+                // Generate new slug
+                const newSlug = generateSlug(name);
+
+                // Update slug field
+                slugInput.value = newSlug;
+
+                // Update status indicators
+                if (name.trim() !== '') {
+                    nameStatus.textContent = '✓ Đang nhập';
+                    nameStatus.style.color = '#28a745';
+
+                    if (newSlug) {
+                        slugStatus.textContent = '✓ Đã tạo';
+                        slugStatus.style.color = '#28a745';
+                        slugHint.textContent = 'Slug đã được tạo tự động từ tên ngôn ngữ';
+
+                        // Preview the URL structure
+                        nameHint.innerHTML = `URL sẽ là: <strong>/languages/${newSlug}</strong>`;
+                    } else {
+                        slugStatus.textContent = '⏳ Đang chờ';
+                        slugStatus.style.color = '#ffc107';
+                    }
+                } else {
+                    nameStatus.textContent = '';
+                    slugStatus.textContent = '';
+                    nameHint.textContent = 'Nhập tên ngôn ngữ để tự động tạo slug';
+                    slugHint.textContent = 'Slug sẽ được tự động tạo từ tên ngôn ngữ';
+                }
+
+                // Remove generating class after a short delay
+                setTimeout(() => {
+                    slugInput.classList.remove('generating');
+                }, 300);
+            }
+
+            // Debounced update function
+            function debouncedUpdate() {
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(updateSlug, 150);
+            }
+
+            // Event listeners
+            nameInput.addEventListener('input', debouncedUpdate);
+
+            // Initial update if there's existing text
+            if (nameInput.value) {
+                updateSlug();
+            }
+
+            // Add tooltip for slug field
+            slugInput.title = 'Slug được tự động tạo từ tên ngôn ngữ, không thể chỉnh sửa thủ công';
+
+            // Prevent manual editing of slug field
+            slugInput.addEventListener('keydown', (e) => {
+                e.preventDefault();
+                // Show subtle notification
+                const originalValue = slugHint.textContent;
+                slugHint.textContent = '⚠️ Slug không thể chỉnh sửa thủ công';
+                slugHint.style.color = '#e50914';
+
+                setTimeout(() => {
+                    slugHint.textContent = originalValue;
+                    slugHint.style.color = '#666';
+                }, 2000);
+            });
+
+            // Form validation
+            document.getElementById('languageForm').addEventListener('submit', (e) => {
+                const name = nameInput.value.trim();
+
+                if (!name) {
+                    e.preventDefault();
+                    alert('Vui lòng nhập tên ngôn ngữ');
+                    nameInput.focus();
+                    return false;
+                }
+
+                // Ensure slug is generated
+                if (!slugInput.value) {
+                    updateSlug();
+                }
+
+                // Show saving state
+                submitBtn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Đang lưu...';
+                submitBtn.disabled = true;
+
+                return true;
+            });
+
+            // Add some examples placeholder
+            const examples = ['Tiếng Việt', 'English', '日本語', '中文', 'Français'];
+            let exampleIndex = 0;
+
+            setInterval(() => {
+                if (nameInput.value === '') {
+                    nameInput.placeholder = `Ví dụ: ${examples[exampleIndex]}`;
+                    exampleIndex = (exampleIndex + 1) % examples.length;
+                }
+            }, 2000);
+
+            console.log('Language form with auto slug initialized');
+        })();
+    </script>
 }

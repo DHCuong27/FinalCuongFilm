@@ -196,20 +196,15 @@
                         </div>
                     </div>
 
-                    <div class="col-md-6">
-                        <div class="form-group slug-generator-container">
-                            <label asp-for="Slug" class="form-label">
-                                <i class="fas fa-link me-1"></i>URL Slug
-                            </label>
-                            <input asp-for="Slug" class="form-control"
-                                   placeholder="auto-generated-slug" />
-                            <button type="button" class="slug-generator-btn" onclick="generateSlug()">
-                                <i class="fas fa-sync-alt"></i> Generate
-                            </button>
-                            <span asp-validation-for="Slug" class="field-validation-error"></span>
-                            <span class="help-text">Used in URLs (lowercase, hyphens, no spaces)</span>
+                    <div class="form-grid-full">
+                        <div class="form-group">
+                            <label class="form-label">Slug</label>
+                            <input asp-for="Slug" class="form-control" type="text" />
+                            <span asp-validation-for="Slug" class="text-danger"></span>
+                            @* <small class="form-text"></small> *@
                         </div>
                     </div>
+
                 </div>
 
                 <div class="form-group">
@@ -241,33 +236,85 @@
     }
 
     <script>
-        // Generate slug from name
-        function generateSlug() {
-            const nameInput = document.querySelector('input[name="Name"]');
+      
+             document.addEventListener('DOMContentLoaded', function () {
+
+
+            const titleInput = document.querySelector('input[name="Name"]');
             const slugInput = document.querySelector('input[name="Slug"]');
 
-            if (nameInput && slugInput) {
-                const name = nameInput.value;
-                const slug = name.toLowerCase()
-                    .replace(/[^\w\s]/gi, '')
-                    .replace(/\s+/g, '-')
-                    .replace(/--+/g, '-')
-                    .replace(/^-+|-+$/g, '');
-                slugInput.value = slug;
+            function generateSlug(text) {
+                return text
+                    .toLowerCase()
+                    .normalize("NFD")
+                    .replace(/[\u0300-\u036f]/g, "") 
+                    .replace(/đ/g, "d")
+                    .replace(/[^a-z0-9\s-]/g, "")
+                    .trim()
+                    .replace(/\s+/g, "-")
+                    .replace(/-+/g, "-");
             }
-        }
 
-        // Auto-generate slug when name changes
-        document.addEventListener('DOMContentLoaded', function() {
-            const nameInput = document.querySelector('input[name="Name"]');
-            if (nameInput) {
-                nameInput.addEventListener('blur', function() {
-                    const slugInput = document.querySelector('input[name="Slug"]');
-                    if (slugInput && !slugInput.value) {
-                        generateSlug();
+            if (titleInput && slugInput) {
+                titleInput.addEventListener('input', function () {
+                    slugInput.value = generateSlug(this.value);
+                });
+            }
+
+
+            function updateSelectTags(selectId, tagContainerId) {
+                const select = document.getElementById(selectId);
+                const tagContainer = document.getElementById(tagContainerId);
+
+                if (!select || !tagContainer) return;
+
+                function updateTags() {
+                    tagContainer.innerHTML = '';
+                    const selectedOptions = Array.from(select.selectedOptions);
+
+                    selectedOptions.forEach(option => {
+                        const tag = document.createElement('div');
+                        tag.className = 'select-tag';
+                        tag.innerHTML = `
+                            ${option.text}
+                            <span class="select-tag-remove" data-value="${option.value}">×</span>
+                        `;
+                        tagContainer.appendChild(tag);
+                    });
+                }
+
+                updateTags();
+                select.addEventListener('change', updateTags);
+
+                tagContainer.addEventListener('click', function (e) {
+                    if (e.target.classList.contains('select-tag-remove')) {
+                        const value = e.target.getAttribute('data-value');
+                        const option = select.querySelector(`option[value="${value}"]`);
+                        if (option) {
+                            option.selected = false;
+                            updateTags();
+                        }
                     }
                 });
             }
+
+            updateSelectTags('ActorIds', 'actorTags');
+            updateSelectTags('GenreIds', 'genreTags');
+
+            // ==============================
+            // FORM SUBMIT LOADING
+            // ==============================
+            const form = document.querySelector('form');
+            form.addEventListener('submit', function () {
+                const submitBtn = this.querySelector('button[type="submit"]');
+                if (submitBtn) {
+                    submitBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Đang xử lý...';
+                    submitBtn.disabled = true;
+                }
+            });
+
         });
+
+
     </script>
 }
