@@ -1,0 +1,225 @@
+﻿@model IEnumerable<FinalCuongFilm.Common.DTOs.MovieDto>
+@{
+    ViewData["Title"] = string.IsNullOrEmpty(ViewBag.Keyword) ? "Tìm kiếm phim" : $"Kết quả tìm kiếm cho '{ViewBag.Keyword}'";
+    Layout = "_LayoutUser";
+}
+
+<style>
+    /* Kế thừa màu sắc chủ đạo */
+    :root {
+        --netflix-red: #e50914;
+        --netflix-dark: #0f0f0f;
+        --netflix-dark-bg: #1a1a1a;
+        --netflix-gray: #2d2d2d;
+        --netflix-light-gray: #b3b3b3;
+    }
+
+    body {
+        background-color: var(--netflix-dark);
+        color: white;
+    }
+
+    .search-page-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 100px 2rem 4rem; /* Padding top lớn để tránh bị che bởi Navbar */
+        min-height: 70vh;
+    }
+
+    .search-header {
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid var(--netflix-gray);
+    }
+
+        .search-header h2 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: var(--netflix-light-gray);
+        }
+
+            .search-header h2 span {
+                color: white;
+                font-weight: 800;
+            }
+
+    /* Grid layout cho kết quả */
+    .search-results-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 1.5rem;
+    }
+
+    /* Tái sử dụng CSS Card từ trang chủ */
+    .movie-card {
+        transition: all 0.3s ease;
+        position: relative;
+        cursor: pointer;
+        background: var(--netflix-dark-bg);
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+        .movie-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.6);
+        }
+
+    .movie-poster {
+        position: relative;
+        aspect-ratio: 2/3;
+        overflow: hidden;
+    }
+
+        .movie-poster img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.4s ease;
+        }
+
+    .movie-card:hover .movie-poster img {
+        transform: scale(1.05);
+    }
+
+    .movie-overlay {
+        position: absolute;
+        inset: 0;
+        background: rgba(0,0,0,0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.3s;
+    }
+
+    .movie-card:hover .movie-overlay {
+        opacity: 1;
+    }
+
+    .play-icon {
+        background: var(--netflix-red);
+        color: white;
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        border: 2px solid white;
+        transform: scale(0.8);
+        transition: transform 0.3s;
+    }
+
+    .movie-card:hover .play-icon {
+        transform: scale(1);
+    }
+
+    .movie-info {
+        padding: 1rem;
+    }
+
+    .movie-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin: 0 0 5px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+        .movie-title a {
+            color: white;
+            text-decoration: none;
+        }
+
+            .movie-title a:hover {
+                color: var(--netflix-red);
+            }
+
+    .movie-meta {
+        font-size: 0.85rem;
+        color: var(--netflix-light-gray);
+        display: flex;
+        justify-content: space-between;
+    }
+
+    /* Hộp thông báo trống */
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: var(--netflix-dark-bg);
+        border-radius: 8px;
+        border: 1px dashed var(--netflix-gray);
+    }
+
+        .empty-state i {
+            font-size: 4rem;
+            color: var(--netflix-light-gray);
+            margin-bottom: 1rem;
+        }
+
+        .empty-state h3 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+</style>
+
+<div class="search-page-container">
+    <div class="search-header">
+        @if (string.IsNullOrWhiteSpace(ViewBag.Keyword))
+        {
+            <h2>Khám phá phim</h2>
+        }
+        else
+        {
+            <h2>Kết quả tìm kiếm cho: <span>"@ViewBag.Keyword"</span> (@Model.Count() phim)</h2>
+        }
+    </div>
+
+    @if (Model != null && Model.Any())
+    {
+        <div class="search-results-grid">
+            @foreach (var movie in Model)
+            {
+                <div class="movie-card">
+                    <a asp-controller="Movie" asp-action="Detail" asp-route-slug="@movie.Slug">
+                        <div class="movie-poster">
+                            <img src="@(string.IsNullOrEmpty(movie.PosterUrl) ? "https://via.placeholder.com/300x450/2d2d2d/ffffff?text=No+Poster" : movie.PosterUrl)" alt="@movie.Title" />
+                            <div class="movie-overlay">
+                                <div class="play-icon"><i class="fas fa-play"></i></div>
+                            </div>
+                        </div>
+                    </a>
+                    <div class="movie-info">
+                        <h3 class="movie-title">
+                            <a asp-controller="Movie" asp-action="Detail" asp-route-slug="@movie.Slug">@movie.Title</a>
+                        </h3>
+                        <div class="movie-meta">
+                            <span>@movie.ReleaseYear</span>
+                            <span><i class="fas fa-eye text-danger"></i> @movie.ViewCount</span>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="empty-state">
+            <i class="fas fa-search-minus"></i>
+            @if (string.IsNullOrWhiteSpace(ViewBag.Keyword))
+            {
+                <h3>Vui lòng nhập từ khóa để tìm kiếm</h3>
+                <p class="text-muted">Bạn có thể tìm theo tên phim, diễn viên hoặc thể loại.</p>
+            }
+            else
+            {
+                <h3>Không tìm thấy kết quả nào</h3>
+                <p class="text-muted">Rất tiếc, chúng tôi không tìm thấy phim nào khớp với từ khóa "@ViewBag.Keyword".</p>
+            }
+            <a href="/Home/Index" class="btn btn-outline-light mt-3">Quay lại Trang chủ</a>
+        </div>
+    }
+</div>

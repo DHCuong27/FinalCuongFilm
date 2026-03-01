@@ -65,6 +65,9 @@
     .hero-content {
         max-width: 650px;
         animation: fadeInUp 1s ease-out;
+        /* THÊM 2 DÒNG NÀY ĐỂ SEARCH BOX CĂN GIỮA MÀN HÌNH NẾU MUỐN */
+        margin: 0 auto;
+        width: 100%;
     }
 
     .hero-banner h1 {
@@ -495,11 +498,14 @@
         font-weight: 600;
         padding: 0.6rem 1rem;
         border-radius: 6px;
+        transition: all 0.3s ease;
     }
 
         .btn-primary:hover {
             background-color: #f40612;
             border-color: #f40612;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(229, 9, 20, 0.3);
         }
 
     .text-warning {
@@ -535,18 +541,259 @@
             transform: translateY(0);
         }
     }
+
+    /* BẮT ĐẦU CSS CHO THANH TÌM KIẾM THÊM MỚI - NETFLIX STYLE */
+    .search-box-container {
+        position: relative;
+        width: 100%;
+        margin-top: 2rem;
+        z-index: 50;
+    }
+
+    .search-input-wrapper {
+        display: flex;
+        background: rgba(0, 0, 0, 0.75);
+        border: 2px solid rgba(255, 255, 255, 0.1);
+        border-radius: 40px;
+        padding: 3px 3px 3px 20px;
+        backdrop-filter: blur(10px);
+        transition: all 0.3s ease;
+    }
+
+        .search-input-wrapper:focus-within {
+            border-color: var(--netflix-red);
+            background: rgba(0, 0, 0, 0.95);
+            box-shadow: 0 0 20px rgba(229, 9, 20, 0.3);
+        }
+
+        .search-input-wrapper input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 1.1rem;
+            padding: 12px 0;
+            outline: none;
+        }
+
+            .search-input-wrapper input::placeholder {
+                color: var(--netflix-light-gray);
+                font-weight: 300;
+            }
+
+        .search-input-wrapper .btn-search {
+            background: var(--netflix-red);
+            color: white;
+            border: none;
+            border-radius: 40px;
+            padding: 12px 30px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            letter-spacing: 0.5px;
+        }
+
+            .search-input-wrapper .btn-search:hover {
+                background: #f40612;
+                padding-right: 35px;
+            }
+
+            .search-input-wrapper .btn-search i {
+                font-size: 1.1rem;
+            }
+
+    .search-suggestions-box {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        margin-top: 10px;
+        background: var(--netflix-dark-bg);
+        border: 1px solid var(--netflix-gray);
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+        display: none;
+    }
+
+    .suggestion-item {
+        display: flex;
+        align-items: center;
+        padding: 10px 15px;
+        color: white;
+        text-decoration: none;
+        border-bottom: 1px solid rgba(255,255,255,0.05);
+        transition: 0.2s;
+        text-align: left;
+    }
+
+        .suggestion-item:last-child {
+            border-bottom: none;
+        }
+
+        .suggestion-item:hover {
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
+
+        .suggestion-item img {
+            width: 40px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 4px;
+            margin-right: 15px;
+        }
+    /* KẾT THÚC CSS TÌM KIẾM */
+
+    /* Footer Styles - Thêm mới */
+    .netflix-footer {
+        background: var(--netflix-dark-bg);
+        padding: 4rem 0 2rem;
+        margin-top: 5rem;
+        border-top: 1px solid var(--netflix-gray);
+    }
+
+    .footer-content {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 0 2rem;
+    }
+
+    .footer-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 2rem;
+        margin-bottom: 3rem;
+    }
+
+    .footer-section h3 {
+        color: white;
+        font-size: 1.1rem;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .footer-section ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+        .footer-section ul li {
+            margin-bottom: 0.8rem;
+        }
+
+            .footer-section ul li a {
+                color: var(--netflix-light-gray);
+                text-decoration: none;
+                font-size: 0.9rem;
+                transition: color 0.3s ease;
+            }
+
+                .footer-section ul li a:hover {
+                    color: var(--netflix-red);
+                }
+
+    .social-links {
+        display: flex;
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+        .social-links a {
+            color: white;
+            font-size: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+            .social-links a:hover {
+                color: var(--netflix-red);
+                transform: translateY(-3px);
+            }
+
+    .footer-bottom {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: 2rem;
+        border-top: 1px solid var(--netflix-gray);
+        color: var(--netflix-light-gray);
+        font-size: 0.9rem;
+    }
+
+    .footer-bottom-links {
+        display: flex;
+        gap: 2rem;
+    }
+
+        .footer-bottom-links a {
+            color: var(--netflix-light-gray);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+            .footer-bottom-links a:hover {
+                color: var(--netflix-red);
+            }
+
+    .payment-methods {
+        display: flex;
+        gap: 1rem;
+        font-size: 1.5rem;
+        color: var(--netflix-light-gray);
+    }
+
+    /* Responsive Footer */
+    @@media (max-width: 768px) {
+        .footer-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .footer-bottom {
+            flex-direction: column;
+            gap: 1rem;
+            text-align: center;
+        }
+
+        .footer-bottom-links {
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+    }
 </style>
 
-<!-- HERO BANNER - Netflix Style -->
 <div class="hero-banner">
     <div class="hero-content">
         <span class="hero-badge">
         </span>
+
+        <div style="text-align: center; margin-bottom: 1.5rem;">
+            <h1 style="font-size: 3rem; font-weight: 900; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); margin-bottom: 10px;">Khám Phá Thế Giới Phim</h1>
+            <p style="font-size: 1.2rem; color: #ccc;">Tìm kiếm phim, diễn viên, thể loại và quốc gia bạn yêu thích</p>
+        </div>
+        <div class="search-box-container">
+            <form action="/Search" method="get">
+                <div class="search-input-wrapper">
+                    <input type="text" name="q" id="searchInput" placeholder="Tìm kiếm phim, diễn viên..." autocomplete="off">
+                    <button type="submit" class="btn-search">
+                        <i class="fas fa-search"></i>
+                        <span>Tìm</span>
+                    </button>
+                </div>
+            </form>
+            <div id="searchSuggestions" class="search-suggestions-box">
+            </div>
+        </div>
     </div>
 </div>
 
 
-<!-- PHIM MỚI NHẤT -->
 <div class="container">
     <div class="section-header">
         <i class="fas fa-fire"></i>
@@ -693,13 +940,12 @@
     </div>
 }
 
-<!-- phim tu model  -->
 @if (Model != null && Model.Any())
 {
     <div class="container" style="margin-top: 4rem;">
         <div class="section-header">
             <i class="fas fa-film"></i>
-            <h2>All Movie</h2>
+            <h2>Tất Cả Phim</h2>
         </div>
 
         <div class="row">
@@ -714,7 +960,7 @@
                                  alt="@movie.Title">
                         </a>
 
-                        @if (User.Identity?.IsAuthenticated != true)
+                        @if (User.Identity?.IsAuthenticated == true)
                         {
                             <button class="favorite-icon-btn" data-movie-id="@movie.Id">
                                 <i class="far fa-heart"></i>
@@ -759,10 +1005,9 @@
                     </div>
 
                     <div class="card-footer">
-
-                        <a asp-controller="Movie" asp-action="Watch" asp-route-id="@movie.Id"
+                        <a asp-controller="Movie" asp-action="Watch" asp-route-slug="@movie.Slug"
                            class="btn btn-primary w-100">
-                            <i class="fas fa-play"></i> Xem phim
+                            <i class="fas fa-play"></i> Xem ngay
                         </a>
                     </div>
                 </div>
@@ -773,3 +1018,69 @@
 
 
 @Html.AntiForgeryToken()
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            let debounceTimer;
+
+            $('#searchInput').on('input', function () {
+                clearTimeout(debounceTimer);
+                const query = $(this).val().trim();
+                const suggestionsBox = $('#searchSuggestions');
+
+                if (query.length < 2) {
+                    suggestionsBox.hide();
+                    return;
+                }
+
+                debounceTimer = setTimeout(() => {
+                    $.ajax({
+                        url: '/Search/Suggestions',
+                        type: 'GET',
+                        data: { q: query },
+                               success: function (data) {
+            suggestionsBox.empty();
+
+            if (data && data.length > 0) {
+                data.forEach(movie => {
+                    // Tạo URL trỏ thẳng đến trang chi tiết bằng Slug
+                    const detailUrl = `/Movie/Detail/${movie.slug}`;
+
+                    const itemHtml = `
+                        <a href="${detailUrl}" class="suggestion-item">
+                            <img src="${movie.posterUrl}" alt="${movie.title}" onerror="this.src='https://via.placeholder.com/40x60/2d2d2d/ffffff?text=N/A'" />
+                            <div>
+                                <div style="font-weight: 600;">${movie.title}</div>
+                                <div style="font-size: 0.85rem; color: #b3b3b3;"><i class="fas fa-calendar-alt"></i> ${movie.year || 'N/A'}</div>
+                            </div>
+                        </a>`;
+                    suggestionsBox.append(itemHtml);
+                });
+                suggestionsBox.fadeIn(150);
+            } else {
+                suggestionsBox.html('<div style="padding: 15px; color: #b3b3b3; text-align: center;">Không tìm thấy phim phù hợp</div>');
+                suggestionsBox.fadeIn(150);
+            }
+        }
+                        }
+                    });
+                }, 300);
+            });
+
+            $(document).on('click', function (e) {
+                if (!$(e.target).closest('.search-box-container').length) {
+                    $('#searchSuggestions').fadeOut(150);
+                }
+            });
+
+            // Script cho nút bấm mũi tên trượt phim của bạn
+            window.scrollLeft = function(section) {
+                document.getElementById(section + '-movies-row').scrollBy({ left: -600, behavior: 'smooth' });
+            };
+            window.scrollRight = function(section) {
+                document.getElementById(section + '-movies-row').scrollBy({ left: 600, behavior: 'smooth' });
+            };
+        });
+    </script>
+}

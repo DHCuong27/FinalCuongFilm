@@ -9,19 +9,49 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 
     <style>
+        /* CSS Reset */
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            background-color: #0f0f0f;
+            color: #ffffff;
+            font-family: 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        }
+
+        .wrapper {
+            flex: 1 0 auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        main {
+            flex: 1 0 auto;
+            width: 100%;
+        }
+
         /* Netflix Style Navigation */
         .netflix-nav {
-            background: linear-gradient(180deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 100%);
+            background: linear-gradient(180deg, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.7) 100%);
             position: fixed;
             top: 0;
             width: 100%;
             z-index: 1000;
-            transition: background-color 0.3s ease;
+            transition: all 0.3s ease;
             padding: 0;
+            backdrop-filter: blur(10px);
         }
 
             .netflix-nav.scrolled {
-                background-color: rgba(20, 20, 20, 0.98);
+                background-color: rgba(10, 10, 10, 0.98);
+                backdrop-filter: blur(10px);
+                box-shadow: 0 2px 10px rgba(0,0,0,0.5);
             }
 
             .netflix-nav .navbar-brand {
@@ -29,14 +59,20 @@
                 font-weight: 900;
                 color: #e50914 !important;
                 letter-spacing: -1px;
+                transition: transform 0.3s ease;
             }
+
+                .netflix-nav .navbar-brand:hover {
+                    transform: scale(1.05);
+                }
 
             .netflix-nav .nav-link {
                 color: #e5e5e5 !important;
                 font-size: 0.95rem;
                 font-weight: 500;
                 padding: 0.5rem 1rem !important;
-                transition: color 0.2s ease;
+                transition: all 0.2s ease;
+                position: relative;
             }
 
                 .netflix-nav .nav-link:hover,
@@ -44,252 +80,559 @@
                     color: #ffffff !important;
                 }
 
+                .netflix-nav .nav-link::after {
+                    content: '';
+                    position: absolute;
+                    bottom: 0;
+                    left: 50%;
+                    transform: translateX(-50%) scaleX(0);
+                    width: 80%;
+                    height: 2px;
+                    background: #e50914;
+                    transition: transform 0.3s ease;
+                }
+
+                .netflix-nav .nav-link:hover::after,
+                .netflix-nav .nav-link.active::after {
+                    transform: translateX(-50%) scaleX(1);
+                }
+
             .netflix-nav .dropdown-menu {
-                background-color: rgba(0, 0, 0, 0.95);
-                border: 1px solid rgba(255, 255, 255, 0.15);
-                border-radius: 4px;
+                background-color: rgba(20, 20, 20, 0.98);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                border-radius: 8px;
                 padding: 0.5rem;
-                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+                box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+                backdrop-filter: blur(10px);
+                animation: fadeIn 0.2s ease;
             }
 
             .netflix-nav .dropdown-item {
                 color: #e5e5e5;
                 padding: 0.5rem 1rem;
-                border-radius: 3px;
-                transition: background-color 0.2s ease;
+                border-radius: 4px;
+                transition: all 0.2s ease;
+                font-size: 0.9rem;
             }
 
                 .netflix-nav .dropdown-item:hover {
                     background-color: rgba(229, 9, 20, 0.2);
                     color: #ffffff;
+                    transform: translateX(5px);
                 }
 
         .user-avatar {
-            width: 32px;
-            height: 32px;
-            border-radius: 4px;
+            width: 36px;
+            height: 36px;
+            border-radius: 6px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
             font-weight: 600;
-            font-size: 0.9rem;
+            font-size: 1rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
         }
 
-        .netflix-search {
+        /* Search Container */
+        .search-container {
             position: relative;
+            margin-right: 1rem;
         }
 
-            .netflix-search input {
-                background-color: rgba(0, 0, 0, 0.75);
-                border: 1px solid rgba(255, 255, 255, 0.15);
-                color: white;
-                padding: 0.5rem 2.5rem 0.5rem 1rem;
-                border-radius: 4px;
-                width: 250px;
+            .search-container form {
+                display: flex;
+                align-items: center;
+                background: rgba(0, 0, 0, 0.75);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                border-radius: 8px;
+                overflow: hidden;
                 transition: all 0.3s ease;
             }
 
-                .netflix-search input:focus {
-                    outline: none;
-                    background-color: rgba(0, 0, 0, 0.85);
-                    border-color: rgba(255, 255, 255, 0.3);
-                    width: 300px;
+                .search-container form:focus-within {
+                    border-color: #e50914;
+                    box-shadow: 0 0 0 2px rgba(229, 9, 20, 0.2);
                 }
 
-                .netflix-search input::placeholder {
+            .search-container input {
+                background: transparent;
+                border: none;
+                color: white;
+                padding: 0.6rem 1rem;
+                width: 250px;
+                outline: none;
+                font-size: 0.95rem;
+            }
+
+                .search-container input::placeholder {
                     color: rgba(255, 255, 255, 0.5);
                 }
 
-            .netflix-search button {
-                position: absolute;
-                right: 0.5rem;
-                top: 50%;
-                transform: translateY(-50%);
+            .search-container button {
                 background: none;
                 border: none;
                 color: #e5e5e5;
+                padding: 0.6rem 1rem;
                 cursor: pointer;
+                transition: color 0.3s ease;
+                border-left: 1px solid rgba(255, 255, 255, 0.1);
             }
 
+                .search-container button:hover {
+                    color: #e50914;
+                }
+
+        /* Search Suggestions */
+        .suggestions-box {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            width: 100%;
+            background: rgba(20, 20, 20, 0.98);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            margin-top: 8px;
+            overflow: hidden;
+            z-index: 1000;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+            backdrop-filter: blur(10px);
+        }
+
+        .suggestion-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            color: white;
+            text-decoration: none;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            transition: background 0.2s ease;
+        }
+
+            .suggestion-item:last-child {
+                border-bottom: none;
+            }
+
+            .suggestion-item:hover {
+                background: rgba(229, 9, 20, 0.1);
+            }
+
+            .suggestion-item img {
+                width: 40px;
+                height: 60px;
+                object-fit: cover;
+                border-radius: 4px;
+                margin-right: 15px;
+            }
+
+        /* Mega Menu */
         .mega-menu {
-            min-width: 900px;
+            min-width: 800px;
             columns: 4;
             column-gap: 1rem;
+            padding: 1rem !important;
+        }
+
+        /* Footer Styles */
+        .netflix-footer {
+            flex-shrink: 0;
+            background: linear-gradient(180deg, rgba(15,15,15,0.95) 0%, #0a0a0a 100%);
+            color: #b3b3b3;
+            padding: 3rem 0 2rem;
+            margin-top: 4rem;
+            border-top: 1px solid rgba(229, 9, 20, 0.3);
+            width: 100%;
+        }
+
+        .footer-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .footer-section h5 {
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            padding-bottom: 0.5rem;
+        }
+
+            .footer-section h5::after {
+                content: '';
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                width: 40px;
+                height: 2px;
+                background: #e50914;
+            }
+
+        .footer-section ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+            .footer-section ul li {
+                margin-bottom: 0.8rem;
+            }
+
+                .footer-section ul li a {
+                    color: #b3b3b3;
+                    text-decoration: none;
+                    font-size: 0.9rem;
+                    transition: all 0.3s ease;
+                    display: inline-block;
+                }
+
+                    .footer-section ul li a:hover {
+                        color: #e50914;
+                        transform: translateX(5px);
+                    }
+
+        .social-links {
+            display: flex;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+            .social-links a {
+                color: white;
+                font-size: 1.5rem;
+                transition: all 0.3s ease;
+                opacity: 0.8;
+            }
+
+                .social-links a:hover {
+                    color: #e50914;
+                    opacity: 1;
+                    transform: translateY(-3px);
+                }
+
+        .footer-bottom {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: #b3b3b3;
+            font-size: 0.9rem;
+        }
+
+        .footer-bottom-links {
+            display: flex;
+            gap: 2rem;
+        }
+
+            .footer-bottom-links a {
+                color: #b3b3b3;
+                text-decoration: none;
+                transition: color 0.3s ease;
+            }
+
+                .footer-bottom-links a:hover {
+                    color: #e50914;
+                }
+
+        .payment-methods {
+            display: flex;
+            gap: 1rem;
+            font-size: 1.5rem;
+            color: #b3b3b3;
+        }
+
+        /* Animations */
+        @@keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsive */
+        @@media (max-width: 768px) {
+            .search-container input {
+                width: 150px;
+            }
+
+                .search-container input:focus {
+                    width: 200px;
+                }
+
+            .footer-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 1.5rem;
+            }
+
+            .footer-bottom {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+
+            .footer-bottom-links {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .mega-menu {
+                min-width: 300px;
+                columns: 2;
+            }
+        }
+
+        @@media (max-width: 576px) {
+            .footer-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .search-container {
+                width: 100%;
+                margin: 0.5rem 0;
+            }
+
+                .search-container input {
+                    width: 100%;
+                }
         }
 
         body {
-            padding-top: 70px;
+            padding-top: 80px;
         }
     </style>
 
     @await RenderSectionAsync("Styles", required: false)
 </head>
 <body>
-    <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg netflix-nav" id="mainNav">
-        <div class="container-fluid px-4">
-            <a class="navbar-brand" href="/">
-                <i class="fas fa-film"></i> CuongFilm
-            </a>
+    <div class="wrapper">
+        <!-- Navigation -->
+        <nav class="navbar navbar-expand-lg netflix-nav" id="mainNav">
+            <div class="container-fluid px-4">
+                <a class="navbar-brand" href="/">
+                    <i class="fas fa-film"></i> CuongFilm
+                </a>
 
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
-                <span class="navbar-toggler-icon"></span>
-            </button>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain" style="background: rgba(255,255,255,0.1); border: none;">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
 
-            <div class="collapse navbar-collapse" id="navbarMain">
-                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                    <li class="nav-item">
-                        <a class="nav-link" asp-controller="Home" asp-action="Index">Home</a>
-                    </li>
+                <div class="collapse navbar-collapse" id="navbarMain">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Home" asp-action="Index">Home</a>
+                        </li>
 
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="genreDropdown" role="button" data-bs-toggle="dropdown">
-                            Genres
-                        </a>
-                        <ul class="dropdown-menu mega-menu" aria-labelledby="genreDropdown">
-                            @if (ViewBag.Genres != null)
-                            {
-                                foreach (var genre in ViewBag.Genres)
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="genreDropdown" role="button" data-bs-toggle="dropdown">
+                                Genres
+                            </a>
+                            <ul class="dropdown-menu mega-menu" aria-labelledby="genreDropdown">
+                                @if (ViewBag.Genres != null)
                                 {
+                                    foreach (var genre in ViewBag.Genres)
+                                    {
+                                        <li>
+                                            <a class="dropdown-item" asp-controller="Genre" asp-action="Index" asp-route-slug="@genre.Slug">
+                                                @genre.Name
+                                            </a>
+                                        </li>
+                                    }
+                                }
+                                else
+                                {
+                                    <li><span class="dropdown-item text-muted">Loading...</span></li>
+                                }
+                            </ul>
+                        </li>
+
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="countryDropdown" role="button" data-bs-toggle="dropdown">
+                                Countries
+                            </a>
+                            <ul class="dropdown-menu" style="columns: 3; min-width: 500px;" aria-labelledby="countryDropdown">
+                                @if (ViewBag.Countries != null)
+                                {
+                                    foreach (var country in ViewBag.Countries)
+                                    {
+                                        <li>
+                                            <a class="dropdown-item" href="#">@country.Name</a>
+                                        </li>
+                                    }
+                                }
+                                else
+                                {
+                                    <li><span class="dropdown-item text-muted">Loading...</span></li>
+                                }
+                            </ul>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">Movies</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">TV Series</a>
+                        </li>
+                    </ul>
+
+                    <div class="d-flex align-items-center">
+                        <!-- Search -->
+                        <div class="search-container">
+                            <form action="/Search" method="get" id="searchForm">
+                                <input type="text" name="q" id="searchInput" placeholder="Tìm kiếm phim..." autocomplete="off" />
+                                <button type="submit"><i class="fas fa-search"></i></button>
+                            </form>
+                            <div id="searchSuggestions" class="suggestions-box" style="display: none;"></div>
+                        </div>
+
+                        <!-- User Menu -->
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            <div class="dropdown ms-3">
+                                <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+                                    <div class="user-avatar me-2">
+                                        @User.Identity.Name?.Substring(0, 1).ToUpper()
+                                    </div>
+                                    <span class="d-none d-lg-inline">@User.Identity.Name</span>
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
                                     <li>
-                                        <a class="dropdown-item" asp-controller="Genre" asp-action="Index" asp-route-slug="@genre.Slug">
-                                            @genre.Name
+                                        <a class="dropdown-item" asp-controller="Home" asp-action="Profile">
+                                            <i class="fas fa-user me-2"></i> Profile
                                         </a>
                                     </li>
-                                }
-                            }
-                            else
-                            {
-                                <li><span class="dropdown-item text-muted">Loading...</span></li>
-                            }
-                        </ul>
-                    </li>
-
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="countryDropdown" role="button" data-bs-toggle="dropdown">
-                            Countries
-                        </a>
-                        <ul class="dropdown-menu" style="columns: 3; min-width: 500px;" aria-labelledby="countryDropdown">
-                            @if (ViewBag.Countries != null)
-                            {
-                                foreach (var country in ViewBag.Countries)
-                                {
                                     <li>
-                                        <a class="dropdown-item" href="#">@country.Name</a>
+                                        <a class="dropdown-item" asp-controller="Home" asp-action="ContinueWatching">
+                                            <i class="fas fa-play-circle me-2"></i> Continue Watching
+                                        </a>
                                     </li>
-                                }
-                            }
-                            else
-                            {
-                                <li><span class="dropdown-item text-muted">Loading...</span></li>
-                            }
-                        </ul>
-                    </li>
-
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Movies</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">TV Series</a>
-                    </li>
-                </ul>
-
-                <ul class="navbar-nav ms-auto align-items-center">
-                    <li class="nav-item me-3">
-                        <form asp-controller="Search" asp-action="Index" method="get" class="netflix-search">
-                            <input type="text" name="q" placeholder="Search movies..." />
-                            <button type="submit">
-                                <i class="fas fa-search"></i>
-                            </button>
-                        </form>
-                    </li>
-
-                    @if (User.Identity?.IsAuthenticated == true)
-                    {
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
-                                <div class="user-avatar me-2">
-                                    @User.Identity.Name?.Substring(0, 1).ToUpper()
-                                </div>
-                                <span>@User.Identity.Name</span>
-                            </a>
-                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                                <li>
-                                    <a class="dropdown-item" asp-controller="Home" asp-action="Profile">
-                                        <i class="fas fa-user me-2"></i> Profile
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item" asp-controller="Home" asp-action="ContinueWatching">
-                                        <i class="fas fa-play-circle me-2"></i> Continue Watching
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item" asp-controller="Home" asp-action="MyList">
-                                        <i class="fas fa-list me-2"></i> My List
-                                    </a>
-                                </li>
-                                <li><hr class="dropdown-divider" /></li>
-                                @if (User.IsInRole("Admin"))
-                                {
                                     <li>
-                                        <a class="dropdown-item" asp-area="Admin" asp-controller="Dashboard" asp-action="Index">
-                                            <i class="fas fa-cog me-2"></i> Admin Dashboard
+                                        <a class="dropdown-item" asp-controller="Home" asp-action="MyList">
+                                            <i class="fas fa-list me-2"></i> My List
                                         </a>
                                     </li>
                                     <li><hr class="dropdown-divider" /></li>
-                                }
-                                <li>
-                                    <form asp-area="Identity" asp-page="/Account/Logout" method="post" class="d-inline">
-                                        <button type="submit" class="dropdown-item">
-                                            <i class="fas fa-sign-out-alt me-2"></i> Logout
-                                        </button>
-                                    </form>
-                                </li>
-                            </ul>
-                        </li>
-                    }
-                    else
-                    {
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="Identity" asp-page="/Account/Login">
+                                    @if (User.IsInRole("Admin"))
+                                    {
+                                        <li>
+                                            <a class="dropdown-item" asp-area="Admin" asp-controller="Dashboard" asp-action="Index">
+                                                <i class="fas fa-cog me-2"></i> Admin Dashboard
+                                            </a>
+                                        </li>
+                                        <li><hr class="dropdown-divider" /></li>
+                                    }
+                                    <li>
+                                        <form asp-area="Identity" asp-page="/Account/Logout" method="post" class="d-inline">
+                                            <button type="submit" class="dropdown-item">
+                                                <i class="fas fa-sign-out-alt me-2"></i> Logout
+                                            </button>
+                                        </form>
+                                    </li>
+                                </ul>
+                            </div>
+                        }
+                        else
+                        {
+                            <a class="nav-link ms-3" asp-area="Identity" asp-page="/Account/Login">
                                 <i class="fas fa-sign-in-alt me-1"></i> Login
                             </a>
-                        </li>
-                    }
-                </ul>
-            </div>
-        </div>
-    </nav>
-
-    <!-- Main Content -->
-    <main>
-        @RenderBody()
-    </main>
-
-    <!-- Footer -->
-    <footer class="bg-dark text-white py-4 mt-5" style="border-top: 1px solid rgba(255,255,255,0.1);">
-        <div class="container">
-            <div class="row">
-                <div class="col-md-6">
-                    <h5><i class="fas fa-film"></i> CuongFilm</h5>
-                    <p>Watch movies online for free in high quality</p>
-                </div>
-                <div class="col-md-6 text-end">
-                    <p class="mb-2">&copy; 2024 CuongFilm. All rights reserved.</p>
-                    <p>
-                        <a href="#" class="text-white me-3 text-decoration-none">About Us</a>
-                        <a href="#" class="text-white me-3 text-decoration-none">Contact</a>
-                        <a href="#" class="text-white text-decoration-none">Terms</a>
-                    </p>
+                        }
+                    </div>
                 </div>
             </div>
-        </div>
-    </footer>
+        </nav>
 
-    <!--  ĐÚNG THỨ TỰ: jQuery TRƯỚC, Bootstrap SAU -->
+        <!-- Main Content -->
+        <main>
+            @RenderBody()
+        </main>
+
+        <!-- Netflix Style Footer -->
+        <footer class="netflix-footer">
+            <div class="footer-content">
+                <div class="social-links">
+                    <a href="#"><i class="fab fa-facebook"></i></a>
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-youtube"></i></a>
+                </div>
+
+                <div class="footer-grid">
+                    <div class="footer-section">
+                        <h5>Khám phá</h5>
+                        <ul>
+                            <li><a href="/">Phim mới</a></li>
+                            <li><a href="#">Phim hot</a></li>
+                            <li><a href="#">Thể loại</a></li>
+                            <li><a href="#">Quốc gia</a></li>
+                        </ul>
+                    </div>
+
+                    <div class="footer-section">
+                        <h5>Hỗ trợ</h5>
+                        <ul>
+                            <li><a href="#">Trung tâm trợ giúp</a></li>
+                            <li><a href="#">Câu hỏi thường gặp</a></li>
+                            <li><a href="#">Liên hệ</a></li>
+                            <li><a href="#">Điều khoản sử dụng</a></li>
+                        </ul>
+                    </div>
+
+                    <div class="footer-section">
+                        <h5>Về chúng tôi</h5>
+                        <ul>
+                            <li><a href="#">Giới thiệu</a></li>
+                            <li><a href="#">Tuyển dụng</a></li>
+                            <li><a href="#">Điều khoản bảo mật</a></li>
+                            <li><a href="#">Thông báo pháp lý</a></li>
+                        </ul>
+                    </div>
+
+                    <div class="footer-section">
+                        <h5>Ứng dụng</h5>
+                        <ul>
+                            <li><a href="#"><i class="fab fa-apple"></i> App Store</a></li>
+                            <li><a href="#"><i class="fab fa-google-play"></i> Google Play</a></li>
+                            <li><a href="#"><i class="fab fa-windows"></i> Windows App</a></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="footer-bottom">
+                    <div>© 2024 CuongFilm. Tất cả các quyền được bảo lưu.</div>
+                    <div class="footer-bottom-links">
+                        <a href="#">Điều khoản</a>
+                        <a href="#">Bảo mật</a>
+                        <a href="#">Cookie</a>
+                    </div>
+                    <div class="payment-methods">
+                        <i class="fab fa-cc-visa"></i>
+                        <i class="fab fa-cc-mastercard"></i>
+                        <i class="fab fa-cc-paypal"></i>
+                        <i class="fab fa-cc-amazon-pay"></i>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Scripts -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
@@ -302,6 +645,60 @@
             } else {
                 nav.classList.remove('scrolled');
             }
+        });
+
+        // Search functionality
+        $(document).ready(function () {
+            let debounceTimer;
+
+            $('#searchInput').on('input', function () {
+                clearTimeout(debounceTimer);
+                const query = $(this).val().trim();
+
+                if (query.length < 2) {
+                    $('#searchSuggestions').hide();
+                    return;
+                }
+
+                debounceTimer = setTimeout(() => {
+                    $.ajax({
+                        url: '/Search/Suggestions',
+                        type: 'GET',
+                        data: { q: query },
+                        success: function (data) {
+                            const suggestionsBox = $('#searchSuggestions');
+                            suggestionsBox.empty();
+
+                            if (data && data.length > 0) {
+                                data.forEach(movie => {
+                                    const item = `
+                                        <a href="/Movie/Detail/${movie.slug}" class="suggestion-item">
+                                            <img src="${movie.posterUrl || 'https://via.placeholder.com/40x60/2d2d2d/ffffff?text=No+Poster'}"
+                                                 alt="${movie.title}"
+                                                 onerror="this.src='https://via.placeholder.com/40x60/2d2d2d/ffffff?text=No+Poster'">
+                                            <div>
+                                                <div style="font-weight: 600;">${movie.title}</div>
+                                                <div style="font-size: 0.8rem; color: #b3b3b3;">${movie.year || ''}</div>
+                                            </div>
+                                        </a>`;
+                                    suggestionsBox.append(item);
+                                });
+                                suggestionsBox.show();
+                            } else {
+                                suggestionsBox.html('<div style="padding: 15px; color: #b3b3b3; text-align: center;">Không tìm thấy kết quả</div>');
+                                suggestionsBox.show();
+                            }
+                        }
+                    });
+                }, 300);
+            });
+
+            // Hide suggestions on click outside
+            $(document).on('click', function (e) {
+                if (!$(e.target).closest('.search-container').length) {
+                    $('#searchSuggestions').fadeOut(200);
+                }
+            });
         });
     </script>
 
