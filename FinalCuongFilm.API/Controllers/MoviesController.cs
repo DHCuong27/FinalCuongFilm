@@ -163,9 +163,9 @@ namespace FinalCuongFilm.API.Controllers
 				return BadRequest(ApiResponse<MovieDto>.FailureResult("ID mismatch"));
 			}
 
-			var success = await _movieService.UpdateAsync(dto);
+			var result = await _movieService.UpdateAsync(id, dto);
 
-			if (!success)
+			if (result == null)
 			{
 				return NotFound(ApiResponse<MovieDto>.FailureResult(
 					"Movie not found",
@@ -173,9 +173,7 @@ namespace FinalCuongFilm.API.Controllers
 				));
 			}
 
-			var updatedMovie = await _movieService.GetByIdAsync(id);
-
-			return Ok(ApiResponse<MovieDto>.SuccessResult(updatedMovie!, "Movie updated successfully"));
+			return Ok(ApiResponse<MovieDto>.SuccessResult(result, "Movie updated successfully"));
 		}
 
 		/// <summary>

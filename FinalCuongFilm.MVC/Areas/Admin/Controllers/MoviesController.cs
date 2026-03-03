@@ -17,17 +17,20 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 		private readonly IActorService _actorService;
 		private readonly IGenreService _genreService;
 		private readonly CuongFilmDbContext _context;
+		private readonly IAzureBlobService _azureBlobService;
 
 		public MoviesController(
 			IMovieService movieService,
 			IActorService actorService,
 			IGenreService genreService,
-			CuongFilmDbContext context)
+			CuongFilmDbContext context,
+			IAzureBlobService azureBlobService)
 		{
 			_movieService = movieService;
 			_actorService = actorService;
 			_genreService = genreService;
 			_context = context;
+			_azureBlobService = azureBlobService;
 		}
 
 		// GET: Admin/Movies
@@ -60,12 +63,30 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 
 		[HttpPost]
 		[ValidateAntiForgeryToken]
-		public async Task<IActionResult> Create(MovieCreateDto dto)
+		public async Task<IActionResult> Create(MovieCreateDto dto, IFormFile? posterFile)
 		{
+			if (posterFile != null && posterFile.Length > 0)
+			{
+				var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".webp" };
+				var ext = Path.GetExtension(posterFile.FileName).ToLowerInvariant();
+				if (!allowedExtensions.Contains(ext))
+					ModelState.AddModelError("", "Poster file must be JPG, PNG, or WEBP.");
+				else if (posterFile.Length > 5 * 1024 * 1024)
+					ModelState.AddModelError("", "Poster file must be smaller than 5MB.");
+			}
+
 			if (ModelState.IsValid)
 			{
 				try
 				{
+					if (posterFile != null && posterFile.Length > 0)
+					{
+						var tempSlug = !string.IsNullOrEmpty(dto.Slug)
+							? dto.Slug
+							: dto.Title.ToLower().Replace(" ", "-");
+						dto.PosterUrl = await _azureBlobService.UploadPosterAsync(posterFile, tempSlug);
+					}
+
 					await _movieService.CreateAsync(dto);
 					TempData["Success"] = "Thêm phim thành công!";
 					return RedirectToAction(nameof(Index));
@@ -131,15 +152,31 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 		// POST: Admin/Movies/Edit/5
 		[HttpPost]
 		[ValidateAntiForgeryToken]
-		public async Task<IActionResult> Edit(Guid id, MovieUpdateDto dto)
+		public async Task<IActionResult> Edit(Guid id, MovieUpdateDto dto, IFormFile? posterFile)
 		{
 			if (id != dto.Id)
 				return NotFound();
+
+			if (posterFile != null && posterFile.Length > 0)
+			{
+				var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".webp" };
+				var ext = Path.GetExtension(posterFile.FileName).ToLowerInvariant();
+				if (!allowedExtensions.Contains(ext))
+					ModelState.AddModelError("", "Poster file must be JPG, PNG, or WEBP.");
+				else if (posterFile.Length > 5 * 1024 * 1024)
+					ModelState.AddModelError("", "Poster file must be smaller than 5MB.");
+			}
 
 			if (ModelState.IsValid)
 			{
 				try
 				{
+					if (posterFile != null && posterFile.Length > 0)
+					{
+						var slug = !string.IsNullOrEmpty(dto.Slug) ? dto.Slug : dto.Id.ToString();
+						dto.PosterUrl = await _azureBlobService.UploadPosterAsync(posterFile, slug);
+					}
+
 					var result = await _movieService.UpdateAsync(id, dto);
 					if (result == null)
 						return NotFound();

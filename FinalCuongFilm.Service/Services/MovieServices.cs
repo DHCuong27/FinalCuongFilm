@@ -34,16 +34,27 @@ namespace FinalCuongFilm.Service.Services
 		{
 			var movies = await _context.Movies
 				.AsNoTracking()
-				.Where(m => m.IsActive)
 				.OrderByDescending(m => m.CreatedAt)
 				.Select(m => new MovieDto
 				{
 					Id = m.Id,
 					Title = m.Title,
 					Slug = m.Slug,
+					Description = m.Description,
+					ReleaseYear = m.ReleaseYear,
+					DurationMinutes = m.DurationMinutes,
 					ViewCount = m.ViewCount,
-					CountryName = m.Country.Name,
-					LanguageName = m.Language.Name
+					PosterUrl = m.PosterUrl,
+					TrailerUrl = m.TrailerUrl,
+					Type = m.Type,
+					Status = m.Status,
+					IsActive = m.IsActive,
+					LanguageId = m.LanguageId,
+					CountryId = m.CountryId,
+					CountryName = m.Country != null ? m.Country.Name : null,
+					LanguageName = m.Language != null ? m.Language.Name : null,
+					SelectedActorIds = m.Movie_Actors.Select(ma => ma.ActorId).ToList(),
+					SelectedGenreIds = m.Movie_Genres.Select(mg => mg.GenreId).ToList()
 				})
 				.ToListAsync();
 
