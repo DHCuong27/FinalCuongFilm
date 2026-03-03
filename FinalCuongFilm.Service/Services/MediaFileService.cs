@@ -61,10 +61,9 @@ namespace FinalCuongFilm.Service.Services
 
 		public async Task<MediaFileDto> CreateAsync(MediaFileCreateDto dto)
 		{
-			// Validate: Phải có MovieId HOẶC EpisodeId
 			if (!dto.MovieId.HasValue && !dto.EpisodeId.HasValue)
 			{
-				throw new InvalidOperationException("Phải chọn Phim hoặc Tập phim.");
+				throw new InvalidOperationException("Must select a Movie or Episode.");
 			}
 
 			var mediaFile = new MediaFile
@@ -141,8 +140,7 @@ namespace FinalCuongFilm.Service.Services
 				}
 				catch (Exception ex)
 				{
-					// Log lỗi nhưng vẫn xóa record trong database
-					Console.WriteLine($"Không thể xóa file: {ex.Message}");
+					Console.WriteLine($"Could not delete file: {ex.Message}");
 				}
 			}
 
@@ -177,9 +175,5 @@ namespace FinalCuongFilm.Service.Services
 			};
 		}
 
-		//public Task<MediaFileDto?> GetSubtitlesAsync(Guid mediaFileId, string language)
-		//{
-		//	throw new NotImplementedException();
-		//}
 	}
 }

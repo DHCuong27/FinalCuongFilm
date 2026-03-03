@@ -1175,7 +1175,8 @@
                             {
                                 <!--  EPISODE LINK - ĐÚNG FORMAT -->
                                 
-                                          <a asp-controller="Movie" asp-action="Watch" asp-route-slug="@Model.Movie.Slug" class="episode-item">
+                                <a href="/Movie/Watch/@Model.Movie.Slug?ep=@episode.EpisodeNumber"
+                                   class="episode-item">
                                     <div class="episode-number">@episode.EpisodeNumber</div>
                                     
                                     <div class="episode-thumb">
