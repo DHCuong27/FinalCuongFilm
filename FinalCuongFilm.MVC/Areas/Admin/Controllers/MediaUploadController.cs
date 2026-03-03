@@ -332,7 +332,7 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 					GenreIds = movie.SelectedGenreIds
 				};
 
-				await _movieService.UpdateAsync(updateDto);
+				await _movieService.UpdateAsync(updateDto.Id, updateDto);
 
 				return Json(new
 				{

@@ -1,96 +1,356 @@
 ﻿@model IEnumerable<FinalCuongFilm.Common.DTOs.MovieDto>
-
 @{
-    ViewData["Title"] = "Quản lý Phim";
+    ViewData["Title"] = "Movie Management";
 }
 
-<div class="row">
-    <div class="col-md-12">
-        <div class="overview-wrap">
-            <h2 class="title-1">@ViewData["Title"]</h2>
-            <a asp-action="Create" class="au-btn au-btn-icon au-btn--blue">
-                <i class="zmdi zmdi-plus"></i>Thêm mới
-            </a>
-        </div>
-    </div>
+<style>
+    :root {
+        --nf-red: #e50914;
+        --nf-red2: #f40612;
+        --nf-bg: #141414;
+        --nf-dark: #181818;
+        --nf-darker: #0f0f0f;
+        --nf-card: #1f1f1f;
+        --nf-input: #2a2a2a;
+        --nf-border: #333;
+        --nf-gray: #808080;
+        --nf-lgray: #b3b3b3;
+        --nf-white: #fff;
+        --nf-green: #2ecc71;
+        --nf-blue: #3498db;
+        --nf-yellow: #f39c12;
+    }
+    /* ── Page Header ── */
+    .nf-page-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 24px;
+        padding-bottom: 16px;
+        border-bottom: 2px solid var(--nf-border);
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .nf-page-title {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: var(--nf-white);
+        margin: 0;
+    }
+
+        .nf-page-title span {
+            color: var(--nf-red);
+        }
+    /* ── Buttons ── */
+    .nf-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 9px 20px;
+        font-size: .9rem;
+        font-weight: 600;
+        border-radius: 5px;
+        border: none;
+        cursor: pointer;
+        transition: all .2s;
+        text-decoration: none;
+        font-family: inherit;
+        line-height: 1.4;
+    }
+
+    .nf-btn-red {
+        background: var(--nf-red);
+        color: #fff;
+    }
+
+        .nf-btn-red:hover {
+            background: var(--nf-red2);
+            color: #fff;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(229,9,20,.35);
+        }
+
+    .nf-btn-ghost {
+        background: transparent;
+        color: var(--nf-lgray);
+        border: 1px solid var(--nf-border);
+    }
+
+        .nf-btn-ghost:hover {
+            background: var(--nf-border);
+            color: var(--nf-white);
+        }
+
+    .nf-btn-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        border-radius: 6px;
+        border: 1px solid transparent;
+        text-decoration: none;
+        transition: all .18s;
+    }
+
+        .nf-btn-icon.view {
+            color: var(--nf-blue);
+            border-color: rgba(52,152,219,.35);
+            background: rgba(52,152,219,.08);
+        }
+
+            .nf-btn-icon.view:hover {
+                background: rgba(52,152,219,.22);
+            }
+
+        .nf-btn-icon.edit {
+            color: var(--nf-yellow);
+            border-color: rgba(243,156,18,.35);
+            background: rgba(243,156,18,.08);
+        }
+
+            .nf-btn-icon.edit:hover {
+                background: rgba(243,156,18,.22);
+            }
+
+        .nf-btn-icon.del {
+            color: var(--nf-red);
+            border-color: rgba(229,9,20,.35);
+            background: rgba(229,9,20,.08);
+        }
+
+            .nf-btn-icon.del:hover {
+                background: rgba(229,9,20,.22);
+            }
+    /* ── Table ── */
+    .nf-table-wrap {
+        background: var(--nf-card);
+        border-radius: 8px;
+        border: 1px solid var(--nf-border);
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,.4);
+    }
+
+    .nf-table {
+        width: 100%;
+        border-collapse: collapse;
+        color: var(--nf-white);
+    }
+
+        .nf-table thead tr {
+            background: var(--nf-darker);
+            border-bottom: 2px solid var(--nf-red);
+        }
+
+        .nf-table thead th {
+            padding: 12px 14px;
+            font-size: .72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .8px;
+            color: var(--nf-lgray);
+            white-space: nowrap;
+        }
+
+        .nf-table tbody tr {
+            border-bottom: 1px solid var(--nf-border);
+            transition: background .15s;
+        }
+
+            .nf-table tbody tr:last-child {
+                border-bottom: none;
+            }
+
+            .nf-table tbody tr:hover {
+                background: rgba(229,9,20,.05);
+            }
+
+        .nf-table tbody td {
+            padding: 10px 14px;
+            vertical-align: middle;
+            font-size: .9rem;
+        }
+
+    .nf-poster {
+        width: 44px;
+        height: 62px;
+        object-fit: cover;
+        border-radius: 4px;
+        border: 1px solid var(--nf-border);
+        display: block;
+    }
+
+    .nf-poster-empty {
+        width: 44px;
+        height: 62px;
+        background: var(--nf-darker);
+        border-radius: 4px;
+        border: 1px dashed var(--nf-border);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--nf-border);
+        font-size: 1.2rem;
+    }
+
+    .td-title strong {
+        display: block;
+        color: var(--nf-white);
+        font-size: .92rem;
+    }
+
+    .td-title small {
+        color: var(--nf-gray);
+        font-size: .75rem;
+        font-family: monospace;
+    }
+    /* ── Badges ── */
+    .nf-badge {
+        display: inline-block;
+        padding: 2px 9px;
+        border-radius: 20px;
+        font-size: .72rem;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .nf-badge-green {
+        background: rgba(46,204,113,.15);
+        color: var(--nf-green);
+        border: 1px solid var(--nf-green);
+    }
+
+    .nf-badge-gray {
+        background: rgba(128,128,128,.15);
+        color: var(--nf-gray);
+        border: 1px solid var(--nf-gray);
+    }
+
+    .nf-badge-blue {
+        background: rgba(52,152,219,.15);
+        color: var(--nf-blue);
+        border: 1px solid var(--nf-blue);
+    }
+
+    .nf-badge-yellow {
+        background: rgba(243,156,18,.15);
+        color: var(--nf-yellow);
+        border: 1px solid var(--nf-yellow);
+    }
+    /* ── Action group ── */
+    .nf-actions {
+        display: flex;
+        gap: 6px;
+        justify-content: center;
+    }
+    /* ── Empty state ── */
+    .nf-empty {
+        padding: 48px 24px;
+        text-align: center;
+        background: var(--nf-card);
+        border: 1px dashed var(--nf-border);
+        border-radius: 8px;
+        margin-top: 12px;
+    }
+
+        .nf-empty i {
+            font-size: 2.8rem;
+            color: var(--nf-border);
+            display: block;
+            margin-bottom: 14px;
+        }
+
+        .nf-empty p {
+            color: var(--nf-lgray);
+            margin-bottom: 18px;
+        }
+
+        .nf-empty a {
+            color: var(--nf-red);
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+            .nf-empty a:hover {
+                text-decoration: underline;
+            }
+</style>
+
+<div class="nf-page-header">
+    <h2 class="nf-page-title">Movie <span>Management</span></h2>
+    <a asp-action="Create" class="nf-btn nf-btn-red">
+        <i class="zmdi zmdi-plus"></i> Add New Movie
+    </a>
 </div>
 
-<div class="row m-t-30">
-    <div class="col-md-12">
-        <div class="table-responsive table--no-card m-b-40">
-            <table class="table table-borderless table-striped table-earning">
-                <thead>
-                    <tr>
-                        <th>Poster</th>
-                        <th>Tiêu đề</th>
-                        <th>Thể loại</th>
-                        <th>Quốc gia</th>
-                        <th>Năm</th>
-                        <th>Trạng thái</th>
-                        <th>Hành động</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var item in Model)
-                    {
-                        <tr>
-                            <td>
-                                @if (!string.IsNullOrEmpty(item.PosterUrl))
-                                {
-                                    <img src="@item.PosterUrl" alt="@item.Title" style="width: 50px; height: 70px; object-fit: cover;" />
-                                }
-                                else
-                                {
-                                    <img src="~/images/no-poster.jpg" alt="No poster" style="width: 50px; height: 70px; object-fit: cover;" />
-                                }
-                            </td>
-                            <td>
-                                <strong>@item.Title</strong><br />
-                                <small class="text-muted">@item.Slug</small>
-                            </td>
-                            <td>@item.Type</td>
-                            <td>@item.CountryName</td>
-                            <td>@item.ReleaseYear</td>
-                            <td>
-                                @if (item.IsActive)
-                                {
-                                    <span class="badge badge-success">Hoạt động</span>
-                                }
-                                else
-                                {
-                                    <span class="badge badge-secondary">Tạm ẩn</span>
-                                }
-                                <br />
-                                <span class="badge badge-info">@item.Status</span>
-                            </td>
-                            <td>
-                                <div class="table-data-feature">
-                                    <a asp-action="Details" asp-route-id="@item.Id" class="item" data-toggle="tooltip" title="Chi tiết">
-                                        <i class="zmdi zmdi-eye"></i>
-                                    </a>
-                                    <a asp-action="Edit" asp-route-id="@item.Id" class="item" data-toggle="tooltip" title="Sửa">
-                                        <i class="zmdi zmdi-edit"></i>
-                                    </a>
-                                    <a asp-action="Delete" asp-route-id="@item.Id" class="item" data-toggle="tooltip" title="Xóa">
-                                        <i class="zmdi zmdi-delete"></i>
-                                    </a>
-                                </div>
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
-    </div>
-</div>
-
-@if (!Model.Any())
+@if (Model != null && Model.Any())
 {
-    <div class="row">
-        <div class="col-md-12">
-            <div class="alert alert-info">
-                <strong>Thông báo:</strong> Chưa có phim nào. <a asp-action="Create">Thêm phim mới</a>
-            </div>
-        </div>
+    <div class="nf-table-wrap">
+        <table class="nf-table">
+            <thead>
+                <tr>
+                    <th>Poster</th>
+                    <th>Title</th>
+                    <th>Type</th>
+                    <th>Country</th>
+                    <th>Year</th>
+                    <th>Status</th>
+                    <th style="text-align:center;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>
+                            @if (!string.IsNullOrEmpty(item.PosterUrl))
+                            {
+                                <img src="@item.PosterUrl" alt="@item.Title" class="nf-poster" />
+                            }
+                            else
+                            {
+                                <div class="nf-poster-empty"><i class="zmdi zmdi-image"></i></div>
+                            }
+                        </td>
+                        <td class="td-title">
+                            <strong>@item.Title</strong>
+                            <small>@item.Slug</small>
+                        </td>
+                        <td><span class="nf-badge nf-badge-yellow">@item.Type</span></td>
+                        <td>@item.CountryName</td>
+                        <td>@item.ReleaseYear</td>
+                        <td>
+                            @if (item.IsActive)
+                            {
+                                <span class="nf-badge nf-badge-green">Active</span>
+                            }
+                            else
+                            {
+
+                                <span class="nf-badge nf-badge-gray">Hidden</span>
+                            }
+                            <br style="margin:3px 0" />
+                            <span class="nf-badge nf-badge-blue">@item.Status</span>
+                        </td>
+                        <td>
+                            <div class="nf-actions">
+                                <a asp-action="Details" asp-route-id="@item.Id" class="nf-btn-icon view" title="View Details"><i class="zmdi zmdi-eye"></i></a>
+                                <a asp-action="Edit" asp-route-id="@item.Id" class="nf-btn-icon edit" title="Edit"><i class="zmdi zmdi-edit"></i></a>
+                                <a asp-action="Delete" asp-route-id="@item.Id" class="nf-btn-icon del" title="Delete"><i class="zmdi zmdi-delete"></i></a>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+else
+{
+    <div class="nf-empty">
+        <i class="zmdi zmdi-movie"></i>
+        <p>No movies found. Start by adding your first movie!</p>
+        <a asp-action="Create">+ Add New Movie</a>
     </div>
 }

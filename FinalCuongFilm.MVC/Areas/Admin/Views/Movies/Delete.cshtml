@@ -1,194 +1,579 @@
 ﻿@model FinalCuongFilm.Common.DTOs.MovieDto
-
 @{
-    ViewData["Title"] = "Xóa Phim";
+    ViewData["Title"] = "Movie Details";
 }
 
 <style>
-    /* CSS đơn giản, tối giản */
-    body {
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        background-color: #f8f9fa;
-        color: #333;
-        line-height: 1.6;
+    :root {
+        --nf-red: #e50914;
+        --nf-red2: #f40612;
+        --nf-darker: #0f0f0f;
+        --nf-card: #1f1f1f;
+        --nf-input: #2a2a2a;
+        --nf-border: #333;
+        --nf-gray: #808080;
+        --nf-lgray: #b3b3b3;
+        --nf-white: #fff;
+        --nf-green: #2ecc71;
+        --nf-blue: #3498db;
+        --nf-yellow: #f39c12;
+    }
+    /* ── Page Header ── */
+    .nf-page-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        margin-bottom: 24px;
+        padding-bottom: 16px;
+        border-bottom: 2px solid var(--nf-border);
+        flex-wrap: wrap;
+        gap: 12px;
     }
 
-    .page-title {
-        font-size: 1.8rem;
-        font-weight: 600;
-        color: #dc3545;
-        margin-bottom: 1.5rem;
-        padding-bottom: 0.5rem;
-        border-bottom: 1px solid #eaeaea;
+    .nf-page-title {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: var(--nf-white);
+        margin: 0 0 4px;
     }
 
-    .alert {
-        padding: 1rem;
-        border-radius: 6px;
-        margin-bottom: 1.5rem;
-        border: 1px solid transparent;
+        .nf-page-title span {
+            color: var(--nf-red);
+        }
+
+    .nf-page-sub {
+        color: var(--nf-lgray);
+        font-size: .9rem;
     }
 
-    .alert-danger {
-        color: #721c24;
-        background-color: #f8d7da;
-        border-color: #f5c6cb;
+    .nf-header-actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
     }
-
-    .card {
-        background-color: white;
-        border-radius: 8px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-        border: 1px solid #e0e0e0;
-        margin-bottom: 2rem;
-    }
-
-    .card-header {
-        background-color: #f8f9fa;
-        padding: 1rem 1.5rem;
-        border-bottom: 1px solid #e0e0e0;
-        font-weight: 600;
-        color: #495057;
-        font-size: 1.2rem;
-        border-radius: 8px 8px 0 0;
-    }
-
-    .card-body {
-        padding: 1.5rem;
-    }
-
-    .btn {
+    /* ── Buttons ── */
+    .nf-btn {
         display: inline-flex;
         align-items: center;
-        justify-content: center;
-        padding: 0.6rem 1.5rem;
-        font-size: 1rem;
-        font-weight: 500;
-        line-height: 1.5;
-        border-radius: 4px;
-        border: 1px solid transparent;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        text-decoration: none;
-        margin-right: 0.75rem;
-    }
-
-    .btn-danger {
-        color: white;
-        background-color: #dc3545;
-        border-color: #dc3545;
-    }
-
-        .btn-danger:hover {
-            background-color: #c82333;
-            border-color: #bd2130;
-        }
-
-    .btn-secondary {
-        color: #333;
-        background-color: #f8f9fa;
-        border-color: #ddd;
-    }
-
-        .btn-secondary:hover {
-            background-color: #e9ecef;
-            border-color: #ccc;
-        }
-
-    dl.row {
-        display: flex;
-        flex-wrap: wrap;
-        margin-bottom: 1.5rem;
-    }
-
-    dt {
-        flex: 0 0 30%;
-        max-width: 30%;
-        padding: 0.5rem 0;
+        gap: 7px;
+        padding: 9px 18px;
+        font-size: .88rem;
         font-weight: 600;
-        color: #495057;
+        border-radius: 5px;
+        border: none;
+        cursor: pointer;
+        transition: all .2s;
+        text-decoration: none;
+        font-family: inherit;
+        line-height: 1.4;
     }
 
-    dd {
-        flex: 0 0 70%;
-        max-width: 70%;
-        padding: 0.5rem 0;
-        color: #6c757d;
+    .nf-btn-red {
+        background: var(--nf-red);
+        color: #fff;
     }
 
-    form {
-        padding-top: 1rem;
-        border-top: 1px solid #eaeaea;
-        margin-top: 1rem;
+        .nf-btn-red:hover {
+            background: var(--nf-red2);
+            color: #fff;
+            transform: translateY(-1px);
+        }
+
+    .nf-btn-ghost {
+        background: transparent;
+        color: var(--nf-lgray);
+        border: 1px solid var(--nf-border);
     }
 
-    .row {
+        .nf-btn-ghost:hover {
+            background: var(--nf-border);
+            color: var(--nf-white);
+        }
+
+    .nf-btn-danger-ghost {
+        background: rgba(229,9,20,.1);
+        color: var(--nf-red);
+        border: 1px solid rgba(229,9,20,.35);
+    }
+
+        .nf-btn-danger-ghost:hover {
+            background: rgba(229,9,20,.2);
+            color: var(--nf-red);
+        }
+    /* ── Layout ── */
+    .nf-detail-layout {
+        display: grid;
+        grid-template-columns: 210px 1fr;
+        gap: 20px;
+        align-items: start;
+    }
+    /* ── Poster ── */
+    .nf-poster-card {
+        background: var(--nf-card);
+        border: 1px solid var(--nf-border);
+        border-radius: 8px;
+        overflow: hidden;
+        position: sticky;
+        top: 16px;
+    }
+
+    .nf-poster-img {
+        width: 100%;
+        aspect-ratio: 2/3;
+        object-fit: cover;
+        display: block;
+    }
+
+    .nf-no-poster {
+        width: 100%;
+        aspect-ratio: 2/3;
+        background: var(--nf-darker);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        color: var(--nf-gray);
+        font-size: .85rem;
+    }
+
+        .nf-no-poster i {
+            font-size: 2.5rem;
+            color: var(--nf-border);
+        }
+
+    .nf-poster-meta {
+        padding: 12px 14px;
+        border-top: 1px solid var(--nf-border);
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .nf-pm-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: .78rem;
+    }
+
+        .nf-pm-row .k {
+            color: var(--nf-gray);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .4px;
+        }
+    /* ── Card ── */
+    .nf-card {
+        background: var(--nf-card);
+        border: 1px solid var(--nf-border);
+        border-radius: 8px;
+        overflow: hidden;
+        margin-bottom: 16px;
+        box-shadow: 0 4px 20px rgba(0,0,0,.3);
+    }
+
+    .nf-card-hd {
+        background: var(--nf-darker);
+        padding: 11px 18px;
+        border-bottom: 2px solid var(--nf-red);
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        font-size: .72rem;
+        font-weight: 700;
+        color: var(--nf-white);
+        text-transform: uppercase;
+        letter-spacing: .8px;
+    }
+
+        .nf-card-hd i {
+            color: var(--nf-red);
+            font-size: 1.05rem;
+        }
+
+    .nf-card-bd {
+        padding: 18px 20px;
+    }
+    /* ── Movie title block ── */
+    .nf-movie-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--nf-white);
+        margin: 0 0 4px;
+        line-height: 1.2;
+    }
+
+    .nf-movie-slug {
+        font-size: .78rem;
+        color: var(--nf-gray);
+        font-family: monospace;
+        margin-bottom: 14px;
+    }
+
+    .nf-chips-row {
         display: flex;
         flex-wrap: wrap;
-        margin-right: -0.75rem;
-        margin-left: -0.75rem;
+        gap: 8px;
+        margin-bottom: 16px;
     }
 
-    .col-md-12, .col-md-8 {
-        padding-right: 0.75rem;
-        padding-left: 0.75rem;
-        position: relative;
-        width: 100%;
+    .nf-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        background: var(--nf-input);
+        border: 1px solid var(--nf-border);
+        border-radius: 20px;
+        padding: 4px 12px;
+        font-size: .8rem;
+        color: var(--nf-lgray);
     }
 
-    .col-md-8 {
-        flex: 0 0 66.666667%;
-        max-width: 66.666667%;
-        margin: 0 auto;
+        .nf-chip i {
+            color: var(--nf-red);
+            font-size: .85rem;
+        }
+    /* ── Info grid ── */
+    .nf-info-grid {
+        display: grid;
+        grid-template-columns: repeat(2,1fr);
+        gap: 0;
     }
 
-    .m-t-30 {
-        margin-top: 2rem;
+    .nf-ig-item {
+        padding: 11px 0;
+        border-bottom: 1px solid var(--nf-border);
+    }
+
+        .nf-ig-item:nth-child(odd) {
+            padding-right: 16px;
+        }
+
+        .nf-ig-item:nth-child(even) {
+            padding-left: 16px;
+            border-left: 1px solid var(--nf-border);
+        }
+
+    .nf-ig-lbl {
+        font-size: .7rem;
+        font-weight: 700;
+        color: var(--nf-gray);
+        text-transform: uppercase;
+        letter-spacing: .6px;
+        margin-bottom: 3px;
+    }
+
+    .nf-ig-val {
+        font-size: .92rem;
+        color: var(--nf-white);
+        font-weight: 500;
+    }
+
+        .nf-ig-val.mono {
+            font-family: monospace;
+            font-size: .8rem;
+            color: var(--nf-lgray);
+        }
+    /* ���─ Badges ── */
+    .nf-badge {
+        display: inline-block;
+        padding: 2px 9px;
+        border-radius: 20px;
+        font-size: .72rem;
+        font-weight: 600;
+    }
+
+    .nf-badge-green {
+        background: rgba(46,204,113,.15);
+        color: var(--nf-green);
+        border: 1px solid var(--nf-green);
+    }
+
+    .nf-badge-gray {
+        background: rgba(128,128,128,.15);
+        color: var(--nf-gray);
+        border: 1px solid var(--nf-gray);
+    }
+
+    .nf-badge-blue {
+        background: rgba(52,152,219,.15);
+        color: var(--nf-blue);
+        border: 1px solid var(--nf-blue);
+    }
+
+    .nf-badge-yellow {
+        background: rgba(243,156,18,.15);
+        color: var(--nf-yellow);
+        border: 1px solid var(--nf-yellow);
+    }
+    /* ── Description ── */
+    .nf-desc {
+        font-size: .92rem;
+        line-height: 1.75;
+        color: var(--nf-lgray);
+    }
+
+        .nf-desc.empty {
+            font-style: italic;
+            color: var(--nf-gray);
+        }
+    /* ── Trailer ── */
+    .nf-trailer-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: var(--nf-red);
+        color: #fff;
+        padding: 9px 20px;
+        border-radius: 5px;
+        font-weight: 600;
+        font-size: .88rem;
+        text-decoration: none;
+        transition: all .2s;
+    }
+
+        .nf-trailer-btn:hover {
+            background: var(--nf-red2);
+            color: #fff;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(229,9,20,.35);
+        }
+
+    .nf-trailer-url {
+        margin-top: 8px;
+        font-size: .75rem;
+        color: var(--nf-gray);
+        word-break: break-all;
+    }
+    /* ── Actions card ── */
+    .nf-action-row {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+    /* ── Scrollbar ── */
+    ::-webkit-scrollbar {
+        width: 5px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: var(--nf-darker);
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: var(--nf-border);
+        border-radius: 3px;
+    }
+    /* ── Responsive ── */
+    @@media(max-width:768px) {
+        .nf-detail-layout {
+            grid-template-columns: 1fr;
+        }
+
+        .nf-poster-card {
+            max-width: 200px;
+            margin: 0 auto;
+            position: static;
+        }
+
+        .nf-info-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .nf-ig-item:nth-child(odd), .nf-ig-item:nth-child(even) {
+            padding: 10px 0;
+            border-left: none;
+        }
+
+        .nf-page-header {
+            flex-direction: column;
+        }
+
+        .nf-header-actions {
+            width: 100%;
+        }
+
+        .nf-btn {
+            flex: 1;
+            justify-content: center;
+        }
+
+        .nf-action-row {
+            flex-direction: column;
+        }
     }
 </style>
 
-<div class="row">
-    <div class="col-md-12">
-        <h1 class="page-title">@ViewData["Title"]</h1>
+<!-- Page Header -->
+<div class="nf-page-header">
+    <div>
+        <h1 class="nf-page-title">Movie <span>Details</span></h1>
+        <p class="nf-page-sub">Full information for this movie entry</p>
+    </div>
+    <div class="nf-header-actions">
+        <a asp-action="Edit" asp-route-id="@Model.Id" class="nf-btn nf-btn-red"><i class="zmdi zmdi-edit"></i> Edit</a>
+        <a asp-action="Delete" asp-route-id="@Model.Id" class="nf-btn nf-btn-danger-ghost"><i class="zmdi zmdi-delete"></i> Delete</a>
+        <a asp-action="Index" class="nf-btn nf-btn-ghost"><i class="zmdi zmdi-arrow-left"></i> Back</a>
     </div>
 </div>
 
-<div class="row m-t-30">
-    <div class="col-md-8">
-        <div class="alert alert-danger">
-            <h4>Bạn có chắc chắn muốn xóa phim này?</h4>
-            <p class="mb-0">Hành động này không thể hoàn tác.</p>
+<div class="nf-detail-layout">
+
+    <!-- Left: Poster -->
+    <div>
+        <div class="nf-poster-card">
+            @if (!string.IsNullOrEmpty(Model.PosterUrl))
+            {
+                <img src="@Model.PosterUrl" alt="@Model.Title" class="nf-poster-img" />
+            }
+            else
+            {
+                <div class="nf-no-poster">
+                    <i class="zmdi zmdi-movie"></i>
+                    <span>No Poster</span>
+                </div>
+            }
+            <div class="nf-poster-meta">
+                <div class="nf-pm-row">
+                    <span class="k">Type</span>
+                    <span class="nf-badge nf-badge-yellow">@Model.Type</span>
+                </div>
+                <div class="nf-pm-row">
+                    <span class="k">Visibility</span>
+                    @if (Model.IsActive)
+                    {
+                        <span class="nf-badge nf-badge-green">Active</span>
+                    }
+                    else
+                    {
+
+                        <span class="nf-badge nf-badge-gray">Hidden</span>
+                    }
+                </div>
+                <div class="nf-pm-row">
+                    <span class="k">Status</span>
+                    <span class="nf-badge nf-badge-blue">@Model.Status</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right: Info -->
+    <div>
+
+        <!-- Title card -->
+        <div class="nf-card">
+            <div class="nf-card-hd"><i class="zmdi zmdi-movie"></i> Movie Information</div>
+            <div class="nf-card-bd">
+                <h2 class="nf-movie-title">@Model.Title</h2>
+                <div class="nf-movie-slug">slug: @Model.Slug</div>
+                <div class="nf-chips-row">
+                    @if (Model.ReleaseYear.HasValue)
+                    {
+                        <span class="nf-chip"><i class="zmdi zmdi-calendar"></i> @Model.ReleaseYear</span>
+                    }
+                    @if (Model.DurationMinutes.HasValue)
+                    {
+                        <span class="nf-chip"><i class="zmdi zmdi-time"></i> @Model.DurationMinutes min</span>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.CountryName))
+                    {
+                        <span class="nf-chip"><i class="zmdi zmdi-globe"></i> @Model.CountryName</span>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.LanguageName))
+                    {
+                        <span class="nf-chip"><i class="zmdi zmdi-translate"></i> @Model.LanguageName</span>
+                    }
+                </div>
+                <div class="nf-info-grid">
+                    <div class="nf-ig-item">
+                        <div class="nf-ig-lbl">Movie Type</div>
+                        <div class="nf-ig-val"><span class="nf-badge nf-badge-yellow">@Model.Type</span></div>
+                    </div>
+                    <div class="nf-ig-item">
+                        <div class="nf-ig-lbl">Publish Status</div>
+                        <div class="nf-ig-val"><span class="nf-badge nf-badge-blue">@Model.Status</span></div>
+                    </div>
+                    <div class="nf-ig-item">
+                        <div class="nf-ig-lbl">Country</div>
+                        <div class="nf-ig-val">@(Model.CountryName ?? "—")</div>
+                    </div>
+                    <div class="nf-ig-item">
+                        <div class="nf-ig-lbl">Language</div>
+                        <div class="nf-ig-val">@(Model.LanguageName ?? "—")</div>
+                    </div>
+                    <div class="nf-ig-item">
+                        <div class="nf-ig-lbl">Release Year</div>
+                        <div class="nf-ig-val">@(Model.ReleaseYear?.ToString() ?? "—")</div>
+                    </div>
+                    <div class="nf-ig-item">
+                        <div class="nf-ig-lbl">Duration</div>
+                        <div class="nf-ig-val">@(Model.DurationMinutes.HasValue ? $"{Model.DurationMinutes} min" : "—")</div>
+                    </div>
+                    <div class="nf-ig-item">
+                        <div class="nf-ig-lbl">Visibility</div>
+                        <div class="nf-ig-val">
+                            @if (Model.IsActive)
+                            {
+                                <span class="nf-badge nf-badge-green">Active</span>
+                            }
+                            else
+                            {
+
+                                <span class="nf-badge nf-badge-gray">Hidden</span>
+                            }
+                        </div>
+                    </div>
+                    <div class="nf-ig-item">
+                        <div class="nf-ig-lbl">Slug</div>
+                        <div class="nf-ig-val mono">@Model.Slug</div>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <div class="card">
-            <div class="card-header">
-                Thông tin phim sẽ bị xóa
+        <!-- Description -->
+        <div class="nf-card">
+            <div class="nf-card-hd"><i class="zmdi zmdi-comment-text"></i> Description</div>
+            <div class="nf-card-bd">
+                @if (!string.IsNullOrEmpty(Model.Description))
+                {
+                    <p class="nf-desc">@Model.Description</p>
+                }
+                else
+                {
+
+                    <p class="nf-desc empty">No description provided.</p>
+                }
             </div>
-            <div class="card-body">
-                <dl class="row">
-                    <dt>Tiêu đề:</dt>
-                    <dd>@Model.Title</dd>
+        </div>
 
-                    <dt>Năm phát hành:</dt>
-                    <dd>@Model.ReleaseYear</dd>
-
-                    <dt>Quốc gia:</dt>
-                    <dd>@Model.CountryName</dd>
-
-                    <dt>Mô tả:</dt>
-                    <dd>@Model.Description</dd>
-                </dl>
-
-                <form asp-action="Delete" method="post">
-                    <input type="hidden" asp-for="Id" />
-                    <button type="submit" class="btn btn-danger">
-                        Xác nhận xóa
-                    </button>
-                    <a asp-action="Index" class="btn btn-secondary">
-                        Hủy
+        <!-- Trailer -->
+        @if (!string.IsNullOrEmpty(Model.TrailerUrl))
+        {
+            <div class="nf-card">
+                <div class="nf-card-hd"><i class="zmdi zmdi-play-circle"></i> Trailer</div>
+                <div class="nf-card-bd">
+                    <a href="@Model.TrailerUrl" target="_blank" rel="noopener" class="nf-trailer-btn">
+                        <i class="zmdi zmdi-play"></i> Watch Trailer
                     </a>
-                </form>
+                    <div class="nf-trailer-url"><i class="zmdi zmdi-link"></i> @Model.TrailerUrl</div>
+                </div>
+            </div>
+        }
+
+        <!-- Actions -->
+        <div class="nf-card">
+            <div class="nf-card-hd"><i class="zmdi zmdi-settings"></i> Actions</div>
+            <div class="nf-card-bd">
+                <div class="nf-action-row">
+                    <a asp-action="Edit" asp-route-id="@Model.Id" class="nf-btn nf-btn-red"><i class="zmdi zmdi-edit"></i> Edit Movie</a>
+                    <a asp-action="Delete" asp-route-id="@Model.Id" class="nf-btn nf-btn-danger-ghost"><i class="zmdi zmdi-delete"></i> Delete Movie</a>
+                    <a asp-action="Index" class="nf-btn nf-btn-ghost"><i class="zmdi zmdi-arrow-left"></i> Back to List</a>
+                </div>
             </div>
         </div>
+
     </div>
 </div>

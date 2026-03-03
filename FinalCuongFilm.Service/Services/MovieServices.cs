@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using FinalCuongFilm.ApplicationCore.Entities;
 using FinalCuongFilm.Common.DTOs;
 using FinalCuongFilm.DataLayer;
@@ -27,58 +28,86 @@ namespace FinalCuongFilm.Service.Services
 			_azureBlobService = azureBlobService;
 		}
 
+		#region READ METHODS
+
 		public async Task<IEnumerable<MovieDto>> GetAllAsync()
 		{
 			var movies = await _context.Movies
-				.Include(m => m.Country)
-				.Include(m => m.Language)
-				.Include(m => m.Movie_Genres)
-					.ThenInclude(mg => mg.Genre)
+				.AsNoTracking()
 				.Where(m => m.IsActive)
 				.OrderByDescending(m => m.CreatedAt)
+				.Select(m => new MovieDto
+				{
+					Id = m.Id,
+					Title = m.Title,
+					Slug = m.Slug,
+					ViewCount = m.ViewCount,
+					CountryName = m.Country.Name,
+					LanguageName = m.Language.Name
+				})
 				.ToListAsync();
 
-			return _mapper.Map<IEnumerable<MovieDto>>(movies);
+			return movies;
 		}
 
 		public async Task<MovieDto?> GetByIdAsync(Guid id)
 		{
 			var movie = await _context.Movies
-				.Include(m => m.Country)
-				.Include(m => m.Language)
+				.AsNoTracking()
 				.Include(m => m.Movie_Genres)
 					.ThenInclude(mg => mg.Genre)
 				.Include(m => m.Movie_Actors)
 					.ThenInclude(ma => ma.Actor)
-				.Include(m => m.Movie_Tags)
-					.ThenInclude(mt => mt.Tag)
-				.FirstOrDefaultAsync(m => m.Id == id);
+				.FirstOrDefaultAsync(m => m.Id == id && m.IsActive);
 
-			return _mapper.Map<MovieDto>(movie);
+			return movie == null ? null : _mapper.Map<MovieDto>(movie);
 		}
 
 		public async Task<MovieDto?> GetBySlugAsync(string slug)
 		{
 			var movie = await _context.Movies
-				.Include(m => m.Country)
-				.Include(m => m.Language)
-				.Include(m => m.Movie_Genres)
-					.ThenInclude(mg => mg.Genre)
+				.AsNoTracking()
 				.FirstOrDefaultAsync(m => m.Slug == slug && m.IsActive);
 
-			return _mapper.Map<MovieDto>(movie);
+			return movie == null ? null : _mapper.Map<MovieDto>(movie);
 		}
+
+		public async Task<IEnumerable<MovieDto>> SearchAsync(string keyword)
+		{
+			return await _context.Movies
+				.AsNoTracking()
+				.Where(m => m.IsActive &&
+					(EF.Functions.Like(m.Title, $"%{keyword}%") ||
+					 EF.Functions.Like(m.Description, $"%{keyword}%")))
+				.OrderByDescending(m => m.ViewCount)
+				.Select(m => new MovieDto
+				{
+					Id = m.Id,
+					Title = m.Title,
+					Slug = m.Slug,
+					ViewCount = m.ViewCount
+				})
+				.ToListAsync();
+		}
+
+		#endregion
+
+		#region CREATE / UPDATE
 
 		public async Task<MovieDto> CreateAsync(MovieCreateDto dto)
 		{
+			if (await _context.Movies.AnyAsync(m => m.Slug == dto.Slug))
+				throw new Exception("Slug already exists");
+
 			var movie = _mapper.Map<Movie>(dto);
 			movie.CreatedAt = DateTime.UtcNow;
 			movie.IsActive = true;
+			movie.ViewCount = 0;
 
 			_context.Movies.Add(movie);
 			await _context.SaveChangesAsync();
 
-			_logger.LogInformation($" Created movie: {movie.Title} (ID: {movie.Id})");
+			_logger.LogInformation($"Created movie: {movie.Title}");
 
 			return _mapper.Map<MovieDto>(movie);
 		}
@@ -86,238 +115,127 @@ namespace FinalCuongFilm.Service.Services
 		public async Task<MovieDto?> UpdateAsync(Guid id, MovieUpdateDto dto)
 		{
 			var movie = await _context.Movies.FindAsync(id);
+			if (movie == null) return null;
 
-			if (movie == null)
-			{
-				_logger.LogWarning($"Movie with ID {id} not found");
-				return null;
-			}
+			if (await _context.Movies
+				.AnyAsync(m => m.Slug == dto.Slug && m.Id != id))
+				throw new Exception("Slug already exists");
 
 			_mapper.Map(dto, movie);
 			movie.UpdatedAt = DateTime.UtcNow;
 
 			await _context.SaveChangesAsync();
 
-			_logger.LogInformation($" Updated movie: {movie.Title} (ID: {movie.Id})");
+			_logger.LogInformation($"Updated movie: {movie.Title}");
 
 			return _mapper.Map<MovieDto>(movie);
 		}
 
-		//  DELETE WITH MANUAL MediaFiles DELETION
+		#endregion
+
+		#region DELETE
+
 		public async Task<bool> DeleteAsync(Guid id)
 		{
 			using var transaction = await _context.Database.BeginTransactionAsync();
 
-			try
+			var movie = await _context.Movies
+				.Include(m => m.MediaFiles)
+				.Include(m => m.Episodes)
+					.ThenInclude(e => e.MediaFiles)
+				.FirstOrDefaultAsync(m => m.Id == id);
+
+			if (movie == null) return false;
+
+			// Delete blobs first
+			var allMedia = movie.MediaFiles
+				.Concat(movie.Episodes.SelectMany(e => e.MediaFiles))
+				.ToList();
+
+			foreach (var media in allMedia)
 			{
-				_logger.LogInformation($"🗑️ Starting delete movie with ID: {id}");
-
-				var movie = await _context.Movies
-					.Include(m => m.MediaFiles)
-					.Include(m => m.Episodes)
-						.ThenInclude(e => e.MediaFiles)
-					.Include(m => m.Favorites)
-					.Include(m => m.Reviews)
-					.Include(m => m.Movie_Actors)
-					.Include(m => m.Movie_Genres)
-					.Include(m => m.Movie_Tags)
-					.FirstOrDefaultAsync(m => m.Id == id);
-
-				if (movie == null)
+				try
 				{
-					_logger.LogWarning($"Movie with ID {id} not found");
-					await transaction.RollbackAsync();
-					return false;
+					await _azureBlobService.DeleteAsync(media.FileUrl);
 				}
-
-				_logger.LogInformation($"Found movie: {movie.Title}");
-
-				// 1. Delete Episode MediaFiles
-				if (movie.Episodes != null && movie.Episodes.Any())
+				catch (Exception ex)
 				{
-					_logger.LogInformation($"Processing {movie.Episodes.Count} episodes");
-
-					foreach (var episode in movie.Episodes)
-					{
-						if (episode.MediaFiles != null && episode.MediaFiles.Any())
-						{
-							_logger.LogInformation($"   Deleting {episode.MediaFiles.Count} media files for Episode {episode.EpisodeNumber}");
-
-							foreach (var mediaFile in episode.MediaFiles.ToList())
-							{
-								try
-								{
-									await _azureBlobService.DeleteAsync(mediaFile.FileUrl);
-									_logger.LogInformation($"      Deleted blob: {mediaFile.FileName}");
-								}
-								catch (Exception ex)
-								{
-									_logger.LogWarning(ex, $"      Failed to delete blob: {mediaFile.FileUrl}");
-								}
-							}
-
-							_context.MediaFiles.RemoveRange(episode.MediaFiles);
-						}
-					}
+					_logger.LogWarning(ex, $"Failed to delete blob {media.FileUrl}");
 				}
-
-				// 2. Delete Movie MediaFiles
-				if (movie.MediaFiles != null && movie.MediaFiles.Any())
-				{
-					_logger.LogInformation($"   Deleting {movie.MediaFiles.Count} movie media files");
-
-					foreach (var mediaFile in movie.MediaFiles.ToList())
-					{
-						try
-						{
-							await _azureBlobService.DeleteAsync(mediaFile.FileUrl);
-							_logger.LogInformation($"      Deleted blob: {mediaFile.FileName}");
-						}
-						catch (Exception ex)
-						{
-							_logger.LogWarning(ex, $"      Failed to delete blob: {mediaFile.FileUrl}");
-						}
-					}
-
-					_context.MediaFiles.RemoveRange(movie.MediaFiles);
-				}
-
-				// 3. Delete Many-to-many relationships
-				if (movie.Movie_Actors != null && movie.Movie_Actors.Any())
-				{
-					_logger.LogInformation($"   Removing {movie.Movie_Actors.Count} actor relationships");
-					_context.Movie_Actors.RemoveRange(movie.Movie_Actors);
-				}
-
-				if (movie.Movie_Genres != null && movie.Movie_Genres.Any())
-				{
-					_logger.LogInformation($"   Removing {movie.Movie_Genres.Count} genre relationships");
-					_context.Movie_Genres.RemoveRange(movie.Movie_Genres);
-				}
-
-				if (movie.Movie_Tags != null && movie.Movie_Tags.Any())
-				{
-					_logger.LogInformation($"   Removing {movie.Movie_Tags.Count} tag relationships");
-					_context.Movie_Tags.RemoveRange(movie.Movie_Tags);
-				}
-
-				// 4. Delete Movie (CASCADE will auto-delete Episodes, Favorites, Reviews)
-				_context.Movies.Remove(movie);
-
-				await _context.SaveChangesAsync();
-				await transaction.CommitAsync();
-
-				_logger.LogInformation($" Successfully deleted movie: {movie.Title}");
-				return true;
 			}
-			catch (Exception ex)
-			{
-				_logger.LogError(ex, $"❌ Error deleting movie: {id}");
-				await transaction.RollbackAsync();
-				throw;
-			}
+
+			_context.Movies.Remove(movie);
+			await _context.SaveChangesAsync();
+			await transaction.CommitAsync();
+
+			return true;
 		}
 
-		public async Task<IEnumerable<MovieDto>> SearchAsync(string keyword)
-		{
-			var movies = await _context.Movies
-				.Include(m => m.Country)
-				.Include(m => m.Language)
-				.Where(m => m.IsActive && (
-					m.Title.Contains(keyword) ||
-					m.Description.Contains(keyword)
-				))
-				.OrderByDescending(m => m.ViewCount)
-				.ToListAsync();
+		#endregion
 
-			return _mapper.Map<IEnumerable<MovieDto>>(movies);
+		#region VIEW COUNT (Race Condition Safe)
+
+		public async Task IncrementViewCountAsync(Guid movieId)
+		{
+			await _context.Database.ExecuteSqlRawAsync(
+				"UPDATE Movies SET ViewCount = ViewCount + 1 WHERE Id = {0}",
+				movieId);
+
+			_logger.LogInformation($"View incremented for movie {movieId}");
+		}
+
+		#endregion
+
+		#region OTHER
+
+		public async Task<bool> ExistsAsync(Guid id)
+		{
+			return await _context.Movies.AnyAsync(m => m.Id == id);
+		}
+
+		public async Task<IEnumerable<MovieDto>> GetLatestAsync(int count = 12)
+		{
+			return await _context.Movies
+				.AsNoTracking()
+				.Where(m => m.IsActive)
+				.OrderByDescending(m => m.CreatedAt)
+				.Take(count)
+				.ProjectTo<MovieDto>(_mapper.ConfigurationProvider)
+				.ToListAsync();
+		}
+
+		public async Task<IEnumerable<MovieDto>> GetPopularAsync(int count = 12)
+		{
+			return await _context.Movies
+				.AsNoTracking()
+				.Where(m => m.IsActive)
+				.OrderByDescending(m => m.ViewCount)
+				.Take(count)
+				.ProjectTo<MovieDto>(_mapper.ConfigurationProvider)
+				.ToListAsync();
 		}
 
 		public async Task<IEnumerable<MovieDto>> GetByGenreAsync(Guid genreId)
 		{
-			var movies = await _context.Movies
-				.Include(m => m.Country)
-				.Include(m => m.Language)
-				.Include(m => m.Movie_Genres)
-				.Where(m => m.IsActive && m.Movie_Genres.Any(mg => mg.GenreId == genreId))
+			return await _context.Movies
+				.AsNoTracking()
+				.Where(m => m.IsActive &&
+							m.Movie_Genres.Any(g => g.GenreId == genreId))
 				.OrderByDescending(m => m.ViewCount)
+				.ProjectTo<MovieDto>(_mapper.ConfigurationProvider)
 				.ToListAsync();
-
-			return _mapper.Map<IEnumerable<MovieDto>>(movies);
 		}
 
 		public async Task<IEnumerable<MovieDto>> GetByCountryAsync(Guid countryId)
 		{
-			var movies = await _context.Movies
-				.Include(m => m.Country)
-				.Include(m => m.Language)
+			return await _context.Movies
+				.AsNoTracking()
 				.Where(m => m.IsActive && m.CountryId == countryId)
 				.OrderByDescending(m => m.ViewCount)
+				.ProjectTo<MovieDto>(_mapper.ConfigurationProvider)
 				.ToListAsync();
-
-			return _mapper.Map<IEnumerable<MovieDto>>(movies);
 		}
 
-		public async Task IncrementViewCountAsync(Guid id)
-		{
-			var movie = await _context.Movies.FindAsync(id);
-
-			if (movie != null)
-			{
-				movie.ViewCount++;
-				await _context.SaveChangesAsync();
-			}
-		}
-
-		public async Task<IEnumerable<MovieDto>> GetPopularMoviesAsync(int count = 10)
-		{
-			var movies = await _context.Movies
-				.Include(m => m.Country)
-				.Include(m => m.Language)
-				.Where(m => m.IsActive)
-				.OrderByDescending(m => m.ViewCount)
-				.Take(count)
-				.ToListAsync();
-
-			return _mapper.Map<IEnumerable<MovieDto>>(movies);
-		}
-
-		public async Task<IEnumerable<MovieDto>> GetLatestMoviesAsync(int count = 10)
-		{
-			var movies = await _context.Movies
-				.Include(m => m.Country)
-				.Include(m => m.Language)
-				.Where(m => m.IsActive)
-				.OrderByDescending(m => m.CreatedAt)
-				.Take(count)
-				.ToListAsync();
-
-			return _mapper.Map<IEnumerable<MovieDto>>(movies);
-		}
-
-		public Task<bool> UpdateAsync(MovieUpdateDto dto)
-		{
-			throw new NotImplementedException();
-		}
-
-		public Task<bool> ExistsAsync(Guid id)
-		{
-			throw new NotImplementedException();
-		}
-
-		Task<bool> IMovieService.IncrementViewCountAsync(Guid id)
-		{
-			throw new NotImplementedException();
-		}
-
-		public Task<IEnumerable<MovieDto>> GetLatestAsync(int count = 12)
-		{
-			throw new NotImplementedException();
-		}
-
-		public Task<IEnumerable<MovieDto>> GetPopularAsync(int count = 12)
-		{
-			throw new NotImplementedException();
-		}
+		#endregion
 	}
 }

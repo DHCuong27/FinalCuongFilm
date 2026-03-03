@@ -1,1166 +1,809 @@
 ﻿@model FinalCuongFilm.Common.DTOs.MovieCreateDto
 @using FinalCuongFilm.ApplicationCore
-
 @{
     ViewData["Title"] = "Add New Movie";
 }
 
 <style>
     :root {
-        --netflix-black: #141414;
-        --netflix-dark: #181818;
-        --netflix-darker: #0f0f0f;
-        --netflix-red: #e50914;
-        --netflix-red-hover: #f40612;
-        --netflix-gray: #808080;
-        --netflix-light-gray: #b3b3b3;
-        --netflix-white: #ffffff;
-        --netflix-border: #333333;
-        --netflix-card: #1f1f1f;
-        --netflix-overlay: rgba(0, 0, 0, 0.7);
+        --nf-red: #e50914;
+        --nf-red2: #f40612;
+        --nf-bg: #141414;
+        --nf-dark: #181818;
+        --nf-darker: #0f0f0f;
+        --nf-card: #1f1f1f;
+        --nf-input: #2a2a2a;
+        --nf-border: #333;
+        --nf-gray: #808080;
+        --nf-lgray: #b3b3b3;
+        --nf-white: #fff;
+        --nf-green: #2ecc71;
+        --nf-blue: #3498db;
+        --nf-yellow: #f39c12;
+    }
+    /* ── Page Header ── */
+    .nf-page-header {
+        margin-bottom: 24px;
+        padding-bottom: 16px;
+        border-bottom: 2px solid var(--nf-border);
     }
 
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-    }
-
-    body {
-        background: var(--netflix-black);
-        color: var(--netflix-white);
-        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-        line-height: 1.5;
-    }
-
-    /* Main Container */
-    .movie-create-container {
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 40px 20px;
-    }
-
-    /* Header */
-    .page-header {
-        margin-bottom: 30px;
-        padding-bottom: 20px;
-        border-bottom: 1px solid var(--netflix-border);
-    }
-
-    .page-title {
-        font-size: 2.5rem;
+    .nf-page-title {
+        font-size: 1.75rem;
         font-weight: 700;
-        color: var(--netflix-white);
-        margin-bottom: 10px;
-        letter-spacing: -0.5px;
+        color: var(--nf-white);
+        margin: 0 0 4px;
     }
 
-    .page-subtitle {
-        color: var(--netflix-light-gray);
-        font-size: 1.1rem;
-    }
-
-    /* Form Card */
-    .movie-form-card {
-        background: var(--netflix-dark);
-        border-radius: 8px;
-        padding: 40px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-        border: 1px solid var(--netflix-border);
-    }
-
-    /* Section Title */
-    .section-title {
-        font-size: 1.5rem;
-        font-weight: 600;
-        color: var(--netflix-white);
-        margin: 30px 0 20px;
-        padding-bottom: 10px;
-        border-bottom: 2px solid var(--netflix-red);
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-
-        .section-title i {
-            color: var(--netflix-red);
+        .nf-page-title span {
+            color: var(--nf-red);
         }
 
-    /* Form Grid */
-    .form-grid {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 20px;
+    .nf-page-sub {
+        color: var(--nf-lgray);
+        font-size: .9rem;
+    }
+    /* ── Card ── */
+    .nf-card {
+        background: var(--nf-card);
+        border: 1px solid var(--nf-border);
+        border-radius: 8px;
+        overflow: hidden;
+        margin-bottom: 18px;
+        box-shadow: 0 4px 20px rgba(0,0,0,.35);
     }
 
-    .form-grid-full {
-        grid-column: 1 / -1;
-    }
-
-    /* Form Groups */
-    .form-group {
-        margin-bottom: 20px;
-    }
-
-    .form-label {
-        display: block;
-        font-size: 0.9rem;
-        font-weight: 600;
-        color: var(--netflix-white);
-        margin-bottom: 8px;
+    .nf-card-hd {
+        background: var(--nf-darker);
+        padding: 12px 20px;
+        border-bottom: 2px solid var(--nf-red);
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        font-size: .72rem;
+        font-weight: 700;
+        color: var(--nf-white);
         text-transform: uppercase;
-        letter-spacing: 0.5px;
+        letter-spacing: .8px;
     }
 
-        .form-label .required {
-            color: var(--netflix-red);
-            margin-left: 4px;
+        .nf-card-hd i {
+            color: var(--nf-red);
+            font-size: 1.05rem;
         }
 
-    /* Media Tabs */
-    .media-tabs {
-        display: flex;
-        gap: 2px;
-        background: var(--netflix-darker);
-        padding: 4px;
-        border-radius: 8px;
-        margin-bottom: 15px;
+    .nf-card-bd {
+        padding: 22px 24px;
+    }
+    /* ── Form Grid ── */
+    .nf-grid {
+        display: grid;
+        grid-template-columns: repeat(2,1fr);
+        gap: 18px;
     }
 
-    .media-tab {
-        flex: 1;
-        padding: 12px;
-        background: transparent;
-        border: none;
-        color: var(--netflix-gray);
-        cursor: pointer;
-        border-radius: 6px;
-        transition: all 0.2s;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        font-size: 0.9rem;
-        font-weight: 500;
+    .nf-gcol2 {
+        grid-column: 1/-1;
     }
 
-        .media-tab i {
-            font-size: 1.1rem;
+    .nf-fgroup {
+    }
+    /* ── Labels & Controls ── */
+    .nf-label {
+        display: block;
+        font-size: .72rem;
+        font-weight: 700;
+        color: var(--nf-lgray);
+        margin-bottom: 6px;
+        text-transform: uppercase;
+        letter-spacing: .7px;
+    }
+
+        .nf-label .req {
+            color: var(--nf-red);
+            margin-left: 2px;
         }
 
-        .media-tab:hover {
-            color: var(--netflix-white);
-            background: rgba(255, 255, 255, 0.1);
-        }
-
-        .media-tab.active {
-            background: var(--netflix-red);
-            color: white;
-        }
-
-    /* Media Panels */
-    .media-panel {
-        display: none;
-        animation: fadeIn 0.3s ease;
-    }
-
-        .media-panel.active {
-            display: block;
-        }
-
-    @@keyframes fadeIn {
-        from
-
-    {
-        opacity: 0;
-        transform: translateY(-10px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-
-    }
-
-    /* Form Controls */
-    .form-control {
+    .nf-ctrl {
+        display: block;
         width: 100%;
-        height: 50px;
-        background: var(--netflix-darker);
-        border: 1px solid var(--netflix-border);
-        border-radius: 4px;
-        padding: 10px 15px;
-        color: var(--netflix-white);
-        font-size: 1rem;
-        transition: all 0.2s ease;
+        padding: 10px 13px;
+        font-size: .95rem;
+        color: var(--nf-white);
+        background: var(--nf-input);
+        border: 1px solid var(--nf-border);
+        border-radius: 5px;
+        outline: none;
+        font-family: inherit;
+        transition: border-color .2s, box-shadow .2s;
     }
 
-        .form-control:focus {
-            outline: none;
-            border-color: var(--netflix-red);
-            background: var(--netflix-black);
+        .nf-ctrl:focus {
+            border-color: var(--nf-red);
+            box-shadow: 0 0 0 2px rgba(229,9,20,.18);
+            background: #2f2f2f;
         }
 
-        .form-control::placeholder {
-            color: var(--netflix-gray);
+        .nf-ctrl::placeholder {
+            color: var(--nf-gray);
         }
 
-    textarea.form-control {
-        height: 100px;
+    textarea.nf-ctrl {
+        min-height: 100px;
         resize: vertical;
     }
 
-    /* Upload Area */
-    .upload-area {
-        border: 2px dashed var(--netflix-border);
-        border-radius: 8px;
-        padding: 40px;
-        text-align: center;
-        cursor: pointer;
-        transition: all 0.2s;
-        background: var(--netflix-darker);
+    .nf-hint {
+        font-size: .75rem;
+        color: var(--nf-gray);
+        margin-top: 4px;
+        display: block;
     }
 
-        .upload-area:hover {
-            border-color: var(--netflix-red);
-            background: rgba(229, 9, 20, 0.05);
-        }
-
-        .upload-area i {
-            font-size: 48px;
-            color: var(--netflix-red);
-            margin-bottom: 15px;
-        }
-
-        .upload-area p {
-            font-size: 1rem;
-            color: var(--netflix-white);
-            margin-bottom: 8px;
-        }
-
-        .upload-area small {
-            color: var(--netflix-gray);
-        }
-
-        .upload-area.dragover {
-            border-color: var(--netflix-red);
-            background: rgba(229, 9, 20, 0.1);
-            transform: scale(1.02);
-        }
-
-    /* Preview Area */
-    .preview-area {
-        position: relative;
-        margin-top: 15px;
-        border-radius: 8px;
-        overflow: hidden;
-        animation: slideIn 0.3s ease;
-        background: var(--netflix-darker);
-        padding: 10px;
+    .nf-err {
+        color: #ff4d4f;
+        font-size: .78rem;
+        margin-top: 3px;
+        display: block;
     }
-
-        .preview-area img {
-            width: 100%;
-            max-height: 300px;
-            object-fit: contain;
-            border-radius: 4px;
-        }
-
-        .preview-area video {
-            width: 100%;
-            max-height: 300px;
-            border-radius: 4px;
-        }
-
-    .preview-actions {
-        position: absolute;
-        top: 20px;
-        right: 20px;
+    /* ── Image URL preview (shared pattern) ── */
+    .nf-url-group {
         display: flex;
         gap: 8px;
     }
 
-    .preview-btn {
-        width: 36px;
-        height: 36px;
+        .nf-url-group .nf-ctrl {
+            flex: 1;
+        }
+
+    .nf-url-preview-btn {
+        flex-shrink: 0;
+        padding: 0 14px;
+        height: 42px;
+        background: var(--nf-darker);
+        border: 1px solid var(--nf-border);
+        border-radius: 5px;
+        color: var(--nf-lgray);
+        font-size: .82rem;
+        font-weight: 600;
+        cursor: pointer;
+        white-space: nowrap;
+        transition: all .2s;
+        font-family: inherit;
+    }
+
+        .nf-url-preview-btn:hover {
+            border-color: var(--nf-red);
+            color: var(--nf-red);
+        }
+
+    .nf-img-preview-wrap {
+        margin-top: 10px;
+        border-radius: 6px;
+        overflow: hidden;
+        background: var(--nf-darker);
+        border: 1px solid var(--nf-border);
+        display: none;
+        position: relative;
+    }
+
+        .nf-img-preview-wrap img {
+            display: block;
+            width: 100%;
+            max-height: 220px;
+            object-fit: contain;
+        }
+
+    .nf-preview-clear {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        width: 28px;
+        height: 28px;
         border-radius: 50%;
-        background: var(--netflix-overlay);
+        background: rgba(0,0,0,.65);
         border: none;
-        color: white;
+        color: #fff;
         display: flex;
         align-items: center;
         justify-content: center;
         cursor: pointer;
-        transition: all 0.2s;
-        font-size: 1.2rem;
+        font-size: .9rem;
+        transition: background .2s;
     }
 
-        .preview-btn:hover {
-            background: var(--netflix-red);
-            transform: scale(1.1);
+        .nf-preview-clear:hover {
+            background: var(--nf-red);
         }
-
-    @@keyframes slideIn {
-        from
-
-    {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-
-    }
-
-    /* Embed Preview */
-    .embed-preview {
-        margin-top: 15px;
-        position: relative;
-        padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
-        height: 0;
+    /* ── Trailer URL preview embed ── */
+    .nf-embed-preview {
+        margin-top: 10px;
+        border-radius: 6px;
         overflow: hidden;
-        border-radius: 8px;
+        display: none;
+        position: relative;
+        padding-bottom: 56.25%;
+        height: 0;
     }
 
-        .embed-preview iframe {
+        .nf-embed-preview iframe {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
             border: none;
+            border-radius: 6px;
+        }
+    /* ── Select2-like tag picker for Actors/Genres ── */
+    .nf-tag-picker {
+    }
+
+        .nf-tag-picker .nf-ctrl[multiple] {
+            display: none; /* hidden, driven by JS */
         }
 
-    /* Progress Bar */
-    .upload-progress {
-        margin-top: 10px;
-        height: 4px;
-        background: var(--netflix-border);
-        border-radius: 2px;
-        overflow: hidden;
-        display: none;
-    }
-
-        .upload-progress.active {
-            display: block;
-        }
-
-    .progress-bar {
-        height: 100%;
-        background: var(--netflix-red);
-        width: 0%;
-        transition: width 0.3s ease;
-    }
-
-    /* Helper Text */
-    .form-text {
-        display: block;
-        font-size: 0.85rem;
-        color: var(--netflix-gray);
-        margin-top: 6px;
-    }
-
-    /* Validation */
-    .text-danger {
-        display: block;
-        font-size: 0.85rem;
-        color: var(--netflix-red);
-        margin-top: 5px;
-    }
-
-    /* Basic Info Form (keep existing styles) */
-    .form-control {
-        /* ... existing styles ... */
-    }
-
-    .checkbox-group {
+    .nf-tag-search-box {
         display: flex;
+        gap: 6px;
         align-items: center;
-        gap: 12px;
-        margin: 30px 0;
-        padding: 20px;
-        background: var(--netflix-darker);
-        border-radius: 4px;
+        margin-bottom: 8px;
     }
 
-    .custom-checkbox {
-        position: relative;
-        display: inline-block;
-        width: 24px;
-        height: 24px;
-    }
-
-        .custom-checkbox input {
-            position: absolute;
-            opacity: 0;
-            cursor: pointer;
-            height: 0;
-            width: 0;
+        .nf-tag-search-box input {
+            flex: 1;
+            padding: 8px 12px;
+            background: var(--nf-input);
+            border: 1px solid var(--nf-border);
+            border-radius: 5px;
+            color: var(--nf-white);
+            font-size: .88rem;
+            outline: none;
+            font-family: inherit;
         }
 
-    .checkbox-mark {
-        position: absolute;
-        top: 0;
-        left: 0;
-        height: 24px;
-        width: 24px;
-        background-color: var(--netflix-darker);
-        border: 2px solid var(--netflix-gray);
-        border-radius: 4px;
-        transition: all 0.2s;
+            .nf-tag-search-box input:focus {
+                border-color: var(--nf-red);
+            }
+
+            .nf-tag-search-box input::placeholder {
+                color: var(--nf-gray);
+            }
+
+    .nf-tag-dropdown {
+        max-height: 170px;
+        overflow-y: auto;
+        background: var(--nf-input);
+        border: 1px solid var(--nf-border);
+        border-radius: 5px;
+        margin-bottom: 8px;
     }
 
-    .custom-checkbox input:checked ~ .checkbox-mark {
-        background-color: var(--netflix-red);
-        border-color: var(--netflix-red);
-    }
-
-    .checkbox-mark:after {
-        content: "";
-        position: absolute;
-        display: none;
-    }
-
-    .custom-checkbox input:checked ~ .checkbox-mark:after {
-        display: block;
-    }
-
-    .custom-checkbox .checkbox-mark:after {
-        left: 8px;
-        top: 4px;
-        width: 6px;
-        height: 12px;
-        border: solid white;
-        border-width: 0 2px 2px 0;
-        transform: rotate(45deg);
-    }
-
-    .checkbox-label {
-        font-size: 1rem;
-        color: var(--netflix-white);
-        font-weight: 500;
+    .nf-tag-option {
+        padding: 8px 12px;
+        font-size: .88rem;
+        color: var(--nf-lgray);
         cursor: pointer;
-    }
-
-    /* Form Actions */
-    .form-actions {
+        transition: background .15s;
+        user-select: none;
         display: flex;
-        gap: 15px;
-        margin-top: 40px;
-        padding-top: 30px;
-        border-top: 1px solid var(--netflix-border);
-    }
-
-    .btn {
-        padding: 14px 30px;
-        font-size: 1rem;
-        font-weight: 600;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        display: inline-flex;
         align-items: center;
         gap: 8px;
+    }
+
+        .nf-tag-option:hover {
+            background: rgba(229,9,20,.1);
+            color: var(--nf-white);
+        }
+
+        .nf-tag-option.selected {
+            color: var(--nf-red);
+        }
+
+            .nf-tag-option.selected::before {
+                content: '✓ ';
+                font-weight: 700;
+            }
+
+        .nf-tag-option.hidden {
+            display: none;
+        }
+
+    .nf-tag-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        min-height: 32px;
+        padding: 6px 8px;
+        background: var(--nf-darker);
+        border: 1px solid var(--nf-border);
+        border-radius: 5px;
+    }
+
+    .nf-tag-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        background: rgba(229,9,20,.15);
+        border: 1px solid rgba(229,9,20,.4);
+        color: var(--nf-white);
+        padding: 3px 10px 3px 10px;
+        border-radius: 20px;
+        font-size: .78rem;
+        font-weight: 600;
+    }
+
+        .nf-tag-chip button {
+            background: none;
+            border: none;
+            color: var(--nf-lgray);
+            padding: 0;
+            cursor: pointer;
+            font-size: .85rem;
+            line-height: 1;
+            transition: color .15s;
+        }
+
+            .nf-tag-chip button:hover {
+                color: var(--nf-red);
+            }
+
+    .nf-tag-empty {
+        color: var(--nf-gray);
+        font-size: .8rem;
+        font-style: italic;
+        padding: 2px 4px;
+    }
+    /* ── Active toggle ── */
+    .nf-toggle {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 16px;
+        background: var(--nf-input);
+        border: 1px solid var(--nf-border);
+        border-radius: 5px;
+    }
+
+        .nf-toggle input {
+            width: 17px;
+            height: 17px;
+            accent-color: var(--nf-red);
+            cursor: pointer;
+        }
+
+        .nf-toggle label {
+            color: var(--nf-white);
+            font-size: .92rem;
+            cursor: pointer;
+            margin: 0;
+        }
+    /* ── Validation ── */
+    .nf-val-banner {
+        background: rgba(229,9,20,.1);
+        border: 1px solid rgba(229,9,20,.4);
+        border-radius: 6px;
+        padding: 12px 16px;
+        margin-bottom: 20px;
+        color: #ff6b6b;
+        font-size: .85rem;
+    }
+
+        .nf-val-banner ul {
+            margin: 6px 0 0;
+            padding-left: 18px;
+        }
+    /* ── Buttons ── */
+    .nf-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 10px 22px;
+        font-size: .92rem;
+        font-weight: 600;
+        border-radius: 5px;
+        border: none;
+        cursor: pointer;
+        transition: all .2s;
         text-decoration: none;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
+        font-family: inherit;
+        line-height: 1.4;
     }
 
-    .btn-primary {
-        background: var(--netflix-red);
-        color: var(--netflix-white);
+    .nf-btn-red {
+        background: var(--nf-red);
+        color: #fff;
     }
 
-        .btn-primary:hover {
-            background: var(--netflix-red-hover);
-            transform: scale(1.02);
+        .nf-btn-red:hover {
+            background: var(--nf-red2);
+            color: #fff;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(229,9,20,.35);
         }
 
-    .btn-secondary {
+        .nf-btn-red:disabled {
+            opacity: .55;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+    .nf-btn-ghost {
         background: transparent;
-        color: var(--netflix-white);
-        border: 1px solid var(--netflix-gray);
+        color: var(--nf-lgray);
+        border: 1px solid var(--nf-border);
     }
 
-        .btn-secondary:hover {
-            border-color: var(--netflix-white);
-            background: rgba(255, 255, 255, 0.1);
+        .nf-btn-ghost:hover {
+            background: var(--nf-border);
+            color: var(--nf-white);
+        }
+    /* ── Form Actions ── */
+    .nf-form-actions {
+        display: flex;
+        gap: 12px;
+        padding-top: 22px;
+        border-top: 1px solid var(--nf-border);
+        flex-wrap: wrap;
+    }
+    /* ── Scrollbar ─�� */
+    .nf-tag-dropdown::-webkit-scrollbar {
+        width: 5px;
+    }
+
+    .nf-tag-dropdown::-webkit-scrollbar-track {
+        background: var(--nf-darker);
+    }
+
+    .nf-tag-dropdown::-webkit-scrollbar-thumb {
+        background: var(--nf-border);
+        border-radius: 3px;
+    }
+    /* ── Responsive ── */
+    @@media(max-width:768px) {
+        .nf-grid {
+            grid-template-columns: 1fr;
         }
 
-    /* Validation Summary */
-    .validation-summary {
-        background: rgba(229, 9, 20, 0.1);
-        border: 1px solid var(--netflix-red);
-        border-radius: 4px;
-        padding: 20px;
-        margin-bottom: 30px;
-    }
+        .nf-gcol2 {
+            grid-column: 1;
+        }
 
-    /* Responsive */
-    @@media (max-width: 768px) {
-        .movie-create-container
+        .nf-card-bd {
+            padding: 16px;
+        }
 
-    {
-        padding: 20px;
-    }
+        .nf-form-actions {
+            flex-direction: column;
+        }
 
-    .movie-form-card {
-        padding: 25px;
-    }
-
-    .form-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .media-tabs {
-        flex-direction: column;
-    }
-
-    .form-actions {
-        flex-direction: column;
-    }
-
-    .btn {
-        width: 100%;
-        justify-content: center;
-    }
-
+        .nf-btn {
+            width: 100%;
+            justify-content: center;
+        }
     }
 </style>
 
-<div class="movie-create-container">
-    <div class="page-header">
-        <h1 class="page-title">@ViewData["Title"]</h1>
-        <p class="page-subtitle">Enter the details of your new movie</p>
+<!-- Page Header -->
+<div class="nf-page-header">
+    <h1 class="nf-page-title">Add <span>New Movie</span></h1>
+    <p class="nf-page-sub">Fill in all the details to create a new movie entry</p>
+</div>
+
+<form asp-action="Create" method="post" id="createForm">
+
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div class="nf-val-banner">
+            <strong>Please fix the errors below:</strong>
+            <ul>
+                @foreach (var e in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                {
+                    <li>@e.ErrorMessage</li>
+                }
+            </ul>
+        </div>
+    }
+
+    <!-- §1 Basic Info -->
+    <div class="nf-card">
+        <div class="nf-card-hd"><i class="zmdi zmdi-info"></i> Basic Information</div>
+        <div class="nf-card-bd">
+            <div class="nf-grid">
+                <div class="nf-gcol2 nf-fgroup">
+                    <label class="nf-label">Title <span class="req">*</span></label>
+                    <input asp-for="Title" class="nf-ctrl" id="titleInput" placeholder="Enter movie title…" autocomplete="off" />
+                    <span asp-validation-for="Title" class="nf-err"></span>
+                </div>
+                <div class="nf-gcol2 nf-fgroup">
+                    <label class="nf-label">Slug (URL)</label>
+                    <input asp-for="Slug" class="nf-ctrl" id="slugInput" placeholder="auto-generated-from-title" />
+                    <span class="nf-hint">Auto-generated from title — you can override manually.</span>
+                    <span asp-validation-for="Slug" class="nf-err"></span>
+                </div>
+                <div class="nf-gcol2 nf-fgroup">
+                    <label class="nf-label">Description</label>
+                    <textarea asp-for="Description" class="nf-ctrl" placeholder="Enter movie description…"></textarea>
+                    <span asp-validation-for="Description" class="nf-err"></span>
+                </div>
+                <div class="nf-fgroup">
+                    <label class="nf-label">Release Year</label>
+                    <input asp-for="ReleaseYear" class="nf-ctrl" type="number" min="1900" max="2100" placeholder="e.g. 2024" />
+                    <span asp-validation-for="ReleaseYear" class="nf-err"></span>
+                </div>
+                <div class="nf-fgroup">
+                    <label class="nf-label">Duration (minutes)</label>
+                    <input asp-for="DurationMinutes" class="nf-ctrl" type="number" min="1" placeholder="e.g. 120" />
+                    <span asp-validation-for="DurationMinutes" class="nf-err"></span>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <div class="movie-form-card">
-        @if (!ViewData.ModelState.IsValid)
-        {
-            <div class="validation-summary" role="alert">
-                <ul>
-                    @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
-                    {
-                        <li>@error.ErrorMessage</li>
-                    }
-                </ul>
-            </div>
-        }
-
-        <form asp-action="Create" method="post" enctype="multipart/form-data">
-            <!-- Basic Information Section (keep existing) -->
-            <div class="section-title">
-                <i class="bi bi-film"></i>
-                Basic Information
-            </div>
-
-            <div class="form-grid">
-                <div class="form-grid-full">
-                    <div class="form-group">
-                        <label class="form-label">
-                            Title <span class="required">*</span>
-                        </label>
-                        <input asp-for="Title" class="form-control" placeholder="Enter movie title..." />
-                        <span asp-validation-for="Title" class="text-danger"></span>
+    <!-- §2 Media -->
+    <div class="nf-card">
+        <div class="nf-card-hd"><i class="zmdi zmdi-image"></i> Media</div>
+        <div class="nf-card-bd">
+            <div class="nf-grid">
+                <!-- Poster URL -->
+                <div class="nf-gcol2 nf-fgroup">
+                    <label class="nf-label">Poster URL</label>
+                    <div class="nf-url-group">
+                        <input asp-for="PosterUrl" class="nf-ctrl" id="posterUrlInput" placeholder="https://example.com/poster.jpg" />
+                        <button type="button" class="nf-url-preview-btn" onclick="previewPoster()">Preview</button>
+                        <button type="button" class="nf-url-preview-btn" onclick="clearPoster()" style="color:var(--nf-gray);">Clear</button>
+                    </div>
+                    <span class="nf-hint">Paste a direct image link (JPG, PNG, WEBP). Click Preview to check.</span>
+                    <span asp-validation-for="PosterUrl" class="nf-err"></span>
+                    <div class="nf-img-preview-wrap" id="posterPreview">
+                        <img src="" alt="Poster preview" id="posterPreviewImg" />
+                        <button type="button" class="nf-preview-clear" onclick="clearPoster()"><i class="zmdi zmdi-close"></i></button>
                     </div>
                 </div>
-
-                <div class="form-grid-full">
-                    <div class="form-group">
-                        <label class="form-label">Slug (URL)</label>
-                        <input asp-for="Slug" class="form-control" type="text" placeholder="auto-generated-from-title" />
-                        <span asp-validation-for="Slug" class="text-danger"></span>
-                        <small class="form-text">Automatically generated from title</small>
+                <!-- Trailer URL -->
+                <div class="nf-gcol2 nf-fgroup">
+                    <label class="nf-label">Trailer URL</label>
+                    <div class="nf-url-group">
+                        <input asp-for="TrailerUrl" class="nf-ctrl" id="trailerUrlInput" placeholder="https://youtube.com/watch?v=…" />
+                        <button type="button" class="nf-url-preview-btn" onclick="previewTrailer()">Preview</button>
+                        <button type="button" class="nf-url-preview-btn" onclick="clearTrailer()" style="color:var(--nf-gray);">Clear</button>
                     </div>
-                </div>
-
-                <div class="form-grid-full">
-                    <div class="form-group">
-                        <label class="form-label">Description</label>
-                        <textarea asp-for="Description" class="form-control" placeholder="Enter movie description..."></textarea>
-                        <span asp-validation-for="Description" class="text-danger"></span>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Release Year</label>
-                    <input asp-for="ReleaseYear" class="form-control" type="number" min="1900" max="2100" placeholder="2024" />
-                    <span asp-validation-for="ReleaseYear" class="text-danger"></span>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Duration (minutes)</label>
-                    <input asp-for="DurationMinutes" class="form-control" type="number" min="1" placeholder="120" />
-                    <span asp-validation-for="DurationMinutes" class="text-danger"></span>
+                    <span class="nf-hint">YouTube or Vimeo URL — click Preview to embed.</span>
+                    <span asp-validation-for="TrailerUrl" class="nf-err"></span>
+                    <div class="nf-embed-preview" id="trailerPreview"></div>
                 </div>
             </div>
+        </div>
+    </div>
 
-            <!-- IMPROVED MEDIA LINKS SECTION -->
-            <div class="section-title">
-                <i class="bi bi-images"></i>
-                Media
-            </div>
-
-            <!-- Poster Section -->
-            <div class="form-group form-grid-full">
-                <label class="form-label">Poster Image</label>
-
-                <!-- Tab Selection -->
-                <div class="media-tabs">
-                    <button type="button" class="media-tab active" data-target="poster-url" data-media="poster">
-                        <i class="bi bi-link-45deg"></i> URL
-                    </button>
-                    <button type="button" class="media-tab" data-target="poster-upload" data-media="poster">
-                        <i class="bi bi-cloud-arrow-up"></i> Upload
-                    </button>
-                    <button type="button" class="media-tab" data-target="poster-library" data-media="poster">
-                        <i class="bi bi-collection"></i> Library
-                    </button>
-                </div>
-
-                <!-- URL Panel -->
-                <div class="media-panel active" id="poster-url">
-                    <input asp-for="PosterUrl" class="form-control"
-                           placeholder="https://example.com/poster.jpg"
-                           id="PosterUrl" />
-                    <small class="form-text">Supported: JPG, PNG, GIF - Max 5MB</small>
-
-                    <!-- URL Preview -->
-                    <div class="preview-area" id="posterUrlPreview" style="display: none;">
-                        <img src="" alt="Poster preview" id="posterUrlPreviewImg" />
-                        <div class="preview-actions">
-                            <button type="button" class="preview-btn" onclick="removePosterPreview('url')">
-                                <i class="bi bi-x"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Upload Panel -->
-                <div class="media-panel" id="poster-upload">
-                    <div class="upload-area" id="posterUploadArea">
-                        <i class="bi bi-cloud-arrow-up"></i>
-                        <p>Drag & drop or click to upload</p>
-                        <small>JPG, PNG, GIF (Max 5MB)</small>
-                        <input type="file" accept="image/jpeg,image/png,image/gif"
-                               class="file-input" id="posterFile" name="posterFile" style="display: none;" />
-                    </div>
-
-                    <!-- Upload Progress -->
-                    <div class="upload-progress" id="posterProgress">
-                        <div class="progress-bar" id="posterProgressBar"></div>
-                    </div>
-
-                    <!-- Upload Preview -->
-                    <div class="preview-area" id="posterUploadPreview" style="display: none;">
-                        <img src="" alt="Poster preview" id="posterUploadPreviewImg" />
-                        <div class="preview-actions">
-                            <button type="button" class="preview-btn" onclick="removePosterPreview('upload')">
-                                <i class="bi bi-x"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Library Panel -->
-                <div class="media-panel" id="poster-library">
-                    <div class="library-grid" id="posterLibrary">
-                        <!-- Sample library images - in real app, load from server -->
-                        <div class="library-item" data-src="/images/posters/movie1.jpg">
-                            <img src="/images/posters/thumb1.jpg" alt="Movie 1" />
-                        </div>
-                        <div class="library-item" data-src="/images/posters/movie2.jpg">
-                            <img src="/images/posters/thumb2.jpg" alt="Movie 2" />
-                        </div>
-                        <div class="library-item" data-src="/images/posters/movie3.jpg">
-                            <img src="/images/posters/thumb3.jpg" alt="Movie 3" />
-                        </div>
-                    </div>
-                </div>
-
-                <span asp-validation-for="PosterUrl" class="text-danger"></span>
-            </div>
-
-            <!-- Trailer Section -->
-            <div class="form-group form-grid-full">
-                <label class="form-label">Trailer</label>
-
-                <!-- Tab Selection -->
-                <div class="media-tabs">
-                    <button type="button" class="media-tab active" data-target="trailer-url" data-media="trailer">
-                        <i class="bi bi-link-45deg"></i> URL
-                    </button>
-                    <button type="button" class="media-tab" data-target="trailer-upload" data-media="trailer">
-                        <i class="bi bi-cloud-arrow-up"></i> Upload
-                    </button>
-                    <button type="button" class="media-tab" data-target="trailer-embed" data-media="trailer">
-                        <i class="bi bi-code-square"></i> Embed
-                    </button>
-                </div>
-
-                <!-- URL Panel -->
-                <div class="media-panel active" id="trailer-url">
-                    <input asp-for="TrailerUrl" class="form-control"
-                           placeholder="https://youtube.com/watch?v=..."
-                           id="TrailerUrl" />
-                    <small class="form-text">YouTube, Vimeo, or direct video URL</small>
-
-                    <!-- URL Preview -->
-                    <div class="preview-area" id="trailerUrlPreview" style="display: none;">
-                        <div class="embed-preview" id="trailerUrlEmbed"></div>
-                        <div class="preview-actions">
-                            <button type="button" class="preview-btn" onclick="removeTrailerPreview('url')">
-                                <i class="bi bi-x"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Upload Panel -->
-                <div class="media-panel" id="trailer-upload">
-                    <div class="upload-area" id="trailerUploadArea">
-                        <i class="bi bi-cloud-arrow-up"></i>
-                        <p>Drag & drop or click to upload</p>
-                        <small>MP4, WebM (Max 100MB)</small>
-                        <input type="file" accept="video/mp4,video/webm"
-                               class="file-input" id="trailerFile" name="trailerFile" style="display: none;" />
-                    </div>
-
-                    <!-- Upload Progress -->
-                    <div class="upload-progress" id="trailerProgress">
-                        <div class="progress-bar" id="trailerProgressBar"></div>
-                    </div>
-
-                    <!-- Upload Preview -->
-                    <div class="preview-area" id="trailerUploadPreview" style="display: none;">
-                        <video controls id="trailerUploadVideo">
-                            <source src="" type="video/mp4" />
-                        </video>
-                        <div class="preview-actions">
-                            <button type="button" class="preview-btn" onclick="removeTrailerPreview('upload')">
-                                <i class="bi bi-x"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Embed Panel -->
-                <div class="media-panel" id="trailer-embed">
-                    <textarea class="form-control" id="trailerEmbedCode"
-                              placeholder="<iframe width='560' height='315' src='...'></iframe>"
-                              rows="3"></textarea>
-                    <small class="form-text">Paste embed code from YouTube, Vimeo, etc.</small>
-
-                    <!-- Embed Preview -->
-                    <div class="preview-area" id="trailerEmbedPreview" style="display: none;">
-                        <div class="embed-preview" id="trailerEmbedContainer"></div>
-                        <div class="preview-actions">
-                            <button type="button" class="preview-btn" onclick="removeTrailerPreview('embed')">
-                                <i class="bi bi-x"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <span asp-validation-for="TrailerUrl" class="text-danger"></span>
-            </div>
-
-            <!-- Classification Section (keep existing) -->
-            <div class="section-title">
-                <i class="bi bi-gear"></i>
-                Classification
-            </div>
-
-            <div class="form-grid">
-                <div class="form-group">
-                    <label class="form-label">
-                        Movie Type <span class="required">*</span>
-                    </label>
-                    <select asp-for="Type" class="form-control" asp-items="Html.GetEnumSelectList<FinalCuongFilm.ApplicationCore.Entities.Enum.MovieType>()">
-                        <option value="">-- Select Movie Type --</option>
+    <!-- §3 Classification -->
+    <div class="nf-card">
+        <div class="nf-card-hd"><i class="zmdi zmdi-labels"></i> Classification</div>
+        <div class="nf-card-bd">
+            <div class="nf-grid">
+                <div class="nf-fgroup">
+                    <label class="nf-label">Movie Type <span class="req">*</span></label>
+                    <select asp-for="Type" class="nf-ctrl"
+                            asp-items="Html.GetEnumSelectList<FinalCuongFilm.ApplicationCore.Entities.Enum.MovieType>()">
+                        <option value="">-- Select Type --</option>
                     </select>
-                    <span asp-validation-for="Type" class="text-danger"></span>
+                    <span asp-validation-for="Type" class="nf-err"></span>
                 </div>
-
-                <div class="form-group">
-                    <label class="form-label">
-                        Status <span class="required">*</span>
-                    </label>
-                    <select asp-for="Status" class="form-control" asp-items="Html.GetEnumSelectList<FinalCuongFilm.ApplicationCore.Entities.Enum.MovieStatus>()">
+                <div class="nf-fgroup">
+                    <label class="nf-label">Status <span class="req">*</span></label>
+                    <select asp-for="Status" class="nf-ctrl"
+                            asp-items="Html.GetEnumSelectList<FinalCuongFilm.ApplicationCore.Entities.Enum.MovieStatus>()">
                         <option value="">-- Select Status --</option>
                     </select>
-                    <span asp-validation-for="Status" class="text-danger"></span>
+                    <span asp-validation-for="Status" class="nf-err"></span>
                 </div>
-
-                <div class="form-group">
-                    <label class="form-label">
-                        Country <span class="required">*</span>
-                    </label>
-                    <select asp-for="CountryId" class="form-control" asp-items="ViewBag.Countries">
+                <div class="nf-fgroup">
+                    <label class="nf-label">Country <span class="req">*</span></label>
+                    <select asp-for="CountryId" class="nf-ctrl" asp-items="ViewBag.Countries">
                         <option value="">-- Select Country --</option>
                     </select>
-                    <span asp-validation-for="CountryId" class="text-danger"></span>
+                    <span asp-validation-for="CountryId" class="nf-err"></span>
                 </div>
-
-                <div class="form-group">
-                    <label class="form-label">
-                        Language <span class="required">*</span>
-                    </label>
-                    <select asp-for="LanguageId" class="form-control" asp-items="ViewBag.Languages">
+                <div class="nf-fgroup">
+                    <label class="nf-label">Language <span class="req">*</span></label>
+                    <select asp-for="LanguageId" class="nf-ctrl" asp-items="ViewBag.Languages">
                         <option value="">-- Select Language --</option>
                     </select>
-                    <span asp-validation-for="LanguageId" class="text-danger"></span>
+                    <span asp-validation-for="LanguageId" class="nf-err"></span>
                 </div>
             </div>
-
-            <!-- Cast Section (keep existing) -->
-            <div class="section-title">
-                <i class="bi bi-people"></i>
-                Cast & Genre
-            </div>
-
-            <div class="form-grid">
-                <div class="form-group">
-                    <label class="form-label">Actors</label>
-                    <select asp-for="ActorIds" class="form-control" asp-items="ViewBag.Actors" multiple>
-                    </select>
-                    <small class="form-text">Hold Ctrl/Cmd + Click to select multiple</small>
-                    <div class="select-tags" id="actorTags"></div>
-                    <span asp-validation-for="ActorIds" class="text-danger"></span>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Genres</label>
-                    <select asp-for="GenreIds" class="form-control" asp-items="ViewBag.Genres" multiple>
-                    </select>
-                    <small class="form-text">Hold Ctrl/Cmd + Click to select multiple</small>
-                    <div class="select-tags" id="genreTags"></div>
-                    <span asp-validation-for="GenreIds" class="text-danger"></span>
-                </div>
-            </div>
-
-            <!-- Active Checkbox -->
-            <div class="checkbox-group">
-                <label class="custom-checkbox">
-                    <input asp-for="IsActive" type="checkbox" checked />
-                    <span class="checkbox-mark"></span>
-                </label>
-                <span class="checkbox-label">Activate immediately</span>
-            </div>
-
-            <!-- Form Actions -->
-            <div class="form-actions">
-                <button type="submit" class="btn btn-primary">
-                    <i class="bi bi-check-lg"></i>
-                    Save Movie
-                </button>
-                <a asp-action="Index" class="btn btn-secondary">
-                    <i class="bi bi-arrow-left"></i>
-                    Back to List
-                </a>
-            </div>
-        </form>
+        </div>
     </div>
-</div>
+
+    <!-- §4 Actors & Genres — Tag Picker -->
+    <div class="nf-card">
+        <div class="nf-card-hd"><i class="zmdi zmdi-accounts"></i> Cast &amp; Genres</div>
+        <div class="nf-card-bd">
+            <div class="nf-grid">
+                <!-- Actors -->
+                <div class="nf-fgroup">
+                    <label class="nf-label">Actors</label>
+                    <!-- Hidden real select carries the POST values -->
+                    <select asp-for="ActorIds" asp-items="ViewBag.Actors" multiple
+                            id="actorSelect" class="nf-ctrl" style="display:none"></select>
+                    <div class="nf-tag-picker" id="actorPicker">
+                        <div class="nf-tag-search-box">
+                            <input type="text" id="actorSearch" placeholder="Search actors…" autocomplete="off" />
+                        </div>
+                        <div class="nf-tag-dropdown" id="actorDropdown"></div>
+                        <div class="nf-tag-chips" id="actorChips">
+                            <span class="nf-tag-empty">No actors selected</span>
+                        </div>
+                    </div>
+                    <span asp-validation-for="ActorIds" class="nf-err"></span>
+                </div>
+                <!-- Genres -->
+                <div class="nf-fgroup">
+                    <label class="nf-label">Genres</label>
+                    <select asp-for="GenreIds" asp-items="ViewBag.Genres" multiple
+                            id="genreSelect" class="nf-ctrl" style="display:none"></select>
+                    <div class="nf-tag-picker" id="genrePicker">
+                        <div class="nf-tag-search-box">
+                            <input type="text" id="genreSearch" placeholder="Search genres…" autocomplete="off" />
+                        </div>
+                        <div class="nf-tag-dropdown" id="genreDropdown"></div>
+                        <div class="nf-tag-chips" id="genreChips">
+                            <span class="nf-tag-empty">No genres selected</span>
+                        </div>
+                    </div>
+                    <span asp-validation-for="GenreIds" class="nf-err"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- §5 Publish -->
+    <div class="nf-card">
+        <div class="nf-card-hd"><i class="zmdi zmdi-eye"></i> Publish Settings</div>
+        <div class="nf-card-bd">
+            <div class="nf-toggle">
+                <input asp-for="IsActive" type="checkbox" id="isActiveChk" checked />
+                <label for="isActiveChk">Activate immediately — movie will be visible to users right away</label>
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="nf-form-actions">
+        <button type="submit" class="nf-btn nf-btn-red" id="submitBtn">
+            <i class="zmdi zmdi-check"></i> Save Movie
+        </button>
+        <a asp-action="Index" class="nf-btn nf-btn-ghost">
+            <i class="zmdi zmdi-arrow-left"></i> Back to List
+        </a>
+    </div>
+
+</form>
 
 @section Scripts {
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
-
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Slug generation
-            const titleInput = document.querySelector('input[name="Title"]');
-            const slugInput = document.querySelector('input[name="Slug"]');
+        document.addEventListener('DOMContentLoaded', function () {
 
-            function generateSlug(text) {
-                return text
-                    .toLowerCase()
-                    .replace(/[^\w\s-]/g, '')
-                    .replace(/\s+/g, '-')
-                    .replace(/-+/g, '-')
-                    .trim();
-            }
+            /* ── Slug ── */
+            const titleEl = document.getElementById('titleInput');
+            const slugEl  = document.getElementById('slugInput');
+            let slugLocked = false;
+            const toSlug = t => t.toLowerCase().replace(/[^\w\s-]/g,'').replace(/\s+/g,'-').replace(/-+/g,'-').trim();
+            titleEl.addEventListener('input', () => { if (!slugLocked) slugEl.value = toSlug(titleEl.value); });
+            slugEl.addEventListener('input',  () => { slugLocked = slugEl.value.length > 0; });
 
-            if (titleInput && slugInput) {
-                titleInput.addEventListener('input', function() {
-                    if (!slugInput.value || slugInput.value === generateSlug(titleInput.value)) {
-                        slugInput.value = generateSlug(this.value);
-                    }
-                });
-            }
+            /* ── Tag Picker Factory ── */
+            function buildTagPicker(selectId, searchId, dropdownId, chipsId) {
+                const sel      = document.getElementById(selectId);
+                const search   = document.getElementById(searchId);
+                const dropdown = document.getElementById(dropdownId);
+                const chips    = document.getElementById(chipsId);
 
-            // Media Tabs Switching
-            const mediaTabs = document.querySelectorAll('.media-tab');
-            mediaTabs.forEach(tab => {
-                tab.addEventListener('click', function() {
-                    const target = this.dataset.target;
-                    const media = this.dataset.media;
+                // build option list from hidden <select>
+                const allOptions = Array.from(sel.options).map(o => ({ value: o.value, label: o.text }));
+                let selected = [];
 
-                    // Deactivate all tabs and panels for this media type
-                    document.querySelectorAll(`[data-media="${media}"]`).forEach(t => {
-                        t.classList.remove('active');
+                function renderDropdown(filter = '') {
+                    dropdown.innerHTML = '';
+                    allOptions.forEach(opt => {
+                        if (filter && !opt.label.toLowerCase().includes(filter.toLowerCase())) return;
+                        const div = document.createElement('div');
+                        div.className = 'nf-tag-option' + (selected.includes(opt.value) ? ' selected' : '');
+                        div.textContent = opt.label;
+                        div.dataset.value = opt.value;
+                        div.addEventListener('click', () => toggleItem(opt));
+                        dropdown.appendChild(div);
                     });
-                    document.querySelectorAll(`[id^="${media}-"]`).forEach(p => {
-                        p.classList.remove('active');
+                    if (!dropdown.children.length) {
+                        dropdown.innerHTML = '<div style="padding:8px 12px;color:var(--nf-gray);font-size:.82rem;">No results</div>';
+                    }
+                }
+
+                function renderChips() {
+                    chips.innerHTML = '';
+                    if (!selected.length) { chips.innerHTML = '<span class="nf-tag-empty">None selected</span>'; return; }
+                    selected.forEach(val => {
+                        const opt = allOptions.find(o => o.value === val);
+                        if (!opt) return;
+                        const chip = document.createElement('span');
+                        chip.className = 'nf-tag-chip';
+                        chip.innerHTML = `${opt.label}<button type="button" title="Remove">×</button>`;
+                        chip.querySelector('button').addEventListener('click', () => toggleItem(opt));
+                        chips.appendChild(chip);
                     });
+                }
 
-                    // Activate current tab and panel
-                    this.classList.add('active');
-                    document.getElementById(target).classList.add('active');
-                });
-            });
+                function syncSelect() {
+                    Array.from(sel.options).forEach(o => { o.selected = selected.includes(o.value); });
+                }
 
-            // Poster URL Preview
-            const posterUrl = document.getElementById('PosterUrl');
-            const posterUrlPreview = document.getElementById('posterUrlPreview');
-            const posterUrlPreviewImg = document.getElementById('posterUrlPreviewImg');
+                function toggleItem(opt) {
+                    const idx = selected.indexOf(opt.value);
+                    if (idx === -1) selected.push(opt.value); else selected.splice(idx, 1);
+                    syncSelect();
+                    renderDropdown(search.value);
+                    renderChips();
+                }
 
-            if (posterUrl) {
-                posterUrl.addEventListener('input', function() {
-                    if (this.value && isValidImageUrl(this.value)) {
-                        posterUrlPreviewImg.src = this.value;
-                        posterUrlPreview.style.display = 'block';
-                    } else {
-                        posterUrlPreview.style.display = 'none';
-                    }
-                });
+                search.addEventListener('input', () => renderDropdown(search.value));
+                renderDropdown();
+                renderChips();
             }
 
-            // Poster Upload
-            const posterUploadArea = document.getElementById('posterUploadArea');
-            const posterFile = document.getElementById('posterFile');
-            const posterProgress = document.getElementById('posterProgress');
-            const posterProgressBar = document.getElementById('posterProgressBar');
-            const posterUploadPreview = document.getElementById('posterUploadPreview');
-            const posterUploadPreviewImg = document.getElementById('posterUploadPreviewImg');
+            buildTagPicker('actorSelect', 'actorSearch', 'actorDropdown', 'actorChips');
+            buildTagPicker('genreSelect', 'genreSearch', 'genreDropdown', 'genreChips');
 
-            if (posterUploadArea) {
-                // Click to upload
-                posterUploadArea.addEventListener('click', () => posterFile.click());
-
-                // Drag & drop
-                ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-                    posterUploadArea.addEventListener(eventName, preventDefaults, false);
-                });
-
-                function preventDefaults(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                }
-
-                ['dragenter', 'dragover'].forEach(eventName => {
-                    posterUploadArea.addEventListener(eventName, () => {
-                        posterUploadArea.classList.add('dragover');
-                    });
-                });
-
-                ['dragleave', 'drop'].forEach(eventName => {
-                    posterUploadArea.addEventListener(eventName, () => {
-                        posterUploadArea.classList.remove('dragover');
-                    });
-                });
-
-                posterUploadArea.addEventListener('drop', (e) => {
-                    const files = e.dataTransfer.files;
-                    if (files.length > 0) {
-                        handlePosterUpload(files[0]);
-                    }
-                });
-
-                posterFile.addEventListener('change', (e) => {
-                    if (e.target.files.length > 0) {
-                        handlePosterUpload(e.target.files[0]);
-                    }
-                });
-
-                function handlePosterUpload(file) {
-                    if (!file.type.startsWith('image/')) {
-                        alert('Please upload an image file');
-                        return;
-                    }
-
-                    if (file.size > 5 * 1024 * 1024) {
-                        alert('File size must be less than 5MB');
-                        return;
-                    }
-
-                    // Show progress
-                    posterProgress.classList.add('active');
-                    let progress = 0;
-                    const interval = setInterval(() => {
-                        progress += 10;
-                        posterProgressBar.style.width = progress + '%';
-                        if (progress >= 100) {
-                            clearInterval(interval);
-                            setTimeout(() => {
-                                posterProgress.classList.remove('active');
-                                posterProgressBar.style.width = '0%';
-                            }, 500);
-                        }
-                    }, 100);
-
-                    // Show preview
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        posterUploadPreviewImg.src = e.target.result;
-                        posterUploadPreview.style.display = 'block';
-                    };
-                    reader.readAsDataURL(file);
-                }
-            }
-
-            // Trailer URL Preview (YouTube/Vimeo)
-            const trailerUrl = document.getElementById('TrailerUrl');
-            const trailerUrlPreview = document.getElementById('trailerUrlPreview');
-            const trailerUrlEmbed = document.getElementById('trailerUrlEmbed');
-
-            if (trailerUrl) {
-                trailerUrl.addEventListener('input', function() {
-                    const url = this.value;
-                    if (url) {
-                        const embedUrl = getEmbedUrl(url);
-                        if (embedUrl) {
-                            trailerUrlEmbed.innerHTML = `<iframe src="${embedUrl}" frameborder="0" allowfullscreen></iframe>`;
-                            trailerUrlPreview.style.display = 'block';
-                        }
-                    }
-                });
-            }
-
-            // Trailer Upload
-            const trailerUploadArea = document.getElementById('trailerUploadArea');
-            const trailerFile = document.getElementById('trailerFile');
-            const trailerProgress = document.getElementById('trailerProgress');
-            const trailerProgressBar = document.getElementById('trailerProgressBar');
-            const trailerUploadPreview = document.getElementById('trailerUploadPreview');
-            const trailerUploadVideo = document.getElementById('trailerUploadVideo');
-
-            if (trailerUploadArea) {
-                trailerUploadArea.addEventListener('click', () => trailerFile.click());
-
-                trailerFile.addEventListener('change', (e) => {
-                    if (e.target.files.length > 0) {
-                        handleTrailerUpload(e.target.files[0]);
-                    }
-                });
-
-                function handleTrailerUpload(file) {
-                    if (!file.type.startsWith('video/')) {
-                        alert('Please upload a video file');
-                        return;
-                    }
-
-                    if (file.size > 100 * 1024 * 1024) {
-                        alert('File size must be less than 100MB');
-                        return;
-                    }
-
-                    // Show progress
-                    trailerProgress.classList.add('active');
-                    let progress = 0;
-                    const interval = setInterval(() => {
-                        progress += 10;
-                        trailerProgressBar.style.width = progress + '%';
-                        if (progress >= 100) {
-                            clearInterval(interval);
-                            setTimeout(() => {
-                                trailerProgress.classList.remove('active');
-                                trailerProgressBar.style.width = '0%';
-                            }, 500);
-                        }
-                    }, 200);
-
-                    // Show preview
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        trailerUploadVideo.querySelector('source').src = e.target.result;
-                        trailerUploadVideo.load();
-                        trailerUploadPreview.style.display = 'block';
-                    };
-                    reader.readAsDataURL(file);
-                }
-            }
-
-            // Trailer Embed
-            const trailerEmbedCode = document.getElementById('trailerEmbedCode');
-            const trailerEmbedPreview = document.getElementById('trailerEmbedPreview');
-            const trailerEmbedContainer = document.getElementById('trailerEmbedContainer');
-
-            if (trailerEmbedCode) {
-                trailerEmbedCode.addEventListener('input', function() {
-                    if (this.value) {
-                        trailerEmbedContainer.innerHTML = this.value;
-                        trailerEmbedPreview.style.display = 'block';
-                    } else {
-                        trailerEmbedPreview.style.display = 'none';
-                    }
-                });
-            }
-
-            // Helper Functions
-            function isValidImageUrl(url) {
-                return url.match(/\.(jpeg|jpg|gif|png)$/) != null;
-            }
-
-            function getEmbedUrl(url) {
-                // YouTube
-                const ytRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
-                const ytMatch = url.match(ytRegex);
-                if (ytMatch) {
-                    return `https://www.youtube.com/embed/${ytMatch[1]}`;
-                }
-
-                // Vimeo
-                const vimeoRegex = /(?:vimeo\.com\/)([0-9]+)/;
-                const vimeoMatch = url.match(vimeoRegex);
-                if (vimeoMatch) {
-                    return `https://player.vimeo.com/video/${vimeoMatch[1]}`;
-                }
-
-                return null;
-            }
-
-            // Remove Poster Preview
-            window.removePosterPreview = function(type) {
-                if (type === 'url') {
-                    document.getElementById('posterUrlPreview').style.display = 'none';
-                    document.getElementById('PosterUrl').value = '';
-                } else if (type === 'upload') {
-                    document.getElementById('posterUploadPreview').style.display = 'none';
-                    document.getElementById('posterFile').value = '';
-                }
-            };
-
-            // Remove Trailer Preview
-            window.removeTrailerPreview = function(type) {
-                if (type === 'url') {
-                    document.getElementById('trailerUrlPreview').style.display = 'none';
-                    document.getElementById('TrailerUrl').value = '';
-                } else if (type === 'upload') {
-                    document.getElementById('trailerUploadPreview').style.display = 'none';
-                    document.getElementById('trailerFile').value = '';
-                } else if (type === 'embed') {
-                    document.getElementById('trailerEmbedPreview').style.display = 'none';
-                    document.getElementById('trailerEmbedCode').value = '';
-                }
-            };
-
-            // Form submission
-            const form = document.querySelector('form');
-            form.addEventListener('submit', function() {
-                const submitBtn = this.querySelector('button[type="submit"]');
-                if (submitBtn) {
-                    submitBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Processing...';
-                    submitBtn.disabled = true;
-                }
+            /* ── Submit feedback ── */
+            document.getElementById('createForm').addEventListener('submit', () => {
+                const btn = document.getElementById('submitBtn');
+                btn.innerHTML = '<i class="zmdi zmdi-hourglass-alt"></i> Saving…';
+                btn.disabled = true;
             });
         });
+
+        /* ── Poster Preview ── */
+        function previewPoster() {
+            const url  = document.getElementById('posterUrlInput').value.trim();
+            const wrap = document.getElementById('posterPreview');
+            const img  = document.getElementById('posterPreviewImg');
+            if (!url) { alert('Please enter a poster URL first.'); return; }
+            img.onload  = () => { wrap.style.display = 'block'; };
+            img.onerror = () => { alert('Could not load image. Check the URL.'); wrap.style.display = 'none'; };
+            img.src = url;
+        }
+        function clearPoster() {
+            document.getElementById('posterUrlInput').value = '';
+            const wrap = document.getElementById('posterPreview');
+            wrap.style.display = 'none';
+            document.getElementById('posterPreviewImg').src = '';
+        }
+
+        /* ── Trailer Preview ── */
+        function previewTrailer() {
+            const url  = document.getElementById('trailerUrlInput').value.trim();
+            const wrap = document.getElementById('trailerPreview');
+            if (!url) { alert('Please enter a trailer URL first.'); return; }
+            const embed = getEmbedUrl(url);
+            if (!embed) { alert('Unsupported URL. Use a YouTube or Vimeo link.'); return; }
+            wrap.innerHTML = `<iframe src="${embed}" frameborder="0" allowfullscreen></iframe>`;
+            wrap.style.display = 'block';
+        }
+        function clearTrailer() {
+            document.getElementById('trailerUrlInput').value = '';
+            const wrap = document.getElementById('trailerPreview');
+            wrap.style.display = 'none';
+            wrap.innerHTML = '';
+        }
+        function getEmbedUrl(url) {
+            const yt = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
+            if (yt) return `https://www.youtube.com/embed/${yt[1]}`;
+            const vi = url.match(/vimeo\.com\/([0-9]+)/);
+            if (vi) return `https://player.vimeo.com/video/${vi[1]}`;
+            return null;
+        }
     </script>
 }

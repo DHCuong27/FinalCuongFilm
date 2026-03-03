@@ -140,8 +140,8 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 			{
 				try
 				{
-					var result = await _movieService.UpdateAsync(dto);
-					if (!result)
+					var result = await _movieService.UpdateAsync(id, dto);
+					if (result == null)
 						return NotFound();
 
 					TempData["Success"] = "Cập nhật phim thành công!";

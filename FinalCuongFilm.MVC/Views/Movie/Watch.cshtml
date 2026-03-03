@@ -6,6 +6,11 @@
     var mediaFile = ViewBag.MediaFile as FinalCuongFilm.Common.DTOs.MediaFileDto;
     var currentEpisode = ViewBag.CurrentEpisode as FinalCuongFilm.Common.DTOs.EpisodeDto;
     var episodes = ViewBag.Episodes as List<FinalCuongFilm.Common.DTOs.EpisodeDto>;
+
+    // ── FIX #2: Nhận SAS URL + quality options + subtitles từ controller ──
+    var streamingUrl = ViewBag.StreamingUrl as string;
+    var movieId = ViewBag.MovieId;
+    var episodeId = ViewBag.EpisodeId;
 }
 
 <!DOCTYPE html>
@@ -83,6 +88,101 @@
         .video-wrapper:hover .video-controls-overlay {
             opacity: 1;
             pointer-events: auto;
+        }
+
+        /* ── FIX #4: Quality Switcher Bar ── */
+        .quality-bar {
+            background: rgba(0, 0, 0, 0.85);
+            padding: 8px 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .quality-bar-label {
+            color: #b3b3b3;
+            font-size: 0.82rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .quality-btn {
+            padding: 4px 14px;
+            border-radius: 20px;
+            border: 1px solid #444;
+            background: transparent;
+            color: #b3b3b3;
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s;
+            font-family: inherit;
+        }
+
+            .quality-btn:hover {
+                border-color: #e50914;
+                color: #fff;
+            }
+
+            .quality-btn.active {
+                background: #e50914;
+                border-color: #e50914;
+                color: #fff;
+            }
+
+        /* ── FIX #4: Resume Banner ── */
+        .resume-banner {
+            background: rgba(229, 9, 20, 0.1);
+            border: 1px solid rgba(229, 9, 20, 0.35);
+            border-radius: 6px;
+            padding: 12px 18px;
+            margin-bottom: 18px;
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+            .resume-banner.visible {
+                display: flex;
+            }
+
+            .resume-banner p {
+                color: #fff;
+                font-size: 0.92rem;
+                margin: 0;
+            }
+
+                .resume-banner p span {
+                    color: #e50914;
+                    font-weight: 700;
+                }
+
+        .resume-btn {
+            padding: 6px 16px;
+            background: #e50914;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+            font-family: inherit;
+        }
+
+            .resume-btn:hover {
+                background: #f40612;
+            }
+
+        .dismiss-btn {
+            background: transparent;
+            border: none;
+            color: #b3b3b3;
+            cursor: pointer;
+            font-size: 1.1rem;
         }
 
         /* Info Section - Netflix Style */
@@ -263,6 +363,17 @@
             height: 100%;
         }
 
+        /* ── FIX #4: Episode Progress Bar ── */
+        .ep-progress {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 3px;
+            background: #e50914;
+            transition: width 0.3s;
+            width: 0%;
+        }
+
         .episode-badge {
             position: absolute;
             top: 10px;
@@ -320,12 +431,9 @@
         }
 
         @@keyframes spin {
-            to
-
-        {
-            transform: rotate(360deg);
-        }
-
+            to {
+                transform: rotate(360deg);
+            }
         }
 
         /* Error Message */
@@ -362,29 +470,26 @@
 
         /* Responsive */
         @@media (max-width: 768px) {
-            .movie-title
+            .movie-title {
+                font-size: 1.8rem;
+            }
 
-        {
-            font-size: 1.8rem;
-        }
+                .movie-title span {
+                    font-size: 1.2rem;
+                }
 
-        .movie-title span {
-            font-size: 1.2rem;
-        }
+            .section-title {
+                font-size: 1.5rem;
+            }
 
-        .section-title {
-            font-size: 1.5rem;
-        }
+            .episodes-grid {
+                grid-template-columns: 1fr;
+            }
 
-        .episodes-grid {
-            grid-template-columns: 1fr;
-        }
-
-        .btn {
-            padding: 10px 20px;
-            font-size: 1rem;
-        }
-
+            .btn {
+                padding: 10px 20px;
+                font-size: 1rem;
+            }
         }
 
         /* Progress Bar - Netflix Style */
@@ -440,18 +545,15 @@
         }
 
         @@keyframes slideIn {
-            from
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
 
-        {
-            transform: translateX(100%);
-            opacity: 0;
-        }
-
-        to {
-            transform: translateX(0);
-            opacity: 1;
-        }
-
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
         }
 
         .next-episode-hint h4 {
@@ -468,20 +570,21 @@
 </head>
 <body>
     <div class="watch-container">
-        @if (movie == null || mediaFile == null)
+        @* ── FIX #2: Kiểm tra streamingUrl thay vì mediaFile.FileUrl ── *@
+        @if (movie == null || mediaFile == null || string.IsNullOrEmpty(streamingUrl))
         {
             <div class="error-container">
                 <div class="error-message">
                     <div class="error-icon">
                         <i class="fas fa-exclamation-circle"></i>
                     </div>
-                    <h2>Không thể tải video</h2>
+                    <h2>Unable to Load Video</h2>
                     <p style="margin-bottom: 20px; color: #b3b3b3;">
-                        @(movie == null ? "❌ Không tìm thấy thông tin phim" : "")
-                        @(mediaFile == null ? "❌ Không tìm thấy file video" : "")
+                        @(movie == null ? "❌ Movie information not found." : "")
+                        @(mediaFile == null || string.IsNullOrEmpty(streamingUrl) ? "❌ Video file not available." : "")
                     </p>
                     <a href="/Movie/Detail/@(movie?.Slug ?? "unknown")" class="btn btn-primary">
-                        <i class="fas fa-arrow-left"></i> Quay lại trang chi tiết
+                        <i class="fas fa-arrow-left"></i> Back to Detail
                     </a>
                 </div>
             </div>
@@ -491,20 +594,58 @@
             <!-- Video Player Section -->
             <div class="video-section">
                 <div class="video-wrapper">
-                    <video id="videoPlayer" controls controlsList="nodownload" preload="metadata" poster="@(movie.PosterUrl ?? "")">
-                        <source src="@mediaFile.FileUrl" type="video/mp4">
+                    @* ── FIX #2: KHÔNG đặt src ở đây — JS sẽ set sau để tránh lộ URL trong HTML source ── *@
+                    <video id="videoPlayer"
+                           controls
+                           controlsList="nodownload"
+                           preload="metadata"
+                           poster="@(movie.PosterUrl ?? "")">
                         Your browser does not support the video tag.
                     </video>
                 </div>
+
+                @* ── FIX #4: Quality Switcher — chỉ hiển thị nếu có nhiều hơn 1 quality ── *@
+                @{
+                    var qualitySources = ViewBag.QualitySources as IEnumerable<dynamic>;
+                    var qualityList = qualitySources?.ToList();
+                }
+                @if (qualityList != null && qualityList.Count > 1)
+                {
+                    <div class="quality-bar">
+                        <span class="quality-bar-label"><i class="fas fa-film"></i> Quality:</span>
+                        @for (int qi = 0; qi < qualityList.Count; qi++)
+                        {
+                            var qs = qualityList[qi];
+                            <button type="button"
+                                    class="quality-btn @(qi == 0 ? "active" : "")"
+                                    data-url="@qs.url"
+                                    onclick="switchQuality(this)">
+                                @qs.quality
+                            </button>
+                        }
+                    </div>
+                }
             </div>
 
             <!-- Movie Info Section -->
             <div class="info-section">
+
+                @* ── FIX #4: Resume Banner ── *@
+                <div class="resume-banner" id="resumeBanner">
+                    <p>You left off at <span id="resumeTime">—</span></p>
+                    <div style="display:flex; gap:8px; align-items:center;">
+                        <button class="resume-btn" onclick="resumePlayback()">
+                            <i class="fas fa-play"></i> Resume
+                        </button>
+                        <button class="dismiss-btn" onclick="dismissResume()" title="Dismiss">✕</button>
+                    </div>
+                </div>
+
                 <h1 class="movie-title">
                     @movie.Title
                     @if (currentEpisode != null)
                     {
-                        <span>Tập @currentEpisode.EpisodeNumber</span>
+                        <span>Episode @currentEpisode.EpisodeNumber</span>
                     }
                 </h1>
 
@@ -526,14 +667,15 @@
                 </div>
 
                 <div class="action-buttons">
-                    <a href="#" class="btn btn-primary" onclick="togglePlayPause()">
-                        <i class="fas fa-play"></i> Phát
+                    <button class="btn btn-primary" onclick="togglePlayPause()">
+                        <i class="fas fa-play" id="playIcon"></i>
+                        <span id="playLabel">Play</span>
+                    </button>
+                    <a href="#" class="btn btn-secondary">
+                        <i class="fas fa-plus"></i> Add to List
                     </a>
                     <a href="#" class="btn btn-secondary">
-                        <i class="fas fa-plus"></i> Thêm vào danh sách
-                    </a>
-                    <a href="#" class="btn btn-secondary">
-                        <i class="fas fa-thumbs-up"></i> Thích
+                        <i class="fas fa-thumbs-up"></i> Like
                     </a>
                 </div>
 
@@ -551,9 +693,9 @@
                         <div class="section-header">
                             <h2 class="section-title">
                                 <i class="fas fa-list"></i>
-                                Tập phim
+                                Episodes
                             </h2>
-                            <span class="episode-count">@episodes.Count tập</span>
+                            <span class="episode-count">@episodes.Count episodes</span>
                         </div>
 
                         <div class="episodes-grid">
@@ -567,15 +709,20 @@
                                         <i class="fas fa-play-circle"></i>
                                         @if (episode.DurationMinutes.HasValue)
                                         {
-                                            <span class="episode-badge">@episode.DurationMinutes phút</span>
+                                            <span class="episode-badge">@episode.DurationMinutes min</span>
+                                        }
+                                        @* ── FIX #4: Progress bar cho tập đang xem ── *@
+                                        @if (isActive)
+                                        {
+                                            <div class="ep-progress" id="epProgressBar"></div>
                                         }
                                     </div>
                                     <div class="episode-info">
-                                        <div class="episode-number">Tập @episode.EpisodeNumber</div>
+                                        <div class="episode-number">Episode @episode.EpisodeNumber</div>
                                         <div class="episode-title">@episode.Title</div>
                                         <div class="episode-duration">
                                             <i class="far fa-clock"></i>
-                                            @(episode.DurationMinutes.HasValue ? $"{episode.DurationMinutes} phút" : "Chưa có thời lượng")
+                                            @(episode.DurationMinutes.HasValue ? $"{episode.DurationMinutes} min" : "Duration N/A")
                                         </div>
                                     </div>
                                 </a>
@@ -587,145 +734,215 @@
                 <!-- Back Button -->
                 <div style="margin-top: 50px;">
                     <a href="/Movie/Detail/@movie.Slug" class="btn btn-secondary">
-                        <i class="fas fa-arrow-left"></i> Quay lại trang chi tiết
+                        <i class="fas fa-arrow-left"></i> Back to Detail
                     </a>
                 </div>
             </div>
         }
     </div>
 
-    <!-- Next Episode Hint (Optional) -->
+    <!-- Next Episode Hint -->
     @if (currentEpisode != null && episodes != null)
     {
         var nextEpisode = episodes.FirstOrDefault(e => e.EpisodeNumber == (currentEpisode.EpisodeNumber + 1));
         if (nextEpisode != null)
         {
             <div class="next-episode-hint" id="nextEpisodeHint" style="display: none;">
-                <h4>Tiếp theo: Tập @nextEpisode.EpisodeNumber</h4>
+                <h4>Up next: Episode @nextEpisode.EpisodeNumber</h4>
                 <p>@nextEpisode.Title</p>
-                <a href="/Movie/Watch/@movie.Slug?ep=@nextEpisode.EpisodeNumber" class="btn btn-primary" style="padding: 8px 16px; font-size: 0.9rem; margin-top: 10px;">
-                    <i class="fas fa-play"></i> Phát tập tiếp theo
+                <a href="/Movie/Watch/@movie?.Slug?ep=@nextEpisode.EpisodeNumber"
+                   class="btn btn-primary"
+                   style="padding: 8px 16px; font-size: 0.9rem; margin-top: 10px;">
+                    <i class="fas fa-play"></i> Play Next Episode
                 </a>
             </div>
         }
     }
 
     <script>
-        console.log('=== WATCH PAGE LOADED ===');
-        console.log('Movie:', '@(movie?.Title ?? "NULL")');
-        console.log('Media File:', '@(mediaFile?.FileName ?? "NULL")');
-        console.log('Video URL:', '@(mediaFile?.FileUrl ?? "NULL")');
-        console.log('Current Episode:', '@(currentEpisode?.EpisodeNumber ?? 0)');
+        // ══════════════════════════════════════════
+        // CONFIG — inject server-side, không để raw URL trong HTML attribute
+        // ══════════════════════════════════════════
+        const STREAMING_URL = '@Html.Raw(streamingUrl ?? "")';
+        const MOVIE_ID      = '@Html.Raw(movieId?.ToString() ?? "")';
+        const EPISODE_ID    = '@Html.Raw(episodeId?.ToString() ?? "")';
 
+        // ══════════════════════════════════════════
+        // FIX #2: Set video src qua JS — URL không xuất hiện trong HTML source
+        // ══════════════════════════════════════════
         const video = document.getElementById('videoPlayer');
+        let savedTime = 0;
 
-        if (video) {
-            // Video Events
-            video.addEventListener('loadedmetadata', function() {
-                console.log(' Video metadata loaded');
+        if (video && STREAMING_URL) {
+            video.src = STREAMING_URL;
+
+            // ── FIX #4: Load saved progress từ Session ──
+            if (MOVIE_ID) {
+                const epParam = EPISODE_ID ? `&episodeId=${EPISODE_ID}` : '';
+                fetch(`/Stream/GetProgress?movieId=${MOVIE_ID}${epParam}`)
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.success && data.currentTime > 10) {
+                            savedTime = data.currentTime;
+                            const mins = Math.floor(savedTime / 60);
+                            const secs = Math.floor(savedTime % 60);
+                            document.getElementById('resumeTime').textContent =
+                                `${mins}:${secs.toString().padStart(2, '0')}`;
+                            document.getElementById('resumeBanner').classList.add('visible');
+                        }
+                    })
+                    .catch(() => {});
+            }
+
+            // ── Video Events (giữ nguyên từ code gốc + bổ sung) ──
+            video.addEventListener('loadedmetadata', function () {
+                console.log('✅ Video metadata loaded');
                 console.log('Duration:', video.duration);
                 console.log('Video size:', video.videoWidth, 'x', video.videoHeight);
             });
 
-            video.addEventListener('error', function(e) {
+            video.addEventListener('error', function (e) {
                 console.error('❌ Video error:', e);
                 console.error('Error code:', video.error?.code);
                 console.error('Error message:', video.error?.message);
             });
 
-            video.addEventListener('canplay', function() {
-                console.log(' Video can play');
+            video.addEventListener('canplay', function () {
+                console.log('✅ Video can play');
             });
 
-            video.addEventListener('waiting', function() {
+            video.addEventListener('waiting', function () {
                 console.log('⏳ Video buffering...');
             });
 
-            video.addEventListener('playing', function() {
+            video.addEventListener('playing', function () {
                 console.log('▶️ Video playing');
+                document.getElementById('playIcon').className = 'fas fa-pause';
+                document.getElementById('playLabel').textContent = 'Pause';
             });
 
-            video.addEventListener('pause', function() {
+            video.addEventListener('pause', function () {
                 console.log('⏸️ Video paused');
+                document.getElementById('playIcon').className = 'fas fa-play';
+                document.getElementById('playLabel').textContent = 'Play';
             });
 
-            video.addEventListener('ended', function() {
+            video.addEventListener('ended', function () {
                 console.log('🏁 Video ended');
-                // Show next episode hint
+                saveProgress();
                 const nextHint = document.getElementById('nextEpisodeHint');
                 if (nextHint) {
                     nextHint.style.display = 'block';
-                    setTimeout(() => {
-                        nextHint.style.display = 'none';
-                    }, 10000);
+                    setTimeout(() => { nextHint.style.display = 'none'; }, 10000);
                 }
             });
 
-            // Keyboard controls
-            document.addEventListener('keydown', function(e) {
-                if (e.code === 'Space' && document.activeElement?.tagName !== 'INPUT') {
+            // ── FIX #4: Cập nhật episode progress bar + lưu progress mỗi 5s ──
+            let saveTimer;
+            video.addEventListener('timeupdate', function () {
+                const epBar = document.getElementById('epProgressBar');
+                if (epBar && video.duration > 0) {
+                    epBar.style.width = ((video.currentTime / video.duration) * 100) + '%';
+                }
+                clearTimeout(saveTimer);
+                saveTimer = setTimeout(saveProgress, 5000);
+            });
+
+            // ── Keyboard controls (giữ nguyên + bổ sung Arrow không cần Ctrl) ──
+            document.addEventListener('keydown', function (e) {
+                if (['INPUT', 'TEXTAREA'].includes(document.activeElement?.tagName)) return;
+                if (e.code === 'Space') {
                     e.preventDefault();
                     togglePlayPause();
-                } else if (e.code === 'ArrowRight' && e.ctrlKey) {
+                } else if (e.code === 'ArrowRight') {
                     video.currentTime += 10;
-                } else if (e.code === 'ArrowLeft' && e.ctrlKey) {
+                } else if (e.code === 'ArrowLeft') {
                     video.currentTime -= 10;
+                } else if (e.code === 'ArrowUp') {
+                    video.volume = Math.min(1, video.volume + 0.1);
+                } else if (e.code === 'ArrowDown') {
+                    video.volume = Math.max(0, video.volume - 0.1);
                 } else if (e.code === 'KeyF') {
                     toggleFullScreen();
+                } else if (e.code === 'KeyM') {
+                    video.muted = !video.muted;
                 }
             });
 
             // Double click to fullscreen
             video.addEventListener('dblclick', toggleFullScreen);
+
+            // Handle visibility change (giữ nguyên)
+            document.addEventListener('visibilitychange', function () {
+                if (document.hidden && !video.paused) {
+                    console.log('👋 Page hidden, pausing video');
+                    video.pause();
+                    saveProgress();
+                }
+            });
+
         } else {
-            console.error('❌ Video element not found!');
+            console.error('❌ Video element or streaming URL not found!');
         }
 
-        // Helper functions
+        // ══════════════════════════════════════════
+        // FUNCTIONS
+        // ══════════════════════════════════════════
         function togglePlayPause() {
-            if (video) {
-                if (video.paused) {
-                    video.play();
-                } else {
-                    video.pause();
-                }
-            }
+            if (!video) return;
+            video.paused ? video.play() : video.pause();
         }
 
         function toggleFullScreen() {
-            if (video) {
-                if (document.fullscreenElement) {
-                    document.exitFullscreen();
-                } else {
-                    video.requestFullscreen();
-                }
-            }
+            if (!video) return;
+            document.fullscreenElement
+                ? document.exitFullscreen()
+                : video.requestFullscreen();
         }
 
-        // Save watch progress
-        if (video) {
-            let saveTimeout;
-            video.addEventListener('timeupdate', function() {
-                clearTimeout(saveTimeout);
-                saveTimeout = setTimeout(() => {
-                    const progress = (video.currentTime / video.duration) * 100;
-                    if (progress > 5 && progress < 95) {
-                        console.log('📊 Saving progress:', Math.round(progress) + '%');
-                        // Here you can add API call to save progress
-                    }
-                }, 3000);
-            });
+        // ── FIX #4: Lưu progress lên /Stream/Progress ──
+        function saveProgress() {
+            if (!video || !video.duration || video.currentTime < 5 || !MOVIE_ID) return;
+            const pct = (video.currentTime / video.duration) * 100;
+            if (pct > 97) return; // Xem gần xong, không cần lưu
+            fetch('/Stream/Progress', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    movieId:     MOVIE_ID,
+                    episodeId:   EPISODE_ID || null,
+                    currentTime: video.currentTime,
+                    duration:    video.duration
+                })
+            }).catch(() => {});
         }
 
-        // Handle visibility change
-        document.addEventListener('visibilitychange', function() {
-            if (document.hidden && video && !video.paused) {
-                console.log('👋 Page hidden, pausing video');
-                video.pause();
-            }
-        });
+        // ── FIX #4: Resume từ vị trí đã lưu ──
+        function resumePlayback() {
+            if (!video || savedTime <= 0) return;
+            video.currentTime = savedTime;
+            video.play();
+            document.getElementById('resumeBanner').classList.remove('visible');
+        }
 
-        
+        function dismissResume() {
+            document.getElementById('resumeBanner').classList.remove('visible');
+        }
+
+        // ── FIX #4: Đổi quality, giữ nguyên thời gian xem ──
+        function switchQuality(btn) {
+            if (!video || !btn.dataset.url) return;
+            const currentTime = video.currentTime;
+            const wasPaused   = video.paused;
+
+            document.querySelectorAll('.quality-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            video.src = btn.dataset.url;
+            video.load();
+            video.currentTime = currentTime;
+            if (!wasPaused) video.play();
+        }
     </script>
 </body>
 </html>

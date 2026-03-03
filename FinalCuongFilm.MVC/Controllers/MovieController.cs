@@ -15,7 +15,7 @@ namespace FinalCuongFilm.MVC.Controllers
 		private readonly IMediaFileService _mediaFileService;
 		private readonly IGenreService _genreService;
 		private readonly ICountryService _countryService;
-
+		private readonly IAzureBlobService _azureBlobService;
 		private readonly ILogger<MovieController> _logger;
 
 		public MovieController(
@@ -26,7 +26,8 @@ namespace FinalCuongFilm.MVC.Controllers
 			IMediaFileService mediaFileService,
 			IGenreService genreService,
 			ICountryService countryService,
-			ILogger<MovieController> logger) 
+			IAzureBlobService azureBlobService,
+			ILogger<MovieController> logger)
 		{
 			_movieService = movieService;
 			_favoriteService = favoriteService;
@@ -35,7 +36,8 @@ namespace FinalCuongFilm.MVC.Controllers
 			_mediaFileService = mediaFileService;
 			_genreService = genreService;
 			_countryService = countryService;
-			_logger = logger; 
+			_azureBlobService = azureBlobService;
+			_logger = logger;
 		}
 
 		// GET: /Movies
@@ -51,50 +53,37 @@ namespace FinalCuongFilm.MVC.Controllers
 			if (string.IsNullOrEmpty(slug))
 				return NotFound();
 
-			// Lấy tất cả phim và tìm theo slug
 			var allMovies = await _movieService.GetAllAsync();
 			var movie = allMovies.FirstOrDefault(m => m.Slug == slug && m.IsActive);
 
 			if (movie == null)
 				return NotFound();
 
-			// Lấy episodes nếu là phim bộ
 			var episodes = await _episodeService.GetByMovieIdAsync(movie.Id);
-
-			// Lấy media files
 			var mediaFiles = await _mediaFileService.GetByMovieIdAsync(movie.Id);
 
-			// Lấy phim liên quan
 			var relatedMovies = allMovies
 				.Where(m => m.IsActive &&
-						   m.Id != movie.Id &&
-						   (m.CountryId == movie.CountryId ||
-							m.SelectedGenreIds.Intersect(movie.SelectedGenreIds).Any()))
+							m.Id != movie.Id &&
+							(m.CountryId == movie.CountryId ||
+							 m.SelectedGenreIds.Intersect(movie.SelectedGenreIds).Any()))
 				.OrderByDescending(m => m.ViewCount)
 				.Take(6)
 				.ToList();
 
-			// Lấy genres và countries cho navigation
 			var genres = await _genreService.GetAllAsync();
 			var countries = await _countryService.GetAllAsync();
-
 			ViewBag.Genres = genres;
 			ViewBag.Countries = countries;
 
-			// Kiểm tra favorite và reviews cho user hiện tại
 			var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
 			ViewBag.IsFavorited = false;
 			if (userId != null)
-			{
 				ViewBag.IsFavorited = await _favoriteService.IsFavoriteAsync(userId, movie.Id);
-			}
 
-			// Lấy rating và reviews
 			try
 			{
-				var rating = await _reviewService.GetMovieRatingAsync(movie.Id);
-				ViewBag.Rating = rating;
+				ViewBag.Rating = await _reviewService.GetMovieRatingAsync(movie.Id);
 			}
 			catch
 			{
@@ -106,9 +95,7 @@ namespace FinalCuongFilm.MVC.Controllers
 
 			ViewBag.UserReview = null;
 			if (userId != null)
-			{
 				ViewBag.UserReview = await _reviewService.GetUserReviewForMovieAsync(userId, movie.Id);
-			}
 
 			var viewModel = new MovieDetailsViewModel
 			{
@@ -126,147 +113,146 @@ namespace FinalCuongFilm.MVC.Controllers
 		[Route("Movie/Watch/{slug}")]
 		public async Task<IActionResult> Watch(string slug, int? ep = null)
 		{
-			_logger.LogInformation(" WATCH ACTION START ");
-			_logger.LogInformation($"Slug: {slug}, Episode: {ep}");
+			_logger.LogInformation($"[Watch] slug={slug}, ep={ep}");
 
 			if (string.IsNullOrEmpty(slug))
 			{
-				_logger.LogError("Slug is null or empty");
-				TempData["Error"] = "Movie Not Found!";
+				TempData["Error"] = "Movie not found.";
 				return RedirectToAction("Index", "Home");
 			}
 
 			try
 			{
-				// Get all movies
 				var allMovies = await _movieService.GetAllAsync();
-				_logger.LogInformation($"Total movies: {allMovies.Count()}");
-
-				// Find movie by slug
 				var movie = allMovies.FirstOrDefault(m =>
-					m.Slug.Equals(slug, StringComparison.OrdinalIgnoreCase) &&
-					m.IsActive);
+					m.Slug.Equals(slug, StringComparison.OrdinalIgnoreCase) && m.IsActive);
 
 				if (movie == null)
 				{
-					_logger.LogError($"Movie not found with slug: {slug}");
-					TempData["Error"] = $"Không tìm thấy phim: {slug}";
+					TempData["Error"] = $"Movie not found: {slug}";
 					return RedirectToAction("Index", "Home");
 				}
 
-
-
-				// Lấy genres và countries cho navigation
 				var genres = await _genreService.GetAllAsync();
 				var countries = await _countryService.GetAllAsync();
-
 				ViewBag.Genres = genres;
 				ViewBag.Countries = countries;
 
-				_logger.LogInformation($"Movie found: {movie.Title} (ID: {movie.Id})");
-
-				// Initialize variables
 				FinalCuongFilm.Common.DTOs.MediaFileDto? selectedMediaFile = null;
 				FinalCuongFilm.Common.DTOs.EpisodeDto? currentEpisode = null;
+				List<FinalCuongFilm.Common.DTOs.MediaFileDto> allQualityOptions = new();
 				List<FinalCuongFilm.Common.DTOs.EpisodeDto> allEpisodes = new();
 
-				// Handle Series vs Movie
 				if (movie.Type == ApplicationCore.Entities.Enum.MovieType.Series)
 				{
-					_logger.LogInformation("Processing SERIES");
-
-					// Get all episodes
 					var episodes = await _episodeService.GetByMovieIdAsync(movie.Id);
 					allEpisodes = episodes
 						.Where(e => e.IsActive)
 						.OrderBy(e => e.EpisodeNumber)
 						.ToList();
 
-					_logger.LogInformation($"Found {allEpisodes.Count} episodes");
-
 					if (!allEpisodes.Any())
 					{
-						_logger.LogWarning("No episodes found");
-						TempData["Error"] = "Phim chưa có tập nào!";
+						TempData["Error"] = "This series has no episodes yet.";
 						return RedirectToAction("Detail", new { slug });
 					}
 
-					// Determine current episode
-					int targetEpisodeNumber = ep ?? 1;
-					currentEpisode = allEpisodes
-						.FirstOrDefault(e => e.EpisodeNumber == targetEpisodeNumber);
+					int targetEp = ep ?? 1;
+					currentEpisode = allEpisodes.FirstOrDefault(e => e.EpisodeNumber == targetEp)
+									 ?? allEpisodes.First();
 
-					if (currentEpisode == null)
-					{
-						_logger.LogWarning($"Episode {targetEpisodeNumber} not found, using first episode");
-						currentEpisode = allEpisodes.First();
-					}
-
-					_logger.LogInformation($"Current episode: #{currentEpisode.EpisodeNumber} - {currentEpisode.Title}");
-
-					// Get media file for this episode
 					var episodeMediaFiles = await _mediaFileService.GetByEpisodeIdAsync(currentEpisode.Id);
-					selectedMediaFile = episodeMediaFiles
+					allQualityOptions = episodeMediaFiles
 						.Where(m => m.FileType == "video")
 						.OrderByDescending(m => m.Quality)
-						.FirstOrDefault();
+						.ToList();
 
-					_logger.LogInformation($"Episode has {episodeMediaFiles.Count()} media files");
+					selectedMediaFile = allQualityOptions.FirstOrDefault();
 				}
 				else
 				{
-					_logger.LogInformation("Processing MOVIE");
-
-					// Get media file for movie
 					var movieMediaFiles = await _mediaFileService.GetByMovieIdAsync(movie.Id);
-					selectedMediaFile = movieMediaFiles
+					allQualityOptions = movieMediaFiles
 						.Where(m => m.FileType == "video")
 						.OrderByDescending(m => m.Quality)
-						.FirstOrDefault();
+						.ToList();
 
-					_logger.LogInformation($"Movie has {movieMediaFiles.Count()} media files");
+					selectedMediaFile = allQualityOptions.FirstOrDefault();
 				}
 
-				// Check if media file exists
 				if (selectedMediaFile == null)
 				{
-					_logger.LogError("No video media file found!");
-					TempData["Error"] = "Video chưa được upload! Vui lòng thử lại sau.";
+					TempData["Error"] = "Video not available yet. Please try again later.";
 					return RedirectToAction("Detail", new { slug });
 				}
 
-				_logger.LogInformation($"Selected media file: {selectedMediaFile.FileName}");
-				_logger.LogInformation($"File URL: {selectedMediaFile.FileUrl}");
-				_logger.LogInformation($"Quality: {selectedMediaFile.Quality}");
+				// FIX #2a: Tạo SAS URL có thời hạn 4 giờ thay vì lộ raw Azure Blob URL
+				var streamingUrl = await _azureBlobService.GetStreamingUrlAsync(
+					selectedMediaFile.FileUrl, expiryHours: 4);
 
-				// Set ViewBag data
+				// FIX #2b: Tạo SAS URL cho tất cả quality options
+				var qualitySources = new List<object>();
+				foreach (var qf in allQualityOptions)
+				{
+					var qUrl = await _azureBlobService.GetStreamingUrlAsync(qf.FileUrl, expiryHours: 4);
+					qualitySources.Add(new
+					{
+						id = qf.Id,
+						quality = qf.Quality ?? "Auto",
+						url = qUrl
+					});
+				}
+
+				// FIX #2c: Lấy subtitles nếu có
+				var subtitleFiles = new List<object>();
+				IEnumerable<FinalCuongFilm.Common.DTOs.MediaFileDto> allMediaForSubtitles;
+				if (currentEpisode != null)
+					allMediaForSubtitles = await _mediaFileService.GetByEpisodeIdAsync(currentEpisode.Id);
+				else
+					allMediaForSubtitles = await _mediaFileService.GetByMovieIdAsync(movie.Id);
+
+				foreach (var sub in allMediaForSubtitles.Where(m => m.FileType == "subtitle"))
+				{
+					var subUrl = await _azureBlobService.GetStreamingUrlAsync(sub.FileUrl, expiryHours: 4);
+					subtitleFiles.Add(new
+					{
+						language = sub.Language ?? "Unknown",
+						url = subUrl,
+						label = sub.Language ?? "Subtitle"
+					});
+				}
+
+				// FIX #2d: Tăng ViewCount
+				await _movieService.IncrementViewCountAsync(movie.Id);
+
+				// Truyền vào View — streamingUrl (SAS) thay vì raw FileUrl
 				ViewBag.Movie = movie;
-				ViewBag.MediaFile = selectedMediaFile;
+				ViewBag.StreamingUrl = streamingUrl;       // SAS URL — có thời hạn
+				ViewBag.MediaFile = selectedMediaFile;      // Metadata (không chứa raw URL nữa)
+				ViewBag.QualitySources = qualitySources;    // Tất cả quality options (SAS URLs)
+				ViewBag.SubtitleFiles = subtitleFiles;      // Subtitle tracks
 				ViewBag.CurrentEpisode = currentEpisode;
 				ViewBag.Episodes = allEpisodes;
+				ViewBag.MovieId = movie.Id;
+				ViewBag.EpisodeId = currentEpisode?.Id;
 
-				_logger.LogInformation("=== WATCH ACTION SUCCESS - Returning View ===");
-
+				_logger.LogInformation($"[Watch] Success: {movie.Title}, quality options: {qualitySources.Count}");
 				return View();
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError(ex, "EXCEPTION in Watch action");
-				TempData["Error"] = $"Lỗi: {ex.Message}";
+				_logger.LogError(ex, "[Watch] Exception");
+				TempData["Error"] = $"Error: {ex.Message}";
 				return RedirectToAction("Index", "Home");
 			}
 		}
 
-		// Tùy chọn: Giữ lại phương thức Watch cũ bằng ID nếu cần
 		public async Task<IActionResult> WatchById(Guid id)
 		{
 			var movie = await _movieService.GetByIdAsync(id);
 			if (movie == null || !movie.IsActive)
-			{
 				return NotFound();
-			}
 
-			// Redirect sang route dùng slug
 			return RedirectToAction("Watch", new { slug = movie.Slug });
 		}
 	}

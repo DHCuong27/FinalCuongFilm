@@ -1,329 +1,554 @@
 ﻿@model FinalCuongFilm.Common.DTOs.MovieUpdateDto
-
 @{
     ViewData["Title"] = "Edit Movie";
 }
 
 <style>
-    /* CSS đơn giản, tối giản */
-    body {
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        background-color: #f8f9fa;
-        color: #333;
-        line-height: 1.6;
+    :root {
+        --nf-red: #e50914;
+        --nf-red2: #f40612;
+        --nf-bg: #141414;
+        --nf-dark: #181818;
+        --nf-darker: #0f0f0f;
+        --nf-card: #1f1f1f;
+        --nf-input: #2a2a2a;
+        --nf-border: #333;
+        --nf-gray: #808080;
+        --nf-lgray: #b3b3b3;
+        --nf-white: #fff;
+        --nf-green: #2ecc71;
+        --nf-blue: #3498db;
+        --nf-yellow: #f39c12;
     }
 
-    .page-title {
-        font-size: 1.8rem;
-        font-weight: 600;
-        color: #2c3e50;
-        margin-bottom: 1.5rem;
-        padding-bottom: 0.5rem;
-        border-bottom: 1px solid #eaeaea;
+    .nf-page-header {
+        margin-bottom: 24px;
+        padding-bottom: 16px;
+        border-bottom: 2px solid var(--nf-border);
     }
 
-    .card {
-        background-color: white;
-        border-radius: 8px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-        border: 1px solid #e0e0e0;
-        margin-bottom: 2rem;
+    .nf-page-title {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: var(--nf-white);
+        margin: 0 0 4px;
     }
 
-    .card-header {
-        background-color: #f8f9fa;
-        padding: 1rem 1.5rem;
-        border-bottom: 1px solid #e0e0e0;
-        font-weight: 600;
-        color: #495057;
-        font-size: 1.2rem;
-        border-radius: 8px 8px 0 0;
-    }
-
-    .card-body {
-        padding: 1.5rem;
-    }
-
-    .form-group {
-        margin-bottom: 1.5rem;
-    }
-
-    .form-control-label {
-        display: block;
-        font-weight: 500;
-        margin-bottom: 0.5rem;
-        color: #495057;
-    }
-
-    .form-control {
-        display: block;
-        width: 100%;
-        padding: 0.6rem 0.75rem;
-        font-size: 1rem;
-        line-height: 1.5;
-        color: #495057;
-        background-color: #fff;
-        border: 1px solid #ced4da;
-        border-radius: 4px;
-        transition: border-color 0.15s ease-in-out;
-    }
-
-        .form-control:focus {
-            border-color: #80bdff;
-            outline: 0;
-            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.1);
+        .nf-page-title span {
+            color: var(--nf-red);
         }
 
-    textarea.form-control {
+    .nf-page-sub {
+        color: var(--nf-lgray);
+        font-size: .9rem;
+    }
+
+    .nf-card {
+        background: var(--nf-card);
+        border: 1px solid var(--nf-border);
+        border-radius: 8px;
+        overflow: hidden;
+        margin-bottom: 18px;
+        box-shadow: 0 4px 20px rgba(0,0,0,.35);
+    }
+
+    .nf-card-hd {
+        background: var(--nf-darker);
+        padding: 12px 20px;
+        border-bottom: 2px solid var(--nf-red);
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        font-size: .72rem;
+        font-weight: 700;
+        color: var(--nf-white);
+        text-transform: uppercase;
+        letter-spacing: .8px;
+    }
+
+        .nf-card-hd i {
+            color: var(--nf-red);
+            font-size: 1.05rem;
+        }
+
+    .nf-card-bd {
+        padding: 22px 24px;
+    }
+
+    .nf-grid {
+        display: grid;
+        grid-template-columns: repeat(2,1fr);
+        gap: 18px;
+    }
+
+    .nf-gcol2 {
+        grid-column: 1/-1;
+    }
+
+    .nf-label {
+        display: block;
+        font-size: .72rem;
+        font-weight: 700;
+        color: var(--nf-lgray);
+        margin-bottom: 6px;
+        text-transform: uppercase;
+        letter-spacing: .7px;
+    }
+
+        .nf-label .req {
+            color: var(--nf-red);
+            margin-left: 2px;
+        }
+
+    .nf-ctrl {
+        display: block;
+        width: 100%;
+        padding: 10px 13px;
+        font-size: .95rem;
+        color: var(--nf-white);
+        background: var(--nf-input);
+        border: 1px solid var(--nf-border);
+        border-radius: 5px;
+        outline: none;
+        font-family: inherit;
+        transition: border-color .2s, box-shadow .2s;
+    }
+
+        .nf-ctrl:focus {
+            border-color: var(--nf-red);
+            box-shadow: 0 0 0 2px rgba(229,9,20,.18);
+            background: #2f2f2f;
+        }
+
+        .nf-ctrl::placeholder {
+            color: var(--nf-gray);
+        }
+
+    textarea.nf-ctrl {
         min-height: 100px;
         resize: vertical;
     }
 
-    select.form-control[multiple] {
-        min-height: 120px;
+    select.nf-ctrl[multiple] {
+        min-height: 130px;
     }
 
-    .form-text {
-        font-size: 0.875rem;
-        color: #6c757d;
-        margin-top: 0.25rem;
-    }
-
-    .text-danger {
-        color: #dc3545;
-        font-size: 0.875rem;
-        margin-top: 0.25rem;
+    .nf-hint {
+        font-size: .75rem;
+        color: var(--nf-gray);
+        margin-top: 4px;
         display: block;
     }
 
-    .required {
-        color: #dc3545;
+    .nf-err {
+        color: #ff4d4f;
+        font-size: .78rem;
+        margin-top: 3px;
+        display: block;
     }
-
-    .form-actions {
+    /* Poster URL preview — same pattern as Create */
+    .nf-url-group {
         display: flex;
-        gap: 0.75rem;
-        padding-top: 1rem;
-        border-top: 1px solid #eaeaea;
-        margin-top: 1.5rem;
+        gap: 8px;
     }
 
-    .btn {
-        display: inline-flex;
+        .nf-url-group .nf-ctrl {
+            flex: 1;
+        }
+
+    .nf-url-preview-btn {
+        flex-shrink: 0;
+        padding: 0 14px;
+        height: 42px;
+        background: var(--nf-darker);
+        border: 1px solid var(--nf-border);
+        border-radius: 5px;
+        color: var(--nf-lgray);
+        font-size: .82rem;
+        font-weight: 600;
+        cursor: pointer;
+        white-space: nowrap;
+        transition: all .2s;
+        font-family: inherit;
+    }
+
+        .nf-url-preview-btn:hover {
+            border-color: var(--nf-red);
+            color: var(--nf-red);
+        }
+
+    .nf-img-preview-wrap {
+        margin-top: 10px;
+        border-radius: 6px;
+        overflow: hidden;
+        background: var(--nf-darker);
+        border: 1px solid var(--nf-border);
+        display: none;
+        position: relative;
+    }
+
+        .nf-img-preview-wrap img {
+            display: block;
+            width: 100%;
+            max-height: 220px;
+            object-fit: contain;
+        }
+
+    .nf-preview-clear {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: rgba(0,0,0,.65);
+        border: none;
+        color: #fff;
+        display: flex;
         align-items: center;
         justify-content: center;
-        padding: 0.5rem 1.25rem;
-        font-size: 1rem;
-        font-weight: 500;
-        line-height: 1.5;
-        border-radius: 4px;
-        border: 1px solid transparent;
         cursor: pointer;
-        transition: all 0.2s ease;
-        text-decoration: none;
+        font-size: .9rem;
+        transition: background .2s;
     }
 
-    .btn-primary {
-        color: white;
-        background-color: #007bff;
-        border-color: #007bff;
-    }
-
-        .btn-primary:hover {
-            background-color: #0069d9;
-            border-color: #0062cc;
+        .nf-preview-clear:hover {
+            background: var(--nf-red);
         }
 
-    .btn-secondary {
-        color: #333;
-        background-color: #f8f9fa;
-        border-color: #ddd;
+    .nf-embed-preview {
+        margin-top: 10px;
+        border-radius: 6px;
+        overflow: hidden;
+        display: none;
+        position: relative;
+        padding-bottom: 56.25%;
+        height: 0;
     }
 
-        .btn-secondary:hover {
-            background-color: #e9ecef;
-            border-color: #ccc;
+        .nf-embed-preview iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+            border-radius: 6px;
         }
 
-    .form-check {
+    .nf-toggle {
         display: flex;
         align-items: center;
-        gap: 0.5rem;
+        gap: 10px;
+        padding: 12px 16px;
+        background: var(--nf-input);
+        border: 1px solid var(--nf-border);
+        border-radius: 5px;
     }
 
-    .form-check-input {
-        margin: 0;
+        .nf-toggle input {
+            width: 17px;
+            height: 17px;
+            accent-color: var(--nf-red);
+            cursor: pointer;
+        }
+
+        .nf-toggle label {
+            color: var(--nf-white);
+            font-size: .92rem;
+            cursor: pointer;
+            margin: 0;
+        }
+
+    .nf-val-banner {
+        background: rgba(229,9,20,.1);
+        border: 1px solid rgba(229,9,20,.4);
+        border-radius: 6px;
+        padding: 12px 16px;
+        margin-bottom: 20px;
+        color: #ff6b6b;
+        font-size: .85rem;
     }
 
-    .form-check-label {
-        margin-bottom: 0;
+        .nf-val-banner ul {
+            margin: 6px 0 0;
+            padding-left: 18px;
+        }
+
+    .nf-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 10px 22px;
+        font-size: .92rem;
+        font-weight: 600;
+        border-radius: 5px;
+        border: none;
+        cursor: pointer;
+        transition: all .2s;
+        text-decoration: none;
+        font-family: inherit;
+        line-height: 1.4;
     }
 
-    .row {
+    .nf-btn-red {
+        background: var(--nf-red);
+        color: #fff;
+    }
+
+        .nf-btn-red:hover {
+            background: var(--nf-red2);
+            color: #fff;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(229,9,20,.35);
+        }
+
+    .nf-btn-ghost {
+        background: transparent;
+        color: var(--nf-lgray);
+        border: 1px solid var(--nf-border);
+    }
+
+        .nf-btn-ghost:hover {
+            background: var(--nf-border);
+            color: var(--nf-white);
+        }
+
+    .nf-form-actions {
         display: flex;
+        gap: 12px;
+        padding-top: 22px;
+        border-top: 1px solid var(--nf-border);
         flex-wrap: wrap;
-        margin-right: -0.75rem;
-        margin-left: -0.75rem;
     }
 
-    .col-md-6, .col-md-12 {
-        padding-right: 0.75rem;
-        padding-left: 0.75rem;
-        position: relative;
-        width: 100%;
-    }
+    @@media(max-width:768px) {
+        .nf-grid {
+            grid-template-columns: 1fr;
+        }
 
-    .col-md-6 {
-        flex: 0 0 50%;
-        max-width: 50%;
-    }
+        .nf-gcol2 {
+            grid-column: 1;
+        }
 
-    .col-md-12 {
-        flex: 0 0 100%;
-        max-width: 100%;
-    }
+        .nf-card-bd {
+            padding: 16px;
+        }
 
-    .m-t-30 {
-        margin-top: 2rem;
-    }
+        .nf-form-actions {
+            flex-direction: column;
+        }
 
+        .nf-btn {
+            width: 100%;
+            justify-content: center;
+        }
+    }
 </style>
 
-<div class="row">
-    <div class="col-md-12">
-        <h1 class="page-title">@ViewData["Title"]</h1>
-    </div>
+<div class="nf-page-header">
+    <h1 class="nf-page-title">Edit <span>Movie</span></h1>
+    <p class="nf-page-sub">Update the details for this movie</p>
 </div>
 
-<div class="row m-t-30">
-    <div class="col-md-12">
-        <div class="card">
-            <div class="card-header">
-                Cập nhật thông tin phim
-            </div>
-            <div class="card-body">
-                <form asp-action="Edit" method="post">
-                    <input type="hidden" asp-for="Id" />
-                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+<form asp-action="Edit" method="post" id="editForm">
+    <input type="hidden" asp-for="Id" />
 
-                    <div class="form-group">
-                        <label asp-for="Title" class="form-control-label">Tiêu đề <span class="required">*</span></label>
-                        <input asp-for="Title" class="form-control" />
-                        <span asp-validation-for="Title" class="text-danger"></span>
-                    </div>
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div class="nf-val-banner">
+            <strong>Please fix the errors below:</strong>
+            <ul>@foreach (var e in ViewData.ModelState.Values.SelectMany(v => v.Errors)) {
+            <li>@e.ErrorMessage</li>
+        }
+</ul>
+    </div>
+        }
 
-                    <div class="form-group">
-                        <label asp-for="Description" class="form-control-label">Mô tả</label>
-                        <textarea asp-for="Description" class="form-control" rows="4"></textarea>
-                        <span asp-validation-for="Description" class="text-danger"></span>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label asp-for="ReleaseYear" class="form-control-label">Năm phát hành</label>
-                                <input asp-for="ReleaseYear" class="form-control" type="number" />
-                                <span asp-validation-for="ReleaseYear" class="text-danger"></span>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label asp-for="DurationMinutes" class="form-control-label">Thời lượng (phút)</label>
-                                <input asp-for="DurationMinutes" class="form-control" type="number" />
-                                <span asp-validation-for="DurationMinutes" class="text-danger"></span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label asp-for="PosterUrl" class="form-control-label">URL Poster</label>
-                        <input asp-for="PosterUrl" class="form-control" />
-                        <span asp-validation-for="PosterUrl" class="text-danger"></span>
-                    </div>
-
-                    <div class="form-group">
-                        <label asp-for="TrailerUrl" class="form-control-label">URL Trailer</label>
-                        <input asp-for="TrailerUrl" class="form-control" />
-                        <span asp-validation-for="TrailerUrl" class="text-danger"></span>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label asp-for="Type" class="form-control-label">Loại phim</label>
-                                <select asp-for="Type" class="form-control" asp-items="Html.GetEnumSelectList<FinalCuongFilm.ApplicationCore.Entities.Enum.MovieType>()">
-                                </select>
-                                <span asp-validation-for="Type" class="text-danger"></span>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label asp-for="Status" class="form-control-label">Trạng thái</label>
-                                <select asp-for="Status" class="form-control" asp-items="Html.GetEnumSelectList<FinalCuongFilm.ApplicationCore.Entities.Enum.MovieStatus>()">
-                                </select>
-                                <span asp-validation-for="Status" class="text-danger"></span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label asp-for="CountryId" class="form-control-label">Quốc gia</label>
-                                <select asp-for="CountryId" class="form-control" asp-items="ViewBag.Countries">
-                                </select>
-                                <span asp-validation-for="CountryId" class="text-danger"></span>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label asp-for="LanguageId" class="form-control-label">Ngôn ngữ</label>
-                                <select asp-for="LanguageId" class="form-control" asp-items="ViewBag.Languages">
-                                </select>
-                                <span asp-validation-for="LanguageId" class="text-danger"></span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label asp-for="ActorIds" class="form-control-label">Diễn viên</label>
-                        <select asp-for="ActorIds" class="form-control" asp-items="ViewBag.Actors" multiple>
-                        </select>
-                        <small class="form-text">Giữ Ctrl để chọn nhiều diễn viên</small>
-                        <span asp-validation-for="ActorIds" class="text-danger"></span>
-                    </div>
-
-                    <div class="form-group">
-                        <label asp-for="GenreIds" class="form-control-label">Thể loại</label>
-                        <select asp-for="GenreIds" class="form-control" asp-items="ViewBag.Genres" multiple>
-                        </select>
-                        <small class="form-text">Giữ Ctrl để chọn nhiều thể loại</small>
-                        <span asp-validation-for="GenreIds" class="text-danger"></span>
-                    </div>
-
-                    <div class="form-group">
-                        <div class="form-check">
-                            <input asp-for="IsActive" class="form-check-input" type="checkbox" />
-                            <label asp-for="IsActive" class="form-check-label">Kích hoạt</label>
-                        </div>
-                    </div>
-
-                    <div class="form-actions">
-                        <button type="submit" class="btn btn-primary">
-                            Cập nhật
-                        </button>
-                        <a asp-action="Index" class="btn btn-secondary">
-                            Hủy
-                        </a>
-                    </div>
-                </form>
+    <!-- ��1 Basic Info -->
+    <div class="nf-card">
+        <div class="nf-card-hd"><i class="zmdi zmdi-info"></i> Basic Information</div>
+        <div class="nf-card-bd">
+            <div class="nf-grid">
+                <div class="nf-gcol2">
+                    <label class="nf-label">Title <span class="req">*</span></label>
+                    <input asp-for="Title" class="nf-ctrl" placeholder="Movie title" />
+                    <span asp-validation-for="Title" class="nf-err"></span>
+                </div>
+                <div class="nf-gcol2">
+                    <label class="nf-label">Description</label>
+                    <textarea asp-for="Description" class="nf-ctrl" rows="4" placeholder="Movie description…"></textarea>
+                    <span asp-validation-for="Description" class="nf-err"></span>
+                </div>
+                <div>
+                    <label class="nf-label">Release Year</label>
+                    <input asp-for="ReleaseYear" class="nf-ctrl" type="number" placeholder="e.g. 2024" />
+                    <span asp-validation-for="ReleaseYear" class="nf-err"></span>
+                </div>
+                <div>
+                    <label class="nf-label">Duration (minutes)</label>
+                    <input asp-for="DurationMinutes" class="nf-ctrl" type="number" placeholder="e.g. 120" />
+                    <span asp-validation-for="DurationMinutes" class="nf-err"></span>
+                </div>
             </div>
         </div>
     </div>
-</div>
+
+    <!-- §2 Media -->
+    <div class="nf-card">
+        <div class="nf-card-hd"><i class="zmdi zmdi-image"></i> Media</div>
+        <div class="nf-card-bd">
+            <div class="nf-grid">
+                <div class="nf-gcol2">
+                    <label class="nf-label">Poster URL</label>
+                    <div class="nf-url-group">
+                        <input asp-for="PosterUrl" class="nf-ctrl" id="editPosterUrl" placeholder="https://example.com/poster.jpg" />
+                        <button type="button" class="nf-url-preview-btn" onclick="editPreviewPoster()">Preview</button>
+                        <button type="button" class="nf-url-preview-btn" onclick="editClearPoster()" style="color:var(--nf-gray);">Clear</button>
+                    </div>
+                    <span class="nf-hint">Paste a direct image link. Click Preview to verify.</span>
+                    <span asp-validation-for="PosterUrl" class="nf-err"></span>
+                    <div class="nf-img-preview-wrap" id="editPosterPreview">
+                        <img src="" alt="Poster preview" id="editPosterPreviewImg" />
+                        <button type="button" class="nf-preview-clear" onclick="editClearPoster()"><i class="zmdi zmdi-close"></i></button>
+                    </div>
+                </div>
+                <div class="nf-gcol2">
+                    <label class="nf-label">Trailer URL</label>
+                    <div class="nf-url-group">
+                        <input asp-for="TrailerUrl" class="nf-ctrl" id="editTrailerUrl" placeholder="https://youtube.com/watch?v=…" />
+                        <button type="button" class="nf-url-preview-btn" onclick="editPreviewTrailer()">Preview</button>
+                        <button type="button" class="nf-url-preview-btn" onclick="editClearTrailer()" style="color:var(--nf-gray);">Clear</button>
+                    </div>
+                    <span class="nf-hint">YouTube or Vimeo URL. Click Preview to embed.</span>
+                    <span asp-validation-for="TrailerUrl" class="nf-err"></span>
+                    <div class="nf-embed-preview" id="editTrailerPreview"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- §3 Classification -->
+    <div class="nf-card">
+        <div class="nf-card-hd"><i class="zmdi zmdi-labels"></i> Classification</div>
+        <div class="nf-card-bd">
+            <div class="nf-grid">
+                <div>
+                    <label class="nf-label">Movie Type</label>
+                    <select asp-for="Type" class="nf-ctrl"
+                            asp-items="Html.GetEnumSelectList<FinalCuongFilm.ApplicationCore.Entities.Enum.MovieType>()">
+                    </select>
+                    <span asp-validation-for="Type" class="nf-err"></span>
+                </div>
+                <div>
+                    <label class="nf-label">Status</label>
+                    <select asp-for="Status" class="nf-ctrl"
+                            asp-items="Html.GetEnumSelectList<FinalCuongFilm.ApplicationCore.Entities.Enum.MovieStatus>()">
+                    </select>
+                    <span asp-validation-for="Status" class="nf-err"></span>
+                </div>
+                <div>
+                    <label class="nf-label">Country</label>
+                    <select asp-for="CountryId" class="nf-ctrl" asp-items="ViewBag.Countries"></select>
+                    <span asp-validation-for="CountryId" class="nf-err"></span>
+                </div>
+                <div>
+                    <label class="nf-label">Language</label>
+                    <select asp-for="LanguageId" class="nf-ctrl" asp-items="ViewBag.Languages"></select>
+                    <span asp-validation-for="LanguageId" class="nf-err"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- §4 Cast & Genres -->
+    <div class="nf-card">
+        <div class="nf-card-hd"><i class="zmdi zmdi-accounts"></i> Cast &amp; Genres</div>
+        <div class="nf-card-bd">
+            <div class="nf-grid">
+                <div>
+                    <label class="nf-label">Actors</label>
+                    <select asp-for="ActorIds" class="nf-ctrl" asp-items="ViewBag.Actors" multiple></select>
+                    <span class="nf-hint">Hold Ctrl (Cmd on Mac) to select multiple</span>
+                    <span asp-validation-for="ActorIds" class="nf-err"></span>
+                </div>
+                <div>
+                    <label class="nf-label">Genres</label>
+                    <select asp-for="GenreIds" class="nf-ctrl" asp-items="ViewBag.Genres" multiple></select>
+                    <span class="nf-hint">Hold Ctrl (Cmd on Mac) to select multiple</span>
+                    <span asp-validation-for="GenreIds" class="nf-err"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- §5 Publish -->
+    <div class="nf-card">
+        <div class="nf-card-hd"><i class="zmdi zmdi-eye"></i> Publish Settings</div>
+        <div class="nf-card-bd">
+            <div class="nf-toggle">
+                <input asp-for="IsActive" type="checkbox" id="editActiveChk" />
+                <label for="editActiveChk">Active — movie is visible to users</label>
+            </div>
+        </div>
+    </div>
+
+    <div class="nf-form-actions">
+        <button type="submit" class="nf-btn nf-btn-red"><i class="zmdi zmdi-check"></i> Save Changes</button>
+        <a asp-action="Index" class="nf-btn nf-btn-ghost"><i class="zmdi zmdi-arrow-left"></i> Cancel</a>
+    </div>
+</form>
 
 @section Scripts {
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
+    <script>
+        /* Shared helpers */
+        function getEmbedUrl(url) {
+            const yt = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
+            if (yt) return `https://www.youtube.com/embed/${yt[1]}`;
+            const vi = url.match(/vimeo\.com\/([0-9]+)/);
+            if (vi) return `https://player.vimeo.com/video/${vi[1]}`;
+            return null;
+        }
+        function editPreviewPoster() {
+            const url = document.getElementById('editPosterUrl').value.trim();
+            const wrap = document.getElementById('editPosterPreview');
+            const img  = document.getElementById('editPosterPreviewImg');
+            if (!url) { alert('Please enter a poster URL first.'); return; }
+            img.onload  = () => wrap.style.display = 'block';
+            img.onerror = () => { alert('Could not load image. Check the URL.'); wrap.style.display = 'none'; };
+            img.src = url;
+        }
+        function editClearPoster() {
+            document.getElementById('editPosterUrl').value = '';
+            document.getElementById('editPosterPreview').style.display = 'none';
+            document.getElementById('editPosterPreviewImg').src = '';
+        }
+        function editPreviewTrailer() {
+            const url  = document.getElementById('editTrailerUrl').value.trim();
+            const wrap = document.getElementById('editTrailerPreview');
+            if (!url) { alert('Please enter a trailer URL first.'); return; }
+            const embed = getEmbedUrl(url);
+            if (!embed) { alert('Unsupported URL. Use YouTube or Vimeo.'); return; }
+            wrap.innerHTML = `<iframe src="${embed}" frameborder="0" allowfullscreen></iframe>`;
+            wrap.style.display = 'block';
+        }
+        function editClearTrailer() {
+            document.getElementById('editTrailerUrl').value = '';
+            const wrap = document.getElementById('editTrailerPreview');
+            wrap.style.display = 'none'; wrap.innerHTML = '';
+        }
+        // Show existing poster on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            const url = document.getElementById('editPosterUrl').value.trim();
+            if (url) {
+                const wrap = document.getElementById('editPosterPreview');
+                const img  = document.getElementById('editPosterPreviewImg');
+                img.onload = () => wrap.style.display = 'block';
+                img.src = url;
+            }
+        });
+    </script>
 }
