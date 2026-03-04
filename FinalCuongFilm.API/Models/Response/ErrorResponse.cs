@@ -1,4 +1,4 @@
-﻿namespace FinalCuongFilm.API.Models.Request
+﻿namespace FinalCuongFilm.API.Models.Response
 {
 	public class ErrorResponse
 	{

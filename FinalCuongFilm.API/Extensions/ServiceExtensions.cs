@@ -89,8 +89,15 @@ namespace FinalCuongFilm.API.Extensions
 		public static IServiceCollection AddJwtAuthentication(this IServiceCollection services, IConfiguration configuration)
 		{
 			var jwtSection = configuration.GetSection("Jwt");
-			var key = jwtSection["Key"]
-				?? throw new InvalidOperationException("JWT Key is not configured in appsettings.json");
+			var key = jwtSection["Key"];
+
+			if (string.IsNullOrWhiteSpace(key))
+			{
+				// JWT is not configured; add authorization only so the app starts safely
+				services.AddAuthentication();
+				services.AddAuthorization();
+				return services;
+			}
 
 			var keyBytes = Encoding.UTF8.GetBytes(key);
 
