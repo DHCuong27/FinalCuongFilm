@@ -616,9 +616,10 @@
 
                     
                     <div class="nf-file-input-wrap" id="posterFileWrap">
-                        <input type="file" name="posterFile" id="posterFileInput"
+                        <input asp-for="PosterFile" type="file" id="posterFileInput"
                                accept=".jpg,.jpeg,.png,.webp"
                                onchange="onPosterFileChange(this)" />
+                        <span asp-validation-for="PosterFile" class="nf-err"></span>
                         <span class="nf-hint">Chọn file ảnh (JPG, PNG, WEBP). Tối đa 5MB.</span>
                     </div>
 

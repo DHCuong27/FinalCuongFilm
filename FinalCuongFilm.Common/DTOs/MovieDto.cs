@@ -1,4 +1,5 @@
-﻿using static FinalCuongFilm.ApplicationCore.Entities.Enum;
+﻿using Microsoft.AspNetCore.Http;
+using static FinalCuongFilm.ApplicationCore.Entities.Enum;
 
 namespace FinalCuongFilm.Common.DTOs
 {
@@ -39,6 +40,7 @@ namespace FinalCuongFilm.Common.DTOs
 		public int? ReleaseYear { get; set; }
 		public int? DurationMinutes { get; set; }
 		public string? PosterUrl { get; set; }
+		public IFormFile? PosterFile { get; set; }
 		public string? TrailerUrl { get; set; }
 		public MovieType Type { get; set; }
 		public MovieStatus Status { get; set; }

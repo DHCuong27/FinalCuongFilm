@@ -3,6 +3,7 @@ using FinalCuongFilm.Datalayer;
 using FinalCuongFilm.DataLayer;
 using FinalCuongFilm.Service.Interfaces;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -17,20 +18,20 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 		private readonly IActorService _actorService;
 		private readonly IGenreService _genreService;
 		private readonly CuongFilmDbContext _context;
-		private readonly IAzureBlobService _azureBlobService;
+		private readonly IWebHostEnvironment _webHostEnvironment;
 
 		public MoviesController(
 			IMovieService movieService,
 			IActorService actorService,
 			IGenreService genreService,
 			CuongFilmDbContext context,
-			IAzureBlobService azureBlobService)
+			IWebHostEnvironment webHostEnvironment)
 		{
 			_movieService = movieService;
 			_actorService = actorService;
 			_genreService = genreService;
 			_context = context;
-			_azureBlobService = azureBlobService;
+			_webHostEnvironment = webHostEnvironment;
 		}
 
 		// GET: Admin/Movies
@@ -63,29 +64,15 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 
 		[HttpPost]
 		[ValidateAntiForgeryToken]
-		public async Task<IActionResult> Create(MovieCreateDto dto, IFormFile? posterFile)
+		public async Task<IActionResult> Create(MovieCreateDto dto)
 		{
-			if (posterFile != null && posterFile.Length > 0)
-			{
-				var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".webp" };
-				var ext = Path.GetExtension(posterFile.FileName).ToLowerInvariant();
-				if (!allowedExtensions.Contains(ext))
-					ModelState.AddModelError("", "Poster file must be JPG, PNG, or WEBP.");
-				else if (posterFile.Length > 5 * 1024 * 1024)
-					ModelState.AddModelError("", "Poster file must be smaller than 5MB.");
-			}
+			ValidatePosterFile(dto.PosterFile);
 
 			if (ModelState.IsValid)
 			{
 				try
 				{
-					if (posterFile != null && posterFile.Length > 0)
-					{
-						var tempSlug = !string.IsNullOrEmpty(dto.Slug)
-							? dto.Slug
-							: dto.Title.ToLower().Replace(" ", "-");
-						dto.PosterUrl = await _azureBlobService.UploadPosterAsync(posterFile, tempSlug);
-					}
+					dto.PosterUrl = await SavePosterFileAsync(dto.PosterFile) ?? dto.PosterUrl;
 
 					await _movieService.CreateAsync(dto);
 					TempData["Success"] = "Thêm phim thành công!";
@@ -152,30 +139,18 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 		// POST: Admin/Movies/Edit/5
 		[HttpPost]
 		[ValidateAntiForgeryToken]
-		public async Task<IActionResult> Edit(Guid id, MovieUpdateDto dto, IFormFile? posterFile)
+		public async Task<IActionResult> Edit(Guid id, MovieUpdateDto dto)
 		{
 			if (id != dto.Id)
 				return NotFound();
 
-			if (posterFile != null && posterFile.Length > 0)
-			{
-				var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".webp" };
-				var ext = Path.GetExtension(posterFile.FileName).ToLowerInvariant();
-				if (!allowedExtensions.Contains(ext))
-					ModelState.AddModelError("", "Poster file must be JPG, PNG, or WEBP.");
-				else if (posterFile.Length > 5 * 1024 * 1024)
-					ModelState.AddModelError("", "Poster file must be smaller than 5MB.");
-			}
+			ValidatePosterFile(dto.PosterFile);
 
 			if (ModelState.IsValid)
 			{
 				try
 				{
-					if (posterFile != null && posterFile.Length > 0)
-					{
-						var slug = !string.IsNullOrEmpty(dto.Slug) ? dto.Slug : dto.Id.ToString();
-						dto.PosterUrl = await _azureBlobService.UploadPosterAsync(posterFile, slug);
-					}
+					dto.PosterUrl = await SavePosterFileAsync(dto.PosterFile) ?? dto.PosterUrl;
 
 					var result = await _movieService.UpdateAsync(id, dto);
 					if (result == null)
@@ -226,6 +201,36 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 				TempData["Error"] = ex.Message;
 				return RedirectToAction(nameof(Delete), new { id });
 			}
+		}
+
+		private void ValidatePosterFile(IFormFile? posterFile)
+		{
+			if (posterFile == null || posterFile.Length == 0)
+				return;
+
+			var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".webp" };
+			var ext = Path.GetExtension(posterFile.FileName).ToLowerInvariant();
+			if (!allowedExtensions.Contains(ext))
+				ModelState.AddModelError("PosterFile", "Chỉ chấp nhận file JPG, PNG, WEBP.");
+			else if (posterFile.Length > 5 * 1024 * 1024)
+				ModelState.AddModelError("PosterFile", "File phải nhỏ hơn 5MB.");
+		}
+
+		private async Task<string?> SavePosterFileAsync(IFormFile? posterFile)
+		{
+			if (posterFile == null || posterFile.Length == 0)
+				return null;
+
+			var ext = Path.GetExtension(posterFile.FileName).ToLowerInvariant();
+			var fileName = $"{Guid.NewGuid()}{ext}";
+			var uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "images", "posters");
+			Directory.CreateDirectory(uploadsFolder);
+			var filePath = Path.Combine(uploadsFolder, fileName);
+			using (var stream = new FileStream(filePath, FileMode.Create))
+			{
+				await posterFile.CopyToAsync(stream);
+			}
+			return $"/images/posters/{fileName}";
 		}
 
 		private async Task PopulateDropdowns(
