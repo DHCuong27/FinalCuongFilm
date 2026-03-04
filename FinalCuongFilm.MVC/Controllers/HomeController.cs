@@ -36,7 +36,6 @@ namespace FinalCuongFilm.MVC.Controllers
 				return RedirectToAction("Index", "Dashboard", new { area = "Admin" });
 			}
 
-
 			var allMovies = await _movieService.GetAllAsync();
 
 			var latestMovies = allMovies
@@ -44,10 +43,12 @@ namespace FinalCuongFilm.MVC.Controllers
 				.OrderByDescending(m => m.ReleaseYear)
 				.Take(12)
 				.ToList();
+
 			foreach (var movie in latestMovies)
 			{
 				_logger.LogInformation($"Movie: {movie.Title}, Slug: '{movie.Slug}'");
 			}
+
 			var popularMovies = allMovies
 				.Where(m => m.IsActive)
 				.OrderByDescending(m => m.ViewCount)
@@ -62,7 +63,9 @@ namespace FinalCuongFilm.MVC.Controllers
 			ViewBag.Genres = genres;
 			ViewBag.Countries = countries;
 
-			return View();
+			// ✅ FIX: pass allMovies vào View để section "Tất Cả Phim" hiển thị
+			var activeMovies = allMovies.Where(m => m.IsActive).ToList();
+			return View(activeMovies);
 		}
 
 		// Profile

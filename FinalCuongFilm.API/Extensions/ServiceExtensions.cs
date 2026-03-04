@@ -14,11 +14,11 @@ namespace FinalCuongFilm.API.Extensions
 	{
 		public static IServiceCollection AddApplicationServices(this IServiceCollection services, IConfiguration configuration)
 		{
-			// DbContext
-			services.AddDbContext<CuongFilmDbContext>(options =>
-				options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
+			//// DbContext - dùng đúng connection string key
+			//services.AddDbContext<CuongFilmDbContext>(options =>
+			//	options.UseSqlServer(configuration.GetConnectionString("CuongFilmConnection")));
 
-			// Services
+			// Register all business services
 			services.AddScoped<IMovieService, MovieService>();
 			services.AddScoped<IActorService, ActorService>();
 			services.AddScoped<IGenreService, GenreService>();
@@ -42,8 +42,7 @@ namespace FinalCuongFilm.API.Extensions
 					Contact = new OpenApiContact
 					{
 						Name = "CuongFilm Team",
-						Email = "contact@cuongfilm.com",
-						Url = new Uri("https://cuongfilm.com")
+						Email = "contact@cuongfilm.com"
 					},
 					License = new OpenApiLicense
 					{
@@ -52,12 +51,10 @@ namespace FinalCuongFilm.API.Extensions
 					}
 				});
 
-				// JWT Authentication
+				// JWT Bearer definition in Swagger
 				options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
 				{
-					Description = @"JWT Authorization header using the Bearer scheme. 
-                                  Enter 'Bearer' [space] and then your token in the text input below.
-                                  Example: 'Bearer 12345abcdef'",
+					Description = "JWT Authorization. Enter: Bearer {your_token}",
 					Name = "Authorization",
 					In = ParameterLocation.Header,
 					Type = SecuritySchemeType.ApiKey,
@@ -79,13 +76,11 @@ namespace FinalCuongFilm.API.Extensions
 					}
 				});
 
-				// XML Comments
+				// XML Comments (nếu có)
 				var xmlFile = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml";
 				var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
 				if (File.Exists(xmlPath))
-				{
 					options.IncludeXmlComments(xmlPath);
-				}
 			});
 
 			return services;
@@ -93,8 +88,11 @@ namespace FinalCuongFilm.API.Extensions
 
 		public static IServiceCollection AddJwtAuthentication(this IServiceCollection services, IConfiguration configuration)
 		{
-			var jwtSettings = configuration.GetSection("Jwt");
-			var key = Encoding.UTF8.GetBytes(jwtSettings["Key"] ?? throw new InvalidOperationException("JWT Key not configured"));
+			var jwtSection = configuration.GetSection("Jwt");
+			var key = jwtSection["Key"]
+				?? throw new InvalidOperationException("JWT Key is not configured in appsettings.json");
+
+			var keyBytes = Encoding.UTF8.GetBytes(key);
 
 			services.AddAuthentication(options =>
 			{
@@ -109,13 +107,25 @@ namespace FinalCuongFilm.API.Extensions
 					ValidateAudience = true,
 					ValidateLifetime = true,
 					ValidateIssuerSigningKey = true,
-					ValidIssuer = jwtSettings["Issuer"],
-					ValidAudience = jwtSettings["Audience"],
-					IssuerSigningKey = new SymmetricSecurityKey(key),
+					ValidIssuer = jwtSection["Issuer"],
+					ValidAudience = jwtSection["Audience"],
+					IssuerSigningKey = new SymmetricSecurityKey(keyBytes),
 					ClockSkew = TimeSpan.Zero
+				};
+
+				options.Events = new JwtBearerEvents
+				{
+					OnAuthenticationFailed = ctx =>
+					{
+						ctx.NoResult();
+						ctx.Response.StatusCode = 401;
+						ctx.Response.ContentType = "text/plain";
+						return ctx.Response.WriteAsync("Invalid token");
+					}
 				};
 			});
 
+			services.AddAuthorization();
 			return services;
 		}
 

@@ -146,7 +146,7 @@
         margin-top: 3px;
         display: block;
     }
-    /* Poster URL preview — same pattern as Create */
+    /* Poster URL preview */
     .nf-url-group {
         display: flex;
         gap: 8px;
@@ -236,6 +236,71 @@
             border-radius: 6px;
         }
 
+    /* ── Upload file input ── */
+    .nf-file-input-wrap {
+        margin-top: 10px;
+        padding: 10px 13px;
+        background: var(--nf-input);
+        border: 1px dashed var(--nf-border);
+        border-radius: 5px;
+        color: var(--nf-lgray);
+        font-size: .88rem;
+        cursor: pointer;
+        transition: border-color .2s;
+    }
+
+        .nf-file-input-wrap:hover {
+            border-color: var(--nf-red);
+        }
+
+        .nf-file-input-wrap input[type=file] {
+            display: block;
+            width: 100%;
+            color: var(--nf-lgray);
+            background: transparent;
+            border: none;
+            outline: none;
+            font-family: inherit;
+            font-size: .88rem;
+            cursor: pointer;
+        }
+
+            .nf-file-input-wrap input[type=file]::file-selector-button {
+                background: var(--nf-red);
+                color: #fff;
+                border: none;
+                padding: 6px 14px;
+                border-radius: 4px;
+                font-size: .82rem;
+                font-weight: 600;
+                cursor: pointer;
+                margin-right: 10px;
+                transition: background .2s;
+            }
+
+                .nf-file-input-wrap input[type=file]::file-selector-button:hover {
+                    background: var(--nf-red2);
+                }
+
+    .nf-upload-or-divider {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin: 10px 0;
+        color: var(--nf-gray);
+        font-size: .78rem;
+        text-transform: uppercase;
+        letter-spacing: .5px;
+    }
+
+        .nf-upload-or-divider::before,
+        .nf-upload-or-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--nf-border);
+        }
+
     .nf-toggle {
         display: flex;
         align-items: center;
@@ -322,21 +387,6 @@
         flex-wrap: wrap;
     }
 
-    /* ── Upload Area ── */
-    .nf-upload-dropzone {
-        padding: 20px;
-        background: var(--nf-input);
-        border: 2px dashed var(--nf-border);
-        border-radius: 5px;
-        text-align: center;
-        cursor: pointer;
-        transition: border-color .2s;
-    }
-
-        .nf-upload-dropzone:hover {
-            border-color: var(--nf-red);
-        }
-
     @@media(max-width:768px) {
         .nf-grid {
             grid-template-columns: 1fr;
@@ -366,6 +416,7 @@
     <p class="nf-page-sub">Update the details for this movie</p>
 </div>
 
+{{!-- ✅ FIX: thêm enctype="multipart/form-data" để hỗ trợ upload file poster --}}
 <form asp-action="Edit" method="post" enctype="multipart/form-data" id="editForm">
     <input type="hidden" asp-for="Id" />
 
@@ -373,14 +424,16 @@
     {
         <div class="nf-val-banner">
             <strong>Please fix the errors below:</strong>
-            <ul>@foreach (var e in ViewData.ModelState.Values.SelectMany(v => v.Errors)) {
-            <li>@e.ErrorMessage</li>
-        }
-</ul>
-    </div>
-        }
+            <ul>
+                @foreach (var e in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                {
+                    <li>@e.ErrorMessage</li>
+                }
+            </ul>
+        </div>
+    }
 
-    <!-- ��1 Basic Info -->
+    <!-- §1 Basic Info -->
     <div class="nf-card">
         <div class="nf-card-hd"><i class="zmdi zmdi-info"></i> Basic Information</div>
         <div class="nf-card-bd">
@@ -414,44 +467,33 @@
         <div class="nf-card-hd"><i class="zmdi zmdi-image"></i> Media</div>
         <div class="nf-card-bd">
             <div class="nf-grid">
+                <!-- Poster -->
                 <div class="nf-gcol2">
-                    <label class="nf-label">Poster URL</label>
+                    <label class="nf-label">Poster Image</label>
+
+                    {{!-- ✅ Upload file poster trực tiếp --}}
+                    <div class="nf-file-input-wrap" id="editPosterFileWrap">
+                        <input type="file" name="posterFile" id="editPosterFileInput"
+                               accept=".jpg,.jpeg,.png,.webp"
+                               onchange="onEditPosterFileChange(this)" />
+                        <span class="nf-hint">Chọn file ảnh mới để thay poster (JPG, PNG, WEBP). Tối đa 5MB.</span>
+                    </div>
+
+                    <div class="nf-upload-or-divider">hoặc dán URL</div>
+
                     <div class="nf-url-group">
                         <input asp-for="PosterUrl" class="nf-ctrl" id="editPosterUrl" placeholder="https://example.com/poster.jpg" />
                         <button type="button" class="nf-url-preview-btn" onclick="editPreviewPoster()">Preview</button>
                         <button type="button" class="nf-url-preview-btn" onclick="editClearPoster()" style="color:var(--nf-gray);">Clear</button>
                     </div>
                     <span class="nf-hint">Paste a direct image link. Click Preview to verify.</span>
-
-                    <!-- Upload file poster -->
-                    <div style="margin-top: 12px;">
-                        <label class="nf-label" style="margin-bottom: 6px;">— Hoặc Upload File Poster —</label>
-                        <div class="nf-upload-area" id="editPosterUploadArea">
-                            <input type="file" name="posterFile" id="editPosterFileInput"
-                                   accept=".jpg,.jpeg,.png,.webp"
-                                   style="display:none"
-                                   onchange="handleEditPosterFileChange(this)" />
-                            <div class="nf-upload-dropzone" onclick="document.getElementById('editPosterFileInput').click()"
-                                 id="editPosterDropzone">
-                                <i class="zmdi zmdi-cloud-upload" style="font-size: 2rem; color: var(--nf-gray); margin-bottom: 8px; display: block;"></i>
-                                <span style="color: var(--nf-lgray); font-size: .88rem;">Click để chọn file hoặc kéo thả vào đây</span>
-                                <span style="color: var(--nf-gray); font-size: .78rem; display: block; margin-top: 4px;">JPG, PNG, WEBP — Tối đa 5MB</span>
-                            </div>
-                            <div id="editPosterFileInfo" style="display:none; margin-top: 8px; padding: 8px 12px; background: rgba(46,204,113,0.1); border: 1px solid rgba(46,204,113,0.3); border-radius: 5px; font-size: .85rem; color: var(--nf-white);">
-                                <i class="zmdi zmdi-check" style="color: var(--nf-green);"></i>
-                                <span id="editPosterFileName"></span>
-                                <button type="button" onclick="clearEditPosterFile()" style="float:right; background:none; border:none; color:var(--nf-gray); cursor:pointer;">×</button>
-                            </div>
-                        </div>
-                        <span class="nf-hint">Upload file sẽ được lưu lên Azure Blob Storage và tự động điền vào Poster URL.</span>
-                    </div>
-
                     <span asp-validation-for="PosterUrl" class="nf-err"></span>
                     <div class="nf-img-preview-wrap" id="editPosterPreview">
                         <img src="" alt="Poster preview" id="editPosterPreviewImg" />
                         <button type="button" class="nf-preview-clear" onclick="editClearPoster()"><i class="zmdi zmdi-close"></i></button>
                     </div>
                 </div>
+                <!-- Trailer URL -->
                 <div class="nf-gcol2">
                     <label class="nf-label">Trailer URL</label>
                     <div class="nf-url-group">
@@ -543,6 +585,30 @@
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
     <script>
+        /* ── Poster File Upload Preview (Edit) ── */
+        function onEditPosterFileChange(input) {
+            const wrap     = document.getElementById('editPosterPreview');
+            const img      = document.getElementById('editPosterPreviewImg');
+            const urlInput = document.getElementById('editPosterUrl');
+
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                if (file.size > 5 * 1024 * 1024) {
+                    alert('File quá lớn. Vui lòng chọn ảnh nhỏ hơn 5MB.');
+                    input.value = '';
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    img.src = e.target.result;
+                    wrap.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+                // Khi chọn file mới, xóa URL cũ để tránh conflict
+                urlInput.value = '';
+            }
+        }
+
         /* Shared helpers */
         function getEmbedUrl(url) {
             const yt = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
@@ -552,49 +618,21 @@
             return null;
         }
         function editPreviewPoster() {
-            const url = document.getElementById('editPosterUrl').value.trim();
+            const url  = document.getElementById('editPosterUrl').value.trim();
             const wrap = document.getElementById('editPosterPreview');
             const img  = document.getElementById('editPosterPreviewImg');
             if (!url) { alert('Please enter a poster URL first.'); return; }
             img.onload  = () => wrap.style.display = 'block';
             img.onerror = () => { alert('Could not load image. Check the URL.'); wrap.style.display = 'none'; };
             img.src = url;
+            // Khi nhập URL thì xóa file input
+            document.getElementById('editPosterFileInput').value = '';
         }
         function editClearPoster() {
             document.getElementById('editPosterUrl').value = '';
+            document.getElementById('editPosterFileInput').value = '';
             document.getElementById('editPosterPreview').style.display = 'none';
             document.getElementById('editPosterPreviewImg').src = '';
-        }
-
-        /* ── Poster File Upload ── */
-        function handleEditPosterFileChange(input) {
-            if (input.files && input.files[0]) {
-                const file = input.files[0];
-                if (file.size > 5 * 1024 * 1024) {
-                    alert('File quá lớn. Vui lòng chọn file nhỏ hơn 5MB.');
-                    input.value = '';
-                    return;
-                }
-                document.getElementById('editPosterFileName').textContent = file.name + ' (' + (file.size / 1024).toFixed(1) + ' KB)';
-                document.getElementById('editPosterFileInfo').style.display = 'block';
-                document.getElementById('editPosterDropzone').style.display = 'none';
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const wrap = document.getElementById('editPosterPreview');
-                    const img = document.getElementById('editPosterPreviewImg');
-                    img.src = e.target.result;
-                    wrap.style.display = 'block';
-                    document.getElementById('editPosterUrl').value = '';
-                };
-                reader.readAsDataURL(file);
-            }
-        }
-
-        function clearEditPosterFile() {
-            document.getElementById('editPosterFileInput').value = '';
-            document.getElementById('editPosterFileInfo').style.display = 'none';
-            document.getElementById('editPosterDropzone').style.display = 'block';
-            editClearPoster();
         }
         function editPreviewTrailer() {
             const url  = document.getElementById('editTrailerUrl').value.trim();

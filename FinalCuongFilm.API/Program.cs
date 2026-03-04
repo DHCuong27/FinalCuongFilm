@@ -5,15 +5,15 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ============================================
-// CONFIGURE SERVICES
-// ============================================
+// ============================================================
+// SERVICES
+// ============================================================
 
 builder.Services.AddDbContext<CuongFilmDbContext>(options =>
 	options.UseSqlServer(
 		builder.Configuration.GetConnectionString("CuongFilmConnection")));
 
-// Controllers
+// Controllers + JSON options
 builder.Services.AddControllers()
 	.AddNewtonsoftJson(options =>
 	{
@@ -21,10 +21,10 @@ builder.Services.AddControllers()
 		options.SerializerSettings.NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore;
 	});
 
-// Application Services (from Extension)
+// Application services (Movie, Actor, Genre, Country, Language, Episode, Media)
 builder.Services.AddApplicationServices(builder.Configuration);
 
-// Swagger Documentation
+// Swagger
 builder.Services.AddSwaggerDocumentation();
 
 // JWT Authentication
@@ -37,7 +37,11 @@ builder.Services.AddCorsPolicy();
 builder.Services.AddEndpointsApiExplorer();
 
 // Health Checks
-builder.Services.AddHealthChecks();
+builder.Services.AddHealthChecks()
+	.AddSqlServer(
+		builder.Configuration.GetConnectionString("CuongFilmConnection")!,
+		name: "sqlserver",
+		failureStatus: Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus.Unhealthy);
 
 // Response Compression
 builder.Services.AddResponseCompression();
@@ -49,51 +53,74 @@ builder.Logging.AddDebug();
 
 var app = builder.Build();
 
-// ============================================
-// CONFIGURE MIDDLEWARE PIPELINE
-// ============================================
+// ============================================================
+// MIDDLEWARE PIPELINE
+// ============================================================
 
-// Exception Handling
+// 1. Global exception handling
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
-// Swagger (Development & Staging)
+// 2. Request logging
+app.UseMiddleware<RequestLoggingMiddleware>();
+
+// 3. Rate limiting
+app.UseMiddleware<RateLimitingMiddleware>();
+
+// 4. Swagger (dev + staging)
 if (app.Environment.IsDevelopment() || app.Environment.IsStaging())
 {
 	app.UseSwagger();
 	app.UseSwaggerUI(options =>
 	{
 		options.SwaggerEndpoint("/swagger/v1/swagger.json", "CuongFilm API v1");
-		options.RoutePrefix = string.Empty; // Swagger at root: /
+		options.RoutePrefix = "swagger";
 		options.DocumentTitle = "CuongFilm API Documentation";
+		options.DisplayRequestDuration();
 	});
 }
 
-// HTTPS Redirection
+// 5. HTTPS redirect
 app.UseHttpsRedirection();
 
-// Response Compression
+// 6. Response compression
 app.UseResponseCompression();
 
-// CORS
-app.UseCors("AllowAll"); // Change to "Production" in production
+// 7. CORS
+app.UseCors("AllowAll");
 
-// Authentication & Authorization
+// 8. Auth
 app.UseAuthentication();
 app.UseAuthorization();
 
-// Health Checks
+// 9. Health check endpoint
 app.MapHealthChecks("/health");
 
-// Map Controllers
+// 10. Controllers
 app.MapControllers();
 
-// Default Route
+// 11. Root info
 app.MapGet("/", () => new
 {
 	Name = "CuongFilm API",
 	Version = "1.0",
 	Documentation = "/swagger",
-	Health = "/health"
+	Health = "/health",
+	Endpoints = new[]
+	{
+		"GET  /api/movies",
+		"GET  /api/movies/{id}",
+		"POST /api/movies          [Admin]",
+		"PUT  /api/movies/{id}     [Admin]",
+		"DELETE /api/movies/{id}   [Admin]",
+		"GET  /api/actors",
+		"GET  /api/genres",
+		"GET  /api/countries",
+		"GET  /api/languages",
+		"GET  /api/episodes",
+		"GET  /api/episodes/movie/{movieId}",
+		"POST /api/auth/login",
+		"POST /api/auth/register"
+	}
 });
 
 app.Run();

@@ -235,12 +235,76 @@
             border: none;
             border-radius: 6px;
         }
+    /* ── Upload file input ── */
+    .nf-file-input-wrap {
+        margin-top: 10px;
+        padding: 10px 13px;
+        background: var(--nf-input);
+        border: 1px dashed var(--nf-border);
+        border-radius: 5px;
+        color: var(--nf-lgray);
+        font-size: .88rem;
+        cursor: pointer;
+        transition: border-color .2s;
+    }
+
+        .nf-file-input-wrap:hover {
+            border-color: var(--nf-red);
+        }
+
+        .nf-file-input-wrap input[type=file] {
+            display: block;
+            width: 100%;
+            color: var(--nf-lgray);
+            background: transparent;
+            border: none;
+            outline: none;
+            font-family: inherit;
+            font-size: .88rem;
+            cursor: pointer;
+        }
+
+            .nf-file-input-wrap input[type=file]::file-selector-button {
+                background: var(--nf-red);
+                color: #fff;
+                border: none;
+                padding: 6px 14px;
+                border-radius: 4px;
+                font-size: .82rem;
+                font-weight: 600;
+                cursor: pointer;
+                margin-right: 10px;
+                transition: background .2s;
+            }
+
+                .nf-file-input-wrap input[type=file]::file-selector-button:hover {
+                    background: var(--nf-red2);
+                }
+
+    .nf-upload-or-divider {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin: 10px 0;
+        color: var(--nf-gray);
+        font-size: .78rem;
+        text-transform: uppercase;
+        letter-spacing: .5px;
+    }
+
+        .nf-upload-or-divider::before,
+        .nf-upload-or-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--nf-border);
+        }
     /* ── Select2-like tag picker for Actors/Genres ── */
     .nf-tag-picker {
     }
 
         .nf-tag-picker .nf-ctrl[multiple] {
-            display: none; /* hidden, driven by JS */
+            display: none;
         }
 
     .nf-tag-search-box {
@@ -447,21 +511,7 @@
         border-top: 1px solid var(--nf-border);
         flex-wrap: wrap;
     }
-    /* ── Upload Area ── */
-    .nf-upload-dropzone {
-        padding: 20px;
-        background: var(--nf-input);
-        border: 2px dashed var(--nf-border);
-        border-radius: 5px;
-        text-align: center;
-        cursor: pointer;
-        transition: border-color .2s;
-    }
-
-        .nf-upload-dropzone:hover {
-            border-color: var(--nf-red);
-        }
-    /* ── Scrollbar ─�� */
+    /* ── Scrollbar ── */
     .nf-tag-dropdown::-webkit-scrollbar {
         width: 5px;
     }
@@ -560,39 +610,26 @@
         <div class="nf-card-hd"><i class="zmdi zmdi-image"></i> Media</div>
         <div class="nf-card-bd">
             <div class="nf-grid">
-                <!-- Poster URL -->
+                <!-- Poster -->
                 <div class="nf-gcol2 nf-fgroup">
-                    <label class="nf-label">Poster URL</label>
+                    <label class="nf-label">Poster Image</label>
+
+                    
+                    <div class="nf-file-input-wrap" id="posterFileWrap">
+                        <input type="file" name="posterFile" id="posterFileInput"
+                               accept=".jpg,.jpeg,.png,.webp"
+                               onchange="onPosterFileChange(this)" />
+                        <span class="nf-hint">Chọn file ảnh (JPG, PNG, WEBP). Tối đa 5MB.</span>
+                    </div>
+
+                    <div class="nf-upload-or-divider">hoặc dán URL</div>
+
                     <div class="nf-url-group">
                         <input asp-for="PosterUrl" class="nf-ctrl" id="posterUrlInput" placeholder="https://example.com/poster.jpg" />
                         <button type="button" class="nf-url-preview-btn" onclick="previewPoster()">Preview</button>
                         <button type="button" class="nf-url-preview-btn" onclick="clearPoster()" style="color:var(--nf-gray);">Clear</button>
                     </div>
                     <span class="nf-hint">Paste a direct image link (JPG, PNG, WEBP). Click Preview to check.</span>
-
-                    <!-- Upload file poster -->
-                    <div style="margin-top: 12px;">
-                        <label class="nf-label" style="margin-bottom: 6px;">— Hoặc Upload File Poster —</label>
-                        <div class="nf-upload-area" id="posterUploadArea">
-                            <input type="file" name="posterFile" id="posterFileInput"
-                                   accept=".jpg,.jpeg,.png,.webp"
-                                   style="display:none"
-                                   onchange="handlePosterFileChange(this)" />
-                            <div class="nf-upload-dropzone" onclick="document.getElementById('posterFileInput').click()"
-                                 id="posterDropzone">
-                                <i class="zmdi zmdi-cloud-upload" style="font-size: 2rem; color: var(--nf-gray); margin-bottom: 8px; display: block;"></i>
-                                <span style="color: var(--nf-lgray); font-size: .88rem;">Click để chọn file hoặc kéo thả vào đây</span>
-                                <span style="color: var(--nf-gray); font-size: .78rem; display: block; margin-top: 4px;">JPG, PNG, WEBP — Tối đa 5MB</span>
-                            </div>
-                            <div id="posterFileInfo" style="display:none; margin-top: 8px; padding: 8px 12px; background: rgba(46,204,113,0.1); border: 1px solid rgba(46,204,113,0.3); border-radius: 5px; font-size: .85rem; color: var(--nf-white);">
-                                <i class="zmdi zmdi-check" style="color: var(--nf-green);"></i>
-                                <span id="posterFileName"></span>
-                                <button type="button" onclick="clearPosterFile()" style="float:right; background:none; border:none; color:var(--nf-gray); cursor:pointer;">×</button>
-                            </div>
-                        </div>
-                        <span class="nf-hint">Upload file sẽ được lưu lên Azure Blob Storage và tự động điền vào Poster URL.</span>
-                    </div>
-
                     <span asp-validation-for="PosterUrl" class="nf-err"></span>
                     <div class="nf-img-preview-wrap" id="posterPreview">
                         <img src="" alt="Poster preview" id="posterPreviewImg" />
@@ -662,7 +699,6 @@
                 <!-- Actors -->
                 <div class="nf-fgroup">
                     <label class="nf-label">Actors</label>
-                    <!-- Hidden real select carries the POST values -->
                     <select asp-for="ActorIds" asp-items="ViewBag.Actors" multiple
                             id="actorSelect" class="nf-ctrl" style="display:none"></select>
                     <div class="nf-tag-picker" id="actorPicker">
@@ -741,7 +777,6 @@
                 const dropdown = document.getElementById(dropdownId);
                 const chips    = document.getElementById(chipsId);
 
-                // build option list from hidden <select>
                 const allOptions = Array.from(sel.options).map(o => ({ value: o.value, label: o.text }));
                 let selected = [];
 
@@ -803,7 +838,32 @@
             });
         });
 
-        /* ── Poster Preview ── */
+        /* ── Poster File Upload Preview ── */
+        function onPosterFileChange(input) {
+            const wrap = document.getElementById('posterPreview');
+            const img  = document.getElementById('posterPreviewImg');
+            const urlInput = document.getElementById('posterUrlInput');
+
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                // validate size <= 5MB
+                if (file.size > 5 * 1024 * 1024) {
+                    alert('File quá lớn. Vui lòng chọn ảnh nhỏ hơn 5MB.');
+                    input.value = '';
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    img.src = e.target.result;
+                    wrap.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+                // Khi chọn file, xóa URL input để tránh conflict
+                urlInput.value = '';
+            }
+        }
+
+        /* ── Poster URL Preview ── */
         function previewPoster() {
             const url  = document.getElementById('posterUrlInput').value.trim();
             const wrap = document.getElementById('posterPreview');
@@ -812,43 +872,15 @@
             img.onload  = () => { wrap.style.display = 'block'; };
             img.onerror = () => { alert('Could not load image. Check the URL.'); wrap.style.display = 'none'; };
             img.src = url;
+            // Khi nhập URL thì xóa file input
+            document.getElementById('posterFileInput').value = '';
         }
         function clearPoster() {
             document.getElementById('posterUrlInput').value = '';
+            document.getElementById('posterFileInput').value = '';
             const wrap = document.getElementById('posterPreview');
             wrap.style.display = 'none';
             document.getElementById('posterPreviewImg').src = '';
-        }
-
-        /* ── Poster File Upload ── */
-        function handlePosterFileChange(input) {
-            if (input.files && input.files[0]) {
-                const file = input.files[0];
-                if (file.size > 5 * 1024 * 1024) {
-                    alert('File quá lớn. Vui lòng chọn file nhỏ hơn 5MB.');
-                    input.value = '';
-                    return;
-                }
-                document.getElementById('posterFileName').textContent = file.name + ' (' + (file.size / 1024).toFixed(1) + ' KB)';
-                document.getElementById('posterFileInfo').style.display = 'block';
-                document.getElementById('posterDropzone').style.display = 'none';
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const wrap = document.getElementById('posterPreview');
-                    const img = document.getElementById('posterPreviewImg');
-                    img.src = e.target.result;
-                    wrap.style.display = 'block';
-                    document.getElementById('posterUrlInput').value = '';
-                };
-                reader.readAsDataURL(file);
-            }
-        }
-
-        function clearPosterFile() {
-            document.getElementById('posterFileInput').value = '';
-            document.getElementById('posterFileInfo').style.display = 'none';
-            document.getElementById('posterDropzone').style.display = 'block';
-            clearPoster();
         }
 
         /* ── Trailer Preview ── */
