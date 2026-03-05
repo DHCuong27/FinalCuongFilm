@@ -1,9 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using FinalCuongFilm.MVC.Models;
+using FinalCuongFilm.MVC.Models.ViewModels;
 using FinalCuongFilm.Service.Interfaces;
 using System.Diagnostics;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
+using static FinalCuongFilm.ApplicationCore.Entities.Enum;
 
 namespace FinalCuongFilm.MVC.Controllers
 {
@@ -29,25 +31,29 @@ namespace FinalCuongFilm.MVC.Controllers
 			_favoriteService = favoriteService;
 		}
 
-		public async Task<IActionResult> Index()
+		public async Task<IActionResult> Index(
+			string? search = null,
+			Guid? genreId = null,
+			Guid? countryId = null,
+			int? releaseYear = null,
+			int? type = null,
+			string sortBy = "latest",
+			int pageNumber = 1,
+			int pageSize = 12)
 		{
 			if (User.IsInRole("Admin"))
-			{
 				return RedirectToAction("Index", "Dashboard", new { area = "Admin" });
-			}
 
 			var allMovies = await _movieService.GetAllAsync();
+			var genres = await _genreService.GetAllAsync();
+			var countries = await _countryService.GetAllAsync();
 
+			// ── Hero sections (không filter, không phân trang) ──
 			var latestMovies = allMovies
 				.Where(m => m.IsActive)
 				.OrderByDescending(m => m.ReleaseYear)
 				.Take(12)
 				.ToList();
-
-			foreach (var movie in latestMovies)
-			{
-				_logger.LogInformation($"Movie: {movie.Title}, Slug: '{movie.Slug}'");
-			}
 
 			var popularMovies = allMovies
 				.Where(m => m.IsActive)
@@ -55,58 +61,94 @@ namespace FinalCuongFilm.MVC.Controllers
 				.Take(12)
 				.ToList();
 
-			var genres = await _genreService.GetAllAsync();
-			var countries = await _countryService.GetAllAsync();
+			// ── Section "Tất Cả Phim" — có filter + phân trang ──
+			var query = allMovies.Where(m => m.IsActive).AsEnumerable();
 
-			ViewBag.LatestMovies = latestMovies;
-			ViewBag.PopularMovies = popularMovies;
-			ViewBag.Genres = genres;
-			ViewBag.Countries = countries;
 
-			// ✅ FIX: pass allMovies vào View để section "Tất Cả Phim" hiển thị
-			var activeMovies = allMovies.Where(m => m.IsActive).ToList();
-			return View(activeMovies);
+			if (!string.IsNullOrWhiteSpace(search))
+				query = query.Where(m =>
+					m.Title.Contains(search, StringComparison.OrdinalIgnoreCase) ||
+					(m.Description?.Contains(search, StringComparison.OrdinalIgnoreCase) ?? false));
+
+			if (genreId.HasValue)
+				query = query.Where(m => m.SelectedGenreIds.Contains(genreId.Value));
+
+			if (countryId.HasValue)
+				query = query.Where(m => m.CountryId == countryId.Value);
+
+			if (releaseYear.HasValue)
+				query = query.Where(m => m.ReleaseYear == releaseYear.Value);
+
+			if (type.HasValue)
+				query = query.Where(m => (int)m.Type == type.Value);
+
+			query = sortBy switch
+			{
+				"popular" => query.OrderByDescending(m => m.ViewCount),
+				"year_asc" => query.OrderBy(m => m.ReleaseYear),
+				"year_desc" => query.OrderByDescending(m => m.ReleaseYear),
+				"title" => query.OrderBy(m => m.Title),
+				_ => query.OrderByDescending(m => m.ReleaseYear) // "latest"
+			};
+
+			var filteredList = query.ToList();
+			var totalItems = filteredList.Count;
+			var pagedMovies = filteredList
+				.Skip((pageNumber - 1) * pageSize)
+				.Take(pageSize)
+				.ToList();
+
+			var filterVM = new MovieFilterViewModel
+			{
+				Movies = pagedMovies,
+				Genres = genres,
+				Countries = countries,
+				Search = search,
+				GenreId = genreId,
+				CountryId = countryId,
+				ReleaseYear = releaseYear,
+				Type = type,
+				SortBy = sortBy,
+				PageNumber = pageNumber,
+				PageSize = pageSize,
+				TotalItems = totalItems
+			};
+
+			var homeVM = new HomeFilterViewModel
+			{
+				LatestMovies = latestMovies,
+				PopularMovies = popularMovies,
+				AllMoviesFilter = filterVM
+			};
+
+			return View(homeVM);
 		}
 
 		// Profile
 		[Authorize]
-		public IActionResult Profile()
-		{
-			return View();
-		}
+		public IActionResult Profile() => View();
 
 		// Continue Watching
 		[Authorize]
-		public IActionResult ContinueWatching()
-		{
-			return View();
-		}
+		public IActionResult ContinueWatching() => View();
 
-		//  My List - Hiển thị favorites
+		// My List
 		[Authorize]
 		public async Task<IActionResult> MyList()
 		{
 			var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 			if (userId == null)
-			{
 				return RedirectToPage("/Account/Login", new { area = "Identity" });
-			}
 
 			var favorites = await _favoriteService.GetUserFavoritesAsync(userId);
-
 			ViewData["Title"] = "Danh sách của tôi";
 			return View(favorites);
 		}
 
-		public IActionResult Privacy()
-		{
-			return View();
-		}
+		public IActionResult Privacy() => View();
 
 		[ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
 		public IActionResult Error()
-		{
-			return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
-		}
+			=> View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
 	}
 }

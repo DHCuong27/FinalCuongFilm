@@ -2,6 +2,46 @@
 
 namespace FinalCuongFilm.MVC.Models.ViewModels
 {
+	public class MovieFilterViewModel
+	{
+		// Danh sách phim sau khi filter + phân trang
+		public List<MovieDto> Movies { get; set; } = new();
+
+		// Dữ liệu cho dropdown filter
+		public IEnumerable<GenreDto> Genres { get; set; } = new List<GenreDto>();
+		public IEnumerable<CountryDto> Countries { get; set; } = new List<CountryDto>();
+
+		// Các tham số filter hiện tại (để giữ lại giá trị trên form)
+		public string? Search { get; set; }
+		public Guid? GenreId { get; set; }
+		public Guid? CountryId { get; set; }
+		public int? ReleaseYear { get; set; }
+		public int? Type { get; set; }       // MovieType enum as int
+		public string SortBy { get; set; } = "latest";
+
+		// Phân trang
+		public int PageNumber { get; set; } = 1;
+		public int PageSize { get; set; } = 12;
+		public int TotalItems { get; set; }
+		public int TotalPages => (int)Math.Ceiling((double)TotalItems / PageSize);
+		public bool HasPreviousPage => PageNumber > 1;
+		public bool HasNextPage => PageNumber < TotalPages;
+
+		// Tiêu đề trang (dùng cho Genre/Country page)
+		public string? PageTitle { get; set; }
+		public string? PageSubTitle { get; set; }
+	}
+
+	// ViewModel riêng cho trang chủ (giữ nguyên hero sections + thêm filter cho "Tất Cả Phim")
+	public class HomeFilterViewModel
+	{
+		// Hero sections (không phân trang)
+		public List<MovieDto> LatestMovies { get; set; } = new();
+		public List<MovieDto> PopularMovies { get; set; } = new();
+
+		// Section "Tất Cả Phim" có filter + phân trang
+		public MovieFilterViewModel AllMoviesFilter { get; set; } = new();
+	}
 	public class MovieDetailsViewModel
 	{
 		public MovieDto Movie { get; set; } = null!;

@@ -1,14 +1,14 @@
-﻿@model IEnumerable<FinalCuongFilm.Common.DTOs.MovieDto>
+﻿@model FinalCuongFilm.MVC.Models.ViewModels.HomeFilterViewModel
 @{
-    ViewData["Title"] = "Trang chủ";
+    ViewData["Title"] = "Home";
     Layout = "_LayoutUser";
+    var f = Model.AllMoviesFilter;
 
-    var latestMovies = ViewBag.LatestMovies as List<FinalCuongFilm.Common.DTOs.MovieDto>;
-    var popularMovies = ViewBag.PopularMovies as List<FinalCuongFilm.Common.DTOs.MovieDto>;
+    // Get top 5 popular movies for the slider
+    var featuredMovies = Model.PopularMovies.Take(5).ToList();
 }
 
 <style>
-    /* Netflix Style CSS - Cải tiến */
     :root {
         --netflix-red: #e50914;
         --netflix-dark: #0f0f0f;
@@ -21,549 +21,292 @@
     body {
         background-color: var(--netflix-dark);
         color: var(--netflix-white);
-        font-family: 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        font-family: 'Segoe UI', sans-serif;
         margin: 0;
         padding: 0;
-        line-height: 1.6;
     }
 
-    /* Hero Banner */
-    .hero-banner {
+    /* =========================================
+           HERO SLIDER SECTION (UPDATED POSTER SIZE)
+           ========================================= */
+    .hero-slider-section {
         position: relative;
-        background: linear-gradient(180deg, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.5) 50%, rgba(20,20,20,0.3) 100%), url('https://images.unsplash.com/photo-1536440136628-849c177e76a1?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');
-        background-size: cover;
-        background-position: center top;
-        background-attachment: fixed;
-        height: 85vh;
-        min-height: 550px;
+        margin-bottom: 4rem;
+        background-color: var(--netflix-dark);
+    }
+
+    .hero-slider-container {
+        position: relative;
+        height: 90vh; /* Tăng chiều cao */
+        min-height: 700px;
+        overflow: hidden;
+    }
+
+    .hero-slide {
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.8s ease-in-out, visibility 0.8s;
+        z-index: 1;
         display: flex;
         align-items: center;
-        margin-bottom: 3rem;
-        overflow: hidden;
-    }
-
-        .hero-banner::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 100px;
-            background: linear-gradient(180deg, transparent 0%, var(--netflix-dark) 100%);
-            z-index: 1;
-        }
-
-        .hero-banner .container {
-            z-index: 2;
-            position: relative;
-            width: 100%;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 2rem;
-        }
-
-    .hero-content {
-        max-width: 650px;
-        animation: fadeInUp 1s ease-out;
-        /* THÊM 2 DÒNG NÀY ĐỂ SEARCH BOX CĂN GIỮA MÀN HÌNH NẾU MUỐN */
-        margin: 0 auto;
-        width: 100%;
-    }
-
-    .hero-banner h1 {
-        font-size: 3.8rem;
-        font-weight: 900;
-        margin-bottom: 1.5rem;
-        text-shadow: 3px 3px 6px rgba(0,0,0,0.8);
-        line-height: 1.1;
-        background: linear-gradient(90deg, #fff 0%, var(--netflix-red) 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-    }
-
-    .hero-banner .lead {
-        font-size: 1.6rem;
-        margin-bottom: 2.5rem;
-        color: #f0f0f0;
-        text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
-        font-weight: 400;
-        line-height: 1.4;
-    }
-
-    .netflix-btn {
-        background-color: var(--netflix-red);
-        color: white;
-        border: none;
-        padding: 1rem 2.5rem;
-        font-size: 1.3rem;
-        font-weight: 700;
-        border-radius: 6px;
-        text-transform: uppercase;
-        letter-spacing: 0.8px;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        display: inline-flex;
-        align-items: center;
         justify-content: center;
-        gap: 0.8rem;
-        text-decoration: none;
-        box-shadow: 0 4px 15px rgba(229, 9, 20, 0.3);
-        position: relative;
-        overflow: hidden;
     }
 
-        .netflix-btn:hover {
-            background-color: #f40612;
-            color: white;
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(229, 9, 20, 0.4);
+        .hero-slide.active {
+            opacity: 1;
+            visibility: visible;
+            z-index: 2;
         }
 
-    /* Section Header */
-    .section-header {
+    .hero-bg {
+        position: absolute;
+        inset: -20px;
+        background-size: cover;
+        background-position: center top;
+        filter: blur(15px) brightness(0.3);
+        z-index: 1;
+    }
+
+    .hero-slider-container::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 150px;
+        background: linear-gradient(180deg, transparent 0%, var(--netflix-dark) 100%);
+        z-index: 5;
+        pointer-events: none;
+    }
+
+    .hero-content-wrapper {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 0 4rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 3rem;
+    }
+
+    /* Left Text Content */
+    .hero-text-content {
+        flex: 1;
+        max-width: 700px;
+        transform: translateY(30px);
+        opacity: 0;
+        transition: all 0.8s ease-out 0.3s;
+    }
+
+    .hero-slide.active .hero-text-content {
+        transform: translateY(0);
+        opacity: 1;
+    }
+
+    .featured-title {
+        font-size: 3.5rem;
+        font-weight: 900;
+        margin-bottom: 1rem;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.6);
+        line-height: 1.1;
+    }
+
+    .featured-meta {
         display: flex;
         align-items: center;
         gap: 1rem;
+        margin-bottom: 1.5rem;
+        font-size: 1.1rem;
+        color: var(--netflix-white);
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+    }
+
+        .featured-meta .match {
+            color: #46d369;
+            font-weight: 700;
+        }
+
+        .featured-meta .badge-hd {
+            border: 1px solid rgba(255,255,255,0.6);
+            padding: 0.1rem 0.5rem;
+            border-radius: 3px;
+            font-size: 0.8rem;
+        }
+
+    .featured-desc {
+        font-size: 1.2rem;
+        color: #e5e5e5;
         margin-bottom: 2rem;
-        padding-bottom: 1rem;
-        border-bottom: 2px solid var(--netflix-gray);
-        position: relative;
+        line-height: 1.5;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
     }
 
-        .section-header::after {
-            content: '';
-            position: absolute;
-            bottom: -2px;
-            left: 0;
-            width: 100px;
-            height: 2px;
-            background: var(--netflix-red);
-        }
-
-        .section-header i {
-            font-size: 2rem;
-            color: var(--netflix-red);
-            background: rgba(229, 9, 20, 0.1);
-            padding: 0.8rem;
-            border-radius: 8px;
-        }
-
-        .section-header h2 {
-            font-size: 2rem;
-            font-weight: 800;
-            margin: 0;
-            color: white;
-            letter-spacing: -0.5px;
-        }
-
-    /* Movies Row */
-    .movies-row-container {
-        position: relative;
-        margin-bottom: 4rem;
-    }
-
-    .movies-row {
+    .featured-actions {
         display: flex;
-        overflow-x: auto;
-        padding: 1rem 0.5rem;
-        scrollbar-width: none;
-        -ms-overflow-style: none;
-        gap: 1.2rem;
-        scroll-behavior: smooth;
+        gap: 1rem;
+        margin-bottom: 2.5rem;
     }
 
-        .movies-row::-webkit-scrollbar {
-            display: none;
-        }
-
-    .scroll-arrow {
-        position: absolute;
-        top: 50%;
-        transform: translateY(-50%);
-        background: rgba(0, 0, 0, 0.7);
-        color: white;
-        border: none;
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
+    .btn-netflix-primary, .btn-netflix-secondary {
         display: flex;
         align-items: center;
-        justify-content: center;
+        gap: 0.6rem;
+        padding: 0.8rem 2rem;
+        border-radius: 6px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: 0.2s;
+        border: none;
         cursor: pointer;
-        z-index: 10;
+    }
+
+    .btn-netflix-primary {
+        background: white;
+        color: black;
+    }
+
+        .btn-netflix-primary:hover {
+            background: rgba(255,255,255,0.75);
+        }
+
+    .btn-netflix-secondary {
+        background: rgba(109,109,110,0.7);
+        color: white;
+    }
+
+        .btn-netflix-secondary:hover {
+            background: rgba(109,109,110,0.4);
+        }
+
+    /* Right Poster Content (Enlarged) */
+    .hero-poster-content {
+        flex: 0 0 400px; /* Poster rộng hơn */
+        transform: scale(0.9) translateX(30px);
         opacity: 0;
-        transition: all 0.3s ease;
-        font-size: 1.2rem;
+        transition: all 0.8s ease-out 0.4s;
+        z-index: 10;
     }
 
-    .scroll-left {
-        left: -20px;
-    }
-
-    .scroll-right {
-        right: -20px;
-    }
-
-    .movies-row-container:hover .scroll-arrow {
+    .hero-slide.active .hero-poster-content {
+        transform: scale(1) translateX(0);
         opacity: 1;
     }
 
-    .scroll-arrow:hover {
-        background: var(--netflix-red);
-        transform: translateY(-50%) scale(1.1);
-    }
-
-    /* Movie Card */
-    .movie-card {
-        flex: 0 0 auto;
-        width: 220px;
-        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        position: relative;
-        cursor: pointer;
-        background: transparent;
-        border: none;
-        box-shadow: none;
-    }
-
-        .movie-card:hover {
-            transform: scale(1.08);
-            z-index: 20;
-        }
-
-    .movie-poster {
-        position: relative;
-        border-radius: 8px;
-        overflow: hidden;
-        aspect-ratio: 2/3;
-        background-color: var(--netflix-gray);
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-        transition: all 0.4s ease;
-    }
-
-    .movie-card:hover .movie-poster {
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
-        transform: translateY(-10px);
-    }
-
-    .movie-poster img {
+    .full-poster-img {
         width: 100%;
-        height: 100%;
+        height: auto;
+        max-height: 600px;
+        aspect-ratio: 2/3;
         object-fit: cover;
+        border-radius: 16px;
+        box-shadow: 0 25px 60px rgba(0,0,0,0.95);
+        border: 1px solid rgba(255,255,255,0.15);
         transition: transform 0.4s ease;
     }
 
-    .movie-card:hover .movie-poster img {
-        transform: scale(1.05);
-    }
+        .full-poster-img:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 30px 70px rgba(0,0,0,1);
+        }
 
-    .movie-overlay {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: linear-gradient(180deg, transparent 40%, rgba(0, 0, 0, 0.9) 100%);
-        display: flex;
-        flex-direction: column;
-        justify-content: flex-end;
-        padding: 1.5rem;
-        opacity: 0;
-        transition: opacity 0.3s ease;
-    }
-
-    .movie-card:hover .movie-overlay {
-        opacity: 1;
-    }
-
-    .play-button {
+    /* Slider Nav & Indicators */
+    .slider-nav-btn {
         position: absolute;
         top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%) scale(0.8);
-        background: rgba(229, 9, 20, 0.9);
+        transform: translateY(-50%);
+        background: rgba(0,0,0,0.3);
         color: white;
+        border: none;
+        font-size: 2rem;
         width: 60px;
-        height: 60px;
-        border-radius: 50%;
+        height: 100px;
+        cursor: pointer;
+        z-index: 10;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 1.8rem;
-        opacity: 0;
-        transition: all 0.3s ease;
-        border: 3px solid white;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+        transition: 0.3s;
     }
 
-    .movie-card:hover .play-button {
-        opacity: 1;
-        transform: translate(-50%, -50%) scale(1);
-    }
-
-    .play-button:hover {
-        background: #f40612;
-        transform: translate(-50%, -50%) scale(1.1);
-    }
-
-    .movie-info {
-        padding: 1rem 0.5rem 0.5rem;
-        position: relative;
-        z-index: 2;
-    }
-
-    .movie-title {
-        font-size: 1rem;
-        font-weight: 700;
-        margin: 0 0 0.5rem;
-        line-height: 1.3;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-        .movie-title a {
-            color: white;
-            text-decoration: none;
-            transition: color 0.2s ease;
-            display: block;
+        .slider-nav-btn:hover {
+            background: rgba(0,0,0,0.8);
+            color: var(--netflix-red);
         }
 
-            .movie-title a:hover {
-                color: var(--netflix-red);
+    .prev-btn {
+        left: 0;
+        border-radius: 0 8px 8px 0;
+    }
+
+    .next-btn {
+        right: 0;
+        border-radius: 8px 0 0 8px;
+    }
+
+    .slider-indicators {
+        position: absolute;
+        bottom: 80px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        gap: 10px;
+        z-index: 10;
+    }
+
+        .slider-indicators .dot {
+            width: 12px;
+            height: 12px;
+            background: rgba(255,255,255,0.4);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+            .slider-indicators .dot.active {
+                background: var(--netflix-red);
+                transform: scale(1.3);
             }
 
-    .movie-meta {
-        display: flex;
-        align-items: center;
-        gap: 0.8rem;
-        font-size: 0.85rem;
-        color: var(--netflix-light-gray);
-    }
-
-        .movie-meta span {
-            display: flex;
-            align-items: center;
-            gap: 0.3rem;
-        }
-
-        .movie-meta i {
-            color: var(--netflix-red);
-        }
-
-    .view-badge {
+    /* Search Overlay */
+    .global-search-overlay {
         position: absolute;
-        top: 15px;
-        left: 15px;
-        background: linear-gradient(135deg, var(--netflix-red) 0%, #b20710 100%);
-        color: white;
-        padding: 0.4rem 0.8rem;
-        border-radius: 4px;
-        font-size: 0.75rem;
-        font-weight: 700;
-        z-index: 3;
-        display: flex;
-        align-items: center;
-        gap: 0.3rem;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+        bottom: 120px;
+        left: 0;
+        right: 0;
+        z-index: 15;
     }
 
-        .view-badge i {
-            font-size: 0.9rem;
-        }
-
-    /* No Movies Alert */
-    .netflix-alert {
-        background: var(--netflix-dark-bg);
-        color: white;
-        border: 1px solid var(--netflix-gray);
-        border-radius: 8px;
-        padding: 2rem;
-        margin: 2rem 0;
-        text-align: center;
-        animation: fadeIn 0.5s ease;
-    }
-
-        .netflix-alert i {
-            color: var(--netflix-red);
-            font-size: 2rem;
-            margin-bottom: 1rem;
-        }
-
-        .netflix-alert h3 {
-            font-size: 1.5rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .netflix-alert p {
-            color: var(--netflix-light-gray);
-            margin: 0;
-        }
-
-    /* Container */
-    .container {
-        max-width: 1400px;
+    .banner-search-container {
+        max-width: 600px;
         margin: 0 auto;
-        padding: 0 2rem;
-    }
-
-    /* Grid Layout for Index view */
-    .row {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-        gap: 1.5rem;
-        margin: 2rem 0;
-    }
-
-    .card {
-        background: var(--netflix-dark-bg);
-        border: 1px solid var(--netflix-gray);
-        border-radius: 8px;
-        overflow: hidden;
-        transition: transform 0.3s;
-    }
-
-        .card:hover {
-            transform: translateY(-5px);
-        }
-
-    .card-img-top {
-        width: 100%;
-        height: 350px;
-        object-fit: cover;
-    }
-
-    .favorite-icon-btn {
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        background: rgba(0, 0, 0, 0.7);
-        border: none;
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        opacity: 0;
-        transition: opacity 0.3s;
-    }
-
-    .card:hover .favorite-icon-btn {
-        opacity: 1;
-    }
-
-    .favorite-icon-btn:hover {
-        background: var(--netflix-red);
-    }
-
-    .badge {
-        padding: 0.5rem 0.8rem;
-        font-size: 0.75rem;
-        font-weight: 600;
-    }
-
-    .card-body {
-        padding: 1.5rem;
-    }
-
-    .card-title a {
-        color: white;
-        text-decoration: none;
-        font-size: 1.1rem;
-        font-weight: 600;
-        display: block;
-        margin-bottom: 0.5rem;
-    }
-
-        .card-title a:hover {
-            color: var(--netflix-red);
-        }
-
-    .card-text {
-        color: var(--netflix-light-gray);
-        font-size: 0.9rem;
-    }
-
-    .card-footer {
-        padding: 1rem 1.5rem;
-        background: var(--netflix-gray);
-        border-top: 1px solid rgba(255, 255, 255, 0.1);
-    }
-
-    .btn-primary {
-        background-color: var(--netflix-red);
-        border-color: var(--netflix-red);
-        color: white;
-        font-weight: 600;
-        padding: 0.6rem 1rem;
-        border-radius: 6px;
-        transition: all 0.3s ease;
-    }
-
-        .btn-primary:hover {
-            background-color: #f40612;
-            border-color: #f40612;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(229, 9, 20, 0.3);
-        }
-
-    .text-warning {
-        color: #ffc107 !important;
-    }
-
-    .text-muted {
-        color: var(--netflix-light-gray) !important;
-    }
-
-    .text-dark {
-        color: white !important;
-    }
-
-    @@keyframes fadeIn {
-        from {
-            opacity: 0;
-        }
-
-        to {
-            opacity: 1;
-        }
-    }
-
-    @@keyframes fadeInUp {
-        from {
-            opacity: 0;
-            transform: translateY(30px);
-        }
-
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-    /* BẮT ĐẦU CSS CHO THANH TÌM KIẾM THÊM MỚI - NETFLIX STYLE */
-    .search-box-container {
         position: relative;
-        width: 100%;
-        margin-top: 2rem;
-        z-index: 50;
+        padding: 0 2rem;
     }
 
     .search-input-wrapper {
         display: flex;
-        background: rgba(0, 0, 0, 0.75);
-        border: 2px solid rgba(255, 255, 255, 0.1);
+        background: rgba(0,0,0,0.75);
+        border: 2px solid rgba(255,255,255,0.1);
         border-radius: 40px;
         padding: 3px 3px 3px 20px;
         backdrop-filter: blur(10px);
-        transition: all 0.3s ease;
+        transition: all 0.3s;
     }
 
         .search-input-wrapper:focus-within {
             border-color: var(--netflix-red);
-            background: rgba(0, 0, 0, 0.95);
-            box-shadow: 0 0 20px rgba(229, 9, 20, 0.3);
+            background: rgba(0,0,0,0.95);
+            box-shadow: 0 0 20px rgba(229,9,20,0.3);
         }
 
         .search-input-wrapper input {
@@ -578,7 +321,6 @@
 
             .search-input-wrapper input::placeholder {
                 color: var(--netflix-light-gray);
-                font-weight: 300;
             }
 
         .search-input-wrapper .btn-search {
@@ -590,20 +332,13 @@
             font-size: 1rem;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s ease;
             display: flex;
             align-items: center;
             gap: 8px;
-            letter-spacing: 0.5px;
         }
 
             .search-input-wrapper .btn-search:hover {
                 background: #f40612;
-                padding-right: 35px;
-            }
-
-            .search-input-wrapper .btn-search i {
-                font-size: 1.1rem;
             }
 
     .search-suggestions-box {
@@ -628,16 +363,10 @@
         text-decoration: none;
         border-bottom: 1px solid rgba(255,255,255,0.05);
         transition: 0.2s;
-        text-align: left;
     }
-
-        .suggestion-item:last-child {
-            border-bottom: none;
-        }
 
         .suggestion-item:hover {
             background: rgba(255,255,255,0.1);
-            color: white;
         }
 
         .suggestion-item img {
@@ -647,440 +376,989 @@
             border-radius: 4px;
             margin-right: 15px;
         }
-    /* KẾT THÚC CSS TÌM KIẾM */
 
-    /* Footer Styles - Thêm mới */
-    .netflix-footer {
-        background: var(--netflix-dark-bg);
-        padding: 4rem 0 2rem;
-        margin-top: 5rem;
-        border-top: 1px solid var(--netflix-gray);
-    }
-
-    .footer-content {
+    /* =========================================
+           GENERAL LAYOUT & GRIDS
+           ========================================= */
+    .container {
         max-width: 1400px;
         margin: 0 auto;
         padding: 0 2rem;
     }
 
-    .footer-grid {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 2rem;
-        margin-bottom: 3rem;
+    .section-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid var(--netflix-gray);
+        position: relative;
     }
 
-    .footer-section h3 {
-        color: white;
-        font-size: 1.1rem;
-        font-weight: 700;
-        margin-bottom: 1.5rem;
-        text-transform: uppercase;
-        letter-spacing: 1px;
+        .section-header::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 100px;
+            height: 2px;
+            background: var(--netflix-red);
+        }
+
+    .section-header-left {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
     }
 
-    .footer-section ul {
-        list-style: none;
-        padding: 0;
+    .section-header i {
+        font-size: 2rem;
+        color: var(--netflix-red);
+        background: rgba(229,9,20,0.1);
+        padding: 0.8rem;
+        border-radius: 8px;
+    }
+
+    .section-header h2 {
+        font-size: 2rem;
+        font-weight: 800;
         margin: 0;
     }
 
-        .footer-section ul li {
-            margin-bottom: 0.8rem;
+    /* Scroll Rows */
+    .movies-row-container {
+        position: relative;
+        margin-bottom: 4rem;
+    }
+
+    .movies-row {
+        display: flex;
+        overflow-x: auto;
+        padding: 1rem 0.5rem;
+        scrollbar-width: none;
+        gap: 1.2rem;
+        scroll-behavior: smooth;
+    }
+
+        .movies-row::-webkit-scrollbar {
+            display: none;
         }
 
-            .footer-section ul li a {
-                color: var(--netflix-light-gray);
-                text-decoration: none;
-                font-size: 0.9rem;
-                transition: color 0.3s ease;
+    .scroll-arrow {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        background: rgba(0,0,0,0.7);
+        color: white;
+        border: none;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        z-index: 10;
+        opacity: 0;
+        transition: all 0.3s;
+    }
+
+    .scroll-left {
+        left: -20px;
+    }
+
+    .scroll-right {
+        right: -20px;
+    }
+
+    .movies-row-container:hover .scroll-arrow {
+        opacity: 1;
+    }
+
+    .scroll-arrow:hover {
+        background: var(--netflix-red);
+        transform: translateY(-50%) scale(1.1);
+    }
+
+    /* Movie Cards */
+    .movie-card {
+        flex: 0 0 auto;
+        width: 220px;
+        transition: all 0.4s;
+        position: relative;
+        cursor: pointer;
+    }
+
+        .movie-card:hover {
+            transform: scale(1.08);
+            z-index: 20;
+        }
+
+    .movie-poster {
+        position: relative;
+        border-radius: 8px;
+        overflow: hidden;
+        aspect-ratio: 2/3;
+        background-color: var(--netflix-gray);
+        box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        transition: all 0.4s;
+    }
+
+    .movie-card:hover .movie-poster {
+        box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+        transform: translateY(-10px);
+    }
+
+    .movie-poster img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.4s;
+    }
+
+    .movie-card:hover .movie-poster img {
+        transform: scale(1.05);
+    }
+
+    .movie-overlay {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(180deg, transparent 40%, rgba(0,0,0,0.9) 100%);
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        padding: 1.5rem;
+        opacity: 0;
+        transition: opacity 0.3s;
+    }
+
+    .movie-card:hover .movie-overlay {
+        opacity: 1;
+    }
+
+    .play-button {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%,-50%) scale(0.8);
+        background: rgba(229,9,20,0.9);
+        color: white;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+        opacity: 0;
+        transition: all 0.3s;
+        border: 3px solid white;
+    }
+
+    .movie-card:hover .play-button {
+        opacity: 1;
+        transform: translate(-50%,-50%) scale(1);
+    }
+
+    .movie-info {
+        padding: 1rem 0.5rem 0.5rem;
+    }
+
+    .movie-title {
+        font-size: 1rem;
+        font-weight: 700;
+        margin: 0 0 0.5rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+        .movie-title a {
+            color: white;
+            text-decoration: none;
+        }
+
+            .movie-title a:hover {
+                color: var(--netflix-red);
             }
 
-                .footer-section ul li a:hover {
-                    color: var(--netflix-red);
-                }
-
-    .social-links {
+    .movie-meta {
         display: flex;
-        gap: 1.5rem;
+        align-items: center;
+        gap: 0.8rem;
+        font-size: 0.85rem;
+        color: var(--netflix-light-gray);
+    }
+
+        .movie-meta i {
+            color: var(--netflix-red);
+        }
+
+    .view-badge {
+        position: absolute;
+        top: 15px;
+        left: 15px;
+        background: linear-gradient(135deg, var(--netflix-red), #b20710);
+        color: white;
+        padding: 0.4rem 0.8rem;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        z-index: 3;
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+    }
+
+    .favorite-icon-btn {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: rgba(0,0,0,0.7);
+        border: none;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        opacity: 0;
+        transition: opacity 0.3s;
+        cursor: pointer;
+    }
+
+    .movie-card:hover .favorite-icon-btn {
+        opacity: 1;
+    }
+
+    .favorite-icon-btn:hover {
+        background: var(--netflix-red);
+    }
+
+    /* Filter Bar */
+    .filter-bar {
+        background: var(--netflix-dark-bg);
+        border: 1px solid var(--netflix-gray);
+        border-radius: 12px;
+        padding: 1.5rem;
         margin-bottom: 2rem;
     }
 
-        .social-links a {
-            color: white;
-            font-size: 1.5rem;
-            transition: all 0.3s ease;
-        }
-
-            .social-links a:hover {
-                color: var(--netflix-red);
-                transform: translateY(-3px);
-            }
-
-    .footer-bottom {
+    .filter-row {
         display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding-top: 2rem;
-        border-top: 1px solid var(--netflix-gray);
-        color: var(--netflix-light-gray);
-        font-size: 0.9rem;
-    }
-
-    .footer-bottom-links {
-        display: flex;
-        gap: 2rem;
-    }
-
-        .footer-bottom-links a {
-            color: var(--netflix-light-gray);
-            text-decoration: none;
-            transition: color 0.3s ease;
-        }
-
-            .footer-bottom-links a:hover {
-                color: var(--netflix-red);
-            }
-
-    .payment-methods {
-        display: flex;
+        flex-wrap: wrap;
         gap: 1rem;
-        font-size: 1.5rem;
-        color: var(--netflix-light-gray);
+        align-items: flex-end;
     }
 
-    /* Responsive Footer */
-    @@media (max-width: 768px) {
-        .footer-grid {
-            grid-template-columns: repeat(2, 1fr);
+    .filter-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+        flex: 1;
+        min-width: 140px;
+    }
+
+        .filter-group label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--netflix-light-gray);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
-        .footer-bottom {
-            flex-direction: column;
-            gap: 1rem;
+    .filter-select {
+        background: var(--netflix-gray);
+        border: 1px solid rgba(255,255,255,0.15);
+        color: white;
+        border-radius: 8px;
+        padding: 0.6rem 1rem;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: border-color 0.2s;
+    }
+
+        .filter-select:focus {
+            outline: none;
+            border-color: var(--netflix-red);
+        }
+
+        .filter-select option {
+            background: var(--netflix-gray);
+        }
+
+    .btn-reset {
+        background: transparent;
+        color: var(--netflix-light-gray);
+        border: 1px solid rgba(255,255,255,0.2);
+        border-radius: 8px;
+        padding: 0.65rem 1.2rem;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        white-space: nowrap;
+    }
+
+        .btn-reset:hover {
+            border-color: var(--netflix-red);
+            color: var(--netflix-red);
+        }
+
+    .filter-result-count {
+        font-size: 0.9rem;
+        color: var(--netflix-light-gray);
+        margin-top: 0.8rem;
+    }
+
+        .filter-result-count span {
+            color: var(--netflix-red);
+            font-weight: 700;
+        }
+
+    /* Grid & AJAX Loading */
+    #filtered-movies-wrapper {
+        transition: opacity 0.3s ease;
+    }
+
+    .loading-state {
+        opacity: 0.5;
+        pointer-events: none;
+    }
+
+    .movies-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 1.2rem;
+        margin-bottom: 3rem;
+    }
+
+    .grid-card {
+        position: relative;
+        border-radius: 8px;
+        overflow: hidden;
+        background: var(--netflix-dark-bg);
+        border: 1px solid var(--netflix-gray);
+        transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+        .grid-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.7);
+        }
+
+    .grid-card-poster {
+        position: relative;
+        aspect-ratio: 2/3;
+        overflow: hidden;
+    }
+
+        .grid-card-poster img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.4s;
+        }
+
+    .grid-card:hover .grid-card-poster img {
+        transform: scale(1.05);
+    }
+
+    .grid-card-overlay {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(180deg, transparent 50%, rgba(0,0,0,0.9) 100%);
+        opacity: 0;
+        transition: opacity 0.3s;
+        display: flex;
+        align-items: flex-end;
+        padding: 1rem;
+    }
+
+    .grid-card:hover .grid-card-overlay {
+        opacity: 1;
+    }
+
+    .btn-play-card {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        background: var(--netflix-red);
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        text-decoration: none;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+
+    .grid-card-info {
+        padding: 0.8rem;
+    }
+
+    .grid-card-title {
+        font-size: 0.9rem;
+        font-weight: 600;
+        margin-bottom: 0.3rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+        .grid-card-title a {
+            color: white;
+            text-decoration: none;
+        }
+
+            .grid-card-title a:hover {
+                color: var(--netflix-red);
+            }
+
+    .grid-card-meta {
+        font-size: 0.78rem;
+        color: var(--netflix-light-gray);
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .badge-type {
+        position: absolute;
+        top: 8px;
+        left: 8px;
+        background: rgba(229,9,20,0.85);
+        color: white;
+        padding: 0.2rem 0.6rem;
+        border-radius: 4px;
+        font-size: 0.7rem;
+        font-weight: 700;
+        z-index: 3;
+    }
+
+    /* Pagination & Alerts */
+    .pagination-wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 0.5rem;
+        margin: 2rem 0 4rem;
+        flex-wrap: wrap;
+    }
+
+    .page-btn {
+        background: var(--netflix-gray);
+        color: white;
+        border: 1px solid rgba(255,255,255,0.1);
+        padding: 0.5rem 0.9rem;
+        border-radius: 6px;
+        cursor: pointer;
+        text-decoration: none;
+        font-size: 0.9rem;
+        transition: all 0.2s;
+    }
+
+        .page-btn:hover {
+            background: var(--netflix-red);
+            border-color: var(--netflix-red);
+            color: white;
+        }
+
+        .page-btn.active {
+            background: var(--netflix-red);
+            border-color: var(--netflix-red);
+            font-weight: 700;
+        }
+
+        .page-btn.disabled {
+            opacity: 0.4;
+            pointer-events: none;
+        }
+
+    .netflix-alert {
+        background: var(--netflix-dark-bg);
+        border: 1px solid var(--netflix-gray);
+        border-radius: 8px;
+        padding: 2rem;
+        margin: 2rem 0;
+        text-align: center;
+    }
+
+        .netflix-alert i {
+            color: var(--netflix-red);
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+    /* Responsive Defaults */
+    @@media (max-width: 992px) {
+        .hero-poster-content {
+            display: none;
+        }
+
+        .hero-text-content {
+            max-width: 100%;
             text-align: center;
         }
 
-        .footer-bottom-links {
-            flex-wrap: wrap;
+        .featured-meta, .featured-actions {
             justify-content: center;
+        }
+    }
+
+    @@media (max-width: 768px) {
+        .hero-slider-container {
+            height: 100vh;
+            min-height: 600px;
+        }
+
+        .featured-title {
+            font-size: 2.5rem;
+        }
+
+        .global-search-overlay {
+            bottom: 90px;
+        }
+
+        .filter-row {
+            flex-direction: column;
+        }
+
+        .movies-grid {
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
         }
     }
 </style>
 
-<div class="hero-banner">
-    <div class="hero-content">
-        <span class="hero-badge">
-        </span>
-
-        <div style="text-align: center; margin-bottom: 1.5rem;">
-            <h1 style="font-size: 3rem; font-weight: 900; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); margin-bottom: 10px;">Khám Phá Thế Giới Phim</h1>
-            <p style="font-size: 1.2rem; color: #ccc;">Tìm kiếm phim, diễn viên, thể loại và quốc gia bạn yêu thích</p>
-        </div>
-        <div class="search-box-container">
-            <form action="/Search" method="get">
-                <div class="search-input-wrapper">
-                    <input type="text" name="q" id="searchInput" placeholder="Tìm kiếm phim, diễn viên..." autocomplete="off">
-                    <button type="submit" class="btn-search">
-                        <i class="fas fa-search"></i>
-                        <span>Tìm</span>
-                    </button>
-                </div>
-            </form>
-            <div id="searchSuggestions" class="search-suggestions-box">
-            </div>
-        </div>
-    </div>
-</div>
-
-
-<div class="container">
-    <div class="section-header">
-        <i class="fas fa-fire"></i>
-        <h2>Phim Mới Nhất</h2>
-    </div>
-
-    @if (latestMovies != null && latestMovies.Any())
-    {
-        <div class="movies-row-container">
-            <button class="scroll-arrow scroll-left" onclick="scrollLeft('latest')">
-                <i class="fas fa-chevron-left"></i>
-            </button>
-
-            <div class="movies-row" id="latest-movies-row">
-                @foreach (var movie in latestMovies)
-                {
-                    <div class="movie-card">
-                        <a asp-controller="Movie" asp-action="Detail" asp-route-slug="@movie.Slug">
-
-                            <div class="movie-poster">
-                                <img src="@(string.IsNullOrEmpty(movie.PosterUrl) ? "https://via.placeholder.com/300x450/2d2d2d/ffffff?text=No+Poster" : movie.PosterUrl)"
-                                     alt="@movie.Title"
-                                     loading="lazy" />
-                                <div class="movie-overlay">
-                                    <div class="play-button">
-                                        <i class="fas fa-play"></i>
-                                    </div>
-                                </div>
-                            </div>
-                        </a>
-                        <div class="movie-info">
-                            <h6 class="movie-title">
-
-                                <a asp-controller="Movie" asp-action="Detail" asp-route-slug="@movie.Slug">
-                                    @movie.Title
-                                </a>
-                            </h6>
-                            <div class="movie-meta">
-                                <span>
-                                    <i class="fas fa-calendar"></i> @movie.ReleaseYear
-                                </span>
-                                @if (!string.IsNullOrEmpty(movie.CountryName))
-                                {
-                                    <span>
-                                        <i class="fas fa-globe"></i> @movie.CountryName
-                                    </span>
-                                }
-                            </div>
-                        </div>
-
-                        @if (User.Identity?.IsAuthenticated == true)
-                        {
-                            <button class="favorite-icon-btn" data-movie-id="@movie.Id">
-                                <i class="far fa-heart"></i>
-                            </button>
-                        }
-                    </div>
-                }
-            </div>
-
-            <button class="scroll-arrow scroll-right" onclick="scrollRight('latest')">
-                <i class="fas fa-chevron-right"></i>
-            </button>
-        </div>
-    }
-    else
-    {
-        <div class="netflix-alert">
-            <i class="fas fa-info-circle"></i>
-            <h3>Chưa có phim nào</h3>
-            <p>Vui lòng quay lại sau hoặc khám phá các phim khác</p>
-        </div>
-    }
-</div>
-
-
-@if (popularMovies != null && popularMovies.Any())
+@if (featuredMovies.Any())
 {
-    <div class="container" style="margin-top: 3rem;">
-        <div class="section-header">
-            <i class="fas fa-star"></i>
-            <h2>Phim Xem Nhiều</h2>
-        </div>
+    <div class="hero-slider-section">
+        <div class="hero-slider-container" id="heroSlider">
 
-        <div class="movies-row-container">
-            <button class="scroll-arrow scroll-left" onclick="scrollLeft('popular')">
-                <i class="fas fa-chevron-left"></i>
-            </button>
-
-            <div class="movies-row" id="popular-movies-row">
-                @foreach (var movie in popularMovies)
-                {
-                    <div class="movie-card">
-
-                        <a asp-controller="Movie" asp-action="Detail" asp-route-slug="@movie.Slug">
-                            <div class="movie-poster">
-                                <img src="@(string.IsNullOrEmpty(movie.PosterUrl) ? "https://via.placeholder.com/300x450/2d2d2d/ffffff?text=No+Poster" : movie.PosterUrl)"
-                                     alt="@movie.Title"
-                                     loading="lazy" />
-                                <div class="movie-overlay">
-                                    <div class="play-button">
-                                        <i class="fas fa-play"></i>
-                                    </div>
-                                </div>
-                                <div class="view-badge">
-                                    <i class="fas fa-eye"></i> @movie.ViewCount.ToString("N0")
-                                </div>
-                            </div>
-                        </a>
-                        <div class="movie-info">
-                            <h6 class="movie-title">
-
-                                <a asp-controller="Movie" asp-action="Detail" asp-route-slug="@movie.Slug">
-                                    @movie.Title
-                                </a>
-                            </h6>
-                            <div class="movie-meta">
-                                <span>
-                                    <i class="fas fa-calendar"></i> @movie.ReleaseYear
-                                </span>
-                                @if (!string.IsNullOrEmpty(movie.CountryName))
-                                {
-                                    <span>
-                                        <i class="fas fa-globe"></i> @movie.CountryName
-                                    </span>
-                                }
-                            </div>
-                        </div>
-
-                        @if (User.Identity?.IsAuthenticated == true)
-                        {
-                            <button class="favorite-icon-btn" data-movie-id="@movie.Id">
-                                <i class="far fa-heart"></i>
-                            </button>
-                        }
-                    </div>
-                }
-            </div>
-
-            <button class="scroll-arrow scroll-right" onclick="scrollRight('popular')">
-                <i class="fas fa-chevron-right"></i>
-            </button>
-        </div>
-    </div>
-}
-
-@if (Model != null && Model.Any())
-{
-    <div class="container" style="margin-top: 4rem;">
-        <div class="section-header">
-            <i class="fas fa-film"></i>
-            <h2>Tất Cả Phim</h2>
-        </div>
-
-        <div class="row">
-            @foreach (var movie in Model.Take(12))
+            @for (int i = 0; i < featuredMovies.Count; i++)
             {
-                <div class="card">
-                    <div class="position-relative">
+                var movie = featuredMovies[i];
+                var bgImage = movie.PosterUrl ?? "https://images.unsplash.com/photo-1536440136628-849c177e76a1?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80";
 
-                        <a asp-controller="Movie" asp-action="Detail" asp-route-slug="@movie.Slug">
-                            <img src="@(movie.PosterUrl ?? "https://via.placeholder.com/300x450/2d2d2d/ffffff?text=No+Poster")"
-                                 class="card-img-top"
-                                 alt="@movie.Title">
-                        </a>
+                <div class="hero-slide @(i == 0 ? "active" : "")" data-index="@i">
+                    <div class="hero-bg" style="background-image: url('@bgImage');"></div>
 
-                        @if (User.Identity?.IsAuthenticated == true)
-                        {
-                            <button class="favorite-icon-btn" data-movie-id="@movie.Id">
-                                <i class="far fa-heart"></i>
-                            </button>
-                        }
+                    <div class="hero-content-wrapper">
+                        <div class="hero-text-content">
+                            <h1 class="featured-title">@movie.Title</h1>
 
-                        <span class="badge bg-danger position-absolute top-0 start-0 m-2">HD</span>
-
-                        <span class="badge bg-dark position-absolute bottom-0 end-0 m-2">
-                            <i class="fas fa-eye"></i> @movie.ViewCount.ToString("N0")
-                        </span>
-                    </div>
-
-                    <div class="card-body">
-                        <h6 class="card-title">
-
-                            <a asp-controller="Movie" asp-action="Detail" asp-route-slug="@movie.Slug">
-                                @movie.Title
-                            </a>
-                        </h6>
-
-                        <div class="mb-2">
-                            <small class="text-warning">
-                                @for (int i = 1; i <= 5; i++)
+                            <div class="featured-meta">
+                                <span class="match">Top Trending</span>
+                                @if (movie.ReleaseYear.HasValue)
                                 {
-                                    <i class="@(i <= 4 ? "fas" : "far") fa-star"></i>
+                                    <span>@movie.ReleaseYear</span>
                                 }
-                                <span class="text-muted">4.0</span>
-                            </small>
+                                <span class="badge-hd">HD</span>
+                                <span>@(movie.Type.ToString() == "Series" ? "Series" : "Movie")</span>
+                            </div>
+
+                            <p class="featured-desc">
+                                Discover @movie.Title today. Enjoy wonderful moments of entertainment with HD quality and standard subtitles.
+                            </p>
+
+                            <div class="featured-actions">
+                                <a asp-controller="Movie" asp-action="Watch" asp-route-slug="@movie.Slug" class="btn-netflix-primary">
+                                    <i class="fas fa-play"></i> Play
+                                </a>
+                                <a asp-controller="Movie" asp-action="Detail" asp-route-slug="@movie.Slug" class="btn-netflix-secondary">
+                                    <i class="fas fa-info-circle"></i> More Info
+                                </a>
+                            </div>
                         </div>
 
-                        <p class="card-text">
-                            @if (movie.ReleaseYear.HasValue)
-                            {
-                                <span>@movie.ReleaseYear</span>
-                            }
-                            @if (movie.DurationMinutes.HasValue)
-                            {
-                                <span> • @movie.DurationMinutes phút</span>
-                            }
-                        </p>
-                    </div>
-
-                    <div class="card-footer">
-                        <a asp-controller="Movie" asp-action="Watch" asp-route-slug="@movie.Slug"
-                           class="btn btn-primary w-100">
-                            <i class="fas fa-play"></i> Xem ngay
-                        </a>
+                        <div class="hero-poster-content">
+                            <a asp-controller="Movie" asp-action="Detail" asp-route-slug="@movie.Slug">
+                                <img src="@bgImage" alt="@movie.Title" class="full-poster-img" />
+                            </a>
+                        </div>
                     </div>
                 </div>
             }
+
+            <button class="slider-nav-btn prev-btn" id="heroPrev"><i class="fas fa-chevron-left"></i></button>
+            <button class="slider-nav-btn next-btn" id="heroNext"><i class="fas fa-chevron-right"></i></button>
+
+            <div class="slider-indicators">
+                @for (int i = 0; i < featuredMovies.Count; i++)
+                {
+                    <span class="dot @(i == 0 ? "active" : "")" data-slide="@i"></span>
+                }
+            </div>
         </div>
     </div>
 }
 
+<div class="container" id="filter-section-container">
+    <div class="section-header">
+        <div class="section-header-left">
+            <i class="fas fa-film"></i>
+            <h2>All Movies</h2>
+        </div>
+        <a asp-controller="Movie" asp-action="Index" style="color:var(--netflix-light-gray); font-size:0.9rem;">
+           <i class="fas fa-arrow-right"></i>
+        </a>
+    </div>
+
+    <div class="filter-bar">
+        <form method="get" asp-action="Index" asp-controller="Home" id="filterForm">
+            <div class="filter-row">
+                <div class="filter-group" style="flex:2; min-width:200px;">
+                    <label><i class="fas fa-search"></i> Search</label>
+                    <div class="search-input-wrapper" style="border-radius:8px; padding:2px 2px 2px 14px;">
+                        <input type="text" name="search" value="@f.Search" placeholder="Movie title..." style="font-size:0.9rem; padding:8px 0;" />
+                        <button type="submit" class="btn-search" style="border-radius:6px; padding:8px 16px; font-size:0.85rem;">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="filter-group">
+                    <label><i class="fas fa-theater-masks"></i> Genre</label>
+                    <select name="genreId" class="filter-select">
+                        <option value="">All</option>
+                        @foreach (var g in f.Genres)
+                        {
+                            <option value="@g.Id" selected="@(f.GenreId == g.Id ? "selected" : null)">@g.Name</option>
+                        }
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label><i class="fas fa-globe"></i> Country</label>
+                    <select name="countryId" class="filter-select">
+                        <option value="">All</option>
+                        @foreach (var c in f.Countries)
+                        {
+                            <option value="@c.Id" selected="@(f.CountryId == c.Id ? "selected" : null)">@c.Name</option>
+                        }
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label><i class="fas fa-tv"></i> Movie Type</label>
+                    <select name="type" class="filter-select">
+                        <option value="">All</option>
+                        <option value="1" selected="@(f.Type == 1 ? "selected" : null)">Movie</option>
+                        <option value="2" selected="@(f.Type == 2 ? "selected" : null)">Series</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label><i class="fas fa-sort"></i> Sort by</label>
+                    <select name="sortBy" class="filter-select">
+                        <option value="latest" selected="@(f.SortBy == "latest" ? "selected" : null)">Latest</option>
+                        <option value="popular" selected="@(f.SortBy == "popular" ? "selected" : null)">Most Popular</option>
+                        <option value="year_desc" selected="@(f.SortBy == "year_desc" ? "selected" : null)">Year Descending</option>
+                        <option value="year_asc" selected="@(f.SortBy == "year_asc" ? "selected" : null)">Year Ascending</option>
+                        <option value="title" selected="@(f.SortBy == "title" ? "selected" : null)">Name A-Z</option>
+                    </select>
+                </div>
+                <div class="filter-group" style="justify-content:flex-end; flex-direction:row; gap:0.5rem;">
+                    <a asp-action="Index" asp-controller="Home" class="btn-reset"><i class="fas fa-times"></i> Reset</a>
+                </div>
+            </div>
+            <div class="filter-result-count" id="filter-count-wrapper">
+                Showing <span>@f.Movies.Count</span> / <span>@f.TotalItems</span> movies
+                @if (!string.IsNullOrEmpty(f.Search) || f.GenreId.HasValue || f.CountryId.HasValue || f.Type.HasValue)
+                {
+                    <span style="margin-left:0.5rem; color:var(--netflix-light-gray);">(filtered)</span>
+                }
+            </div>
+        </form>
+    </div>
+
+    <div id="filtered-movies-wrapper">
+        @if (f.Movies.Any())
+        {
+            <div class="movies-grid">
+                @foreach (var movie in f.Movies)
+                {
+                    <div class="grid-card">
+                        <div class="grid-card-poster">
+                            <a asp-controller="Movie" asp-action="Detail" asp-route-slug="@movie.Slug">
+                                <img src="@(movie.PosterUrl ?? "https://via.placeholder.com/300x450/2d2d2d/fff?text=No+Poster")" alt="@movie.Title" loading="lazy" />
+                            </a>
+                            <span class="badge-type">@(movie.Type.ToString() == "Series" ? "Series" : "Movie")</span>
+                            <div class="grid-card-overlay">
+                                <a asp-controller="Movie" asp-action="Watch" asp-route-slug="@movie.Slug" class="btn-play-card">
+                                    <i class="fas fa-play"></i> Watch Now
+                                </a>
+                            </div>
+                        </div>
+                        <div class="grid-card-info">
+                            <div class="grid-card-title">
+                                <a asp-controller="Movie" asp-action="Detail" asp-route-slug="@movie.Slug">@movie.Title</a>
+                            </div>
+                            <div class="grid-card-meta">
+                                @if (movie.ReleaseYear.HasValue)
+                                {
+                                    <span><i class="fas fa-calendar"></i> @movie.ReleaseYear</span>
+                                }
+                                @if (!string.IsNullOrEmpty(movie.CountryName))
+                                {
+                                    <span>@movie.CountryName</span>
+                                }
+                            </div>
+                        </div>
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            <button class="favorite-icon-btn" data-movie-id="@movie.Id" style="top:46px;"><i class="far fa-heart"></i></button>
+                        }
+                    </div>
+                }
+            </div>
+
+            @if (f.TotalPages > 1)
+            {
+                <div class="pagination-wrapper">
+                    <a asp-action="Index" asp-controller="Home"
+                       asp-route-search="@f.Search" asp-route-genreId="@f.GenreId" asp-route-countryId="@f.CountryId"
+                       asp-route-type="@f.Type" asp-route-sortBy="@f.SortBy" asp-route-pageNumber="@(f.PageNumber - 1)"
+                       class="page-btn @(!f.HasPreviousPage ? "disabled" : null)">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+
+                    @for (int i = Math.Max(1, f.PageNumber - 2); i <= Math.Min(f.TotalPages, f.PageNumber + 2); i++)
+                    {
+                        <a asp-action="Index" asp-controller="Home"
+                           asp-route-search="@f.Search" asp-route-genreId="@f.GenreId" asp-route-countryId="@f.CountryId"
+                           asp-route-type="@f.Type" asp-route-sortBy="@f.SortBy" asp-route-pageNumber="@i"
+                           class="page-btn @(i == f.PageNumber ? "active" : null)">@i</a>
+                    }
+
+                    <a asp-action="Index" asp-controller="Home"
+                       asp-route-search="@f.Search" asp-route-genreId="@f.GenreId" asp-route-countryId="@f.CountryId"
+                       asp-route-type="@f.Type" asp-route-sortBy="@f.SortBy" asp-route-pageNumber="@(f.PageNumber + 1)"
+                       class="page-btn @(!f.HasNextPage ? "disabled" : null)">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="netflix-alert">
+                <i class="fas fa-search"></i>
+                <h3>No movies found</h3>
+                <p>Try changing the filter or <a asp-action="Index" asp-controller="Home" style="color:var(--netflix-red);">view all movies</a></p>
+            </div>
+        }
+    </div>
+</div>
+
+<div class="container" style="margin-top:2rem;">
+    <div class="section-header">
+        <div class="section-header-left">
+            <i class="fas fa-fire"></i>
+            <h2>Latest Movies</h2>
+        </div>
+    </div>
+    @if (Model.LatestMovies.Any())
+    {
+        <div class="movies-row-container">
+            <button class="scroll-arrow scroll-left" onclick="doScrollLeft('latest')"><i class="fas fa-chevron-left"></i></button>
+            <div class="movies-row" id="latest-movies-row">
+                @foreach (var movie in Model.LatestMovies)
+                {
+                    <div class="movie-card">
+                        <a asp-controller="Movie" asp-action="Detail" asp-route-slug="@movie.Slug">
+                            <div class="movie-poster">
+                                <img src="@(string.IsNullOrEmpty(movie.PosterUrl) ? "https://via.placeholder.com/300x450/2d2d2d/fff?text=No+Poster" : movie.PosterUrl)" alt="@movie.Title" loading="lazy" />
+                                <div class="movie-overlay"><div class="play-button"><i class="fas fa-play"></i></div></div>
+                            </div>
+                        </a>
+                        <div class="movie-info">
+                            <h6 class="movie-title"><a asp-controller="Movie" asp-action="Detail" asp-route-slug="@movie.Slug">@movie.Title</a></h6>
+                            <div class="movie-meta">
+                                <span><i class="fas fa-calendar"></i> @movie.ReleaseYear</span>
+                                @if (!string.IsNullOrEmpty(movie.CountryName))
+                                {
+                                    <span><i class="fas fa-globe"></i> @movie.CountryName</span>
+                                }
+                            </div>
+                        </div>
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            <button class="favorite-icon-btn" data-movie-id="@movie.Id"><i class="far fa-heart"></i></button>
+                        }
+                    </div>
+                }
+            </div>
+            <button class="scroll-arrow scroll-right" onclick="doScrollRight('latest')"><i class="fas fa-chevron-right"></i></button>
+        </div>
+    }
+</div>
+
+@if (Model.PopularMovies.Any())
+{
+    <div class="container" style="margin-top:3rem;">
+        <div class="section-header">
+            <div class="section-header-left">
+                <i class="fas fa-star"></i>
+                <h2>Popular Movies</h2>
+            </div>
+        </div>
+        <div class="movies-row-container">
+            <button class="scroll-arrow scroll-left" onclick="doScrollLeft('popular')"><i class="fas fa-chevron-left"></i></button>
+            <div class="movies-row" id="popular-movies-row">
+                @foreach (var movie in Model.PopularMovies)
+                {
+                    <div class="movie-card">
+                        <a asp-controller="Movie" asp-action="Detail" asp-route-slug="@movie.Slug">
+                            <div class="movie-poster">
+                                <img src="@(string.IsNullOrEmpty(movie.PosterUrl) ? "https://via.placeholder.com/300x450/2d2d2d/fff?text=No+Poster" : movie.PosterUrl)" alt="@movie.Title" loading="lazy" />
+                                <div class="movie-overlay"><div class="play-button"><i class="fas fa-play"></i></div></div>
+                                <div class="view-badge"><i class="fas fa-eye"></i> @movie.ViewCount.ToString("N0")</div>
+                            </div>
+                        </a>
+                        <div class="movie-info">
+                            <h6 class="movie-title"><a asp-controller="Movie" asp-action="Detail" asp-route-slug="@movie.Slug">@movie.Title</a></h6>
+                            <div class="movie-meta">
+                                <span><i class="fas fa-calendar"></i> @movie.ReleaseYear</span>
+                                @if (!string.IsNullOrEmpty(movie.CountryName))
+                                {
+                                    <span><i class="fas fa-globe"></i> @movie.CountryName</span>
+                                }
+                            </div>
+                        </div>
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            <button class="favorite-icon-btn" data-movie-id="@movie.Id"><i class="far fa-heart"></i></button>
+                        }
+                    </div>
+                }
+            </div>
+            <button class="scroll-arrow scroll-right" onclick="doScrollRight('popular')"><i class="fas fa-chevron-right"></i></button>
+        </div>
+    </div>
+}
 
 @Html.AntiForgeryToken()
 
 @section Scripts {
     <script>
         $(document).ready(function () {
+            // --- 1. SEARCH SUGGESTIONS ---
             let debounceTimer;
-
-            $('#searchInput').on('input', function () {
+            $('.searchInputField').on('input', function () {
                 clearTimeout(debounceTimer);
                 const query = $(this).val().trim();
-                const suggestionsBox = $('#searchSuggestions');
+                const box = $(this).closest('.banner-search-container').find('.searchSuggestionsBox');
 
-                if (query.length < 2) {
-                    suggestionsBox.hide();
-                    return;
-                }
+                if (query.length < 2) { box.hide(); return; }
 
                 debounceTimer = setTimeout(() => {
-                    $.ajax({
-                        url: '/Search/Suggestions',
-                        type: 'GET',
-                        data: { q: query },
-                               success: function (data) {
-            suggestionsBox.empty();
-
-            if (data && data.length > 0) {
-                data.forEach(movie => {
-                    // Tạo URL trỏ thẳng đến trang chi tiết bằng Slug
-                    const detailUrl = `/Movie/Detail/${movie.slug}`;
-
-                    const itemHtml = `
-                        <a href="${detailUrl}" class="suggestion-item">
-                            <img src="${movie.posterUrl}" alt="${movie.title}" onerror="this.src='https://via.placeholder.com/40x60/2d2d2d/ffffff?text=N/A'" />
-                            <div>
-                                <div style="font-weight: 600;">${movie.title}</div>
-                                <div style="font-size: 0.85rem; color: #b3b3b3;"><i class="fas fa-calendar-alt"></i> ${movie.year || 'N/A'}</div>
-                            </div>
-                        </a>`;
-                    suggestionsBox.append(itemHtml);
-                });
-                suggestionsBox.fadeIn(150);
-            } else {
-                suggestionsBox.html('<div style="padding: 15px; color: #b3b3b3; text-align: center;">Không tìm thấy phim phù hợp</div>');
-                suggestionsBox.fadeIn(150);
-            }
-        }
+                    $.get('/Search/Suggestions', { q: query }, function (data) {
+                        box.empty();
+                        if (data && data.length > 0) {
+                            data.forEach(m => {
+                                box.append(`<a href="/Movie/Detail/${m.slug}" class="suggestion-item">
+                                    <img src="${m.posterUrl}" onerror="this.src='https://via.placeholder.com/40x60/2d2d2d/fff?text=N/A'" />
+                                    <div><div style="font-weight:600">${m.title}</div>
+                                    <div style="font-size:0.85rem;color:#b3b3b3"><i class="fas fa-calendar-alt"></i> ${m.year || 'N/A'}</div></div>
+                                </a>`);
+                            });
+                            box.fadeIn(150);
+                        } else {
+                            box.html('<div style="padding:15px;color:#b3b3b3;text-align:center">No matching movies found</div>').fadeIn(150);
                         }
                     });
                 }, 300);
             });
-
             $(document).on('click', function (e) {
-                if (!$(e.target).closest('.search-box-container').length) {
-                    $('#searchSuggestions').fadeOut(150);
+                if (!$(e.target).closest('.banner-search-container').length) $('.searchSuggestionsBox').fadeOut(150);
+            });
+
+            // --- 2. HERO SLIDER ---
+            const $slides = $('.hero-slide');
+            const $dots = $('.slider-indicators .dot');
+            let currentSlide = 0;
+            const totalSlides = $slides.length;
+            let slideInterval;
+
+            function goToSlide(index) {
+                $slides.removeClass('active');
+                $dots.removeClass('active');
+
+                currentSlide = index;
+                if (currentSlide >= totalSlides) currentSlide = 0;
+                if (currentSlide < 0) currentSlide = totalSlides - 1;
+
+                $slides.eq(currentSlide).addClass('active');
+                $dots.eq(currentSlide).addClass('active');
+            }
+
+            function nextSlide() { goToSlide(currentSlide + 1); }
+            function prevSlide() { goToSlide(currentSlide - 1); }
+
+            function startSlideShow() {
+                slideInterval = setInterval(nextSlide, 6000); // Đổi slide mỗi 6 giây
+            }
+            function resetSlideShow() {
+                clearInterval(slideInterval);
+                startSlideShow();
+            }
+
+            $('#heroNext').click(function () { nextSlide(); resetSlideShow(); });
+            $('#heroPrev').click(function () { prevSlide(); resetSlideShow(); });
+
+            $dots.click(function () {
+                goToSlide($(this).data('slide'));
+                resetSlideShow();
+            });
+
+            if(totalSlides > 1) {
+                startSlideShow();
+            }
+
+            // --- 3. AJAX FILTER LOGIC ---
+            $(document).on('change', '#filterForm select', function () {
+                $('#filterForm').trigger('submit');
+            });
+
+            $(document).on('submit', '#filterForm', function (e) {
+                e.preventDefault();
+                let url = $(this).attr('action') + '?' + $(this).serialize();
+                loadFilteredMovies(url);
+            });
+
+            $(document).on('click', '.pagination-wrapper a.page-btn', function (e) {
+                e.preventDefault();
+                let url = $(this).attr('href');
+                if (url && !$(this).hasClass('disabled')) {
+                    loadFilteredMovies(url);
+                    $('html, body').animate({
+                        scrollTop: $("#filter-section-container").offset().top - 50
+                    }, 500);
                 }
             });
 
-            // Script cho nút bấm mũi tên trượt phim của bạn
-            window.scrollLeft = function(section) {
-                document.getElementById(section + '-movies-row').scrollBy({ left: -600, behavior: 'smooth' });
-            };
-            window.scrollRight = function(section) {
-                document.getElementById(section + '-movies-row').scrollBy({ left: 600, behavior: 'smooth' });
-            };
+            function loadFilteredMovies(url) {
+                let $wrapper = $('#filtered-movies-wrapper');
+                $wrapper.addClass('loading-state');
+
+                $.ajax({
+                    url: url,
+                    type: 'GET',
+                    success: function (data) {
+                        let parsedData = $(data);
+                        $('#filter-count-wrapper').html(parsedData.find('#filter-count-wrapper').html());
+                        $wrapper.html(parsedData.find('#filtered-movies-wrapper').html());
+                        $wrapper.removeClass('loading-state');
+                        window.history.pushState({ path: url }, '', url);
+                    },
+                    error: function () {
+                        $wrapper.removeClass('loading-state');
+                        alert('An error occurred while loading movies.');
+                    }
+                });
+            }
         });
+
+        // --- 4. SCROLL ARROWS CHO MOVIE ROWS ---
+        function doScrollLeft(id)  { document.getElementById(id + '-movies-row').scrollBy({ left: -600, behavior: 'smooth' }); }
+        function doScrollRight(id) { document.getElementById(id + '-movies-row').scrollBy({ left:  600, behavior: 'smooth' }); }
     </script>
 }

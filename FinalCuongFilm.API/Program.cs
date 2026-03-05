@@ -5,9 +5,9 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ============================================================
+
 // SERVICES
-// ============================================================
+
 
 builder.Services.AddDbContext<CuongFilmDbContext>(options =>
 	options.UseSqlServer(
@@ -53,9 +53,9 @@ builder.Logging.AddDebug();
 
 var app = builder.Build();
 
-// ============================================================
+
 // MIDDLEWARE PIPELINE
-// ============================================================
+
 
 // 1. Global exception handling
 app.UseMiddleware<ExceptionHandlingMiddleware>();
