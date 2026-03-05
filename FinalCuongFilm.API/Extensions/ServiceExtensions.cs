@@ -14,9 +14,8 @@ namespace FinalCuongFilm.API.Extensions
 	{
 		public static IServiceCollection AddApplicationServices(this IServiceCollection services, IConfiguration configuration)
 		{
-			//// DbContext - dùng đúng connection string key
-			//services.AddDbContext<CuongFilmDbContext>(options =>
-			//	options.UseSqlServer(configuration.GetConnectionString("CuongFilmConnection")));
+			// ✅ Thêm AutoMapper
+			services.AddAutoMapper(cfg => cfg.AddMaps(typeof(FinalCuongFilm.Service.Mappings.MappingProfile)));
 
 			// Register all business services
 			services.AddScoped<IMovieService, MovieService>();
@@ -26,6 +25,9 @@ namespace FinalCuongFilm.API.Extensions
 			services.AddScoped<ILanguageService, LanguageService>();
 			services.AddScoped<IEpisodeService, EpisodeService>();
 			services.AddScoped<IMediaFileService, MediaFileService>();
+
+			// ✅ Thêm IAzureBlobService
+			services.AddScoped<IAzureBlobService, AzureBlobService>();
 
 			return services;
 		}

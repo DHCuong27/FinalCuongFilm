@@ -84,7 +84,7 @@ app.UseHttpsRedirection();
 
 // 6. Response compression
 app.UseResponseCompression();
-
+app.UseRouting();
 // 7. CORS
 app.UseCors("AllowAll");
 
