@@ -33,11 +33,18 @@ namespace FinalCuongFilm.MVC.Controllers
 			var allGenres = await _genreService.GetAllAsync();
 			var genre = allGenres.FirstOrDefault(g => g.Slug == slug);
 
+			// Lấy genres và countries cho navigation
+			var genres = await _genreService.GetAllAsync();
+			var countries = await _countryService.GetAllAsync();
+
+			ViewBag.Genres = await _genreService.GetAllAsync();
+			ViewBag.Countries = await _countryService.GetAllAsync();
+
 			if (genre == null)
 				return NotFound();
 
 			var allMovies = await _movieService.GetAllAsync();
-			var countries = await _countryService.GetAllAsync();
+		
 
 			var query = allMovies
 				.Where(m => m.IsActive && m.SelectedGenreIds.Contains(genre.Id))
@@ -68,8 +75,8 @@ namespace FinalCuongFilm.MVC.Controllers
 				PageNumber = pageNumber,
 				PageSize = pageSize,
 				TotalItems = totalItems,
-				PageTitle = $"Thể loại: {genre.Name}",
-				PageSubTitle = $"{totalItems} phim"
+				PageTitle = $"Genre: {genre.Name}",
+				PageSubTitle = $"{totalItems} Film"
 			};
 
 			ViewBag.GenreSlug = genre.Slug;

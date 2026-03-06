@@ -1,6 +1,6 @@
 ﻿@model FinalCuongFilm.MVC.Models.ViewModels.MovieFilterViewModel
 @{
-    ViewData["Title"] = Model.PageTitle ?? "Tất Cả Phim";
+    ViewData["Title"] = Model.PageTitle ?? "All Film";
     Layout = "_LayoutUser";
 }
 
@@ -89,7 +89,7 @@
 <div class="page-container">
     <!-- Page Header -->
     <div class="page-hero">
-        <h1><i class="fas fa-film" style="color:var(--netflix-red); margin-right:0.5rem;"></i>@(Model.PageTitle ?? "Tất Cả Phim")</h1>
+        <h1><i class="fas fa-film" style="color:var(--netflix-red); margin-right:0.5rem;"></i>@(Model.PageTitle ?? "All Film")</h1>
         @if (!string.IsNullOrEmpty(Model.PageSubTitle))
         {
             <p>@Model.PageSubTitle</p>
@@ -101,13 +101,13 @@
         <form method="get" asp-action="Index" asp-controller="Movie">
             <div class="filter-row">
                 <div class="filter-group" style="flex:2; min-width:200px;">
-                    <label><i class="fas fa-search"></i> Tìm kiếm</label>
+                    <label><i class="fas fa-search"></i> Search</label>
                     <input type="text" name="search" value="@Model.Search" placeholder="Tên phim, mô tả..." class="filter-input" />
                 </div>
                 <div class="filter-group">
-                    <label><i class="fas fa-theater-masks"></i> Thể loại</label>
+                    <label><i class="fas fa-theater-masks"></i> Genre</label>
                     <select name="genreId" class="filter-select">
-    <option value="">Tất cả thể loại</option>
+    <option value="">All Genre</option>
     @foreach (var g in Model.Genres)
     {
         <option value="@g.Id" selected="@(Model.GenreId == g.Id ? "selected" : null)">@g.Name</option>
@@ -115,9 +115,9 @@
 </select>
                 </div>
                 <div class="filter-group">
-                    <label><i class="fas fa-globe"></i> Quốc gia</label>
+                    <label><i class="fas fa-globe"></i> Country</label>
                     <select name="countryId" class="filter-select">
-                        <option value="">Tất cả quốc gia</option>
+                        <option value="">All Country</option>
                         @foreach (var c in Model.Countries)
                         {
                             <option value="@c.Id" selected="@(Model.CountryId == c.Id ? "selected" : null)">@c.Name</option>
@@ -125,25 +125,25 @@
                     </select>
                 </div>
                 <div class="filter-group">
-                    <label><i class="fas fa-calendar"></i> Năm</label>
+                    <label><i class="fas fa-calendar"></i> Year</label>
                     <input type="number" name="releaseYear" value="@Model.ReleaseYear" placeholder="VD: 2024" min="1900" max="2030" class="filter-input" />
                 </div>
                 <div class="filter-group">
-                    <label><i class="fas fa-tv"></i> Loại phim</label>
+                    <label><i class="fas fa-tv"></i>Type Film</label>
                     <select name="type" class="filter-select">
-                        <option value="">Tất cả loại</option>
-                        <option value="1" selected="@(Model.Type == 1 ? "selected" : null)">Phim lẻ</option>
-                        <option value="2" selected="@(Model.Type == 2 ? "selected" : null)">Phim bộ</option>
+                        <option value="">All Genre</option>
+                        <option value="1" selected="@(Model.Type == 1 ? "selected" : null)">Serie </option>
+                        <option value="2" selected="@(Model.Type == 2 ? "selected" : null)">Movie</option>
                     </select>
                 </div>
                 <div class="filter-group">
-                    <label><i class="fas fa-sort"></i> Sắp xếp</label>
+                    <label><i class="fas fa-sort"></i>Sort</label>
                     <select name="sortBy" class="filter-select">
-    <option value="latest"    selected="@(Model.SortBy == "latest" ? "selected" : null)">Mới nhất</option>
-    <option value="popular"   selected="@(Model.SortBy == "popular" ? "selected" : null)">Xem nhiều nhất</option>
-    <option value="year_desc" selected="@(Model.SortBy == "year_desc" ? "selected" : null)">Năm giảm dần</option>
-    <option value="year_asc"  selected="@(Model.SortBy == "year_asc" ? "selected" : null)">Năm tăng dần</option>
-    <option value="title"     selected="@(Model.SortBy == "title" ? "selected" : null)">Tên A-Z</option>
+                        <option value="latest" selected="@(Model.SortBy == "latest" ? "selected" : null)">Latest</option>
+                        <option value="popular" selected="@(Model.SortBy == "popular" ? "selected" : null)">Year_desc</option>
+                        <option value="year_desc" selected="@(Model.SortBy == "year_desc" ? "selected" : null)">"Year_desc</option>
+                        <option value="year_asc" selected="@(Model.SortBy == "year_asc" ? "selected" : null)">Year_asc </option>
+                        <option value="title" selected="@(Model.SortBy == "title" ? "selected" : null)">Title</option>
 </select>
                 </div>
                 <div class="filter-group" style="flex-direction:row; align-items:flex-end; gap:0.5rem; min-width:auto;">
@@ -271,7 +271,7 @@
         <div class="netflix-alert">
             <i class="fas fa-search"></i>
             <h3>Không tìm thấy phim nào</h3>
-            <p>Vui lòng thử bộ lọc khác hoặc <a asp-action="Index" asp-controller="Movie" style="color:var(--netflix-red);">xem tất cả phim</a></p>
+            <p>Vui lòng thử bộ lọc khác hoặc <a asp-action="Index" asp-controller="Movie" style="color:var(--netflix-red);">xem All Film</a></p>
         </div>
     }
 </div>

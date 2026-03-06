@@ -1,5 +1,5 @@
 ﻿@{
-    ViewData["Title"] = "Hồ sơ của tôi";
+    ViewData["Title"] = "My Profile";
     Layout = "_LayoutUser";
 }
 
@@ -39,7 +39,7 @@
 <div class="container" style="padding-top: 3rem; min-height: 60vh;">
     <h2 class="section-header">
         <i class="fas fa-user" style="color: #e50914; margin-right: 0.5rem;"></i>
-        Hồ sơ của tôi
+        My information
     </h2>
 
     <div class="row mt-4">
@@ -57,16 +57,16 @@
         <div class="col-md-8">
             <div class="card text-white">
                 <div class="card-body">
-                    <h5>Thông tin tài khoản</h5>
+                    <h5>Account Information</h5>
                     <hr style="border-color: rgba(255,255,255,0.15);" />
                     <div class="mb-3">
                         <strong>Email:</strong> @(User.Identity?.Name ?? "user")
                     </div>
                     <div class="mb-3">
-                        <strong>Ngày tham gia:</strong> 01/01/2024
+                        <strong>Date participant:</strong> 01/01/2024
                     </div>
                     <div class="mb-3">
-                        <strong>Số phim đã xem:</strong> 0
+                        <strong>Number of movies watched:</strong> 0
                     </div>
                 </div>
             </div>

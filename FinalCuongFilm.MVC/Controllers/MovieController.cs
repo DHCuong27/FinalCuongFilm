@@ -51,6 +51,7 @@ namespace FinalCuongFilm.MVC.Controllers
 			int pageNumber = 1,
 			int pageSize = 12)
 		{
+
 			var allMovies = await _movieService.GetAllAsync();
 			var genres = await _genreService.GetAllAsync();
 			var countries = await _countryService.GetAllAsync();
@@ -127,6 +128,9 @@ namespace FinalCuongFilm.MVC.Controllers
 
 			var episodes = await _episodeService.GetByMovieIdAsync(movie.Id);
 			var mediaFiles = await _mediaFileService.GetByMovieIdAsync(movie.Id);
+			// Lấy genres và countries cho navigation
+			var genres = await _genreService.GetAllAsync();
+			var countries = await _countryService.GetAllAsync();
 
 			var relatedMovies = allMovies
 				.Where(m => m.IsActive &&
@@ -190,6 +194,9 @@ namespace FinalCuongFilm.MVC.Controllers
 					TempData["Error"] = $"Movie not found: {slug}";
 					return RedirectToAction("Index", "Home");
 				}
+				// Lấy genres và countries cho navigation
+				var genres = await _genreService.GetAllAsync();
+				var countries = await _countryService.GetAllAsync();
 
 				ViewBag.Genres = await _genreService.GetAllAsync();
 				ViewBag.Countries = await _countryService.GetAllAsync();

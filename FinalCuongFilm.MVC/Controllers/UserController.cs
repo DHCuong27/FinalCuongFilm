@@ -6,14 +6,10 @@ namespace FinalCuongFilm.MVC.Controllers
 	[Authorize(Roles = "User")]
 	public class UsersController : Controller
 	{
-		public IActionResult Index()
-		{
-			return View();
-		}
+		public IActionResult Index() => View();
 
-		public IActionResult Profile()
-		{
-			return View();
-		}
+
+		public IActionResult Profile() => View();
+
 	}
 }

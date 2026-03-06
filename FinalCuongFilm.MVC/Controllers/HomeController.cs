@@ -45,10 +45,14 @@ namespace FinalCuongFilm.MVC.Controllers
 				return RedirectToAction("Index", "Dashboard", new { area = "Admin" });
 
 			var allMovies = await _movieService.GetAllAsync();
+
+			// Navigation for genre and country 
 			var genres = await _genreService.GetAllAsync();
 			var countries = await _countryService.GetAllAsync();
 
-			// ── Hero sections (không filter, không phân trang) ──
+			ViewBag.Genres = await _genreService.GetAllAsync();
+			ViewBag.Countries = await _countryService.GetAllAsync();
+
 			var latestMovies = allMovies
 				.Where(m => m.IsActive)
 				.OrderByDescending(m => m.ReleaseYear)
@@ -61,9 +65,9 @@ namespace FinalCuongFilm.MVC.Controllers
 				.Take(12)
 				.ToList();
 
-			// ── Section "Tất Cả Phim" — có filter + phân trang ──
-			var query = allMovies.Where(m => m.IsActive).AsEnumerable();
+			// Section "Tất Cả Phim"  có filter + phân trang 
 
+			var query = allMovies.Where(m => m.IsActive).AsEnumerable();
 
 			if (!string.IsNullOrWhiteSpace(search))
 				query = query.Where(m =>
@@ -88,7 +92,7 @@ namespace FinalCuongFilm.MVC.Controllers
 				"year_asc" => query.OrderBy(m => m.ReleaseYear),
 				"year_desc" => query.OrderByDescending(m => m.ReleaseYear),
 				"title" => query.OrderBy(m => m.Title),
-				_ => query.OrderByDescending(m => m.ReleaseYear) // "latest"
+				_ => query.OrderByDescending(m => m.ReleaseYear) 
 			};
 
 			var filteredList = query.ToList();
@@ -132,6 +136,8 @@ namespace FinalCuongFilm.MVC.Controllers
 		[Authorize]
 		public IActionResult ContinueWatching() => View();
 
+
+
 		// My List
 		[Authorize]
 		public async Task<IActionResult> MyList()
@@ -145,6 +151,7 @@ namespace FinalCuongFilm.MVC.Controllers
 			return View(favorites);
 		}
 
+		// Privacy
 		public IActionResult Privacy() => View();
 
 		[ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

@@ -4,14 +4,12 @@ namespace FinalCuongFilm.MVC.Models.ViewModels
 {
 	public class MovieFilterViewModel
 	{
-		// Danh sách phim sau khi filter + phân trang
+	
 		public List<MovieDto> Movies { get; set; } = new();
 
-		// Dữ liệu cho dropdown filter
 		public IEnumerable<GenreDto> Genres { get; set; } = new List<GenreDto>();
 		public IEnumerable<CountryDto> Countries { get; set; } = new List<CountryDto>();
 
-		// Các tham số filter hiện tại (để giữ lại giá trị trên form)
 		public string? Search { get; set; }
 		public Guid? GenreId { get; set; }
 		public Guid? CountryId { get; set; }
@@ -32,7 +30,7 @@ namespace FinalCuongFilm.MVC.Models.ViewModels
 		public string? PageSubTitle { get; set; }
 	}
 
-	// ViewModel riêng cho trang chủ (giữ nguyên hero sections + thêm filter cho "Tất Cả Phim")
+
 	public class HomeFilterViewModel
 	{
 		// Hero sections (không phân trang)
