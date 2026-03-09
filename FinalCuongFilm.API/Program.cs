@@ -13,6 +13,11 @@ builder.Services.AddDbContext<CuongFilmDbContext>(options =>
 	options.UseSqlServer(
 		builder.Configuration.GetConnectionString("CuongFilmConnection")));
 
+
+builder.Services.AddDbContext<CuongFilmIdentityDbContext>(options =>
+	options.UseSqlServer(
+		builder.Configuration.GetConnectionString("CuongFilmIdentityConnection")));
+
 // Controllers + JSON options
 builder.Services.AddControllers()
 	.AddNewtonsoftJson(options =>
