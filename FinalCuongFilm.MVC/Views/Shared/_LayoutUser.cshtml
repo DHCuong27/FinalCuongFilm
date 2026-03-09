@@ -472,7 +472,7 @@
                                     foreach (var country in ViewBag.Countries)
                                     {
                                         <li>
-                                            <a class="dropdown-item" href="#">@country.Name</a>
+                                            <a class="dropdown-item" asp-controller="Countries" asp-action="Index" asp-route-slug="@country.Slug">@country.Name</a>
                                         </li>
                                     }
                                 }

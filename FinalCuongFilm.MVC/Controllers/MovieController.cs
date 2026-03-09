@@ -108,7 +108,7 @@ namespace FinalCuongFilm.MVC.Controllers
 				PageNumber = pageNumber,
 				PageSize = pageSize,
 				TotalItems = totalItems,
-				PageTitle = "Tất Cả Phim"
+				PageTitle = "All Film"
 			};
 
 			return View(vm);

@@ -26,10 +26,10 @@
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav me-auto">
                         <li class="nav-item">
-                            <a class="nav-link" asp-controller="Home" asp-action="Index">Trang chủ</a>
+                            <a class="nav-link" asp-controller="Home" asp-action="Index">Home</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" asp-controller="Movie" asp-action="Index">Phim</a>
+                            <a class="nav-link" asp-controller="Movie" asp-action="Index">Movie</a>
                         </li>
                     </ul>
 
@@ -38,12 +38,12 @@
                         {
                             <li class="nav-item">
                                 <a class="nav-link" asp-controller="Favorites" asp-action="Index">
-                                    <i class="fas fa-heart"></i> Yêu thích
+                                    <i class="fas fa-heart"></i> Favorites
                                 </a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link" asp-controller="Reviews" asp-action="MyReviews">
-                                    <i class="fas fa-star"></i> Đánh giá của tôi
+                                    <i class="fas fa-star"></i> My Reviews
                                 </a>
                             </li>
                             <li class="nav-item dropdown">
@@ -52,12 +52,12 @@
                                 </a>
                                 <ul class="dropdown-menu">
                                     <li>
-                                        <a class="dropdown-item" asp-area="Identity" asp-page="/Account/Manage/Index">Tài khoản</a>
+                                        <a class="dropdown-item" asp-area="Identity" asp-page="/Account/Manage/Index">Member</a>
                                     </li>
                                     <li><hr class="dropdown-divider"></li>
                                     <li>
                                         <form asp-area="Identity" asp-page="/Account/Logout" method="post">
-                                            <button type="submit" class="dropdown-item">Đăng xuất</button>
+                                            <button type="submit" class="dropdown-item">Log out</button>
                                         </form>
                                     </li>
                                 </ul>
@@ -66,10 +66,10 @@
                         else
                         {
                             <li class="nav-item">
-                                <a class="nav-link" asp-area="Identity" asp-page="/Account/Login">Đăng nhập</a>
+                                <a class="nav-link" asp-area="Identity" asp-page="/Account/Login">Login</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" asp-area="Identity" asp-page="/Account/Register">Đăng ký</a>
+                                <a class="nav-link" asp-area="Identity" asp-page="/Account/Register">Register</a>
                             </li>
                         }
                     </ul>

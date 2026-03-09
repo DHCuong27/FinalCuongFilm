@@ -2,7 +2,7 @@
 @{
     ViewData["Title"] = Model.PageTitle ?? "Movie Countries";
     Layout = "_LayoutUser";
-    var genreSlug = ViewBag.Countries as string;
+    var countrySlug = ViewBag.Countries as string;
 }
 
 
@@ -307,7 +307,7 @@
             — Page <span>@Model.PageNumber</span> / <span>@(Model.TotalPages == 0 ? 1 : Model.TotalPages)</span>
         </div>
         <form method="get" asp-action="Index" asp-controller="Countries" class="sort-group">
-            <input type="hidden" name="slug" value="@genreSlug" />
+            <input type="hidden" name="slug" value="@countrySlug" />
             <label for="sortBy"><i class="fas fa-sort"></i> Sort by:</label>
             <select name="sortBy" id="sortBy" class="filter-select" onchange="this.form.submit()">
                 <option value="latest" selected="@(Model.SortBy == "latest" ? "selected" : null)">Latest</option>
@@ -356,21 +356,21 @@
         @if (Model.TotalPages > 1)
         {
             <div class="pagination-wrapper">
-                <a asp-action="Index" asp-controller="Genre"
-                   asp-route-slug="@genreSlug" asp-route-sortBy="@Model.SortBy" asp-route-pageNumber="@(Model.PageNumber - 1)"
+                <a asp-action="Index" asp-controller="Country"
+                   asp-route-slug="@countrySlug" asp-route-sortBy="@Model.SortBy" asp-route-pageNumber="@(Model.PageNumber - 1)"
                    class="page-btn @(!Model.HasPreviousPage ? "disabled" : "")">
                     <i class="fas fa-chevron-left"></i> Prev
                 </a>
 
                 @for (int i = Math.Max(1, Model.PageNumber - 2); i <= Math.Min(Model.TotalPages, Model.PageNumber + 2); i++)
                 {
-                    <a asp-action="Index" asp-controller="Genre"
-                       asp-route-slug="@genreSlug" asp-route-sortBy="@Model.SortBy" asp-route-pageNumber="@i"
+                    <a asp-action="Index" asp-controller="Country"
+                       asp-route-slug="@countrySlug" asp-route-sortBy="@Model.SortBy" asp-route-pageNumber="@i"
                        class="page-btn @(i == Model.PageNumber ? "active" : "")">@i</a>
                 }
 
-                <a asp-action="Index" asp-controller="Genre"
-                   asp-route-slug="@genreSlug" asp-route-sortBy="@Model.SortBy" asp-route-pageNumber="@(Model.PageNumber + 1)"
+                <a asp-action="Index" asp-controller="Country"
+                   asp-route-slug="@countrySlug" asp-route-sortBy="@Model.SortBy" asp-route-pageNumber="@(Model.PageNumber + 1)"
                    class="page-btn @(!Model.HasNextPage ? "disabled" : "")">
                     Next <i class="fas fa-chevron-right"></i>
                 </a>
@@ -381,7 +381,7 @@
     {
         <div class="netflix-alert">
             <i class="fas fa-film"></i>
-            <h3>No movies found in this genre</h3>
+            <h3>No movies found in this Country</h3>
             <p><a asp-controller="Movie" asp-action="Index" style="color:var(--netflix-red);">View all movies</a></p>
         </div>
     }

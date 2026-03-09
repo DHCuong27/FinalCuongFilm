@@ -47,7 +47,7 @@ namespace FinalCuongFilm.MVC.Controllers
 		
 
 			var query = allMovies
-				.Where(m => m.IsActive && m.SelectedGenreIds.Contains(genre.Id))
+				.Where(m => m.IsActive && m.SelectedCountryIds.Contains(genre.Id))
 				.AsEnumerable();
 
 			query = sortBy switch

@@ -20,7 +20,7 @@ namespace FinalCuongFilm.Common.DTOs
 		public Guid LanguageId { get; set; }
 		public Guid CountryId { get; set; }
 
-		// Navigation properties cho hiển thị
+		// Navigation properties 
 		public string? CountryName { get; set; }
 		public string? LanguageName { get; set; }
 
@@ -29,6 +29,7 @@ namespace FinalCuongFilm.Common.DTOs
 		// Collections cho many-to-many
 		public List<Guid> SelectedActorIds { get; set; } = new();
 		public List<Guid> SelectedGenreIds { get; set; } = new();
+		public List<Guid> SelectedCountryIds { get; set; } = new();
 	}
 
 	public class MovieCreateDto

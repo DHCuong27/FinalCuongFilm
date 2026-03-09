@@ -102,7 +102,7 @@
             <div class="filter-row">
                 <div class="filter-group" style="flex:2; min-width:200px;">
                     <label><i class="fas fa-search"></i> Search</label>
-                    <input type="text" name="search" value="@Model.Search" placeholder="Tên phim, mô tả..." class="filter-input" />
+                    <input type="text" name="search" value="@Model.Search" placeholder="Movie Title" class="filter-input" />
                 </div>
                 <div class="filter-group">
                     <label><i class="fas fa-theater-masks"></i> Genre</label>
@@ -140,14 +140,14 @@
                     <label><i class="fas fa-sort"></i>Sort</label>
                     <select name="sortBy" class="filter-select">
                         <option value="latest" selected="@(Model.SortBy == "latest" ? "selected" : null)">Latest</option>
-                        <option value="popular" selected="@(Model.SortBy == "popular" ? "selected" : null)">Year_desc</option>
-                        <option value="year_desc" selected="@(Model.SortBy == "year_desc" ? "selected" : null)">"Year_desc</option>
-                        <option value="year_asc" selected="@(Model.SortBy == "year_asc" ? "selected" : null)">Year_asc </option>
-                        <option value="title" selected="@(Model.SortBy == "title" ? "selected" : null)">Title</option>
+                        <option value="popular" selected="@(Model.SortBy == "popular" ? "selected" : null)">Most Popular</option>
+                        <option value="year_desc" selected="@(Model.SortBy == "year_desc" ? "selected" : null)">"Year Descending</option>
+                        <option value="year_asc" selected="@(Model.SortBy == "year_asc" ? "selected" : null)">Year Ascending </option>
+                        <option value="title" selected="@(Model.SortBy == "title" ? "selected" : null)">Name A-Z</option>
 </select>
                 </div>
                 <div class="filter-group" style="flex-direction:row; align-items:flex-end; gap:0.5rem; min-width:auto;">
-                    <button type="submit" class="btn-filter"><i class="fas fa-filter"></i> Lọc</button>
+                    <button type="submit" class="btn-filter"><i class="fas fa-filter"></i> Filter</button>
                     <a asp-action="Index" asp-controller="Movie" class="btn-reset"><i class="fas fa-times"></i> Reset</a>
                 </div>
             </div>
@@ -180,14 +180,14 @@
                     }
                     @if (Model.Type.HasValue)
                     {
-                        <span class="filter-tag"><i class="fas fa-tv"></i> @(Model.Type == 1 ? "Phim lẻ" : "Phim bộ")</span>
+                        <span class="filter-tag"><i class="fas fa-tv"></i> @(Model.Type == 1 ? "Series" : "Movie")</span>
                     }
                 </div>
             }
 
             <div class="filter-result-count">
-                Tìm thấy <span>@Model.TotalItems</span> phim
-                — Trang <span>@Model.PageNumber</span> / <span>@Model.TotalPages</span>
+                Showing <span>@Model.TotalItems</span> Movie
+                —  <span>@Model.PageNumber</span> / <span>@Model.TotalPages</span>
             </div>
         </form>
     </div>
@@ -203,11 +203,11 @@
                         <a asp-controller="Movie" asp-action="Detail" asp-route-slug="@movie.Slug">
                             <img src="@(movie.PosterUrl ?? "https://via.placeholder.com/300x450/2d2d2d/fff?text=No+Poster")" alt="@movie.Title" loading="lazy" />
                         </a>
-                        <span class="badge-type">@(movie.Type.ToString() == "Series" ? "Bộ" : "Lẻ")</span>
+                        <span class="badge-type">@(movie.Type.ToString() == "Series" ? "Series" : "Movie")</span>
                         @if (movie.ReleaseYear.HasValue) { <span class="badge-year">@movie.ReleaseYear</span> }
                         <div class="grid-card-overlay">
                             <a asp-controller="Movie" asp-action="Watch" asp-route-slug="@movie.Slug" class="btn-play-card">
-                                <i class="fas fa-play"></i> Xem ngay
+                                <i class="fas fa-play"></i> Watch now
                             </a>
                         </div>
                         @if (User.Identity?.IsAuthenticated == true)
