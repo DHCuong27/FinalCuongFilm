@@ -1,18 +1,18 @@
 ﻿using FinalCuongFilm.API.Extensions;
 using FinalCuongFilm.API.Middleware;
 using FinalCuongFilm.DataLayer;
+using FinalCuongFilm.Service.Interfaces;
+using FinalCuongFilm.Service.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// ── 1. ĐĂNG KÝ SERVICES (DEPENDENCY INJECTION) ───────────────────────────
 
-// SERVICES
-
-
+// Database
 builder.Services.AddDbContext<CuongFilmDbContext>(options =>
 	options.UseSqlServer(
 		builder.Configuration.GetConnectionString("CuongFilmConnection")));
-
 
 builder.Services.AddDbContext<CuongFilmIdentityDbContext>(options =>
 	options.UseSqlServer(
@@ -26,8 +26,14 @@ builder.Services.AddControllers()
 		options.SerializerSettings.NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore;
 	});
 
-// Application services (Movie, Actor, Genre, Country, Language, Episode, Media)
+// Application services
 builder.Services.AddApplicationServices(builder.Configuration);
+
+// ✅ FIX CỦA BẠN NẰM Ở ĐÂY: Phải đăng ký Service TRƯỚC khi build app
+// Đăng ký HttpClient cho TmdbService
+builder.Services.AddHttpClient<ITmdbService, TmdbService>();
+// Đăng ký Service xử lý Import
+builder.Services.AddScoped<IMovieImportService, MovieImportService>();
 
 // Swagger
 builder.Services.AddSwaggerDocumentation();
@@ -56,13 +62,16 @@ builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
 builder.Logging.AddDebug();
 
+
+// =========================================================================
+// KHÓA CONTAINER VÀ BUILD APP
 var app = builder.Build();
+// =========================================================================
 
 
-// MIDDLEWARE PIPELINE
+// ── 2. MIDDLEWARE PIPELINE (ĐÚNG THỨ TỰ) ─────────────────────────────────
 
-
-// 1. Global exception handling
+// 1. Global exception handling — phải đứng ĐẦU TIÊN
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 // 2. Request logging
@@ -89,21 +98,24 @@ app.UseHttpsRedirection();
 
 // 6. Response compression
 app.UseResponseCompression();
+
+// 7. UseRouting phải đứng TRƯỚC UseCors, UseAuthentication, UseAuthorization
 app.UseRouting();
-// 7. CORS
+
+// 8. CORS — phải sau UseRouting, trước UseAuthentication
 app.UseCors("AllowAll");
 
-// 8. Auth
+// 9. Auth — đúng thứ tự: Authentication trước Authorization
 app.UseAuthentication();
 app.UseAuthorization();
 
-// 9. Health check endpoint
+// 10. Health check endpoint
 app.MapHealthChecks("/health");
 
-// 10. Controllers
+// 11. Controllers
 app.MapControllers();
 
-// 11. Root info
+// 12. Root info
 app.MapGet("/", () => new
 {
 	Name = "CuongFilm API",
@@ -112,19 +124,19 @@ app.MapGet("/", () => new
 	Health = "/health",
 	Endpoints = new[]
 	{
-		"GET  /api/movies",
-		"GET  /api/movies/{id}",
-		"POST /api/movies          [Admin]",
-		"PUT  /api/movies/{id}     [Admin]",
-		"DELETE /api/movies/{id}   [Admin]",
-		"GET  /api/actors",
-		"GET  /api/genres",
-		"GET  /api/countries",
-		"GET  /api/languages",
-		"GET  /api/episodes",
-		"GET  /api/episodes/movie/{movieId}",
-		"POST /api/auth/login",
-		"POST /api/auth/register"
+		"GET    /api/movies",
+		"GET    /api/movies/{id}",
+		"POST   /api/movies          [Admin]",
+		"PUT    /api/movies/{id}     [Admin]",
+		"DELETE /api/movies/{id}     [Admin]",
+		"GET    /api/actors",
+		"GET    /api/genres",
+		"GET    /api/countries",
+		"GET    /api/languages",
+		"GET    /api/episodes",
+		"GET    /api/episodes/movie/{movieId}",
+		"POST   /api/auth/login",
+		"POST   /api/auth/register"
 	}
 });
 

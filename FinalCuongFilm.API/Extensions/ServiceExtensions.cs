@@ -1,9 +1,9 @@
-﻿using FinalCuongFilm.Datalayer;
+﻿using FinalCuongFilm.ApplicationCore.Entities.Identity;
 using FinalCuongFilm.DataLayer;
 using FinalCuongFilm.Service.Interfaces;
 using FinalCuongFilm.Service.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
@@ -12,12 +12,30 @@ namespace FinalCuongFilm.API.Extensions
 {
 	public static class ServiceExtensions
 	{
-		public static IServiceCollection AddApplicationServices(this IServiceCollection services, IConfiguration configuration)
+		public static IServiceCollection AddApplicationServices(
+			this IServiceCollection services,
+			IConfiguration configuration)
 		{
-			// ✅ Thêm AutoMapper
-			services.AddAutoMapper(cfg => cfg.AddMaps(typeof(FinalCuongFilm.Service.Mappings.MappingProfile)));
+			// AutoMapper
+			services.AddAutoMapper(cfg =>
+				cfg.AddMaps(typeof(FinalCuongFilm.Service.Mappings.MappingProfile)));
 
-			// Register all business services
+			// ✅ FIX: Đăng ký Identity với CuongFilmUser + CuongFilmIdentityDbContext
+			// Thiếu phần này là nguyên nhân chính gây 401 và 500 trên API
+			services.AddIdentity<CuongFilmUser, CuongFilmRole>(options =>
+			{
+				options.Password.RequireDigit = true;
+				options.Password.RequiredLength = 8;
+				options.Password.RequireUppercase = true;
+				options.Password.RequireLowercase = true;
+				options.Password.RequireNonAlphanumeric = false;
+				options.User.RequireUniqueEmail = true;
+				options.SignIn.RequireConfirmedAccount = false;
+			})
+			.AddEntityFrameworkStores<CuongFilmIdentityDbContext>()
+			.AddDefaultTokenProviders();
+
+			// Business services
 			services.AddScoped<IMovieService, MovieService>();
 			services.AddScoped<IActorService, ActorService>();
 			services.AddScoped<IGenreService, GenreService>();
@@ -25,14 +43,73 @@ namespace FinalCuongFilm.API.Extensions
 			services.AddScoped<ILanguageService, LanguageService>();
 			services.AddScoped<IEpisodeService, EpisodeService>();
 			services.AddScoped<IMediaFileService, MediaFileService>();
-
-			// ✅ Thêm IAzureBlobService
+			services.AddScoped<IFavoriteService, FavoriteService>();
+			services.AddScoped<IReviewService, ReviewService>();
 			services.AddScoped<IAzureBlobService, AzureBlobService>();
 
 			return services;
 		}
 
-		public static IServiceCollection AddSwaggerDocumentation(this IServiceCollection services)
+		public static IServiceCollection AddJwtAuthentication(
+			this IServiceCollection services,
+			IConfiguration configuration)
+		{
+			var jwtKey = configuration["Jwt:Key"]
+							  ?? throw new InvalidOperationException("Jwt:Key is not configured");
+			var jwtIssuer = configuration["Jwt:Issuer"] ?? "CuongFilmAPI";
+			var jwtAudience = configuration["Jwt:Audience"] ?? "CuongFilmClients";
+
+			services.AddAuthentication(options =>
+			{
+				// ✅ FIX: Đặt scheme mặc định là JWT thay vì Cookie
+				// (khi dùng AddIdentity, scheme mặc định bị ghi đè thành Cookie)
+				options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+				options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+				options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+			})
+			.AddJwtBearer(options =>
+			{
+				options.RequireHttpsMetadata = false; // Đặt true khi production
+				options.SaveToken = true;
+				options.TokenValidationParameters = new TokenValidationParameters
+				{
+					ValidateIssuerSigningKey = true,
+					IssuerSigningKey = new SymmetricSecurityKey(
+												   Encoding.UTF8.GetBytes(jwtKey)),
+					ValidateIssuer = true,
+					ValidIssuer = jwtIssuer,
+					ValidateAudience = true,
+					ValidAudience = jwtAudience,
+					ValidateLifetime = true,
+					ClockSkew = TimeSpan.Zero
+				};
+
+				// ✅ FIX: Trả về JSON 401 thay vì redirect về trang login
+				options.Events = new JwtBearerEvents
+				{
+					OnChallenge = async context =>
+					{
+						context.HandleResponse();
+						context.Response.StatusCode = 401;
+						context.Response.ContentType = "application/json";
+						await context.Response.WriteAsync(
+							"{\"success\":false,\"message\":\"Unauthorized - Token không hợp lệ hoặc đã hết hạn\",\"statusCode\":401}");
+					},
+					OnForbidden = async context =>
+					{
+						context.Response.StatusCode = 403;
+						context.Response.ContentType = "application/json";
+						await context.Response.WriteAsync(
+							"{\"success\":false,\"message\":\"Forbidden - Bạn không có quyền truy cập\",\"statusCode\":403}");
+					}
+				};
+			});
+
+			return services;
+		}
+
+		public static IServiceCollection AddSwaggerDocumentation(
+			this IServiceCollection services)
 		{
 			services.AddSwaggerGen(options =>
 			{
@@ -40,27 +117,18 @@ namespace FinalCuongFilm.API.Extensions
 				{
 					Title = "CuongFilm API",
 					Version = "v1",
-					Description = "RESTful API for CuongFilm Movie Management System",
-					Contact = new OpenApiContact
-					{
-						Name = "CuongFilm Team",
-						Email = "contact@cuongfilm.com"
-					},
-					License = new OpenApiLicense
-					{
-						Name = "MIT License",
-						Url = new Uri("https://opensource.org/licenses/MIT")
-					}
+					Description = "RESTful API for CuongFilm streaming platform"
 				});
 
-				// JWT Bearer definition in Swagger
+				// ✅ Cho phép gửi Bearer token qua Swagger UI
 				options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
 				{
-					Description = "JWT Authorization. Enter: Bearer {your_token}",
 					Name = "Authorization",
-					In = ParameterLocation.Header,
 					Type = SecuritySchemeType.ApiKey,
-					Scheme = "Bearer"
+					Scheme = "Bearer",
+					BearerFormat = "JWT",
+					In = ParameterLocation.Header,
+					Description = "Nhập: Bearer {token}"
 				});
 
 				options.AddSecurityRequirement(new OpenApiSecurityRequirement
@@ -71,91 +139,26 @@ namespace FinalCuongFilm.API.Extensions
 							Reference = new OpenApiReference
 							{
 								Type = ReferenceType.SecurityScheme,
-								Id = "Bearer"
+								Id   = "Bearer"
 							}
 						},
 						Array.Empty<string>()
 					}
 				});
-
-				// XML Comments (nếu có)
-				var xmlFile = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml";
-				var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-				if (File.Exists(xmlPath))
-					options.IncludeXmlComments(xmlPath);
 			});
 
 			return services;
 		}
 
-		public static IServiceCollection AddJwtAuthentication(this IServiceCollection services, IConfiguration configuration)
-		{
-			var jwtSection = configuration.GetSection("Jwt");
-			var key = jwtSection["Key"];
-
-			if (string.IsNullOrWhiteSpace(key))
-			{
-				// JWT is not configured; add authorization only so the app starts safely
-				services.AddAuthentication();
-				services.AddAuthorization();
-				return services;
-			}
-
-			var keyBytes = Encoding.UTF8.GetBytes(key);
-
-			services.AddAuthentication(options =>
-			{
-				options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-				options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-			})
-			.AddJwtBearer(options =>
-			{
-				options.TokenValidationParameters = new TokenValidationParameters
-				{
-					ValidateIssuer = true,
-					ValidateAudience = true,
-					ValidateLifetime = true,
-					ValidateIssuerSigningKey = true,
-					ValidIssuer = jwtSection["Issuer"],
-					ValidAudience = jwtSection["Audience"],
-					IssuerSigningKey = new SymmetricSecurityKey(keyBytes),
-					ClockSkew = TimeSpan.Zero
-				};
-
-				options.Events = new JwtBearerEvents
-				{
-					OnAuthenticationFailed = ctx =>
-					{
-						ctx.NoResult();
-						ctx.Response.StatusCode = 401;
-						ctx.Response.ContentType = "text/plain";
-						return ctx.Response.WriteAsync("Invalid token");
-					}
-				};
-			});
-
-			services.AddAuthorization();
-			return services;
-		}
-
-		public static IServiceCollection AddCorsPolicy(this IServiceCollection services)
+		public static IServiceCollection AddCorsPolicy(
+			this IServiceCollection services)
 		{
 			services.AddCors(options =>
 			{
 				options.AddPolicy("AllowAll", policy =>
-				{
 					policy.AllowAnyOrigin()
 						  .AllowAnyMethod()
-						  .AllowAnyHeader();
-				});
-
-				options.AddPolicy("Production", policy =>
-				{
-					policy.WithOrigins("https://cuongfilm.com", "https://www.cuongfilm.com")
-						  .AllowAnyMethod()
-						  .AllowAnyHeader()
-						  .AllowCredentials();
-				});
+						  .AllowAnyHeader());
 			});
 
 			return services;
