@@ -18,14 +18,14 @@ namespace FinalCuongFilm.Common.DTOs
 
 	public class ReviewCreateDto
 	{
-		[Required(ErrorMessage = "Vui lòng chọn phim")]
+		[Required(ErrorMessage = "Please Choose Film")]
 		public Guid MovieId { get; set; }
 
-		[Required(ErrorMessage = "Vui lòng chọn số sao")]
-		[Range(1, 5, ErrorMessage = "Rating phải từ 1 đến 5 sao")]
+		[Required(ErrorMessage = "Please choose star")]
+		[Range(1, 5, ErrorMessage = "Rating must be 1 to 5")]
 		public int Rating { get; set; }
 
-		[MaxLength(1000, ErrorMessage = "Nội dung tối đa 1000 ký tự")]
+		[MaxLength(1000, ErrorMessage = "Content length:Max 1000 characters")]
 		public string? Comment { get; set; }
 	}
 

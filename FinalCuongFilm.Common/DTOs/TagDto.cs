@@ -13,8 +13,8 @@ namespace FinalCuongFilm.Common.DTOs
 
 	public class TagCreateDto
 	{
-		[Required(ErrorMessage = "Vui lòng nhập tên tag")]
-		[MaxLength(100, ErrorMessage = "Tên tag tối đa 100 ký tự")]
+		[Required(ErrorMessage = "Please input tag name")]
+		[MaxLength(100, ErrorMessage = "Name Tag max 100")]
 		public string Name { get; set; } = string.Empty;
 	}
 }
