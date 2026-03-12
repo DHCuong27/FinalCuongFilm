@@ -1,5 +1,5 @@
 ﻿using FinalCuongFilm.ApplicationCore.Entities;
-using FinalCuongFilm.ApplicationCore.Entities.Identity; // ✅ THÊM
+using FinalCuongFilm.ApplicationCore.Entities.Identity; //  THÊM
 using FinalCuongFilm.Common.DTOs;
 using FinalCuongFilm.DataLayer;
 using FinalCuongFilm.Service.Interfaces;
@@ -11,7 +11,7 @@ namespace FinalCuongFilm.Service.Services
 	public class ReviewService : IReviewService
 	{
 		private readonly CuongFilmDbContext _context;
-		private readonly UserManager<CuongFilmUser> _userManager; // ✅ ĐỔI từ IdentityUser thành CuongFilmUser
+		private readonly UserManager<CuongFilmUser> _userManager; 
 
 		public ReviewService(CuongFilmDbContext context, UserManager<CuongFilmUser> userManager)
 		{

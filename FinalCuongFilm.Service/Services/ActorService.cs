@@ -97,14 +97,14 @@ namespace FinalCuongFilm.Service.Services
 		public async Task<bool> DeleteAsync(Guid id)
 		{
 			var actor = await _context.Actors
-				.Include(a => a.Movie_Actors)
+				.Include(a => a.MovieActors)
 				.FirstOrDefaultAsync(a => a.Id == id);
 
 			if (actor == null)
 				return false;
 
 			// Kiểm tra nghiệp vụ: không cho xóa nếu đang tham gia phim
-			if (actor.Movie_Actors.Any())
+			if (actor.MovieActors.Any())
 			{
 				throw new InvalidOperationException("Không thể xóa diễn viên đang tham gia phim. Vui lòng gỡ diễn viên khỏi các phim trước.");
 			}

@@ -87,14 +87,14 @@ namespace FinalCuongFilm.Service.Services
 		public async Task<bool> DeleteAsync(Guid id)
 		{
 			var genre = await _context.Genres
-				.Include(g => g.Movie_Genres)
+				.Include(g => g.MovieGenres)
 				.FirstOrDefaultAsync(g => g.Id == id);
 
 			if (genre == null)
 				return false;
 
 			// Kiểm tra nghiệp vụ: không cho xóa nếu có phim thuộc thể loại này
-			if (genre.Movie_Genres.Any())
+			if (genre.MovieGenres.Any())
 			{
 				throw new InvalidOperationException("Không thể xóa thể loại đang được sử dụng. Vui lòng gỡ thể loại khỏi các phim trước.");
 			}

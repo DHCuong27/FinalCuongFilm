@@ -49,12 +49,12 @@ namespace FinalCuongFilm.Service.Services
 					Type = m.Type,
 					Status = m.Status,
 					IsActive = m.IsActive,
-					LanguageId = m.LanguageId,
-					CountryId = m.CountryId,
+					LanguageId = m.LanguageId.HasValue ? m.LanguageId.Value : Guid.Empty,
+					CountryId = m.CountryId.HasValue ? m.CountryId.Value : Guid.Empty,
 					CountryName = m.Country != null ? m.Country.Name : null,
 					LanguageName = m.Language != null ? m.Language.Name : null,
-					SelectedActorIds = m.Movie_Actors.Select(ma => ma.ActorId).ToList(),
-					SelectedGenreIds = m.Movie_Genres.Select(mg => mg.GenreId).ToList()
+					SelectedActorIds = m.MovieActors.Select(ma => ma.ActorId).ToList(),
+					SelectedGenreIds = m.MovieGenres.Select(mg => mg.GenreId).ToList()
 				})
 				.ToListAsync();
 
@@ -65,9 +65,9 @@ namespace FinalCuongFilm.Service.Services
 		{
 			var movie = await _context.Movies
 				.AsNoTracking()
-				.Include(m => m.Movie_Genres)
+				.Include(m => m.MovieGenres)
 					.ThenInclude(mg => mg.Genre)
-				.Include(m => m.Movie_Actors)
+				.Include(m => m.MovieActors)
 					.ThenInclude(ma => ma.Actor)
 				.FirstOrDefaultAsync(m => m.Id == id && m.IsActive);
 
@@ -231,7 +231,7 @@ namespace FinalCuongFilm.Service.Services
 			return await _context.Movies
 				.AsNoTracking()
 				.Where(m => m.IsActive &&
-							m.Movie_Genres.Any(g => g.GenreId == genreId))
+							m.MovieGenres.Any(g => g.GenreId == genreId))
 				.OrderByDescending(m => m.ViewCount)
 				.ProjectTo<MovieDto>(_mapper.ConfigurationProvider)
 				.ToListAsync();

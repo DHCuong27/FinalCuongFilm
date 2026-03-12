@@ -14,16 +14,16 @@ namespace FinalCuongFilm.Service.Mappings
 			CreateMap<Movie, MovieDto>()
 				.ForMember(dest => dest.CountryName, opt => opt.MapFrom(src => src.Country != null ? src.Country.Name : null))
 				.ForMember(dest => dest.LanguageName, opt => opt.MapFrom(src => src.Language != null ? src.Language.Name : null))
-				.ForMember(dest => dest.GenreName, opt => opt.MapFrom(src => src.Movie_Genres.Select(mg => mg.Genre.Name).ToList()))
-				.ForMember(dest => dest.SelectedGenreIds, opt => opt.MapFrom(src => src.Movie_Genres.Select(mg => mg.GenreId).ToList()));
+				.ForMember(dest => dest.GenreName, opt => opt.MapFrom(src => src.MovieGenres.Select(mg => mg.Genre.Name).ToList()))
+				.ForMember(dest => dest.SelectedGenreIds, opt => opt.MapFrom(src => src.MovieGenres.Select(mg => mg.GenreId).ToList()));
 
 			// MovieDto → Movie
 			CreateMap<MovieDto, Movie>()
 				.ForMember(dest => dest.Country, opt => opt.Ignore())
 				.ForMember(dest => dest.Language, opt => opt.Ignore())
-				.ForMember(dest => dest.Movie_Genres, opt => opt.Ignore())
-				.ForMember(dest => dest.Movie_Actors, opt => opt.Ignore())
-				.ForMember(dest => dest.Movie_Tags, opt => opt.Ignore())
+				.ForMember(dest => dest.MovieGenres, opt => opt.Ignore())
+				.ForMember(dest => dest.MovieActors, opt => opt.Ignore())
+				.ForMember(dest => dest.MovieTags, opt => opt.Ignore())
 				.ForMember(dest => dest.Episodes, opt => opt.Ignore())
 				.ForMember(dest => dest.MediaFiles, opt => opt.Ignore())
 				.ForMember(dest => dest.Favorites, opt => opt.Ignore())
@@ -36,9 +36,9 @@ namespace FinalCuongFilm.Service.Mappings
 				.ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
 				.ForMember(dest => dest.Country, opt => opt.Ignore())
 				.ForMember(dest => dest.Language, opt => opt.Ignore())
-				.ForMember(dest => dest.Movie_Genres, opt => opt.Ignore())
-				.ForMember(dest => dest.Movie_Actors, opt => opt.Ignore())
-				.ForMember(dest => dest.Movie_Tags, opt => opt.Ignore())
+				.ForMember(dest => dest.MovieGenres, opt => opt.Ignore())
+				.ForMember(dest => dest.MovieActors, opt => opt.Ignore())
+				.ForMember(dest => dest.MovieTags, opt => opt.Ignore())
 				.ForMember(dest => dest.Episodes, opt => opt.Ignore())
 				.ForMember(dest => dest.MediaFiles, opt => opt.Ignore())
 				.ForMember(dest => dest.Favorites, opt => opt.Ignore())
@@ -51,9 +51,9 @@ namespace FinalCuongFilm.Service.Mappings
 				.ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
 				.ForMember(dest => dest.Country, opt => opt.Ignore())
 				.ForMember(dest => dest.Language, opt => opt.Ignore())
-				.ForMember(dest => dest.Movie_Genres, opt => opt.Ignore())
-				.ForMember(dest => dest.Movie_Actors, opt => opt.Ignore())
-				.ForMember(dest => dest.Movie_Tags, opt => opt.Ignore())
+				.ForMember(dest => dest.MovieGenres, opt => opt.Ignore())
+				.ForMember(dest => dest.MovieActors, opt => opt.Ignore())
+				.ForMember(dest => dest.MovieTags, opt => opt.Ignore())
 				.ForMember(dest => dest.Episodes, opt => opt.Ignore())
 				.ForMember(dest => dest.MediaFiles, opt => opt.Ignore())
 				.ForMember(dest => dest.Favorites, opt => opt.Ignore())
@@ -89,7 +89,7 @@ namespace FinalCuongFilm.Service.Mappings
 			//  ADD: GenreCreateDto → Genre
 			CreateMap<GenreCreateDto, Genre>()
 				.ForMember(dest => dest.Id, opt => opt.Ignore())
-				.ForMember(dest => dest.Movie_Genres, opt => opt.Ignore());
+				.ForMember(dest => dest.MovieGenres, opt => opt.Ignore());
 
 			// ===== Country Mappings =====
 			CreateMap<Country, CountryDto>().ReverseMap();
@@ -112,7 +112,7 @@ namespace FinalCuongFilm.Service.Mappings
 			//  ADD: ActorCreateDto → Actor
 			CreateMap<ActorCreateDto, Actor>()
 				.ForMember(dest => dest.Id, opt => opt.Ignore())
-				.ForMember(dest => dest.Movie_Actors, opt => opt.Ignore());
+				.ForMember(dest => dest.MovieActors, opt => opt.Ignore());
 
 			// ===== Tag Mappings =====
 			//CreateMap<Tag, TagDto>().ReverseMap();
@@ -120,7 +120,7 @@ namespace FinalCuongFilm.Service.Mappings
 			//  ADD: TagCreateDto → Tag
 			CreateMap<TagCreateDto, Tag>()
 				.ForMember(dest => dest.Id, opt => opt.Ignore())
-				.ForMember(dest => dest.Movie_Tags, opt => opt.Ignore());
+				.ForMember(dest => dest.MovieTags, opt => opt.Ignore());
 
 			// ===== Review Mappings =====
 			CreateMap<Review, ReviewDto>().ReverseMap();
