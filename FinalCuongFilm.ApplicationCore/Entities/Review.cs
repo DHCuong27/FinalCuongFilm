@@ -17,7 +17,7 @@ namespace FinalCuongFilm.ApplicationCore.Entities
 		public Guid MovieId { get; set; }
 
 		// Review Content
-		[Range(1, 5, ErrorMessage = "Rating phải từ 1 đến 5")]
+		[Range(1, 5, ErrorMessage = "Rating must be 1 to 5")]
 		public int Rating { get; set; } // 1-5 sao
 
 		[MaxLength(1000)]

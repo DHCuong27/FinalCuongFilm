@@ -31,16 +31,18 @@ namespace FinalCuongFilm.ApplicationCore.Entities
 		public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 		public DateTime? UpdatedAt { get; set; }
 
-		public Guid LanguageId { get; set; }
+		public Guid? LanguageId { get; set; }
 		public Language? Language { get; set; } 
 
-		public Guid CountryId	{ get; set; }
-		public Country? Country { get; set; } 
+		public Guid? CountryId	{ get; set; }
+		public Country? Country { get; set; }
+
+		public long? TmdbId { get; set; }
 
 		public ICollection<Episode> Episodes { get; set; } = new List<Episode>();
-		public ICollection<MovieActor> Movie_Actors { get; set; } = new List<MovieActor>();
-		public ICollection<MovieGenre> Movie_Genres { get; set; } = new List<MovieGenre>();
-		public ICollection<MovieTag> Movie_Tags { get; set; } = new List<MovieTag>();
+		public ICollection<MovieActor> MovieActors { get; set; } = new List<MovieActor>();
+		public ICollection<MovieGenre> MovieGenres { get; set; } = new List<MovieGenre>();
+		public ICollection<MovieTag> MovieTags { get; set; } = new List<MovieTag>();
 		public ICollection<Review> Reviews { get; set; } = new List<Review>();
 		public ICollection<MediaFile> MediaFiles { get; set; } = new List<MediaFile>();
 		 public ICollection<Favorite> Favorites { get; set; } = new List<Favorite>();

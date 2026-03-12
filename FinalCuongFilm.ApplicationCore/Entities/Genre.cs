@@ -17,6 +17,6 @@ namespace FinalCuongFilm.ApplicationCore.Entities
 
 		public string? Description { get; set; }
 
-		public ICollection<MovieGenre> Movie_Genres { get; set; } = new List<MovieGenre>();
+		public ICollection<MovieGenre> MovieGenres { get; set; } = new List<MovieGenre>();
 	}
 }
