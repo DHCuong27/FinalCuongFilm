@@ -1,11 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using FinalCuongFilm.MVC.Models;
+﻿using FinalCuongFilm.MVC.Models;
 using FinalCuongFilm.MVC.Models.ViewModels;
 using FinalCuongFilm.Service.Interfaces;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 using System.Security.Claims;
-using Microsoft.AspNetCore.Authorization;
-using static FinalCuongFilm.ApplicationCore.Entities.Enum;
 
 namespace FinalCuongFilm.MVC.Controllers
 {
@@ -92,7 +91,7 @@ namespace FinalCuongFilm.MVC.Controllers
 				"year_asc" => query.OrderBy(m => m.ReleaseYear),
 				"year_desc" => query.OrderByDescending(m => m.ReleaseYear),
 				"title" => query.OrderBy(m => m.Title),
-				_ => query.OrderByDescending(m => m.ReleaseYear) 
+				_ => query.OrderByDescending(m => m.ReleaseYear)
 			};
 
 			var filteredList = query.ToList();
@@ -147,7 +146,7 @@ namespace FinalCuongFilm.MVC.Controllers
 				return RedirectToPage("/Account/Login", new { area = "Identity" });
 
 			var favorites = await _favoriteService.GetUserFavoritesAsync(userId);
-			ViewData["Title"] = "Danh sách của tôi";
+			ViewData["Title"] = "My list";
 			return View(favorites);
 		}
 

@@ -94,6 +94,13 @@ namespace FinalCuongFilm.MVC.Controllers
 				.Take(pageSize)
 				.ToList();
 
+			var pageTitle = type switch
+			{
+				1 => "Movies",
+				2 => "TV Series",
+				_ => "All Films"
+			};
+
 			var vm = new MovieFilterViewModel
 			{
 				Movies = pagedMovies,
@@ -108,7 +115,8 @@ namespace FinalCuongFilm.MVC.Controllers
 				PageNumber = pageNumber,
 				PageSize = pageSize,
 				TotalItems = totalItems,
-				PageTitle = "All Film"
+				PageTitle = pageTitle,
+				PageSubTitle = $"{totalItems} films found"
 			};
 
 			return View(vm);

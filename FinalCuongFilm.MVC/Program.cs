@@ -57,6 +57,9 @@ builder.Services.AddScoped<IEpisodeService, EpisodeService>();
 builder.Services.AddScoped<IMediaFileService, MediaFileService>();
 builder.Services.AddScoped<IFavoriteService, FavoriteService>();
 builder.Services.AddScoped<IReviewService, ReviewService>();
+// Đăng ký HttpClient cho TmdbService
+builder.Services.AddHttpClient<ITmdbService, TmdbService>();
+builder.Services.AddScoped<IMovieImportService, MovieImportService>();
 
 // Service upload file lên Azure Blob Storage
 builder.Services.AddScoped<IAzureBlobService, AzureBlobService>();
@@ -99,6 +102,17 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapRazorPages();
+
+app.MapControllerRoute(
+	name: "movies",
+	pattern: "movies",
+	defaults: new { controller = "Movie", action = "Index", type = 1 });
+
+app.MapControllerRoute(
+	name: "tvseries",
+	pattern: "tv-series",
+	defaults: new { controller = "Movie", action = "Index", type = 2 });
+
 
 app.MapControllerRoute(
 	name: "areas",

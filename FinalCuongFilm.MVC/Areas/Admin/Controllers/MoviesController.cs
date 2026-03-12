@@ -1,11 +1,13 @@
 ﻿using FinalCuongFilm.Common.DTOs;
-using FinalCuongFilm.Datalayer;
-using FinalCuongFilm.DataLayer;
+using FinalCuongFilm.DataLayer; // Lưu ý: Dùng 1 using DataLayer chuẩn thôi nhé
 using FinalCuongFilm.Service.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 {
@@ -19,18 +21,23 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 		private readonly CuongFilmDbContext _context;
 		private readonly IAzureBlobService _azureBlobService;
 
+		// Thêm Service Import vào đây
+		private readonly IMovieImportService _movieImportService;
+
 		public MoviesController(
 			IMovieService movieService,
 			IActorService actorService,
 			IGenreService genreService,
 			CuongFilmDbContext context,
-			IAzureBlobService azureBlobService)
+			IAzureBlobService azureBlobService,
+			IMovieImportService movieImportService) // Inject vào
 		{
 			_movieService = movieService;
 			_actorService = actorService;
 			_genreService = genreService;
 			_context = context;
 			_azureBlobService = azureBlobService;
+			_movieImportService = movieImportService; // Gán biến
 		}
 
 		// GET: Admin/Movies
@@ -38,6 +45,28 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 		{
 			var movies = await _movieService.GetAllAsync();
 			return View(movies);
+		}
+
+		[HttpPost]
+		[ValidateAntiForgeryToken]
+		public async Task<IActionResult> ImportFromTmdb([FromForm] string title)
+		{
+			if (string.IsNullOrWhiteSpace(title))
+				return Json(new { success = false, message = "Please input movie name" });
+
+			try
+			{
+				// Lấy kết quả từ Service
+				var result = await _movieImportService.ImportMovieAsync(title);
+
+				// Trả về đúng trạng thái và thông điệp thực tế
+				return Json(new { success = result.Success, message = result.Message });
+			}
+			catch (Exception ex)
+			{
+				var innerMessage = ex.InnerException != null ? ex.InnerException.Message : ex.Message;
+				return Json(new { success = false, message = $"Error system: {innerMessage}" });
+			}
 		}
 
 		// GET: Admin/Movies/Details/5
@@ -88,14 +117,14 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 					}
 
 					await _movieService.CreateAsync(dto);
-					TempData["Success"] = "Thêm phim thành công!";
+					TempData["Success"] = "Add Film Successfully!";
 					return RedirectToAction(nameof(Index));
 				}
 				catch (DbUpdateException dbEx)
 				{
 					
 					var innerException = dbEx.InnerException?.Message ?? dbEx.Message;
-					ModelState.AddModelError("", $"Lỗi database: {innerException}");
+					ModelState.AddModelError("", $"Error database: {innerException}");
 
 					// Log to console
 					Console.WriteLine($"[ERROR] DbUpdateException: {innerException}");
@@ -181,12 +210,12 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 					if (result == null)
 						return NotFound();
 
-					TempData["Success"] = "Cập nhật phim thành công!";
+					TempData["Success"] = "Update film successfully!";
 					return RedirectToAction(nameof(Index));
 				}
 				catch (Exception ex)
 				{
-					ModelState.AddModelError("", $"Lỗi khi cập nhật: {ex.Message}");
+					ModelState.AddModelError("", $"Fail to update: {ex.Message}");
 				}
 			}
 
@@ -218,7 +247,7 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 				if (!result)
 					return NotFound();
 
-				TempData["Success"] = "Xóa phim thành công!";
+				TempData["Success"] = "Delete film succesfully!";
 				return RedirectToAction(nameof(Index));
 			}
 			catch (InvalidOperationException ex)

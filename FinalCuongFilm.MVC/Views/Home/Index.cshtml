@@ -3,8 +3,6 @@
     ViewData["Title"] = "Home";
     Layout = "_LayoutUser";
     var f = Model.AllMoviesFilter;
-
-    // Get top 5 popular movies for the slider
     var featuredMovies = Model.PopularMovies.Take(5).ToList();
 }
 
@@ -25,10 +23,6 @@
         margin: 0;
         padding: 0;
     }
-
-    /* =========================================
-           HERO SLIDER SECTION (UPDATED POSTER SIZE)
-           ========================================= */
     .hero-slider-section {
         position: relative;
         margin-bottom: 4rem;
@@ -37,8 +31,8 @@
 
     .hero-slider-container {
         position: relative;
-        height: 90vh; /* Tăng chiều cao */
-        min-height: 700px;
+        height: 85vh;
+        min-height: 600px;
         overflow: hidden;
     }
 
@@ -51,7 +45,6 @@
         z-index: 1;
         display: flex;
         align-items: center;
-        justify-content: center;
     }
 
         .hero-slide.active {
@@ -60,44 +53,50 @@
             z-index: 2;
         }
 
+    /* Tối ưu hóa background để khớp mọi loại ảnh */
     .hero-bg {
         position: absolute;
-        inset: -20px;
+        inset: 0;
         background-size: cover;
-        background-position: center top;
-        filter: blur(15px) brightness(0.3);
+        background-position: center 15%;
+        background-repeat: no-repeat;
+        background-color: var(--netflix-dark);
         z-index: 1;
     }
 
-    .hero-slider-container::after {
-        content: '';
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        height: 150px;
-        background: linear-gradient(180deg, transparent 0%, var(--netflix-dark) 100%);
-        z-index: 5;
-        pointer-events: none;
-    }
+        /* Mặt nạ bảo vệ Text (Gradient từ trái sang phải) */
+        .hero-bg::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(90deg, var(--netflix-dark) 0%, rgba(15,15,15,0.9) 25%, rgba(15,15,15,0.4) 60%, transparent 100%);
+            z-index: 2;
+        }
+
+        /* Mặt nạ làm mềm viền (Gradient trên, dưới, phải) */
+        .hero-bg::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(0deg, var(--netflix-dark) 0%, transparent 25%), linear-gradient(180deg, var(--netflix-dark) 0%, transparent 15%), linear-gradient(270deg, var(--netflix-dark) 0%, transparent 15%);
+            z-index: 3;
+        }
 
     .hero-content-wrapper {
         position: relative;
-        z-index: 3;
+        z-index: 4;
         width: 100%;
         max-width: 1400px;
         margin: 0 auto;
         padding: 0 4rem;
         display: flex;
         align-items: center;
-        justify-content: space-between;
-        gap: 3rem;
     }
 
     /* Left Text Content */
     .hero-text-content {
         flex: 1;
-        max-width: 700px;
+        max-width: 650px;
         transform: translateY(30px);
         opacity: 0;
         transition: all 0.8s ease-out 0.3s;
@@ -110,174 +109,203 @@
 
     .featured-title {
         font-size: 3.5rem;
-        font-weight: 900;
-        margin-bottom: 1rem;
-        text-shadow: 2px 2px 4px rgba(0,0,0,0.6);
-        line-height: 1.1;
+        font-weight: 800;
+        margin-bottom: 0.5rem;
+        line-height: 1.2;
+        text-shadow: 2px 2px 10px rgba(0,0,0,0.5);
     }
 
-    .featured-meta {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-        margin-bottom: 1.5rem;
+    .featured-subtitle {
         font-size: 1.1rem;
-        color: var(--netflix-white);
-        text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+        color: #d6b074;
+        margin-bottom: 1.5rem;
+        font-style: italic;
     }
 
-        .featured-meta .match {
-            color: #46d369;
-            font-weight: 700;
-        }
+    .featured-meta-badges {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.8rem;
+        margin-bottom: 1rem;
+    }
 
-        .featured-meta .badge-hd {
-            border: 1px solid rgba(255,255,255,0.6);
-            padding: 0.1rem 0.5rem;
-            border-radius: 3px;
-            font-size: 0.8rem;
-        }
+    .badge-outline {
+        border: 1px solid rgba(255,255,255,0.6);
+        padding: 0.2rem 0.6rem;
+        border-radius: 4px;
+        font-size: 0.85rem;
+        color: var(--netflix-white);
+        background: rgba(0,0,0,0.3);
+    }
+
+    .featured-tags {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .tag-dark {
+        background: rgba(255,255,255,0.15);
+        padding: 0.2rem 0.8rem;
+        border-radius: 4px;
+        font-size: 0.85rem;
+        color: #e5e5e5;
+    }
 
     .featured-desc {
-        font-size: 1.2rem;
-        color: #e5e5e5;
+        font-size: 1rem;
+        color: #e0e0e0;
         margin-bottom: 2rem;
-        line-height: 1.5;
+        line-height: 1.6;
         display: -webkit-box;
         -webkit-line-clamp: 3;
         -webkit-box-orient: vertical;
         overflow: hidden;
-        text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+        text-shadow: 1px 1px 4px rgba(0,0,0,0.8);
     }
 
-    .featured-actions {
+    /* Action Buttons */
+    .featured-actions-round {
         display: flex;
-        gap: 1rem;
-        margin-bottom: 2.5rem;
-    }
-
-    .btn-netflix-primary, .btn-netflix-secondary {
-        display: flex;
+        gap: 1.5rem;
         align-items: center;
-        gap: 0.6rem;
-        padding: 0.8rem 2rem;
-        border-radius: 6px;
-        font-size: 1.1rem;
-        font-weight: 600;
-        text-decoration: none;
-        transition: 0.2s;
-        border: none;
-        cursor: pointer;
     }
 
-    .btn-netflix-primary {
-        background: white;
-        color: black;
-    }
-
-        .btn-netflix-primary:hover {
-            background: rgba(255,255,255,0.75);
-        }
-
-    .btn-netflix-secondary {
-        background: rgba(109,109,110,0.7);
-        color: white;
-    }
-
-        .btn-netflix-secondary:hover {
-            background: rgba(109,109,110,0.4);
-        }
-
-    /* Right Poster Content (Enlarged) */
-    .hero-poster-content {
-        flex: 0 0 400px; /* Poster rộng hơn */
-        transform: scale(0.9) translateX(30px);
-        opacity: 0;
-        transition: all 0.8s ease-out 0.4s;
-        z-index: 10;
-    }
-
-    .hero-slide.active .hero-poster-content {
-        transform: scale(1) translateX(0);
-        opacity: 1;
-    }
-
-    .full-poster-img {
-        width: 100%;
-        height: auto;
-        max-height: 600px;
-        aspect-ratio: 2/3;
-        object-fit: cover;
-        border-radius: 16px;
-        box-shadow: 0 25px 60px rgba(0,0,0,0.95);
-        border: 1px solid rgba(255,255,255,0.15);
-        transition: transform 0.4s ease;
-    }
-
-        .full-poster-img:hover {
-            transform: translateY(-10px) scale(1.02);
-            box-shadow: 0 30px 70px rgba(0,0,0,1);
-        }
-
-    /* Slider Nav & Indicators */
-    .slider-nav-btn {
-        position: absolute;
-        top: 50%;
-        transform: translateY(-50%);
-        background: rgba(0,0,0,0.3);
-        color: white;
-        border: none;
-        font-size: 2rem;
+    /* UPDATED: Play button changed to red */
+    .btn-play-round {
         width: 60px;
-        height: 100px;
-        cursor: pointer;
-        z-index: 10;
+        height: 60px;
+        border-radius: 50%;
+        background-color: var(--netflix-red);
+        color: #fff;
         display: flex;
         align-items: center;
         justify-content: center;
+        font-size: 1.6rem;
+        text-decoration: none;
         transition: 0.3s;
+        box-shadow: 0 4px 15px rgba(229, 9, 20, 0.4);
+        padding-left: 5px;
     }
 
-        .slider-nav-btn:hover {
-            background: rgba(0,0,0,0.8);
-            color: var(--netflix-red);
+        .btn-play-round:hover {
+            transform: scale(1.08);
+            background-color: #f40612;
         }
 
-    .prev-btn {
-        left: 0;
-        border-radius: 0 8px 8px 0;
-    }
-
-    .next-btn {
-        right: 0;
-        border-radius: 8px 0 0 8px;
-    }
-
-    .slider-indicators {
-        position: absolute;
-        bottom: 80px;
-        left: 50%;
-        transform: translateX(-50%);
+    .btn-icon-round {
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        background-color: rgba(0,0,0,0.4);
+        border: 1px solid rgba(255,255,255,0.3);
+        color: white;
         display: flex;
-        gap: 10px;
-        z-index: 10;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        text-decoration: none;
+        transition: 0.3s;
+        cursor: pointer;
     }
 
-        .slider-indicators .dot {
-            width: 12px;
-            height: 12px;
-            background: rgba(255,255,255,0.4);
-            border-radius: 50%;
-            cursor: pointer;
-            transition: 0.3s;
+        .btn-icon-round:hover {
+            background-color: rgba(255,255,255,0.2);
+            border-color: rgba(255,255,255,0.8);
         }
 
-            .slider-indicators .dot.active {
-                background: var(--netflix-red);
-                transform: scale(1.3);
-            }
+    .hero-poster-content {
+        display: none;
+    }
 
-    /* Search Overlay */
+    /* NEW: Compact Thumbnail Navigation Strip - Bottom Right Corner */
+    .thumbnail-strip-compact {
+        position: absolute;
+        bottom: 30px;
+        right: 30px;
+        display: flex;
+        gap: 8px;
+        z-index: 20;
+        padding: 8px 12px;
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(8px);
+        border-radius: 40px;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        max-width: 400px;
+        overflow-x: auto;
+        scrollbar-width: none; /* Hide scrollbar for cleaner look */
+    }
+
+        .thumbnail-strip-compact::-webkit-scrollbar {
+            display: none; /* Hide scrollbar for Chrome/Safari */
+        }
+
+    .thumbnail-item-compact {
+        flex: 0 0 auto;
+        width: 50px;
+        height: 70px;
+        border-radius: 6px;
+        overflow: hidden;
+        cursor: pointer;
+        position: relative;
+        transition: all 0.2s ease;
+        border: 2px solid transparent;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+        opacity: 0.7;
+    }
+
+        .thumbnail-item-compact:hover {
+            opacity: 1;
+            transform: translateY(-3px);
+            border-color: rgba(255, 255, 255, 0.8);
+        }
+
+        .thumbnail-item-compact.active {
+            border-color: var(--netflix-red);
+            opacity: 1;
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(229, 9, 20, 0.5);
+        }
+
+        .thumbnail-item-compact img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .thumbnail-item-compact .thumbnail-number {
+            position: absolute;
+            bottom: 2px;
+            right: 2px;
+            background: var(--netflix-red);
+            color: white;
+            font-size: 0.6rem;
+            font-weight: bold;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid white;
+        }
+
+    /* Optional: Add a small label for the thumbnail strip */
+    .thumbnail-label {
+        position: absolute;
+        bottom: 110px;
+        right: 30px;
+        color: rgba(255,255,255,0.5);
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        z-index: 19;
+    }
+
+    /* ... [CÁC CSS KHÁC BÊN DƯỚI GIỮ NGUYÊN NHƯ CŨ] ... */
     .global-search-overlay {
         position: absolute;
         bottom: 120px;
@@ -377,9 +405,6 @@
             margin-right: 15px;
         }
 
-    /* =========================================
-           GENERAL LAYOUT & GRIDS
-           ========================================= */
     .container {
         max-width: 1400px;
         margin: 0 auto;
@@ -427,7 +452,6 @@
         margin: 0;
     }
 
-    /* Scroll Rows */
     .movies-row-container {
         position: relative;
         margin-bottom: 4rem;
@@ -482,7 +506,6 @@
         transform: translateY(-50%) scale(1.1);
     }
 
-    /* Movie Cards */
     .movie-card {
         flex: 0 0 auto;
         width: 220px;
@@ -638,7 +661,6 @@
         background: var(--netflix-red);
     }
 
-    /* Filter Bar */
     .filter-bar {
         background: var(--netflix-dark-bg);
         border: 1px solid var(--netflix-gray);
@@ -718,7 +740,6 @@
             font-weight: 700;
         }
 
-    /* Grid & AJAX Loading */
     #filtered-movies-wrapper {
         transition: opacity 0.3s ease;
     }
@@ -836,7 +857,6 @@
         z-index: 3;
     }
 
-    /* Pagination & Alerts */
     .pagination-wrapper {
         display: flex;
         justify-content: center;
@@ -891,19 +911,9 @@
             display: block;
         }
 
-    /* Responsive Defaults */
     @@media (max-width: 992px) {
-        .hero-poster-content {
-            display: none;
-        }
-
         .hero-text-content {
             max-width: 100%;
-            text-align: center;
-        }
-
-        .featured-meta, .featured-actions {
-            justify-content: center;
         }
     }
 
@@ -928,6 +938,18 @@
         .movies-grid {
             grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
         }
+
+        .thumbnail-strip-compact {
+            bottom: 20px;
+            right: 20px;
+            max-width: 280px;
+            padding: 6px 10px;
+        }
+
+        .thumbnail-item-compact {
+            width: 40px;
+            height: 56px;
+        }
     }
 </style>
 
@@ -948,52 +970,67 @@
                         <div class="hero-text-content">
                             <h1 class="featured-title">@movie.Title</h1>
 
-                            <div class="featured-meta">
-                                <span class="match">Top Trending</span>
+                       
+
+                            <div class="featured-meta-badges">
+                                @* <span class="badge-outline">IMDb 8.5</span> *@
+                                <span class="badge-outline">HD</span>
                                 @if (movie.ReleaseYear.HasValue)
                                 {
-                                    <span>@movie.ReleaseYear</span>
+                                    <span class="badge-outline">@movie.ReleaseYear</span>
+                                    <span class="badge-outline">@movie.GenreName</span> 
+                                    
                                 }
-                                <span class="badge-hd">HD</span>
-                                <span>@(movie.Type.ToString() == "Series" ? "Series" : "Movie")</span>
+                                <span class="badge-outline">@(movie.Type.ToString() == "Series" ? "Series" : "Movie")</span>
                             </div>
 
                             <p class="featured-desc">
-                                Discover @movie.Title today. Enjoy wonderful moments of entertainment with HD quality and standard subtitles.
+                                @movie.Description
                             </p>
 
-                            <div class="featured-actions">
-                                <a asp-controller="Movie" asp-action="Watch" asp-route-slug="@movie.Slug" class="btn-netflix-primary">
-                                    <i class="fas fa-play"></i> Play
+                            <div class="featured-actions-round">
+                                <a asp-controller="Movie" asp-action="Watch" asp-route-slug="@movie.Slug" class="btn-play-round" title="Play">
+                                    <i class="fas fa-play"></i>
                                 </a>
-                                <a asp-controller="Movie" asp-action="Detail" asp-route-slug="@movie.Slug" class="btn-netflix-secondary">
-                                    <i class="fas fa-info-circle"></i> More Info
+
+                                @if (User.Identity?.IsAuthenticated == true)
+                                {
+                                    <button class="btn-icon-round favorite-icon-btn" data-movie-id="@movie.Id" title="Yêu thích" style="position: static; opacity: 1; width: 45px; height: 45px;">
+                                        <i class="far fa-heart"></i>
+                                    </button>
+                                }
+                                else
+                                {
+                                    <button class="btn-icon-round" title="Yêu thích">
+                                        <i class="far fa-heart"></i>
+                                    </button>
+                                }
+
+                                <a asp-controller="Movie" asp-action="Detail" asp-route-slug="@movie.Slug" class="btn-icon-round" title="More Info">
+                                    <i class="fas fa-info"></i>
                                 </a>
                             </div>
-                        </div>
-
-                        <div class="hero-poster-content">
-                            <a asp-controller="Movie" asp-action="Detail" asp-route-slug="@movie.Slug">
-                                <img src="@bgImage" alt="@movie.Title" class="full-poster-img" />
-                            </a>
                         </div>
                     </div>
                 </div>
             }
 
-            <button class="slider-nav-btn prev-btn" id="heroPrev"><i class="fas fa-chevron-left"></i></button>
-            <button class="slider-nav-btn next-btn" id="heroNext"><i class="fas fa-chevron-right"></i></button>
-
-            <div class="slider-indicators">
+            <div class="thumbnail-label"></div>
+            <div class="thumbnail-strip-compact">
                 @for (int i = 0; i < featuredMovies.Count; i++)
                 {
-                    <span class="dot @(i == 0 ? "active" : "")" data-slide="@i"></span>
+                    var movie = featuredMovies[i];
+                    <div class="thumbnail-item-compact @(i == 0 ? "active" : "")" data-slide="@i" title="@movie.Title">
+                        <img src="@(movie.PosterUrl ?? "https://via.placeholder.com/50x70/2d2d2d/fff?text=No+Poster")" alt="@movie.Title" />
+                        <span class="thumbnail-number">@(i + 1)</span>
+                    </div>
                 }
             </div>
         </div>
     </div>
 }
 
+<!-- Rest of the code remains exactly the same (All Movies, Latest Movies, Popular Movies sections) -->
 <div class="container" id="filter-section-container">
     <div class="section-header">
         <div class="section-header-left">
@@ -1001,7 +1038,7 @@
             <h2>All Movies</h2>
         </div>
         <a asp-controller="Movie" asp-action="Index" style="color:var(--netflix-light-gray); font-size:0.9rem;">
-           <i class="fas fa-arrow-right"></i>
+            <i class="fas fa-arrow-right"></i>
         </a>
     </div>
 
@@ -1271,40 +1308,55 @@
                 if (!$(e.target).closest('.banner-search-container').length) $('.searchSuggestionsBox').fadeOut(150);
             });
 
-            // --- 2. HERO SLIDER ---
+            // --- 2. HERO SLIDER WITH COMPACT THUMBNAIL NAVIGATION (Bottom Right Corner) ---
             const $slides = $('.hero-slide');
-            const $dots = $('.slider-indicators .dot');
+            const $thumbnails = $('.thumbnail-item-compact');
             let currentSlide = 0;
             const totalSlides = $slides.length;
             let slideInterval;
 
             function goToSlide(index) {
                 $slides.removeClass('active');
-                $dots.removeClass('active');
+                $thumbnails.removeClass('active');
 
                 currentSlide = index;
                 if (currentSlide >= totalSlides) currentSlide = 0;
                 if (currentSlide < 0) currentSlide = totalSlides - 1;
 
                 $slides.eq(currentSlide).addClass('active');
-                $dots.eq(currentSlide).addClass('active');
+                $thumbnails.eq(currentSlide).addClass('active');
+
+                // Auto scroll thumbnail into view if needed (optional for compact strip)
+                const $activeThumb = $thumbnails.eq(currentSlide);
+                const thumbnailStrip = document.querySelector('.thumbnail-strip-compact');
+                if (thumbnailStrip) {
+                    const thumbLeft = $activeThumb[0].offsetLeft;
+                    const thumbWidth = $activeThumb.outerWidth();
+                    const stripWidth = thumbnailStrip.offsetWidth;
+                    const scrollLeft = thumbnailStrip.scrollLeft;
+
+                    if (thumbLeft < scrollLeft || thumbLeft + thumbWidth > scrollLeft + stripWidth) {
+                        thumbnailStrip.scrollTo({
+                            left: thumbLeft - (stripWidth / 2) + (thumbWidth / 2),
+                            behavior: 'smooth'
+                        });
+                    }
+                }
             }
 
             function nextSlide() { goToSlide(currentSlide + 1); }
             function prevSlide() { goToSlide(currentSlide - 1); }
 
             function startSlideShow() {
-                slideInterval = setInterval(nextSlide, 6000); // Đổi slide mỗi 6 giây
+                slideInterval = setInterval(nextSlide, 6000);
             }
             function resetSlideShow() {
                 clearInterval(slideInterval);
                 startSlideShow();
             }
 
-            $('#heroNext').click(function () { nextSlide(); resetSlideShow(); });
-            $('#heroPrev').click(function () { prevSlide(); resetSlideShow(); });
-
-            $dots.click(function () {
+            // Click on thumbnails
+            $thumbnails.click(function() {
                 goToSlide($(this).data('slide'));
                 resetSlideShow();
             });
@@ -1312,6 +1364,17 @@
             if(totalSlides > 1) {
                 startSlideShow();
             }
+
+            // Optional: Add keyboard navigation
+            $(document).keydown(function(e) {
+                if (e.key === 'ArrowLeft') {
+                    prevSlide();
+                    resetSlideShow();
+                } else if (e.key === 'ArrowRight') {
+                    nextSlide();
+                    resetSlideShow();
+                }
+            });
 
             // --- 3. AJAX FILTER LOGIC ---
             $(document).on('change', '#filterForm select', function () {

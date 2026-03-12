@@ -33,21 +33,17 @@ namespace FinalCuongFilm.MVC.Controllers
 			var allGenres = await _genreService.GetAllAsync();
 			var genre = allGenres.FirstOrDefault(g => g.Slug == slug);
 
-			// Lấy genres và countries cho navigation
-			var genres = await _genreService.GetAllAsync();
-			var countries = await _countryService.GetAllAsync();
-
-			ViewBag.Genres = await _genreService.GetAllAsync();
+			ViewBag.Genres = allGenres;
 			ViewBag.Countries = await _countryService.GetAllAsync();
 
 			if (genre == null)
 				return NotFound();
 
 			var allMovies = await _movieService.GetAllAsync();
-		
 
+			// ✅ FIX: Dùng SelectedGenreIds thay vì SelectedCountryIds (bug gốc)
 			var query = allMovies
-				.Where(m => m.IsActive && m.SelectedCountryIds.Contains(genre.Id))
+				.Where(m => m.IsActive && m.SelectedGenreIds.Contains(genre.Id))
 				.AsEnumerable();
 
 			query = sortBy switch
@@ -64,6 +60,8 @@ namespace FinalCuongFilm.MVC.Controllers
 				.Skip((pageNumber - 1) * pageSize)
 				.Take(pageSize)
 				.ToList();
+
+			var countries = await _countryService.GetAllAsync();
 
 			var vm = new MovieFilterViewModel
 			{

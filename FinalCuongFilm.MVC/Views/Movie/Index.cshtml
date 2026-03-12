@@ -96,67 +96,73 @@
         }
     </div>
 
-    <!-- Filter Bar -->
     <div class="filter-bar">
         <form method="get" asp-action="Index" asp-controller="Movie">
+
             <div class="filter-row">
                 <div class="filter-group" style="flex:2; min-width:200px;">
                     <label><i class="fas fa-search"></i> Search</label>
                     <input type="text" name="search" value="@Model.Search" placeholder="Movie Title" class="filter-input" />
                 </div>
+
                 <div class="filter-group">
                     <label><i class="fas fa-theater-masks"></i> Genre</label>
                     <select name="genreId" class="filter-select">
-    <option value="">All Genre</option>
-    @foreach (var g in Model.Genres)
-    {
-        <option value="@g.Id" selected="@(Model.GenreId == g.Id ? "selected" : null)">@g.Name</option>
-    }
-</select>
+                        <option value="">All Genres</option>
+                        @foreach (var g in Model.Genres)
+                        {
+                            <option value="@g.Id" selected="@(Model.GenreId == g.Id ? "selected" : null)">@g.Name</option>
+                        }
+                    </select>
                 </div>
+
                 <div class="filter-group">
                     <label><i class="fas fa-globe"></i> Country</label>
                     <select name="countryId" class="filter-select">
-                        <option value="">All Country</option>
+                        <option value="">All Countries</option>
                         @foreach (var c in Model.Countries)
                         {
                             <option value="@c.Id" selected="@(Model.CountryId == c.Id ? "selected" : null)">@c.Name</option>
                         }
                     </select>
                 </div>
+
                 <div class="filter-group">
                     <label><i class="fas fa-calendar"></i> Year</label>
-                    <input type="number" name="releaseYear" value="@Model.ReleaseYear" placeholder="VD: 2024" min="1900" max="2030" class="filter-input" />
+                    <input type="number" name="releaseYear" value="@Model.ReleaseYear" placeholder="Ex: 2024" min="1900" max="2030" class="filter-input" />
                 </div>
+
                 <div class="filter-group">
-                    <label><i class="fas fa-tv"></i>Type Film</label>
+                    <label><i class="fas fa-tv"></i> Type</label>
                     <select name="type" class="filter-select">
-                        <option value="">All Genre</option>
-                        <option value="1" selected="@(Model.Type == 1 ? "selected" : null)">Serie </option>
-                        <option value="2" selected="@(Model.Type == 2 ? "selected" : null)">Movie</option>
+                        <option value="">All Types</option>
+                        <option value="1" selected="@(Model.Type == 1 ? "selected" : null)">Movie</option>
+                        <option value="2" selected="@(Model.Type == 2 ? "selected" : null)">TV Series</option>
                     </select>
                 </div>
+
                 <div class="filter-group">
-                    <label><i class="fas fa-sort"></i>Sort</label>
+                    <label><i class="fas fa-sort"></i> Sort</label>
                     <select name="sortBy" class="filter-select">
                         <option value="latest" selected="@(Model.SortBy == "latest" ? "selected" : null)">Latest</option>
                         <option value="popular" selected="@(Model.SortBy == "popular" ? "selected" : null)">Most Popular</option>
-                        <option value="year_desc" selected="@(Model.SortBy == "year_desc" ? "selected" : null)">"Year Descending</option>
-                        <option value="year_asc" selected="@(Model.SortBy == "year_asc" ? "selected" : null)">Year Ascending </option>
+                        <option value="year_desc" selected="@(Model.SortBy == "year_desc" ? "selected" : null)">Year Descending</option>
+                        <option value="year_asc" selected="@(Model.SortBy == "year_asc" ? "selected" : null)">Year Ascending</option>
                         <option value="title" selected="@(Model.SortBy == "title" ? "selected" : null)">Name A-Z</option>
-</select>
+                    </select>
                 </div>
+
                 <div class="filter-group" style="flex-direction:row; align-items:flex-end; gap:0.5rem; min-width:auto;">
                     <button type="submit" class="btn-filter"><i class="fas fa-filter"></i> Filter</button>
                     <a asp-action="Index" asp-controller="Movie" class="btn-reset"><i class="fas fa-times"></i> Reset</a>
                 </div>
             </div>
 
-            <!-- Active filter tags -->
             @{
                 bool hasFilter = !string.IsNullOrEmpty(Model.Search) || Model.GenreId.HasValue ||
-                                 Model.CountryId.HasValue || Model.ReleaseYear.HasValue || Model.Type.HasValue;
+                Model.CountryId.HasValue || Model.ReleaseYear.HasValue || Model.Type.HasValue;
             }
+
             @if (hasFilter)
             {
                 <div class="active-filters">
@@ -180,15 +186,16 @@
                     }
                     @if (Model.Type.HasValue)
                     {
-                        <span class="filter-tag"><i class="fas fa-tv"></i> @(Model.Type == 1 ? "Series" : "Movie")</span>
+                        <span class="filter-tag"><i class="fas fa-tv"></i> @(Model.Type == 1 ? "Movie" : "TV Series")</span>
                     }
                 </div>
             }
 
             <div class="filter-result-count">
-                Showing <span>@Model.TotalItems</span> Movie
+                Showing <span>@Model.TotalItems</span> Movies
                 —  <span>@Model.PageNumber</span> / <span>@Model.TotalPages</span>
             </div>
+
         </form>
     </div>
 

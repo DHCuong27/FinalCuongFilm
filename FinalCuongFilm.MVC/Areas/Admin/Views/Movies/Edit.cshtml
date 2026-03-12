@@ -416,7 +416,7 @@
     <p class="nf-page-sub">Update the details for this movie</p>
 </div>
 
-{{!-- ✅ FIX: thêm enctype="multipart/form-data" để hỗ trợ upload file poster --}}
+
 <form asp-action="Edit" method="post" enctype="multipart/form-data" id="editForm">
     <input type="hidden" asp-for="Id" />
 
@@ -470,13 +470,12 @@
                 <!-- Poster -->
                 <div class="nf-gcol2">
                     <label class="nf-label">Poster Image</label>
-
-                    {{!-- ✅ Upload file poster trực tiếp --}}
+         
                     <div class="nf-file-input-wrap" id="editPosterFileWrap">
                         <input type="file" name="posterFile" id="editPosterFileInput"
                                accept=".jpg,.jpeg,.png,.webp"
                                onchange="onEditPosterFileChange(this)" />
-                        <span class="nf-hint">Chọn file ảnh mới để thay poster (JPG, PNG, WEBP). Tối đa 5MB.</span>
+                        <span class="nf-hint">Choose new file to change poster (JPG, PNG, WEBP).Max 5MB.</span>
                     </div>
 
                     <div class="nf-upload-or-divider">hoặc dán URL</div>
@@ -594,7 +593,7 @@
             if (input.files && input.files[0]) {
                 const file = input.files[0];
                 if (file.size > 5 * 1024 * 1024) {
-                    alert('File quá lớn. Vui lòng chọn ảnh nhỏ hơn 5MB.');
+                    alert('File too big.Please choose file smaller 5 Mb.');
                     input.value = '';
                     return;
                 }

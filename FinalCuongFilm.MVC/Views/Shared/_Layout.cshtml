@@ -1,4 +1,5 @@
-﻿<!DOCTYPE html>
+﻿﻿
+<!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="utf-8" />
@@ -25,13 +26,64 @@
                 </button>
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav me-auto">
+
+                   
                         <li class="nav-item">
-                            <a class="nav-link" asp-controller="Home" asp-action="Index">Home</a>
+                            <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Home" ? "active" : "")"
+                               asp-controller="Home" asp-action="Index">
+                                <i class="fas fa-home"></i> Home
+                            </a>
+                        </li>
+
+
+                        <li class="nav-item">
+                            <a class="nav-link @(Context.Request.Path.StartsWithSegments("/movies") ? "active" : "")"
+                               href="/movies">
+                                <i class="fas fa-film"></i> Movies
+                            </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" asp-controller="Movie" asp-action="Index">Movie</a>
+                            <a class="nav-link @(Context.Request.Path.StartsWithSegments("/tv-series") ? "active" : "")"
+                               href="/tv-series">
+                                <i class="fas fa-tv"></i> TV Series
+                            </a>
                         </li>
+
+                      
+                        @if (ViewBag.Genres != null)
+                        {
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                                    <i class="fas fa-tags"></i> Thể loại
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-dark">
+                                    @foreach (var genre in (IEnumerable<FinalCuongFilm.Common.DTOs.GenreDto>)ViewBag.Genres)
+                                    {
+                                        <li>
+                                            <a class="dropdown-item"
+                                               asp-controller="Genre" asp-action="Index"
+                                               asp-route-slug="@genre.Slug">
+                                                @genre.Name
+                                            </a>
+                                        </li>
+                                    }
+                                </ul>
+                            </li>
+                        }
+
                     </ul>
+
+                
+                    <form class="d-flex me-3" asp-controller="Search" asp-action="Index" method="get">
+                        <div class="input-group" style="width: 250px;">
+                            <input class="form-control form-control-sm bg-dark text-white border-secondary"
+                                   type="search" name="q" placeholder="Tìm phim..."
+                                   value="@Context.Request.Query["q"]" />
+                            <button class="btn btn-outline-secondary btn-sm" type="submit">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </form>
 
                     <ul class="navbar-nav">
                         @if (User.Identity?.IsAuthenticated == true)
@@ -50,14 +102,18 @@
                                 <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
                                     <i class="fas fa-user"></i> @User.Identity.Name
                                 </a>
-                                <ul class="dropdown-menu">
+                                <ul class="dropdown-menu dropdown-menu-end">
                                     <li>
-                                        <a class="dropdown-item" asp-area="Identity" asp-page="/Account/Manage/Index">Member</a>
+                                        <a class="dropdown-item" asp-area="Identity" asp-page="/Account/Manage/Index">
+                                            <i class="fas fa-user-cog"></i> Tài khoản
+                                        </a>
                                     </li>
                                     <li><hr class="dropdown-divider"></li>
                                     <li>
                                         <form asp-area="Identity" asp-page="/Account/Logout" method="post">
-                                            <button type="submit" class="dropdown-item">Log out</button>
+                                            <button type="submit" class="dropdown-item">
+                                                <i class="fas fa-sign-out-alt"></i> Log out
+                                            </button>
                                         </form>
                                     </li>
                                 </ul>
@@ -66,10 +122,14 @@
                         else
                         {
                             <li class="nav-item">
-                                <a class="nav-link" asp-area="Identity" asp-page="/Account/Login">Login</a>
+                                <a class="nav-link" asp-area="Identity" asp-page="/Account/Login">
+                                    <i class="fas fa-sign-in-alt"></i> Login
+                                </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" asp-area="Identity" asp-page="/Account/Register">Register</a>
+                                <a class="nav-link" asp-area="Identity" asp-page="/Account/Register">
+                                    <i class="fas fa-user-plus"></i> Register
+                                </a>
                             </li>
                         }
                     </ul>

@@ -27,6 +27,7 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 			ViewBag.TotalLanguages = await _context.Languages.CountAsync();
 			ViewBag.TotalEpisodes = await _context.Episodes.CountAsync();
 			ViewBag.TotalMediaFiles = await _context.MediaFiles.CountAsync();
+			//ViewBag.TotalUsers = await _context.Users.CountAsync();
 
 			return View();
 		}
