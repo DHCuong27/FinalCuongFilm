@@ -1,8 +1,15 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using FinalCuongFilm.Common.DTOs;
+using FinalCuongFilm.DataLayer;
+using FinalCuongFilm.Service.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using FinalCuongFilm.Common.DTOs;
-using FinalCuongFilm.Service.Interfaces;
+using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using static FinalCuongFilm.ApplicationCore.Entities.Enum;
 
 namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 {
@@ -55,6 +62,17 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 		// GET: Admin/Episodes/Create
 		public async Task<IActionResult> Create(Guid? movieId)
 		{
+			if (movieId.HasValue)
+			{
+				// FIX: Check if the movie is actually a Series
+				var movie = await _movieService.GetByIdAsync(movieId.Value);
+				if (movie != null && movie.Type == MovieType.Movie)
+				{
+					TempData["Error"] = "Error: You cannot add episodes to a standalone Movie. Only Series allow episodes.";
+					return RedirectToAction("Details", "Movies", new { id = movieId.Value });
+				}
+			}
+
 			await PopulateMoviesDropdown(movieId);
 
 			var model = new EpisodeCreateDto();
@@ -71,6 +89,13 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 		[ValidateAntiForgeryToken]
 		public async Task<IActionResult> Create(EpisodeCreateDto dto)
 		{
+			// FIX: Double-check validation on POST to prevent bypass
+			var movie = await _movieService.GetByIdAsync(dto.MovieId);
+			if (movie != null && movie.Type == MovieType.Movie)
+			{
+				ModelState.AddModelError("", "Cannot add episodes to a standalone Movie.");
+			}
+
 			if (ModelState.IsValid)
 			{
 				try
@@ -162,29 +187,29 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 		[ValidateAntiForgeryToken]
 		public async Task<IActionResult> DeleteConfirmed(Guid id)
 		{
+			var episode = await _episodeService.GetByIdAsync(id);
+			if (episode == null) return NotFound();
+
 			try
 			{
-				var episode = await _episodeService.GetByIdAsync(id);
-				var movieId = episode?.MovieId;
-
-				var result = await _episodeService.DeleteAsync(id);
-				if (!result)
-					return NotFound();
-
+				await _episodeService.DeleteAsync(id);
 				TempData["Success"] = "Xóa tập phim thành công!";
-				return RedirectToAction(nameof(Index), new { movieId });
+				return RedirectToAction(nameof(Index), new { movieId = episode.MovieId });
 			}
-			catch (InvalidOperationException ex)
+			catch (Exception ex)
 			{
-				TempData["Error"] = ex.Message;
+				TempData["Error"] = $"Lỗi: {ex.Message}";
 				return RedirectToAction(nameof(Delete), new { id });
 			}
 		}
 
-		private async Task PopulateMoviesDropdown(Guid? selectedMovieId = null)
+		private async Task PopulateMoviesDropdown(Guid? selectedId = null)
 		{
-			var movies = await _movieService.GetAllAsync();
-			ViewBag.Movies = new SelectList(movies, "Id", "Title", selectedMovieId);
+			var allMovies = await _movieService.GetAllAsync();
+			var seriesOnly = allMovies.Where(m => m.Type == MovieType.Series);
+
+			// Đổi "MovieId" thành "Movies" để khớp với View
+			ViewBag.Movies = new SelectList(seriesOnly, "Id", "Title", selectedId);
 		}
 	}
 }

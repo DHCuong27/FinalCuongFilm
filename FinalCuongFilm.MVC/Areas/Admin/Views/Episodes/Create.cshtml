@@ -2,81 +2,228 @@
 
 @{
     ViewData["Title"] = "Thêm Tập Phim Mới";
+    // Kiểm tra xem đang tạo tập cho phim nào (nếu có MovieId truyền vào)
+    var selectedMovieId = ViewBag.MovieId as Guid?;
 }
 
-<div class="row">
-    <div class="col-md-12">
-        <h2 class="title-1">@ViewData["Title"]</h2>
-    </div>
-</div>
+<style>
+    .card-custom {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        background: white;
+        overflow: hidden;
+    }
 
-<div class="row m-t-30">
+    .card-header-custom {
+        background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%);
+        padding: 20px 24px;
+        border-bottom: none;
+    }
+
+        .card-header-custom h3 {
+            color: white;
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+    .card-body-custom {
+        padding: 32px;
+    }
+
+    .form-group {
+        margin-bottom: 24px;
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 8px;
+        display: block;
+        font-size: 0.95rem;
+    }
+
+    .form-control {
+        border-radius: 8px;
+        border: 1px solid #d1d5db;
+        padding: 10px 16px;
+        transition: all 0.2s;
+        font-size: 0.95rem;
+    }
+
+        .form-control:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            outline: none;
+        }
+
+    textarea.form-control {
+        min-height: 120px;
+        resize: vertical;
+    }
+
+    .btn-action {
+        padding: 10px 24px;
+        border-radius: 8px;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.2s;
+        border: none;
+        cursor: pointer;
+    }
+
+    .btn-save {
+        background-color: #2563eb;
+        color: white;
+    }
+
+        .btn-save:hover {
+            background-color: #1d4ed8;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+        }
+
+    .btn-cancel {
+        background-color: #f3f4f6;
+        color: #4b5563;
+        text-decoration: none;
+    }
+
+        .btn-cancel:hover {
+            background-color: #e5e7eb;
+            color: #1f2937;
+        }
+
+    .checkbox-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 16px;
+        background-color: #f9fafb;
+        border-radius: 8px;
+        border: 1px solid #e5e7eb;
+    }
+
+    .form-check-input {
+        width: 1.2em;
+        height: 1.2em;
+        cursor: pointer;
+    }
+
+    .form-check-label {
+        cursor: pointer;
+        font-weight: 500;
+        color: #374151;
+        user-select: none;
+    }
+</style>
+
+<div class="row justify-content-center">
     <div class="col-md-8">
-        <div class="card">
-            <div class="card-header">
-                <strong>Thông tin tập phim</strong>
+        <div class="card card-custom">
+            <div class="card-header card-header-custom">
+                <h3>
+                    <i class="zmdi zmdi-collection-video"></i>
+                    @ViewData["Title"]
+                </h3>
             </div>
-            <div class="card-body card-block">
-                <form asp-action="Create" method="post">
-                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
+            <div class="card-body card-body-custom">
+                <form asp-action="Create" method="post">
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                    <!-- Chọn Phim (Series) -->
                     <div class="form-group">
-                        <label asp-for="MovieId" class="form-control-label">Phim <span class="text-danger">*</span></label>
+                        <label asp-for="MovieId" class="form-label">
+                            Chọn Phim Bộ (Series) <span class="text-danger">*</span>
+                        </label>
                         <select asp-for="MovieId" class="form-control" asp-items="ViewBag.Movies">
-                            <option value="">-- Chọn phim --</option>
+                            <option value="">-- Vui lòng chọn phim --</option>
                         </select>
-                        <span asp-validation-for="MovieId" class="text-danger"></span>
+                        <span asp-validation-for="MovieId" class="text-danger small mt-1 d-block"></span>
+                        <small class="text-muted">Chỉ hiển thị các phim thuộc loại Series.</small>
                     </div>
 
                     <div class="row">
+                        <!-- Số tập -->
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label asp-for="EpisodeNumber" class="form-control-label">Số tập <span class="text-danger">*</span></label>
-                                <input asp-for="EpisodeNumber" class="form-control" type="number" min="1" />
-                                <span asp-validation-for="EpisodeNumber" class="text-danger"></span>
+                                <label asp-for="EpisodeNumber" class="form-label">
+                                    Số tập <span class="text-danger">*</span>
+                                </label>
+                                <input asp-for="EpisodeNumber" class="form-control" type="number" min="1" placeholder="Ví dụ: 1" />
+                                <span asp-validation-for="EpisodeNumber" class="text-danger small mt-1 d-block"></span>
                             </div>
                         </div>
+
+                        <!-- Thời lượng -->
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label asp-for="DurationMinutes" class="form-control-label">Thời lượng (phút)</label>
-                                <input asp-for="DurationMinutes" class="form-control" type="number" min="1" />
-                                <span asp-validation-for="DurationMinutes" class="text-danger"></span>
+                                <label asp-for="DurationMinutes" class="form-label">
+                                    Thời lượng (phút)
+                                </label>
+                                <div class="input-group">
+                                    <input asp-for="DurationMinutes" class="form-control" type="number" min="1" placeholder="Ví dụ: 45" />
+                                    <span class="input-group-text bg-light text-muted" style="border-top-right-radius: 8px; border-bottom-right-radius: 8px;">phút</span>
+                                </div>
+                                <span asp-validation-for="DurationMinutes" class="text-danger small mt-1 d-block"></span>
                             </div>
                         </div>
                     </div>
 
+                    <!-- Tiêu đề -->
                     <div class="form-group">
-                        <label asp-for="Title" class="form-control-label">Tiêu đề <span class="text-danger">*</span></label>
-                        <input asp-for="Title" class="form-control" />
-                        <span asp-validation-for="Title" class="text-danger"></span>
+                        <label asp-for="Title" class="form-label">
+                            Tiêu đề tập phim <span class="text-danger">*</span>
+                        </label>
+                        <input asp-for="Title" class="form-control" placeholder="Ví dụ: Sự khởi đầu..." />
+                        <span asp-validation-for="Title" class="text-danger small mt-1 d-block"></span>
                     </div>
 
+                    <!-- Mô tả -->
                     <div class="form-group">
-                        <label asp-for="Description" class="form-control-label">Mô tả</label>
-                        <textarea asp-for="Description" class="form-control" rows="4"></textarea>
-                        <span asp-validation-for="Description" class="text-danger"></span>
+                        <label asp-for="Description" class="form-label">Mô tả nội dung</label>
+                        <textarea asp-for="Description" class="form-control" rows="4" placeholder="Nhập tóm tắt nội dung tập phim..."></textarea>
+                        <span asp-validation-for="Description" class="text-danger small mt-1 d-block"></span>
                     </div>
 
-                    <div class="form-group">
-                        <label asp-for="AirDate" class="form-control-label">Ngày phát sóng</label>
-                        <input asp-for="AirDate" class="form-control" type="date" />
-                        <span asp-validation-for="AirDate" class="text-danger"></span>
-                    </div>
+                    <!-- Ngày phát sóng & Trạng thái -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label asp-for="AirDate" class="form-label">Ngày phát sóng</label>
+                                <input asp-for="AirDate" class="form-control" type="date" />
+                                <span asp-validation-for="AirDate" class="text-danger small mt-1 d-block"></span>
+                            </div>
+                        </div>
 
-                    <div class="form-group">
-                        <div class="form-check">
-                            <input asp-for="IsActive" class="form-check-input" type="checkbox" />
-                            <label asp-for="IsActive" class="form-check-label">Kích hoạt</label>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">Trạng thái</label>
+                                <div class="checkbox-wrapper">
+                                    <input asp-for="IsActive" class="form-check-input" type="checkbox" id="isActiveCheck" checked />
+                                    <label asp-for="IsActive" class="form-check-label" for="isActiveCheck">
+                                        Công khai (Hiển thị ngay)
+                                    </label>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="form-actions form-group">
-                        <button type="submit" class="btn btn-primary btn-sm">
-                            <i class="fa fa-save"></i> Lưu
-                        </button>
-                        <a asp-action="Index" asp-route-movieId="@Model.MovieId" class="btn btn-secondary btn-sm">
-                            <i class="fa fa-times"></i> Hủy
+                    <!-- Buttons -->
+                    <div class="d-flex justify-content-end gap-3 mt-4 pt-3 border-top">
+                        <a asp-action="Index" asp-route-movieId="@Model.MovieId" class="btn-action btn-cancel">
+                            <i class="zmdi zmdi-close"></i> Hủy bỏ
                         </a>
+                        <button type="submit" class="btn-action btn-save">
+                            <i class="zmdi zmdi-floppy"></i> Lưu tập phim
+                        </button>
                     </div>
                 </form>
             </div>
@@ -88,4 +235,14 @@
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
+
+    <script>
+        // Auto-fill Title based on Episode Number if empty
+        document.getElementById('EpisodeNumber').addEventListener('change', function() {
+            var titleInput = document.getElementById('Title');
+            if (!titleInput.value) {
+                titleInput.value = 'Episode ' + this.value;
+            }
+        });
+    </script>
 }

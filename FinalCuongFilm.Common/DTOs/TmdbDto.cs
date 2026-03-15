@@ -36,6 +36,9 @@ namespace FinalCuongFilm.Common.DTOs
 		public string Overview { get; set; }
 		public string Poster_Path { get; set; }
 
+		public string Release_Date { get; set; } // <-- Add this property to fix CS0117
+		public int Runtime { get; set; }
+
 		public List<TmdbGenreDto>? Genres { get; set; }
 		public List<TmdbCountryDto>? Production_Countries { get; set; }
 	}

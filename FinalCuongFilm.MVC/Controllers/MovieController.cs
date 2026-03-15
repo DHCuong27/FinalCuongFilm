@@ -1,5 +1,6 @@
 ﻿using FinalCuongFilm.MVC.Models.ViewModels;
 using FinalCuongFilm.Service.Interfaces;
+using FinalCuongFilm.Service.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -15,6 +16,7 @@ namespace FinalCuongFilm.MVC.Controllers
 		private readonly IMediaFileService _mediaFileService;
 		private readonly IGenreService _genreService;
 		private readonly ICountryService _countryService;
+		private readonly IActorService _actorService;
 		private readonly IAzureBlobService _azureBlobService;
 		private readonly ILogger<MovieController> _logger;
 
@@ -26,6 +28,7 @@ namespace FinalCuongFilm.MVC.Controllers
 			IMediaFileService mediaFileService,
 			IGenreService genreService,
 			ICountryService countryService,
+			IActorService actorService,
 			IAzureBlobService azureBlobService,
 			ILogger<MovieController> logger)
 		{
@@ -36,6 +39,7 @@ namespace FinalCuongFilm.MVC.Controllers
 			_mediaFileService = mediaFileService;
 			_genreService = genreService;
 			_countryService = countryService;
+			_actorService = actorService;
 			_azureBlobService = azureBlobService;
 			_logger = logger;
 		}
@@ -136,6 +140,14 @@ namespace FinalCuongFilm.MVC.Controllers
 
 			var episodes = await _episodeService.GetByMovieIdAsync(movie.Id);
 			var mediaFiles = await _mediaFileService.GetByMovieIdAsync(movie.Id);
+
+			// THÊM MỚI: Lấy danh sách diễn viên của phim
+			// Giả sử bạn có _actorService và hàm GetActorsByMovieIdAsync trả về List<ActorDto>
+			var actors = allMovies.FirstOrDefault(m => m.Id == movie.Id)?.SelectedActorIds != null
+    ? await _actorService.GetAllAsync()
+        .ContinueWith(task => task.Result.Where(a => movie.SelectedActorIds.Contains(a.Id)).ToList())
+    : new List<FinalCuongFilm.Common.DTOs.ActorDto>();
+
 			// Lấy genres và countries cho navigation
 			var genres = await _genreService.GetAllAsync();
 			var countries = await _countryService.GetAllAsync();
@@ -149,8 +161,8 @@ namespace FinalCuongFilm.MVC.Controllers
 				.Take(6)
 				.ToList();
 
-			ViewBag.Genres = await _genreService.GetAllAsync();
-			ViewBag.Countries = await _countryService.GetAllAsync();
+			ViewBag.Genres = genres; // Sửa lại một chút để tái sử dụng biến genres ở trên, tránh gọi DB 2 lần
+			ViewBag.Countries = countries; // Tương tự với countries
 
 			var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 			ViewBag.IsFavorited = false;
@@ -172,7 +184,10 @@ namespace FinalCuongFilm.MVC.Controllers
 				Movie = movie,
 				Episodes = episodes.Where(e => e.IsActive).OrderBy(e => e.EpisodeNumber).ToList(),
 				MediaFiles = mediaFiles.ToList(),
-				RelatedMovies = relatedMovies
+				RelatedMovies = relatedMovies,
+
+				// THÊM MỚI: Gán danh sách diễn viên vào ViewModel
+				Actors = actors.ToList()
 			};
 
 			return View(viewModel);
@@ -202,10 +217,8 @@ namespace FinalCuongFilm.MVC.Controllers
 					TempData["Error"] = $"Movie not found: {slug}";
 					return RedirectToAction("Index", "Home");
 				}
-				// Lấy genres và countries cho navigation
-				var genres = await _genreService.GetAllAsync();
-				var countries = await _countryService.GetAllAsync();
 
+				// Lấy genres và countries cho navigation
 				ViewBag.Genres = await _genreService.GetAllAsync();
 				ViewBag.Countries = await _countryService.GetAllAsync();
 
@@ -278,18 +291,43 @@ namespace FinalCuongFilm.MVC.Controllers
 
 				await _movieService.IncrementViewCountAsync(movie.Id);
 
-				ViewBag.Movie = movie;
+				// THÊM MỚI 1: Khởi tạo MovieWatchViewModel
+				var viewModel = new FinalCuongFilm.MVC.Models.ViewModels.MovieWatchViewModel
+				{
+					Movie = movie,
+					Episodes = allEpisodes,
+					CurrentEpisode = currentEpisode,
+					MediaFiles = allQualityOptions
+				};
+
+				// THÊM MỚI 2: Lấy trạng thái Yêu thích (Favorite)
+				var userId = User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier);
+				bool isFavorited = false;
+				if (userId != null)
+				{
+					isFavorited = await _favoriteService.IsFavoriteAsync(userId, movie.Id);
+				}
+
+				// THÊM MỚI 3: Lấy danh sách diễn viên (Giả sử bạn có _actorService)
+				// Nếu chưa có service này, bạn hãy tạo hoặc cmt dòng này lại tạm thời nhé
+				var allActors = await _actorService.GetAllAsync();
+var actors = movie.SelectedActorIds != null
+    ? allActors.Where(a => movie.SelectedActorIds.Contains(a.Id)).ToList()
+    : new List<FinalCuongFilm.Common.DTOs.ActorDto>();
+
+				// Gán các biến phụ trợ vào ViewBag
 				ViewBag.StreamingUrl = streamingUrl;
-				ViewBag.MediaFile = selectedMediaFile;
 				ViewBag.QualitySources = qualitySources;
 				ViewBag.SubtitleFiles = subtitleFiles;
-				ViewBag.CurrentEpisode = currentEpisode;
-				ViewBag.Episodes = allEpisodes;
 				ViewBag.MovieId = movie.Id;
 				ViewBag.EpisodeId = currentEpisode?.Id;
+				ViewBag.IsFavorited = isFavorited;
+				ViewBag.Actors = actors;
 
 				_logger.LogInformation($"[Watch] Success: {movie.Title}, quality options: {qualitySources.Count}");
-				return View();
+
+				// THÊM MỚI 4: Truyền viewModel vào View thay vì để trống
+				return View(viewModel);
 			}
 			catch (Exception ex)
 			{

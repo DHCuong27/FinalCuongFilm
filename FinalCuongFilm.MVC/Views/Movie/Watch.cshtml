@@ -1,16 +1,23 @@
-﻿@{
-    ViewData["Title"] = "Watch Movie";
+﻿@using FinalCuongFilm.ApplicationCore.Entities
+@model FinalCuongFilm.MVC.Models.ViewModels.MovieWatchViewModel
+@using static FinalCuongFilm.ApplicationCore.Entities.Enum
+
+@{
+    ViewData["Title"] = "Watch " + Model.Movie.Title;
     Layout = "_LayoutUser";
 
-    var movie = ViewBag.Movie as FinalCuongFilm.Common.DTOs.MovieDto;
-    var mediaFile = ViewBag.MediaFile as FinalCuongFilm.Common.DTOs.MediaFileDto;
-    var currentEpisode = ViewBag.CurrentEpisode as FinalCuongFilm.Common.DTOs.EpisodeDto;
-    var episodes = ViewBag.Episodes as List<FinalCuongFilm.Common.DTOs.EpisodeDto>;
+    var currentEpisode = Model.CurrentEpisode;
+    var episodes = Model.Episodes;
+    var mediaFile = Model.MediaFiles?.FirstOrDefault(); // Lấy MediaFile đầu tiên hoặc tùy logic của bạn
 
-    // ── FIX #2: Nhận SAS URL + quality options + subtitles từ controller ──
+    // Các tham số phụ trợ nhận qua ViewBag
+    var isFavorited = ViewBag.IsFavorited as bool? ?? false;
+    var actors = ViewBag.Actors as IEnumerable<FinalCuongFilm.Common.DTOs.ActorDto>;
     var streamingUrl = ViewBag.StreamingUrl as string;
-    var movieId = ViewBag.MovieId;
-    var episodeId = ViewBag.EpisodeId;
+    var qualitySources = ViewBag.QualitySources as IEnumerable<dynamic>;
+
+    // Tạo ReturnUrl cho nút Login
+    var currentUrl = Url.Action("Watch", "Movie", new { slug = Model.Movie.Slug, ep = currentEpisode?.EpisodeNumber });
 }
 
 <!DOCTYPE html>
@@ -18,6 +25,18 @@
 <head>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
+        :root {
+            --netflix-red: #e50914;
+            --bg-dark: #0f0f0f;
+            --bg-card: #1a1a1a;
+            --bg-hover: #2a2a2a;
+            --text-primary: #ffffff;
+            --text-secondary: #a8a8a8;
+            --border-color: #303030;
+            --accent-yellow: #f5c518;
+            --transition-speed: 0.3s;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -25,8 +44,8 @@
         }
 
         body {
-            background: #0f0f0f;
-            color: #fff;
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
             line-height: 1.6;
         }
@@ -38,7 +57,7 @@
         }
 
         ::-webkit-scrollbar-track {
-            background: #1a1a1a;
+            background: var(--bg-dark);
         }
 
         ::-webkit-scrollbar-thumb {
@@ -50,100 +69,97 @@
                 background: #4d4d4d;
             }
 
-        /* Video Player Section - Netflix Style */
+        .watch-container {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Video Player Section */
         .video-section {
             background: #000;
             position: relative;
             width: 100%;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            z-index: 20;
         }
 
         .video-wrapper {
             position: relative;
             width: 100%;
+            max-width: 1600px;
+            margin: 0 auto;
             background: #000;
-            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
         video {
             width: 100%;
             height: auto;
-            max-height: 80vh;
+            max-height: 85vh;
             display: block;
             outline: none;
         }
 
-        /* Custom Video Controls (Netflix Style) */
-        .video-controls-overlay {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: linear-gradient(transparent, rgba(0,0,0,0.9));
-            padding: 20px;
-            opacity: 0;
-            transition: opacity 0.3s;
-            pointer-events: none;
-        }
-
-        .video-wrapper:hover .video-controls-overlay {
-            opacity: 1;
-            pointer-events: auto;
-        }
-
-        /* ── FIX #4: Quality Switcher Bar ── */
+        /* Quality Switcher Bar */
         .quality-bar {
-            background: rgba(0, 0, 0, 0.85);
-            padding: 8px 20px;
+            background: #141414;
+            padding: 12px 4%;
             display: flex;
             align-items: center;
-            gap: 10px;
+            justify-content: center;
+            gap: 15px;
             flex-wrap: wrap;
+            border-bottom: 1px solid var(--border-color);
         }
 
         .quality-bar-label {
-            color: #b3b3b3;
-            font-size: 0.82rem;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
             font-weight: 600;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 1px;
         }
 
         .quality-btn {
-            padding: 4px 14px;
+            padding: 6px 18px;
             border-radius: 20px;
             border: 1px solid #444;
             background: transparent;
-            color: #b3b3b3;
-            font-size: 0.82rem;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.15s;
+            transition: all var(--transition-speed);
             font-family: inherit;
         }
 
             .quality-btn:hover {
-                border-color: #e50914;
-                color: #fff;
+                border-color: var(--netflix-red);
+                color: var(--text-primary);
             }
 
             .quality-btn.active {
-                background: #e50914;
-                border-color: #e50914;
-                color: #fff;
+                background: var(--netflix-red);
+                border-color: var(--netflix-red);
+                color: var(--text-primary);
             }
 
-        /* ── FIX #4: Resume Banner ── */
+        /* Resume Banner */
         .resume-banner {
             background: rgba(229, 9, 20, 0.1);
-            border: 1px solid rgba(229, 9, 20, 0.35);
-            border-radius: 6px;
-            padding: 12px 18px;
-            margin-bottom: 18px;
+            border-left: 4px solid var(--netflix-red);
+            border-radius: 4px;
+            padding: 12px 20px;
+            margin-bottom: 25px;
             display: none;
             align-items: center;
             justify-content: space-between;
-            gap: 12px;
+            gap: 15px;
             flex-wrap: wrap;
+            animation: slideDown 0.4s ease;
         }
 
             .resume-banner.visible {
@@ -151,91 +167,105 @@
             }
 
             .resume-banner p {
-                color: #fff;
-                font-size: 0.92rem;
+                color: var(--text-primary);
+                font-size: 0.95rem;
                 margin: 0;
             }
 
                 .resume-banner p span {
-                    color: #e50914;
+                    color: var(--netflix-red);
                     font-weight: 700;
                 }
 
         .resume-btn {
-            padding: 6px 16px;
-            background: #e50914;
-            color: #fff;
+            padding: 8px 20px;
+            background: var(--netflix-red);
+            color: white;
             border: none;
             border-radius: 4px;
             cursor: pointer;
-            font-size: 0.85rem;
+            font-size: 0.9rem;
             font-weight: 600;
-            font-family: inherit;
+            transition: all var(--transition-speed);
         }
 
             .resume-btn:hover {
                 background: #f40612;
+                transform: scale(1.05);
             }
 
         .dismiss-btn {
             background: transparent;
             border: none;
-            color: #b3b3b3;
+            color: var(--text-secondary);
             cursor: pointer;
-            font-size: 1.1rem;
+            font-size: 1.2rem;
+            transition: color var(--transition-speed);
         }
 
-        /* Info Section - Netflix Style */
+            .dismiss-btn:hover {
+                color: var(--text-primary);
+            }
+
+        /* Info Section */
         .info-section {
             max-width: 1400px;
             margin: 0 auto;
-            padding: 30px 4%;
+            padding: 40px 4%;
+            width: 100%;
         }
 
         .movie-title {
-            font-size: 2.5rem;
-            font-weight: 700;
+            font-size: 2.8rem;
+            font-weight: 800;
             margin-bottom: 15px;
             letter-spacing: -0.5px;
+            display: flex;
+            align-items: baseline;
+            gap: 15px;
+            flex-wrap: wrap;
         }
 
             .movie-title span {
-                font-size: 1.5rem;
-                color: #b3b3b3;
-                font-weight: 400;
+                font-size: 1.4rem;
+                color: var(--text-secondary);
+                font-weight: 500;
             }
 
         .movie-meta {
             display: flex;
             align-items: center;
             gap: 15px;
-            color: #b3b3b3;
+            color: var(--text-secondary);
             font-size: 1rem;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
             flex-wrap: wrap;
+            font-weight: 500;
         }
 
         .meta-badge {
             background: rgba(255,255,255,0.1);
-            padding: 4px 10px;
+            padding: 4px 12px;
             border-radius: 4px;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+            border: 1px solid rgba(255,255,255,0.1);
         }
 
         .match-score {
             color: #46d369;
-            font-weight: 600;
+            font-weight: 700;
         }
 
         .movie-description {
-            color: #b3b3b3;
+            color: #d2d2d2;
             line-height: 1.8;
             margin-bottom: 30px;
-            max-width: 800px;
+            max-width: 900px;
             font-size: 1.1rem;
         }
 
-        /* Action Buttons - Netflix Style */
+        /* Action Buttons */
         .action-buttons {
             display: flex;
             gap: 15px;
@@ -247,40 +277,93 @@
             display: inline-flex;
             align-items: center;
             gap: 10px;
-            padding: 12px 30px;
-            border-radius: 4px;
+            padding: 12px 25px;
+            border-radius: 6px;
             font-weight: 600;
-            font-size: 1.1rem;
+            font-size: 1.05rem;
             text-decoration: none;
-            transition: all 0.2s;
+            transition: all var(--transition-speed);
             border: none;
             cursor: pointer;
         }
 
-        .btn-primary {
-            background: #e50914;
-            color: #fff;
-        }
-
-            .btn-primary:hover {
-                background: #f40612;
-                transform: scale(1.05);
-            }
-
         .btn-secondary {
-            background: rgba(255,255,255,0.1);
-            color: #fff;
-            backdrop-filter: blur(5px);
+            background: rgba(42, 42, 42, 0.8);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.1);
         }
 
             .btn-secondary:hover {
                 background: rgba(255,255,255,0.2);
-                transform: scale(1.05);
+                transform: translateY(-2px);
             }
 
-        /* Episodes Section - Netflix Style */
+            .btn-secondary.active {
+                color: var(--netflix-red);
+                border-color: var(--netflix-red);
+                background: rgba(229, 9, 20, 0.1);
+            }
+
+        /* Cast Grid */
+        .cast-section {
+            margin-bottom: 50px;
+        }
+
+        .cast-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 1.5rem;
+            margin-top: 20px;
+        }
+
+        .cast-card {
+            text-align: center;
+            transition: transform var(--transition-speed);
+        }
+
+            .cast-card:hover {
+                transform: translateY(-5px);
+            }
+
+        .cast-avatar {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            background: var(--bg-hover);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 0.8rem;
+            border: 2px solid var(--border-color);
+            overflow: hidden;
+        }
+
+            .cast-avatar img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+            }
+
+            .cast-avatar i {
+                font-size: 2.5rem;
+                color: var(--text-secondary);
+            }
+
+        .cast-name {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .cast-role {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        /* Episodes Section */
         .episodes-section {
-            margin-top: 50px;
+            margin-top: 20px;
         }
 
         .section-header {
@@ -288,51 +371,53 @@
             align-items: center;
             justify-content: space-between;
             margin-bottom: 25px;
-            flex-wrap: wrap;
-            gap: 15px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
         }
 
         .section-title {
-            font-size: 1.8rem;
-            font-weight: 600;
-            color: #fff;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
             display: flex;
             align-items: center;
             gap: 10px;
         }
 
         .episode-count {
-            color: #b3b3b3;
-            font-size: 1.2rem;
-            font-weight: 400;
+            color: var(--text-secondary);
+            font-size: 1rem;
+            font-weight: 500;
         }
 
         .episodes-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 25px;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
         }
 
         .episode-card {
-            background: linear-gradient(to bottom, #1f1f1f, #171717);
+            background: var(--bg-card);
             border-radius: 8px;
             overflow: hidden;
-            transition: all 0.3s cubic-bezier(0.5, 1, 0.89, 1);
+            transition: all var(--transition-speed);
             text-decoration: none;
-            color: white;
+            color: var(--text-primary);
             position: relative;
-            border: 2px solid transparent;
+            border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
         }
 
             .episode-card:hover {
-                transform: scale(1.05) translateY(-10px);
-                box-shadow: 0 20px 40px rgba(0,0,0,0.5);
-                z-index: 10;
+                transform: translateY(-5px);
+                border-color: rgba(255,255,255,0.2);
+                box-shadow: 0 10px 20px rgba(0,0,0,0.5);
             }
 
             .episode-card.active {
-                border-color: #e50914;
-                box-shadow: 0 0 20px rgba(229, 9, 20, 0.3);
+                border-color: var(--netflix-red);
+                background: rgba(229, 9, 20, 0.05);
             }
 
         .episode-thumbnail {
@@ -347,94 +432,110 @@
                 width: 100%;
                 height: 100%;
                 object-fit: cover;
-                transition: transform 0.3s;
+                opacity: 0.7;
+                transition: transform var(--transition-speed);
             }
 
         .episode-card:hover .episode-thumbnail img {
-            transform: scale(1.1);
+            transform: scale(1.05);
+            opacity: 1;
         }
 
         .episode-thumbnail i {
-            font-size: 4rem;
-            color: #404040;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100%;
+            font-size: 3rem;
+            color: rgba(255,255,255,0.8);
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            transition: transform var(--transition-speed);
         }
 
-        /* ── FIX #4: Episode Progress Bar ── */
+        .episode-card:hover .episode-thumbnail i {
+            transform: translate(-50%, -50%) scale(1.1);
+            color: var(--netflix-red);
+        }
+
         .ep-progress {
             position: absolute;
             bottom: 0;
             left: 0;
-            height: 3px;
-            background: #e50914;
-            transition: width 0.3s;
+            height: 4px;
+            background: var(--netflix-red);
+            transition: width 0.3s ease;
             width: 0%;
+            z-index: 2;
         }
 
         .episode-badge {
             position: absolute;
-            top: 10px;
+            bottom: 10px;
             right: 10px;
             background: rgba(0,0,0,0.8);
-            color: #fff;
+            color: white;
             padding: 4px 8px;
             border-radius: 4px;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             font-weight: 600;
+            backdrop-filter: blur(4px);
         }
 
         .episode-info {
-            padding: 18px;
+            padding: 15px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
         }
 
         .episode-number {
-            color: #e50914;
-            font-size: 0.9rem;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
             font-weight: 600;
-            margin-bottom: 8px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            margin-bottom: 5px;
+        }
+
+        .episode-card.active .episode-number {
+            color: var(--netflix-red);
         }
 
         .episode-title {
-            font-size: 1.2rem;
+            font-size: 1rem;
             font-weight: 600;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
         }
 
-        .episode-duration {
-            color: #b3b3b3;
-            font-size: 0.9rem;
-            display: flex;
-            align-items: center;
-            gap: 5px;
+        /* Next Episode Hint */
+        .next-episode-hint {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: var(--bg-card);
+            border-left: 4px solid var(--netflix-red);
+            padding: 20px;
+            border-radius: 8px;
+            max-width: 320px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            animation: slideIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 1000;
         }
 
-        /* Loading State */
-        .loading {
-            text-align: center;
-            padding: 60px;
-        }
-
-        .spinner {
-            width: 50px;
-            height: 50px;
-            border: 3px solid #333;
-            border-top-color: #e50914;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 20px;
-        }
-
-        @@keyframes spin {
-            to {
-                transform: rotate(360deg);
+            .next-episode-hint h4 {
+                color: var(--text-primary);
+                margin-bottom: 8px;
+                font-size: 1.1rem;
             }
-        }
+
+            .next-episode-hint p {
+                color: var(--text-secondary);
+                font-size: 0.9rem;
+                margin-bottom: 15px;
+            }
 
         /* Error Message */
         .error-container {
@@ -446,107 +547,45 @@
         }
 
         .error-message {
-            background: linear-gradient(135deg, rgba(229, 9, 20, 0.1), rgba(229, 9, 20, 0.05));
-            border: 1px solid rgba(229, 9, 20, 0.3);
+            background: rgba(229, 9, 20, 0.05);
+            border: 1px solid rgba(229, 9, 20, 0.2);
             padding: 40px;
             border-radius: 12px;
-            color: #fff;
+            color: white;
             max-width: 500px;
             text-align: center;
-            backdrop-filter: blur(10px);
         }
 
             .error-message h2 {
-                color: #e50914;
-                margin-bottom: 20px;
-                font-size: 2rem;
+                color: var(--netflix-red);
+                margin-bottom: 15px;
             }
 
         .error-icon {
-            font-size: 5rem;
+            font-size: 4rem;
             margin-bottom: 20px;
-            color: #e50914;
+            color: var(--netflix-red);
         }
 
-        /* Responsive */
-        @@media (max-width: 768px) {
-            .movie-title {
-                font-size: 1.8rem;
-            }
-
-                .movie-title span {
-                    font-size: 1.2rem;
-                }
-
-            .section-title {
-                font-size: 1.5rem;
-            }
-
-            .episodes-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .btn {
-                padding: 10px 20px;
-                font-size: 1rem;
-            }
-        }
-
-        /* Progress Bar - Netflix Style */
-        .progress-bar {
-            height: 3px;
-            background: rgba(255,255,255,0.2);
-            position: relative;
-            cursor: pointer;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: #e50914;
-            width: 0;
-            transition: width 0.1s;
-        }
-
-        /* Volume Control */
-        .volume-control {
+        /* Toast */
+        .toast-notification {
+            position: fixed;
+            top: 90px;
+            right: 20px;
+            background: var(--bg-card);
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            z-index: 9999;
+            animation: slideIn 0.3s ease;
             display: flex;
             align-items: center;
-            gap: 10px;
-        }
-
-        .volume-slider {
-            width: 80px;
-            height: 3px;
-            background: rgba(255,255,255,0.2);
-            border-radius: 2px;
-            position: relative;
-            cursor: pointer;
-        }
-
-        .volume-fill {
-            height: 100%;
-            background: #fff;
-            width: 100%;
-            border-radius: 2px;
-        }
-
-        /* Next Episode Hint */
-        .next-episode-hint {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: rgba(0,0,0,0.9);
-            border-left: 3px solid #e50914;
-            padding: 15px;
-            border-radius: 4px;
-            max-width: 300px;
-            animation: slideIn 0.3s;
-            z-index: 1000;
+            gap: 1rem;
         }
 
         @@keyframes slideIn {
             from {
-                transform: translateX(100%);
+                transform: translateX(120%);
                 opacity: 0;
             }
 
@@ -556,93 +595,111 @@
             }
         }
 
-        .next-episode-hint h4 {
-            color: #fff;
-            margin-bottom: 5px;
-            font-size: 1rem;
+        @@keyframes slideDown {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
         }
 
-        .next-episode-hint p {
-            color: #b3b3b3;
-            font-size: 0.9rem;
+        @@media (max-width: 768px) {
+            .movie-title {
+                font-size: 2rem;
+            }
+
+                .movie-title span {
+                    font-size: 1.2rem;
+                }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .next-episode-hint {
+                bottom: 20px;
+                right: 20px;
+                left: 20px;
+                max-width: none;
+            }
         }
     </style>
 </head>
 <body>
     <div class="watch-container">
-        @* ── FIX #2: Kiểm tra streamingUrl thay vì mediaFile.FileUrl ── *@
-        @if (movie == null || mediaFile == null || string.IsNullOrEmpty(streamingUrl))
+        @if (Model.Movie == null || mediaFile == null || string.IsNullOrEmpty(streamingUrl))
         {
             <div class="error-container">
                 <div class="error-message">
-                    <div class="error-icon">
-                        <i class="fas fa-exclamation-circle"></i>
-                    </div>
+                    <div class="error-icon"><i class="fas fa-exclamation-triangle"></i></div>
                     <h2>Unable to Load Video</h2>
-                    <p style="margin-bottom: 20px; color: #b3b3b3;">
-                        @(movie == null ? "❌ Movie information not found." : "")
-                        @(mediaFile == null || string.IsNullOrEmpty(streamingUrl) ? "❌ Video file not available." : "")
+                    <p style="margin-bottom: 25px; color: var(--text-secondary);">
+                        @(Model.Movie == null ? "Movie information not found. " : "")
+                        @(mediaFile == null || string.IsNullOrEmpty(streamingUrl) ? "Video file is currently unavailable." : "")
                     </p>
-                    <a href="/Movie/Detail/@(movie?.Slug ?? "unknown")" class="btn btn-primary">
-                        <i class="fas fa-arrow-left"></i> Back to Detail
+                    <a href="/Movie/Detail/@(Model.Movie?.Slug ?? "unknown")" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Return to Details
                     </a>
                 </div>
             </div>
         }
         else
         {
-            <!-- Video Player Section -->
             <div class="video-section">
                 <div class="video-wrapper">
-                    @* ── FIX #2: KHÔNG đặt src ở đây — JS sẽ set sau để tránh lộ URL trong HTML source ── *@
                     <video id="videoPlayer"
                            controls
                            controlsList="nodownload"
                            preload="metadata"
-                           poster="@(movie.PosterUrl ?? "")">
+                           poster="@(Model.Movie.PosterUrl ?? "")">
                         Your browser does not support the video tag.
                     </video>
                 </div>
 
-                @* ── FIX #4: Quality Switcher — chỉ hiển thị nếu có nhiều hơn 1 quality ── *@
-                @{
-                    var qualitySources = ViewBag.QualitySources as IEnumerable<dynamic>;
-                    var qualityList = qualitySources?.ToList();
-                }
-                @if (qualityList != null && qualityList.Count > 1)
+                @if (qualitySources != null && qualitySources.Any())
                 {
-                    <div class="quality-bar">
-                        <span class="quality-bar-label"><i class="fas fa-film"></i> Quality:</span>
-                        @for (int qi = 0; qi < qualityList.Count; qi++)
-                        {
-                            var qs = qualityList[qi];
-                            <button type="button"
-                                    class="quality-btn @(qi == 0 ? "active" : "")"
-                                    data-url="@qs.url"
-                                    onclick="switchQuality(this)">
-                                @qs.quality
-                            </button>
-                        }
-                    </div>
+                    var qualityList = qualitySources.ToList();
+                    if (qualityList.Count > 1)
+                    {
+                        <div class="quality-bar">
+                            <span class="quality-bar-label"><i class="fas fa-cog"></i> Quality:</span>
+                            @for (int qi = 0; qi < qualityList.Count; qi++)
+                            {
+                                var qs = qualityList[qi];
+                                <button type="button"
+                                        class="quality-btn @(qi == 0 ? "active" : "")"
+                                        data-url="@qs.url"
+                                        onclick="switchQuality(this)">
+                                    @qs.quality
+                                </button>
+                            }
+                        </div>
+                    }
                 }
             </div>
 
-            <!-- Movie Info Section -->
             <div class="info-section">
-
-                @* ── FIX #4: Resume Banner ── *@
                 <div class="resume-banner" id="resumeBanner">
                     <p>You left off at <span id="resumeTime">—</span></p>
-                    <div style="display:flex; gap:8px; align-items:center;">
+                    <div style="display:flex; gap:10px; align-items:center;">
                         <button class="resume-btn" onclick="resumePlayback()">
-                            <i class="fas fa-play"></i> Resume
+                            <i class="fas fa-play"></i> Resume Playing
                         </button>
-                        <button class="dismiss-btn" onclick="dismissResume()" title="Dismiss">✕</button>
+                        <button class="dismiss-btn" onclick="dismissResume()" title="Dismiss"><i class="fas fa-times"></i></button>
                     </div>
                 </div>
 
                 <h1 class="movie-title">
-                    @movie.Title
+                    @Model.Movie.Title
                     @if (currentEpisode != null)
                     {
                         <span>Episode @currentEpisode.EpisodeNumber</span>
@@ -650,12 +707,12 @@
                 </h1>
 
                 <div class="movie-meta">
-                    @if (movie.ReleaseYear.HasValue)
+                    @if (Model.Movie.ReleaseYear.HasValue)
                     {
-                        <span>@movie.ReleaseYear</span>
+                        <span>@Model.Movie.ReleaseYear</span>
                     }
                     <span class="match-score">97% Match</span>
-                    <span class="meta-badge">@movie.Type</span>
+                    <span class="meta-badge">@Model.Movie.Type</span>
                     @if (mediaFile.Quality != null)
                     {
                         <span class="meta-badge">@mediaFile.Quality</span>
@@ -667,62 +724,93 @@
                 </div>
 
                 <div class="action-buttons">
-                    <button class="btn btn-primary" onclick="togglePlayPause()">
-                        <i class="fas fa-play" id="playIcon"></i>
-                        <span id="playLabel">Play</span>
-                    </button>
-                    <a href="#" class="btn btn-secondary">
-                        <i class="fas fa-plus"></i> Add to List
+                    <a href="/Movie/Detail/@Model.Movie.Slug" class="btn btn-secondary">
+                        <i class="fas fa-info-circle"></i> Details
                     </a>
-                    <a href="#" class="btn btn-secondary">
-                        <i class="fas fa-thumbs-up"></i> Like
-                    </a>
+
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        <button type="button"
+                                class="btn btn-secondary favorite-toggle-btn @(isFavorited ? "active" : "")"
+                                data-movie-id="@Model.Movie.Id"
+                                data-is-favorited="@isFavorited.ToString().ToLower()">
+                            <i class="@(isFavorited ? "fas" : "far") fa-heart" id="favoriteIcon"></i>
+                            <span id="favoriteText">@(isFavorited ? "Favorited" : "Add to My List")</span>
+                        </button>
+                    }
+                    else
+                    {
+                        <a href="/Identity/Account/Login?returnUrl=@Uri.EscapeDataString(currentUrl)" class="btn btn-secondary">
+                            <i class="far fa-heart"></i> Add to My List
+                        </a>
+                    }
                 </div>
 
-                @if (!string.IsNullOrEmpty(movie.Description))
+                @if (!string.IsNullOrEmpty(Model.Movie.Description))
                 {
                     <div class="movie-description">
-                        @movie.Description
+                        @Model.Movie.Description
                     </div>
                 }
 
-                <!-- Episodes List -->
+                @if (actors != null && actors.Any())
+                {
+                    <div class="cast-section">
+                        <div class="section-header">
+                            <h2 class="section-title"><i class="fas fa-users"></i> Cast</h2>
+                        </div>
+                        <div class="cast-grid">
+                            @foreach (var actor in actors.Take(8))
+                            {
+                                <div class="cast-card">
+                                    <div class="cast-avatar">
+                                        @if (!string.IsNullOrEmpty(actor.AvartUrl))
+                                        {
+                                            <img src="@actor.AvartUrl" alt="@actor.Name">
+                                        }
+                                        else
+                                        {
+                                            <i class="fas fa-user"></i>
+                                        }
+                                    </div>
+                                    <div class="cast-name">@actor.Name</div>
+                                    <div class="cast-role">@(string.IsNullOrEmpty(actor.Gender) ? "Actor" : actor.Gender)</div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+
                 @if (episodes != null && episodes.Any())
                 {
                     <div class="episodes-section">
                         <div class="section-header">
-                            <h2 class="section-title">
-                                <i class="fas fa-list"></i>
-                                Episodes
-                            </h2>
-                            <span class="episode-count">@episodes.Count episodes</span>
+                            <h2 class="section-title"><i class="fas fa-layer-group"></i> Episodes</h2>
+                            <span class="episode-count">@episodes.Count Episodes</span>
                         </div>
 
                         <div class="episodes-grid">
                             @foreach (var episode in episodes)
                             {
                                 var isActive = currentEpisode != null && episode.Id == currentEpisode.Id;
-                                var episodeUrl = $"/Movie/Watch/{movie.Slug}?ep={episode.EpisodeNumber}";
+                                var episodeUrl = $"/Movie/Watch/{Model.Movie.Slug}?ep={episode.EpisodeNumber}";
 
                                 <a href="@episodeUrl" class="episode-card @(isActive ? "active" : "")">
                                     <div class="episode-thumbnail">
-                                        <i class="fas fa-play-circle"></i>
+                                        <i class="fas fa-play"></i>
                                         @if (episode.DurationMinutes.HasValue)
                                         {
                                             <span class="episode-badge">@episode.DurationMinutes min</span>
                                         }
-                                        @* ── FIX #4: Progress bar cho tập đang xem ── *@
                                         @if (isActive)
                                         {
                                             <div class="ep-progress" id="epProgressBar"></div>
                                         }
                                     </div>
                                     <div class="episode-info">
-                                        <div class="episode-number">Episode @episode.EpisodeNumber</div>
-                                        <div class="episode-title">@episode.Title</div>
-                                        <div class="episode-duration">
-                                            <i class="far fa-clock"></i>
-                                            @(episode.DurationMinutes.HasValue ? $"{episode.DurationMinutes} min" : "Duration N/A")
+                                        <div>
+                                            <div class="episode-number">Episode @episode.EpisodeNumber</div>
+                                            <div class="episode-title">@episode.Title</div>
                                         </div>
                                     </div>
                                 </a>
@@ -730,53 +818,39 @@
                         </div>
                     </div>
                 }
-
-                <!-- Back Button -->
-                <div style="margin-top: 50px;">
-                    <a href="/Movie/Detail/@movie.Slug" class="btn btn-secondary">
-                        <i class="fas fa-arrow-left"></i> Back to Detail
-                    </a>
-                </div>
             </div>
         }
     </div>
 
-    <!-- Next Episode Hint -->
     @if (currentEpisode != null && episodes != null)
     {
         var nextEpisode = episodes.FirstOrDefault(e => e.EpisodeNumber == (currentEpisode.EpisodeNumber + 1));
         if (nextEpisode != null)
         {
             <div class="next-episode-hint" id="nextEpisodeHint" style="display: none;">
-                <h4>Up next: Episode @nextEpisode.EpisodeNumber</h4>
+                <h4>Up Next: Episode @nextEpisode.EpisodeNumber</h4>
                 <p>@nextEpisode.Title</p>
-                <a href="/Movie/Watch/@movie?.Slug?ep=@nextEpisode.EpisodeNumber"
-                   class="btn btn-primary"
-                   style="padding: 8px 16px; font-size: 0.9rem; margin-top: 10px;">
-                    <i class="fas fa-play"></i> Play Next Episode
+                <a href="/Movie/Watch/@Model.Movie?.Slug?ep=@nextEpisode.EpisodeNumber" class="btn btn-secondary" style="width: 100%; justify-content: center; background: var(--netflix-red); border: none;">
+                    <i class="fas fa-play"></i> Play Next
                 </a>
             </div>
         }
     }
 
-    <script>
-        // ══════════════════════════════════════════
-        // CONFIG — inject server-side, không để raw URL trong HTML attribute
-        // ══════════════════════════════════════════
-        const STREAMING_URL = '@Html.Raw(streamingUrl ?? "")';
-        const MOVIE_ID      = '@Html.Raw(movieId?.ToString() ?? "")';
-        const EPISODE_ID    = '@Html.Raw(episodeId?.ToString() ?? "")';
+    @Html.AntiForgeryToken()
 
-        // ══════════════════════════════════════════
-        // FIX #2: Set video src qua JS — URL không xuất hiện trong HTML source
-        // ══════════════════════════════════════════
+    <script>
+        const STREAMING_URL = '@Html.Raw(streamingUrl ?? "")';
+        const MOVIE_ID      = '@Html.Raw(Model.Movie?.Id.ToString() ?? "")';
+        const EPISODE_ID    = '@Html.Raw(currentEpisode?.Id.ToString() ?? "")';
+
         const video = document.getElementById('videoPlayer');
         let savedTime = 0;
 
         if (video && STREAMING_URL) {
             video.src = STREAMING_URL;
 
-            // ── FIX #4: Load saved progress từ Session ──
+            // Load saved progress
             if (MOVIE_ID) {
                 const epParam = EPISODE_ID ? `&episodeId=${EPISODE_ID}` : '';
                 fetch(`/Stream/GetProgress?movieId=${MOVIE_ID}${epParam}`)
@@ -786,49 +860,14 @@
                             savedTime = data.currentTime;
                             const mins = Math.floor(savedTime / 60);
                             const secs = Math.floor(savedTime % 60);
-                            document.getElementById('resumeTime').textContent =
-                                `${mins}:${secs.toString().padStart(2, '0')}`;
+                            document.getElementById('resumeTime').textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
                             document.getElementById('resumeBanner').classList.add('visible');
                         }
-                    })
-                    .catch(() => {});
+                    }).catch(() => {});
             }
 
-            // ── Video Events (giữ nguyên từ code gốc + bổ sung) ──
-            video.addEventListener('loadedmetadata', function () {
-                console.log('✅ Video metadata loaded');
-                console.log('Duration:', video.duration);
-                console.log('Video size:', video.videoWidth, 'x', video.videoHeight);
-            });
-
-            video.addEventListener('error', function (e) {
-                console.error('❌ Video error:', e);
-                console.error('Error code:', video.error?.code);
-                console.error('Error message:', video.error?.message);
-            });
-
-            video.addEventListener('canplay', function () {
-                console.log('✅ Video can play');
-            });
-
-            video.addEventListener('waiting', function () {
-                console.log('⏳ Video buffering...');
-            });
-
-            video.addEventListener('playing', function () {
-                console.log('▶️ Video playing');
-                document.getElementById('playIcon').className = 'fas fa-pause';
-                document.getElementById('playLabel').textContent = 'Pause';
-            });
-
-            video.addEventListener('pause', function () {
-                console.log('⏸️ Video paused');
-                document.getElementById('playIcon').className = 'fas fa-play';
-                document.getElementById('playLabel').textContent = 'Play';
-            });
-
+            // Auto Next Episode prompt
             video.addEventListener('ended', function () {
-                console.log('🏁 Video ended');
                 saveProgress();
                 const nextHint = document.getElementById('nextEpisodeHint');
                 if (nextHint) {
@@ -837,7 +876,7 @@
                 }
             });
 
-            // ── FIX #4: Cập nhật episode progress bar + lưu progress mỗi 5s ──
+            // Update progress bar & save state
             let saveTimer;
             video.addEventListener('timeupdate', function () {
                 const epBar = document.getElementById('epProgressBar');
@@ -848,92 +887,50 @@
                 saveTimer = setTimeout(saveProgress, 5000);
             });
 
-            // ── Keyboard controls (giữ nguyên + bổ sung Arrow không cần Ctrl) ──
+            // Keyboard shortcuts
             document.addEventListener('keydown', function (e) {
                 if (['INPUT', 'TEXTAREA'].includes(document.activeElement?.tagName)) return;
-                if (e.code === 'Space') {
-                    e.preventDefault();
-                    togglePlayPause();
-                } else if (e.code === 'ArrowRight') {
-                    video.currentTime += 10;
-                } else if (e.code === 'ArrowLeft') {
-                    video.currentTime -= 10;
-                } else if (e.code === 'ArrowUp') {
-                    video.volume = Math.min(1, video.volume + 0.1);
-                } else if (e.code === 'ArrowDown') {
-                    video.volume = Math.max(0, video.volume - 0.1);
-                } else if (e.code === 'KeyF') {
-                    toggleFullScreen();
-                } else if (e.code === 'KeyM') {
-                    video.muted = !video.muted;
-                }
+                if (e.code === 'Space') { e.preventDefault(); video.paused ? video.play() : video.pause(); }
+                else if (e.code === 'ArrowRight') { video.currentTime += 10; }
+                else if (e.code === 'ArrowLeft') { video.currentTime -= 10; }
+                else if (e.code === 'ArrowUp') { video.volume = Math.min(1, video.volume + 0.1); }
+                else if (e.code === 'ArrowDown') { video.volume = Math.max(0, video.volume - 0.1); }
+                else if (e.code === 'KeyF') { document.fullscreenElement ? document.exitFullscreen() : video.requestFullscreen(); }
+                else if (e.code === 'KeyM') { video.muted = !video.muted; }
             });
 
-            // Double click to fullscreen
-            video.addEventListener('dblclick', toggleFullScreen);
-
-            // Handle visibility change (giữ nguyên)
             document.addEventListener('visibilitychange', function () {
-                if (document.hidden && !video.paused) {
-                    console.log('👋 Page hidden, pausing video');
-                    video.pause();
-                    saveProgress();
-                }
+                if (document.hidden && !video.paused) { video.pause(); saveProgress(); }
             });
-
-        } else {
-            console.error('❌ Video element or streaming URL not found!');
         }
 
-        // ══════════════════════════════════════════
-        // FUNCTIONS
-        // ══════════════════════════════════════════
-        function togglePlayPause() {
-            if (!video) return;
-            video.paused ? video.play() : video.pause();
-        }
-
-        function toggleFullScreen() {
-            if (!video) return;
-            document.fullscreenElement
-                ? document.exitFullscreen()
-                : video.requestFullscreen();
-        }
-
-        // ── FIX #4: Lưu progress lên /Stream/Progress ──
         function saveProgress() {
             if (!video || !video.duration || video.currentTime < 5 || !MOVIE_ID) return;
             const pct = (video.currentTime / video.duration) * 100;
-            if (pct > 97) return; // Xem gần xong, không cần lưu
+            if (pct > 97) return;
+
             fetch('/Stream/Progress', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    movieId:     MOVIE_ID,
-                    episodeId:   EPISODE_ID || null,
-                    currentTime: video.currentTime,
-                    duration:    video.duration
-                })
+                body: JSON.stringify({ movieId: MOVIE_ID, episodeId: EPISODE_ID || null, currentTime: video.currentTime, duration: video.duration })
             }).catch(() => {});
         }
 
-        // ── FIX #4: Resume từ vị trí đã lưu ──
         function resumePlayback() {
             if (!video || savedTime <= 0) return;
             video.currentTime = savedTime;
             video.play();
-            document.getElementById('resumeBanner').classList.remove('visible');
+            dismissResume();
         }
 
         function dismissResume() {
             document.getElementById('resumeBanner').classList.remove('visible');
         }
 
-        // ── FIX #4: Đổi quality, giữ nguyên thời gian xem ──
         function switchQuality(btn) {
             if (!video || !btn.dataset.url) return;
             const currentTime = video.currentTime;
-            const wasPaused   = video.paused;
+            const wasPaused = video.paused;
 
             document.querySelectorAll('.quality-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
@@ -942,6 +939,72 @@
             video.load();
             video.currentTime = currentTime;
             if (!wasPaused) video.play();
+        }
+
+        // Favorite Logic - Matches Detail page using AJAX
+        document.addEventListener('DOMContentLoaded', function() {
+            const favoriteBtn = document.querySelector('.favorite-toggle-btn');
+            if(favoriteBtn) {
+                favoriteBtn.addEventListener('click', function() {
+                    const btn = this;
+                    const movieId = btn.getAttribute('data-movie-id');
+
+                    fetch('@Url.Action("Toggle", "Favorites")', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded'
+                        },
+                        body: `movieId=${movieId}&__RequestVerificationToken=${document.querySelector('input[name="__RequestVerificationToken"]').value}`
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            const icon = btn.querySelector('i');
+                            const text = btn.querySelector('span');
+
+                            if (data.isFavorite) {
+                                icon.classList.remove('far');
+                                icon.classList.add('fas');
+                                text.textContent = 'Favorited';
+                                btn.classList.add('active');
+                            } else {
+                                icon.classList.remove('fas');
+                                icon.classList.add('far');
+                                text.textContent = 'Add to My List';
+                                btn.classList.remove('active');
+                            }
+                            showToast(data.message, 'success');
+                        } else {
+                            showToast(data.message, 'error');
+                        }
+                    })
+                    .catch(err => showToast('An error occurred!', 'error'));
+                });
+            }
+        });
+
+        function showToast(message, type) {
+            const existingToast = document.querySelector('.toast-notification');
+            if (existingToast) existingToast.remove();
+
+            const borderColor = type === 'success' ? '#46d369' : '#e50914';
+            const icon = type === 'success' ? 'check-circle' : 'exclamation-circle';
+
+            const toast = document.createElement('div');
+            toast.className = 'toast-notification';
+            toast.style.borderLeft = `4px solid ${borderColor}`;
+            toast.innerHTML = `
+                <i class="fas fa-${icon}" style="color: ${borderColor}; font-size: 1.3rem;"></i>
+                <span style="color: var(--text-primary); font-weight: 500;">${message}</span>
+            `;
+
+            document.body.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(120%)';
+                toast.style.transition = 'all 0.3s ease';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
         }
     </script>
 </body>

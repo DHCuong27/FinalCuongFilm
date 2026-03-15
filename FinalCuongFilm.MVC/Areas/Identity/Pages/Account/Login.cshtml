@@ -7,63 +7,86 @@
 }
 
 <style>
+    /* Ẩn header, footer của layout chính */
+    header, footer, .navbar {
+        display: none !important;
+    }
+
     :root {
         --netflix-red: #e50914;
         --netflix-red-hover: #f6121d;
         --netflix-dark: #141414;
-        --netflix-darker: #0b0b0b;
-        --netflix-light: #b3b3b3;
         --netflix-white: #ffffff;
         --netflix-gray: #333;
         --netflix-input-bg: #333;
         --netflix-input-focus: #454545;
+        --netflix-light: #b3b3b3;
     }
 
-    /* ===== GLOBAL ===== */
     body {
         background-color: var(--netflix-dark);
         color: var(--netflix-white);
         font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
         min-height: 100vh;
+        margin: 0;
+        padding: 0;
     }
 
-    /* ===== BACKGROUND ===== */
     .netflix-login-container {
         position: relative;
         min-height: 100vh;
+        background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5));
+        background-size: cover;
+        background-position: center;
+        display: flex;
+        flex-direction: column;
     }
 
     /* ===== HEADER ===== */
     .netflix-header {
-        padding: 24px 48px;
+        padding: 24px 3%;
         position: absolute;
         top: 0;
         left: 0;
+        width: 100%;
         z-index: 10;
     }
 
-    .netflix-logo {
-        height: 42px;
+    .netflix-brand {
+        font-size: 2.5rem; /* Kích thước logo lớn */
+        font-weight: bold;
+        color: var(--netflix-red);
+        text-decoration: none;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
     }
 
-    /* ===== LOGIN BOX ===== */
+        .netflix-brand:hover {
+            color: var(--netflix-red); /* Giữ nguyên màu khi hover */
+        }
+
+    /* ===== CONTENT ===== */
+    .netflix-content-wrap {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    }
+
     .netflix-login-box {
-        background: rgba(0, 0, 0, 0.78);
-        backdrop-filter: blur(6px);
-        border-radius: 6px;
-        padding: 60px 68px 48px;
-        margin: 0 auto;
+        background: rgba(0, 0, 0, 0.75);
+        border-radius: 4px;
+        padding: 60px 68px 40px;
+        width: 100%;
         max-width: 450px;
-        min-height: 640px;
-        position: relative;
-        top: 90px;
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.04);
+        min-height: 550px;
     }
 
     .netflix-login-title {
         font-size: 32px;
         font-weight: 700;
         margin-bottom: 28px;
+        color: #fff;
     }
 
     /* ===== FORM ===== */
@@ -74,147 +97,135 @@
 
     .netflix-input {
         width: 100%;
-        height: 52px;
+        height: 50px;
         background-color: var(--netflix-input-bg);
-        border: 1px solid var(--netflix-gray);
+        border: none;
         border-radius: 4px;
-        color: var(--netflix-white);
+        color: #fff;
         font-size: 16px;
-        padding: 20px 16px 6px;
-        transition: all 0.2s ease;
+        padding: 16px 20px 0;
     }
 
         .netflix-input:focus {
             background-color: var(--netflix-input-focus);
-            border-color: var(--netflix-white);
-            box-shadow: 0 0 0 1px rgba(255,255,255,0.3);
             outline: none;
         }
 
     .netflix-label {
         position: absolute;
         top: 16px;
-        left: 16px;
+        left: 20px;
         color: var(--netflix-light);
         font-size: 16px;
         pointer-events: none;
-        transition: all 0.18s ease;
+        transition: all 0.1s ease;
     }
 
     .netflix-input:focus + .netflix-label,
     .netflix-input:not(:placeholder-shown) + .netflix-label {
         top: 6px;
         font-size: 11px;
-        color: #8c8c8c;
     }
 
-    /* ===== BUTTON ===== */
     .netflix-btn {
         width: 100%;
         height: 50px;
         background-color: var(--netflix-red);
-        color: var(--netflix-white);
+        color: #fff;
         border: none;
         border-radius: 4px;
         font-size: 16px;
         font-weight: 700;
-        margin: 24px 0 12px;
+        margin-top: 24px;
         cursor: pointer;
-        transition: background 0.2s ease, transform 0.05s ease;
     }
 
         .netflix-btn:hover {
             background-color: var(--netflix-red-hover);
         }
 
-        .netflix-btn:active {
-            transform: scale(0.98);
-        }
-
-    /* ===== REMEMBER / HELP ===== */
     .netflix-remember-help {
         display: flex;
         justify-content: space-between;
         align-items: center;
+        margin-top: 10px;
         font-size: 13px;
-        color: var(--netflix-light);
+        color: #b3b3b3;
     }
 
     .netflix-help-link {
-        color: var(--netflix-light);
+        color: #b3b3b3;
+        text-decoration: none;
     }
 
         .netflix-help-link:hover {
             text-decoration: underline;
         }
 
-    /* ===== DIVIDER ===== */
-    .netflix-or-divider {
-        display: flex;
-        align-items: center;
-        margin: 22px 0;
-        font-size: 13px;
-        color: var(--netflix-light);
+    .netflix-signup-now {
+        color: #737373;
+        font-size: 16px;
+        margin-top: 16px;
     }
 
-        .netflix-or-divider::before,
-        .netflix-or-divider::after {
-            content: '';
-            flex: 1;
-            height: 1px;
-            background-color: var(--netflix-gray);
-        }
-
-        .netflix-or-divider span {
-            padding: 0 12px;
-        }
-
-    /* ===== GOOGLE BUTTON ===== */
-    .netflix-google-btn {
-        width: 100%;
-        height: 50px;
-        background-color: transparent;
-        color: var(--netflix-light);
-        border: 1px solid var(--netflix-gray);
-        border-radius: 4px;
-        font-size: 15px;
-        font-weight: 500;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 10px;
-        transition: all 0.2s ease;
+    .netflix-signup-link {
+        color: #fff;
+        text-decoration: none;
+        margin-left: 5px;
     }
 
-        .netflix-google-btn:hover {
-            background-color: rgba(255, 255, 255, 0.08);
-            border-color: var(--netflix-white);
-            color: var(--netflix-white);
+        .netflix-signup-link:hover {
+            text-decoration: underline;
         }
-
-    /* ===== VALIDATION ===== */
-    .validation-summary {
-        background-color: rgba(232, 124, 3, 0.15);
-        color: #ffb74d;
-        padding: 12px 16px;
-        border-radius: 4px;
-        margin-bottom: 20px;
-        font-size: 14px;
-    }
 
     /* ===== FOOTER ===== */
     .netflix-footer {
-        background-color: rgba(0, 0, 0, 0.75);
-        padding: 32px 0;
-        margin-top: 120px;
+        background: rgba(0,0,0,0.75);
+        padding: 30px 0;
+        margin-top: auto; /* Đẩy footer xuống đáy nếu nội dung ngắn */
+        color: #737373;
+        font-size: 13px;
     }
 
-   
+    .footer-content {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 0 20px;
+        text-align: center;
+    }
+
+    .validation-summary {
+        background-color: #e87c03;
+        border-radius: 4px;
+        font-size: 14px;
+        margin-bottom: 16px;
+        padding: 10px 20px;
+        color: white;
+    }
+
+        .validation-summary ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+    .validation-message {
+        color: #e87c03;
+        font-size: 13px;
+    }
 </style>
 
 <div class="netflix-login-container">
-    <!-- Login Form -->
-    <div class="container">
+    <!-- Header -->
+    <div class="netflix-header">
+        <a href="/" class="netflix-brand">
+            <!-- Bạn có thể thay bằng thẻ <img> nếu có file logo -->
+            <i class="fas fa-film"></i> CuongFilm
+        </a>
+    </div>
+
+    <!-- Main Content -->
+    <div class="netflix-content-wrap">
         <div class="netflix-login-box">
             <h1 class="netflix-login-title">Sign In</h1>
 
@@ -232,85 +243,43 @@
 
             <form id="account" method="post">
                 <div class="netflix-form-group">
-                    <input asp-for="Input.Email"
-                           class="netflix-input"
-                           autocomplete="username"
-                           aria-required="true"
-                           placeholder=" " />
+                    <input asp-for="Input.Email" class="netflix-input" autocomplete="username" placeholder=" " />
                     <label asp-for="Input.Email" class="netflix-label">Email</label>
                     <span asp-validation-for="Input.Email" class="validation-message"></span>
                 </div>
 
                 <div class="netflix-form-group">
-                    <input asp-for="Input.Password"
-                           class="netflix-input"
-                           autocomplete="current-password"
-                           aria-required="true"
-                           placeholder=" " />
+                    <input asp-for="Input.Password" class="netflix-input" autocomplete="current-password" placeholder=" " />
                     <label asp-for="Input.Password" class="netflix-label">Password</label>
                     <span asp-validation-for="Input.Password" class="validation-message"></span>
                 </div>
 
+                <button id="login-submit" type="submit" class="netflix-btn">Sign In</button>
+
                 <div class="netflix-remember-help">
-                    <div class="netflix-checkbox">
-                        <input class="form-check-input" asp-for="Input.RememberMe" />
-                        <label asp-for="Input.RememberMe" class="form-label">
-                            Remember me
-                        </label>
+                    <div class="form-check">
+                        <input class="form-check-input" asp-for="Input.RememberMe" style="background-color: #333; border-color: #333;" />
+                        <label class="form-check-label" asp-for="Input.RememberMe">Remember me</label>
                     </div>
-                    <a id="forgot-password" asp-page="./ForgotPassword" class="netflix-help-link">
-                        Need help?
-                    </a>
-                </div>
-
-                <button id="login-submit" type="submit" class="netflix-btn">
-                    Sign In
-                </button>
-
-                <div class="netflix-or-divider">
-                    <span>OR</span>
+                    <a id="forgot-password" asp-page="./ForgotPassword" class="netflix-help-link">Need help?</a>
                 </div>
 
                 <div class="netflix-signup-now">
-                    New to Netflix?
-                    <a asp-page="./Register" asp-route-returnUrl="@Model.ReturnUrl" class="netflix-signup-link">
-                        Sign up now
-                    </a>
+                    New to CuongFilm?
+                    <a asp-page="./Register" asp-route-returnUrl="@Model.ReturnUrl" class="netflix-signup-link">Sign up now</a>
                 </div>
             </form>
         </div>
     </div>
+
+    <!-- Footer -->
+    <div class="netflix-footer">
+        <div class="footer-content">
+            <p>&copy; @DateTime.Now.Year - CuongFilm Inc.</p>
+        </div>
+    </div>
 </div>
-
-
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
-    <script>
-        // Add Bootstrap Icons if not already included
-        if (!document.querySelector('link[href*="bootstrap-icons"]')) {
-            const link = document.createElement('link');
-            link.rel = 'stylesheet';
-            link.href = 'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css';
-            document.head.appendChild(link);
-        }
-
-        // Enhanced input label animation
-        document.querySelectorAll('.netflix-input').forEach(input => {
-            input.addEventListener('focus', function() {
-                this.parentElement.classList.add('focused');
-            });
-
-            input.addEventListener('blur', function() {
-                if (!this.value) {
-                    this.parentElement.classList.remove('focused');
-                }
-            });
-
-            // Check on page load
-            if (input.value) {
-                input.parentElement.classList.add('focused');
-            }
-        });
-    </script>
 }
