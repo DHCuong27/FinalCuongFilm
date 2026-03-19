@@ -10,7 +10,7 @@ namespace FinalCuongFilm.ApplicationCore.Entities
 		public Guid Id { get; set; } = Guid.NewGuid();
 
 		[Required]
-		public string UserId { get; set; } = string.Empty; // AspNetUsers.Id
+		public string UserId { get; set; } = string.Empty;
 
 		[Required]
 		public Guid MovieId { get; set; }

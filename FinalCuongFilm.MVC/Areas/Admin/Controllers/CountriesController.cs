@@ -1,5 +1,7 @@
 ﻿using FinalCuongFilm.ApplicationCore.Entities;
 using FinalCuongFilm.DataLayer;
+using FinalCuongFilm.Service.Interfaces;
+using FinalCuongFilm.Service.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -16,20 +18,27 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 	public class CountriesController : Controller
     {
         private readonly CuongFilmDbContext _context;
+		private readonly ICountryService _countryService;
 
-        public CountriesController(CuongFilmDbContext context)
+		public CountriesController(CuongFilmDbContext context, ICountryService countryService)
         {
-            _context = context;
+			_countryService = countryService;
+			_context = context;
         }
 
-        // GET: Countries
-        public async Task<IActionResult> Index()
-        {
-            return View(await _context.Countries.ToListAsync());
-        }
+		// GET: Countries
+		public async Task<IActionResult> Index(int page = 1)
+		{
+			int pageSize = 10;
 
-        // GET: Countries/Details/5
-        public async Task<IActionResult> Details(Guid? id)
+			// Gọi hàm phân trang vừa viết
+			var pagedData = await _countryService.GetPagedAsync(page, pageSize);
+
+			return View(pagedData); // Đẩy PagedResult ra View
+		}
+
+		// GET: Countries/Details/5
+		public async Task<IActionResult> Details(Guid? id)
         {
             if (id == null)
             {

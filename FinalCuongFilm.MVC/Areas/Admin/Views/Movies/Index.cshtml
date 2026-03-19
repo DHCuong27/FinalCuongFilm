@@ -1,4 +1,5 @@
-﻿@model IEnumerable<FinalCuongFilm.Common.DTOs.MovieDto>
+﻿@model FinalCuongFilm.Common.DTOs.PagedResult<FinalCuongFilm.Common.DTOs.MovieDto>
+
 @{
     ViewData["Title"] = "Movie Management";
 }
@@ -73,216 +74,360 @@
             box-shadow: 0 4px 12px rgba(229,9,20,.35);
         }
 
-    .nf-btn-ghost {
-        background: transparent;
-        color: var(--nf-lgray);
-        border: 1px solid var(--nf-border);
+    .nf-btn-blue {
+        background: var(--nf-blue);
+        color: #fff;
     }
 
-        .nf-btn-ghost:hover {
-            background: var(--nf-border);
-            color: var(--nf-white);
-        }
-
+    /* Icon Buttons */
     .nf-btn-icon {
-        display: inline-flex;
+        position: relative;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
         align-items: center;
         justify-content: center;
-        width: 32px;
-        height: 32px;
-        border-radius: 6px;
-        border: 1px solid transparent;
+        color: white;
         text-decoration: none;
-        transition: all .18s;
+        transition: all 0.3s ease;
+        background: #2a2a2a;
+        border: 2px solid #404040;
     }
 
-        .nf-btn-icon.view {
-            color: var(--nf-blue);
-            border-color: rgba(52,152,219,.35);
-            background: rgba(52,152,219,.08);
+        .nf-btn-icon:hover {
+            transform: translateY(-3px);
         }
 
-            .nf-btn-icon.view:hover {
-                background: rgba(52,152,219,.22);
-            }
-
-        .nf-btn-icon.edit {
-            color: var(--nf-yellow);
-            border-color: rgba(243,156,18,.35);
-            background: rgba(243,156,18,.08);
+        .nf-btn-icon.view:hover {
+            background: #3498db;
+            border-color: #3498db;
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
         }
 
-            .nf-btn-icon.edit:hover {
-                background: rgba(243,156,18,.22);
-            }
+        .nf-btn-icon.edit:hover {
+            background: #f5c518;
+            border-color: #f5c518;
+            box-shadow: 0 5px 15px rgba(245, 197, 24, 0.3);
+        }
 
-        .nf-btn-icon.del {
+        .nf-btn-icon.del:hover {
+            background: #e50914;
+            border-color: #e50914;
+            box-shadow: 0 5px 15px rgba(229, 9, 20, 0.3);
+        }
+
+    /* ── Container & Table ── */
+    .nf-table-container {
+        background: linear-gradient(145deg, #1f1f1f 0%, #141414 100%);
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        border: 1px solid #2a2a2a;
+        margin: 1rem 0;
+    }
+
+    .nf-table-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .nf-table-title {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        color: white;
+        font-weight: 600;
+        font-size: 1.2rem;
+    }
+
+        .nf-table-title i {
             color: var(--nf-red);
-            border-color: rgba(229,9,20,.35);
-            background: rgba(229,9,20,.08);
+            font-size: 1.5rem;
         }
 
-            .nf-btn-icon.del:hover {
-                background: rgba(229,9,20,.22);
-            }
+    .nf-count-badge {
+        background: #2a2a2a;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        color: #b3b3b3;
+        font-weight: 500;
+    }
 
-    /* ── Table ── */
-    .nf-table-wrap {
-        background: var(--nf-card);
-        border-radius: 8px;
-        border: 1px solid var(--nf-border);
-        overflow: hidden;
-        box-shadow: 0 4px 20px rgba(0,0,0,.4);
+    .nf-table-responsive {
+        overflow-x: auto;
+        border-radius: 12px;
+        background: #1a1a1a;
     }
 
     .nf-table {
         width: 100%;
         border-collapse: collapse;
+        min-width: 900px;
         color: var(--nf-white);
     }
 
         .nf-table thead tr {
-            background: var(--nf-darker);
+            background: linear-gradient(145deg, #2a2a2a 0%, #1f1f1f 100%);
             border-bottom: 2px solid var(--nf-red);
         }
 
         .nf-table thead th {
-            padding: 12px 14px;
-            font-size: .72rem;
-            font-weight: 700;
+            padding: 1.2rem 1rem;
+            font-weight: 600;
+            font-size: 0.9rem;
             text-transform: uppercase;
-            letter-spacing: .8px;
-            color: var(--nf-lgray);
+            letter-spacing: 0.5px;
             white-space: nowrap;
         }
 
         .nf-table tbody tr {
-            border-bottom: 1px solid var(--nf-border);
-            transition: background .15s;
+            border-bottom: 1px solid #2a2a2a;
+            transition: all 0.3s ease;
         }
 
-            .nf-table tbody tr:last-child {
-                border-bottom: none;
-            }
-
             .nf-table tbody tr:hover {
-                background: rgba(229,9,20,.05);
+                background: #2a2a2a;
+                transform: scale(1.002);
+                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
             }
 
         .nf-table tbody td {
-            padding: 10px 14px;
+            padding: 1.2rem 1rem;
+            color: #b3b3b3;
             vertical-align: middle;
-            font-size: .9rem;
+        }
+
+    /* ── Search Box ── */
+    .nf-search-box {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+
+        .nf-search-box i {
+            position: absolute;
+            left: 1rem;
+            color: #808080;
+            font-size: 1.1rem;
+        }
+
+        .nf-search-box input {
+            background: #2a2a2a;
+            border: 2px solid #404040;
+            border-radius: 30px;
+            padding: 0.75rem 1rem 0.75rem 2.8rem;
+            color: white;
+            font-size: 0.9rem;
+            width: 250px;
+            transition: all 0.3s ease;
+        }
+
+            .nf-search-box input:focus {
+                outline: none;
+                border-color: var(--nf-red);
+                background: #333;
+                width: 300px;
+            }
+
+    /* ── Poster ── */
+    .nf-poster-wrapper {
+        position: relative;
+        width: 60px;
+        height: 80px;
+        border-radius: 8px;
+        overflow: hidden;
+        cursor: pointer;
+        box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
+        transition: all 0.3s ease;
+    }
+
+        .nf-poster-wrapper:hover {
+            transform: scale(1.1);
+            box-shadow: 0 10px 20px rgba(229, 9, 20, 0.3);
         }
 
     .nf-poster {
-        width: 44px;
-        height: 62px;
+        width: 100%;
+        height: 100%;
         object-fit: cover;
-        border-radius: 4px;
-        border: 1px solid var(--nf-border);
-        display: block;
     }
 
     .nf-poster-empty {
-        width: 44px;
-        height: 62px;
-        background: var(--nf-darker);
-        border-radius: 4px;
-        border: 1px dashed var(--nf-border);
+        width: 60px;
+        height: 80px;
+        background: linear-gradient(145deg, #2a2a2a 0%, #1f1f1f 100%);
+        border-radius: 8px;
         display: flex;
         align-items: center;
         justify-content: center;
-        color: var(--nf-border);
-        font-size: 1.2rem;
+        border: 2px dashed #404040;
+        color: #808080;
+        font-size: 1.5rem;
     }
 
-    .td-title strong {
-        display: block;
-        color: var(--nf-white);
-        font-size: .92rem;
+    /* ── Text & Badges ── */
+    .nf-title-wrapper {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
     }
 
-    .td-title small {
-        color: var(--nf-gray);
-        font-size: .75rem;
-        font-family: monospace;
-    }
-
-    /* ── Badges ── */
-    .nf-badge {
-        display: inline-block;
-        padding: 2px 9px;
-        border-radius: 20px;
-        font-size: .72rem;
+    .nf-title {
+        color: white;
         font-weight: 600;
+        font-size: 1rem;
+    }
+
+    .nf-slug {
+        color: #808080;
+        font-size: 0.85rem;
+    }
+
+    .nf-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 0.4rem 0.8rem;
+        border-radius: 30px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: uppercase;
         white-space: nowrap;
     }
 
-    .nf-badge-green {
-        background: rgba(46,204,113,.15);
-        color: var(--nf-green);
-        border: 1px solid var(--nf-green);
+    .nf-badge-yellow {
+        background: rgba(245, 197, 24, 0.15);
+        color: #f5c518;
+        border: 1px solid rgba(245, 197, 24, 0.3);
     }
 
-    .nf-badge-gray {
-        background: rgba(128,128,128,.15);
-        color: var(--nf-gray);
-        border: 1px solid var(--nf-gray);
+    .nf-badge-green {
+        background: rgba(46, 204, 113, 0.15);
+        color: #2ecc71;
+        border: 1px solid rgba(46, 204, 113, 0.3);
     }
 
     .nf-badge-blue {
-        background: rgba(52,152,219,.15);
-        color: var(--nf-blue);
-        border: 1px solid var(--nf-blue);
+        background: rgba(52, 152, 219, 0.15);
+        color: #3498db;
+        border: 1px solid rgba(52, 152, 219, 0.3);
     }
 
-    .nf-badge-yellow {
-        background: rgba(243,156,18,.15);
-        color: var(--nf-yellow);
-        border: 1px solid var(--nf-yellow);
+    .nf-badge-gray {
+        background: rgba(128, 128, 128, 0.15);
+        color: #808080;
+        border: 1px solid rgba(128, 128, 128, 0.3);
     }
 
-    /* ── Action group ── */
+    .nf-country, .nf-year {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #b3b3b3;
+    }
+
+    .nf-status-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
     .nf-actions {
         display: flex;
-        gap: 6px;
+        gap: 0.75rem;
         justify-content: center;
     }
 
-    /* ── Empty state ── */
-    .nf-empty {
-        padding: 48px 24px;
-        text-align: center;
-        background: var(--nf-card);
-        border: 1px dashed var(--nf-border);
-        border-radius: 8px;
-        margin-top: 12px;
+    /* ── Pagination ── */
+    .nf-table-footer {
+        margin-top: 2rem;
+        display: flex;
+        justify-content: center;
     }
 
-        .nf-empty i {
-            font-size: 2.8rem;
-            color: var(--nf-border);
-            display: block;
-            margin-bottom: 14px;
+    .nf-pagination {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        background: #1a1a1a;
+        padding: 0.5rem;
+        border-radius: 40px;
+        border: 1px solid #2a2a2a;
+    }
+
+    .nf-pagination-btn {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        border: none;
+        background: #2a2a2a;
+        color: white;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+    }
+
+        .nf-pagination-btn:hover:not(.disabled) {
+            background: var(--nf-red);
+            transform: scale(1.1);
+            color: white;
         }
 
-        .nf-empty p {
-            color: var(--nf-lgray);
-            margin-bottom: 18px;
+        .nf-pagination-btn.disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+            pointer-events: none;
         }
 
-        .nf-empty a {
-            color: var(--nf-red);
-            font-weight: 600;
-            text-decoration: none;
-        }
+    .nf-pagination-info {
+        color: #b3b3b3;
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
 
-            .nf-empty a:hover {
-                text-decoration: underline;
-            }
+    /* ── Empty State ── */
+    .nf-empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: linear-gradient(145deg, #1f1f1f 0%, #141414 100%);
+        border-radius: 16px;
+        border: 2px dashed #2a2a2a;
+        margin-top: 20px;
+    }
 
-    /* ── Auto Import Section (NEW) ── */
+    .nf-empty-icon {
+        width: 80px;
+        height: 80px;
+        background: #2a2a2a;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.5rem;
+        color: var(--nf-red);
+        font-size: 2.5rem;
+    }
+
+    .nf-empty-state h3 {
+        color: white;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+
+    .nf-empty-state p {
+        color: #808080;
+        margin-bottom: 1.5rem;
+    }
+
+    /* ── Auto Import Section ── */
     .nf-import-section {
         background: var(--nf-card);
         border: 1px solid var(--nf-border);
@@ -312,10 +457,6 @@
             outline: none;
             border-color: var(--nf-blue);
         }
-
-        .nf-import-input::placeholder {
-            color: var(--nf-gray);
-        }
 </style>
 
 <div class="nf-page-header">
@@ -328,11 +469,10 @@
 <div class="nf-import-section">
     <div class="nf-import-group">
         <input type="text" id="movieTitle" class="nf-import-input" placeholder="Auto import movie from TMDB (Ex: Interstellar, Inception...)" />
-        <button type="button" id="btnImport" class="nf-btn nf-btn-blue" style="background:var(--nf-blue);color:#fff">
+        <button type="button" id="btnImport" class="nf-btn nf-btn-blue">
             <i class="zmdi zmdi-cloud-download"></i> Auto Import
         </button>
     </div>
-
     <div id="importStatus" class="mt-3" style="display: none; font-size: 0.9rem;">
         <span id="importSpinner" class="zmdi zmdi-spinner zmdi-hc-spin" style="color:var(--nf-blue); margin-right:5px; display:none;"></span>
         <span id="importMessage" style="color:var(--nf-lgray);">Pulling data...</span>
@@ -343,78 +483,152 @@
     @Html.AntiForgeryToken()
 </form>
 
-@if (Model != null && Model.Any())
+@if (Model != null && Model.Items != null && Model.Items.Any())
 {
-    <div class="nf-table-wrap">
-        <table class="nf-table">
-            <thead>
-                <tr>
-                    <th>Poster</th>
-                    <th>Title</th>
-                    <th>Type</th>
-                    <th>Country</th>
-                    <th>Year</th>
-                    <th>Status</th>
-                    <th style="text-align:center;">Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var item in Model)
-                {
+    <div class="nf-table-container">
+        <div class="nf-table-header">
+            <div class="nf-table-title">
+                <i class="zmdi zmdi-format-list-bulleted"></i>
+                <span>Content List</span>
+                <span class="nf-count-badge">Total: @Model.TotalCount items</span>
+            </div>
+            <div class="nf-table-filters">
+                <div class="nf-search-box">
+                    <i class="zmdi zmdi-search"></i>
+                    <input type="text" placeholder="Search current page..." id="tableSearch" />
+                </div>
+            </div>
+        </div>
+
+        <div class="nf-table-responsive">
+            <table class="nf-table">
+                <thead>
                     <tr>
-                        <td>
-                            @if (!string.IsNullOrEmpty(item.PosterUrl))
-                            {
-                                <img src="@item.PosterUrl" alt="@item.Title" class="nf-poster" />
-                            }
-                            else
-                            {
-                                <div class="nf-poster-empty"><i class="zmdi zmdi-image"></i></div>
-                            }
-                        </td>
-                        <td class="td-title">
-                            <strong>@item.Title</strong>
-                            <small>@item.Slug</small>
-                        </td>
-                        <td><span class="nf-badge nf-badge-yellow">@item.Type</span></td>
-                        <td>@item.CountryName</td>
-                        <td>@item.ReleaseYear</td>
-                        <td>
-                            @if (item.IsActive)
-                            {
-                                <span class="nf-badge nf-badge-green">Active</span>
-                            }
-                            else
-                            {
-                                <span class="nf-badge nf-badge-gray">Hidden</span>
-                            }
-                            <br style="margin:3px 0" />
-                            <span class="nf-badge nf-badge-blue">@item.Status</span>
-                        </td>
-                        <td>
-                            <div class="nf-actions">
-                                <a asp-action="Details" asp-route-id="@item.Id" class="nf-btn-icon view" title="View Details"><i class="zmdi zmdi-eye"></i></a>
-                                <a asp-action="Edit" asp-route-id="@item.Id" class="nf-btn-icon edit" title="Edit"><i class="zmdi zmdi-edit"></i></a>
-                                <a asp-action="Delete" asp-route-id="@item.Id" class="nf-btn-icon del" title="Delete"><i class="zmdi zmdi-delete"></i></a>
-                            </div>
-                        </td>
+                        <th width="80">Poster</th>
+                        <th>Title</th>
+                        <th width="100">Type</th>
+                        <th width="120">Country</th>
+                        <th width="80">Year</th>
+                        <th width="140">Status</th>
+                        <th width="140" style="text-align:center;">Actions</th>
                     </tr>
-                }
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.Items)
+                    {
+                        <tr class="nf-table-row">
+                            <td>
+                                @if (!string.IsNullOrEmpty(item.PosterUrl))
+                                {
+                                    <div class="nf-poster-wrapper">
+                                        <img src="@item.PosterUrl" alt="@item.Title" class="nf-poster" />
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="nf-poster-empty">
+                                        <i class="zmdi zmdi-image"></i>
+                                    </div>
+                                }
+                            </td>
+                            <td class="td-title">
+                                <div class="nf-title-wrapper">
+                                    <strong class="nf-title">@item.Title</strong>
+                                    <span class="nf-slug">@item.Slug</span>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="nf-badge nf-badge-yellow"><i class="zmdi zmdi-label"></i> @item.Type</span>
+                            </td>
+                            <td>
+                                <span class="nf-country"><i class="zmdi zmdi-globe"></i> @item.CountryName</span>
+                            </td>
+                            <td>
+                                <span class="nf-year">@item.ReleaseYear</span>
+                            </td>
+                            <td>
+                                <div class="nf-status-group">
+                                    @if (item.IsActive)
+                                    {
+                                        <span class="nf-badge nf-badge-green"><i class="zmdi zmdi-check-circle"></i> Active</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="nf-badge nf-badge-gray"><i class="zmdi zmdi-eye-off"></i> Hidden</span>
+                                    }
+                                </div>
+                            </td>
+                            <td>
+                                <div class="nf-actions">
+                                    <a asp-action="Details" asp-route-id="@item.Id" class="nf-btn-icon view" title="View">
+                                        <i class="zmdi zmdi-eye"></i>
+                                    </a>
+                                    <a asp-action="Edit" asp-route-id="@item.Id" class="nf-btn-icon edit" title="Edit">
+                                        <i class="zmdi zmdi-edit"></i>
+                                    </a>
+                                    <a asp-action="Delete" asp-route-id="@item.Id" class="nf-btn-icon del" title="Delete" onclick="return confirm('Are you sure?')">
+                                        <i class="zmdi zmdi-delete"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <div class="nf-table-footer">
+            <div class="nf-pagination">
+                <a href="@Url.Action("Index", new { page = Model.PageIndex - 1 })"
+                   class="nf-pagination-btn @(!Model.HasPreviousPage ? "disabled" : "")">
+                    <i class="zmdi zmdi-chevron-left"></i>
+                </a>
+
+                <span class="nf-pagination-info">Page @Model.PageIndex of @Model.TotalPages</span>
+
+                <a href="@Url.Action("Index", new { page = Model.PageIndex + 1 })"
+                   class="nf-pagination-btn @(!Model.HasNextPage ? "disabled" : "")">
+                    <i class="zmdi zmdi-chevron-right"></i>
+                </a>
+            </div>
+        </div>
     </div>
 }
 else
 {
-    <div class="nf-empty">
-        <i class="zmdi zmdi-movie"></i>
-        <p>No movies found. Start by adding your first movie!</p>
-        <a asp-action="Create">+ Add New Movie</a>
+    <div class="nf-empty-state">
+        <div class="nf-empty-icon">
+            <i class="zmdi zmdi-alert-circle-o"></i>
+        </div>
+        <h3>No Items Found</h3>
+        <p>There are no movies to display at the moment.</p>
+        <a asp-action="Create" class="nf-btn nf-btn-red">
+            <i class="zmdi zmdi-plus"></i> Add New Movie
+        </a>
     </div>
 }
 
 @section Scripts {
     <script>
+        // --- CHỨC NĂNG TÌM KIẾM Ở CLIENT ---
+        document.getElementById('tableSearch')?.addEventListener('keyup', function() {
+            const searchValue = this.value.toLowerCase();
+            const rows = document.querySelectorAll('.nf-table tbody tr');
+
+            rows.forEach(row => {
+                const title = row.querySelector('.nf-title')?.textContent.toLowerCase();
+                const type = row.querySelector('.nf-badge-yellow')?.textContent.toLowerCase();
+                const country = row.querySelector('.nf-country')?.textContent.toLowerCase();
+
+                if (title?.includes(searchValue) || type?.includes(searchValue) || country?.includes(searchValue)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+
+        // --- CHỨC NĂNG IMPORT TỪ TMDB ---
         document.getElementById('btnImport').addEventListener('click', async function () {
             const titleInput = document.getElementById('movieTitle');
             const title = titleInput.value.trim();
@@ -429,27 +643,20 @@ else
                 return;
             }
 
-            // Giao diện: Tắt nút, hiện loading
             btn.disabled = true;
             statusBox.style.display = 'block';
             spinner.style.display = 'inline-block';
             msgSpan.style.color = 'var(--nf-lgray)';
             msgSpan.innerText = `Loading movie information "${title}" from TMDB...`;
 
-            // Lấy token bảo mật từ form ảo
             const token = document.querySelector('#antiforgeryForm input[name="__RequestVerificationToken"]').value;
-
-            // Đóng gói data gửi đi
             const formData = new FormData();
             formData.append('title', title);
 
             try {
-                // Gọi vào Action ImportFromTmdb của MoviesController trong Area Admin
                 const response = await fetch('@Url.Action("ImportFromTmdb", "Movies", new { area = "Admin" })', {
                     method: 'POST',
-                    headers: {
-                        'RequestVerificationToken': token
-                    },
+                    headers: { 'RequestVerificationToken': token },
                     body: formData
                 });
 
@@ -458,10 +665,8 @@ else
                 if (data.success) {
                     spinner.style.display = 'none';
                     msgSpan.style.color = 'var(--nf-green)';
-                    msgSpan.innerHTML = `<i class="zmdi zmdi-check-circle"></i> ${data.message} Trang sẽ tự làm mới...`;
+                    msgSpan.innerHTML = `<i class="zmdi zmdi-check-circle"></i> ${data.message} page will refresh...`;
                     titleInput.value = '';
-
-                    // Tự động reload lại trang sau 1.5 giây để load phim mới lên bảng
                     setTimeout(() => window.location.reload(), 1500);
                 } else {
                     spinner.style.display = 'none';
@@ -477,7 +682,6 @@ else
             }
         });
 
-        // Bắt sự kiện ấn phím Enter trong ô input
         document.getElementById('movieTitle').addEventListener('keypress', function (e) {
             if (e.key === 'Enter') {
                 e.preventDefault();

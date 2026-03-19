@@ -1,109 +1,376 @@
 ﻿@model FinalCuongFilm.Common.DTOs.MediaFileDto
 
 @{
-    ViewData["Title"] = "Chi tiết Media File";
+    ViewData["Title"] = "Media File Details";
 }
 
-<div class="row">
-    <div class="col-md-12">
-        <h2 class="title-1">@ViewData["Title"]</h2>
+<style>
+    :root {
+        --primary-color: #2563eb;
+        --secondary-color: #64748b;
+        --success-color: #10b981;
+        --warning-color: #f59e0b;
+        --danger-color: #ef4444;
+        --text-dark: #1e293b;
+        --text-muted: #64748b;
+        --border-color: #e2e8f0;
+        --bg-light: #f8fafc;
+        --bg-white: #ffffff;
+        --radius-md: 8px;
+        --radius-lg: 12px;
+        --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+        --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1);
+    }
+
+    body {
+        background-color: #f1f5f9;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    .detail-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 24px 20px;
+    }
+
+    /* Header */
+    .page-header {
+        margin-bottom: 24px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .page-title {
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--text-dark);
+        margin: 0 0 8px 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+        .page-title i {
+            color: var(--primary-color);
+        }
+
+    .page-subtitle {
+        color: var(--text-muted);
+        font-size: 15px;
+    }
+
+    /* Main Layout Grid */
+    .main-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 24px;
+    }
+
+    /* Ở màn hình lớn, chia 2 cột: Cột Video to hơn, Cột Info nhỏ hơn */
+    @@media (min-width: 992px) {
+        .main-grid {
+            grid-template-columns: 1.2fr 0.8fr;
+            align-items: start;
+        }
+    }
+
+    /* Card Styling */
+    .card {
+        background: var(--bg-white);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-sm);
+        border: 1px solid var(--border-color);
+        overflow: hidden;
+    }
+
+    .card-header {
+        background: var(--bg-light);
+        padding: 16px 20px;
+        border-bottom: 1px solid var(--border-color);
+        font-weight: 600;
+        color: var(--text-dark);
+        font-size: 16px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .card-body {
+        padding: 20px;
+    }
+
+    /* Info List Styling */
+    .info-list {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .info-item {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        padding-bottom: 16px;
+        border-bottom: 1px dashed var(--border-color);
+    }
+
+        .info-item:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+    .info-label {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .info-value {
+        font-size: 15px;
+        color: var(--text-dark);
+        font-weight: 500;
+        word-break: break-all; /* Chống vỡ khung với link dài */
+    }
+
+    .info-link {
+        color: var(--primary-color);
+        text-decoration: none;
+        transition: color 0.2s;
+    }
+
+        .info-link:hover {
+            text-decoration: underline;
+            color: #1d4ed8;
+        }
+
+    /* Video Player */
+    .video-wrapper {
+        width: 100%;
+        background: #000;
+        border-radius: var(--radius-md);
+        overflow: hidden;
+        aspect-ratio: 16/9;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    video {
+        width: 100%;
+        height: 100%;
+        outline: none;
+    }
+
+    /* Badges */
+    .badge {
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .badge-video {
+        background: #dcfce7;
+        color: #166534;
+        border: 1px solid #bbf7d0;
+    }
+
+    .badge-subtitle {
+        background: #fef3c7;
+        color: #92400e;
+        border: 1px solid #fde68a;
+    }
+
+    .badge-other {
+        background: #f1f5f9;
+        color: #475569;
+        border: 1px solid #e2e8f0;
+    }
+
+    /* Action Buttons */
+    .action-group {
+        display: flex;
+        gap: 12px;
+        margin-top: 24px;
+        flex-wrap: wrap;
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 10px 20px;
+        border-radius: var(--radius-md);
+        font-size: 14px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.2s;
+        border: none;
+        cursor: pointer;
+    }
+
+    .btn-warning {
+        background: var(--warning-color);
+        color: white;
+    }
+
+        .btn-warning:hover {
+            background: #d97706;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);
+        }
+
+    .btn-secondary {
+        background: white;
+        color: var(--text-dark);
+        border: 1px solid var(--border-color);
+    }
+
+        .btn-secondary:hover {
+            background: var(--bg-light);
+            border-color: var(--text-muted);
+        }
+
+    @@media (max-width: 480px) {
+        .btn {
+            width: 100%;
+        }
+    }
+</style>
+
+<div class="detail-container">
+    <div class="page-header">
+        <h1 class="page-title">
+            <i class="zmdi zmdi-file-text"></i> @ViewData["Title"]
+        </h1>
+        <div class="page-subtitle">Review file information and preview content</div>
     </div>
-</div>
 
-<div class="row m-t-30">
-    <div class="col-md-12">
+    <div class="main-grid">
+
         <div class="card">
-            <div class="card-body">
-
-                <h4 class="m-b-20">
-                    <i class="zmdi zmdi-collection-video"></i>
-                    @Model.FileName
-                </h4>
-
-                <dl class="row">
-
-                    <dt class="col-sm-3">Tên file</dt>
-                    <dd class="col-sm-9">@Model.FileName</dd>
-
-                    <dt class="col-sm-3">Loại</dt>
-                    <dd class="col-sm-9">
-                        @if (Model.FileType == "Video")
-                        {
-                            <span class="role admin">Video</span>
-                        }
-                        else if (Model.FileType == "Subtitle")
-                        {
-                            <span class="role user">Subtitle</span>
-                        }
-                        else
-                        {
-                            <span class="role">@Model.FileType</span>
-                        }
-                    </dd>
-
-                    <dt class="col-sm-3">Chất lượng</dt>
-                    <dd class="col-sm-9">@Model.Quality</dd>
-
-                    <dt class="col-sm-3">Kích thước</dt>
-                    <dd class="col-sm-9">@Model.FileSizeFormatted</dd>
-
-                    <dt class="col-sm-3">Phim / Tập</dt>
-                    <dd class="col-sm-9">
-                        @if (Model.EpisodeId.HasValue)
-                        {
-                            <a asp-controller="Episodes"
-                               asp-action="Details"
-                               asp-route-id="@Model.EpisodeId">
-                                Tập @Model.EpisodeNumber: @Model.EpisodeTitle
-                            </a>
-                        }
-                        else if (Model.MovieId.HasValue)
-                        {
-                            <a asp-controller="Movies"
-                               asp-action="Details"
-                               asp-route-id="@Model.MovieId">
-                                @Model.MovieTitle
-                            </a>
-                        }
-                    </dd>
-
-                    <dt class="col-sm-3">Ngày upload</dt>
-                    <dd class="col-sm-9">
-                        @Model.UploadedAt.ToString("dd/MM/yyyy HH:mm")
-                    </dd>
-
-                    <dt class="col-sm-3">File URL</dt>
-                    <dd class="col-sm-9">
-                        <a href="@Model.FileUrl" target="_blank">
-                            @Model.FileUrl
-                        </a>
-                    </dd>
-                </dl>
-
-                @* Preview video nếu là video *@
+            <div class="card-header">
+                <i class="zmdi zmdi-desktop-mac"></i> Content Preview
+            </div>
+            <div class="card-body" style="padding: 16px;">
                 @if (Model.FileType == "Video")
                 {
-                    <hr />
-                    <h5>Preview</h5>
-                    <video controls width="100%" style="max-height:450px">
-                        <source src="@Model.FileUrl" type="video/mp4" />
-                        Trình duyệt của bạn không hỗ trợ video.
-                    </video>
+                    <div class="video-wrapper">
+                        <video controls controlsList="nodownload">
+                            <source src="@Model.FileUrl" type="video/mp4" />
+                            Your browser does not support the video tag.
+                        </video>
+                    </div>
                 }
-
-                <div class="m-t-30">
-                    <a asp-action="Edit" asp-route-id="@Model.Id"
-                       class="btn btn-warning">
-                        <i class="zmdi zmdi-edit"></i> Sửa
-                    </a>
-
-                    <a asp-action="Index"
-                       class="btn btn-secondary">
-                        <i class="zmdi zmdi-arrow-left"></i> Quay lại
-                    </a>
-                </div>
-
+                else
+                {
+                    <div class="video-wrapper" style="background: var(--bg-light); border: 2px dashed var(--border-color);">
+                        <div style="text-align: center; color: var(--text-muted);">
+                            <i class="zmdi zmdi-file-text" style="font-size: 64px; color: #cbd5e1; margin-bottom: 16px; display: block;"></i>
+                            <h3 style="margin: 0; font-weight: 600;">No Preview Available</h3>
+                            <p style="margin-top: 8px; font-size: 14px;">Preview is only supported for video files.</p>
+                            <a href="@Model.FileUrl" target="_blank" class="btn btn-secondary" style="margin-top: 16px;">
+                                <i class="zmdi zmdi-download"></i> Download File
+                            </a>
+                        </div>
+                    </div>
+                }
             </div>
         </div>
+
+        <div class="card">
+            <div class="card-header">
+                <i class="zmdi zmdi-info-outline"></i> File Information
+            </div>
+            <div class="card-body">
+                <div class="info-list">
+
+                    <div class="info-item">
+                        <span class="info-label">File Name</span>
+                        <span class="info-value">@Model.FileName</span>
+                    </div>
+
+                    <div class="info-item" style="flex-direction: row; justify-content: space-between; align-items: center;">
+                        <span class="info-label">File Type</span>
+                        <span class="info-value">
+                            @if (Model.FileType == "Video")
+                            {
+                                <span class="badge badge-video"><i class="zmdi zmdi-videocam"></i> Video</span>
+                            }
+                            else if (Model.FileType == "Subtitle")
+                            {
+                                <span class="badge badge-subtitle"><i class="zmdi zmdi-subtitles"></i> Subtitle</span>
+                            }
+                            else
+                            {
+                                <span class="badge badge-other">@Model.FileType</span>
+                            }
+                        </span>
+                    </div>
+
+                    <div class="info-item" style="flex-direction: row; justify-content: space-between; align-items: center;">
+                        <span class="info-label">Quality</span>
+                        <span class="info-value" style="font-family: monospace; background: var(--bg-light); padding: 2px 8px; border-radius: 4px; border: 1px solid var(--border-color);">
+                            @(string.IsNullOrEmpty(Model.Quality) ? "N/A" : Model.Quality)
+                        </span>
+                    </div>
+
+                    <div class="info-item" style="flex-direction: row; justify-content: space-between; align-items: center;">
+                        <span class="info-label">File Size</span>
+                        <span class="info-value" style="color: var(--primary-color);">@Model.FileSizeFormatted</span>
+                    </div>
+
+                    <div class="info-item">
+                        <span class="info-label">Belongs To</span>
+                        <span class="info-value">
+                            @if (Model.EpisodeId.HasValue)
+                            {
+                                <a asp-controller="Episodes" asp-action="Details" asp-route-id="@Model.EpisodeId" class="info-link">
+                                    <i class="zmdi zmdi-movie-alt"></i> Episode @Model.EpisodeNumber: @Model.EpisodeTitle
+                                </a>
+                            }
+                            else if (Model.MovieId.HasValue)
+                            {
+                                <a asp-controller="Movies" asp-action="Details" asp-route-id="@Model.MovieId" class="info-link">
+                                    <i class="zmdi zmdi-movie"></i> @Model.MovieTitle
+                                </a>
+                            }
+                            else
+                            {
+                                <span style="font-style: italic; color: var(--text-muted);">Standalone File</span>
+                            }
+                        </span>
+                    </div>
+
+                    <div class="info-item">
+                        <span class="info-label">Uploaded At</span>
+                        <span class="info-value">@Model.UploadedAt.ToString("MMMM dd, yyyy - HH:mm")</span>
+                    </div>
+
+                    <div class="info-item">
+                        <span class="info-label">Direct URL</span>
+                        <a href="@Model.FileUrl" target="_blank" class="info-value info-link" style="font-family: monospace; font-size: 13px; background: #f8fafc; padding: 8px; border-radius: 4px; border: 1px solid var(--border-color);">
+                            @Model.FileUrl
+                        </a>
+                    </div>
+                </div>
+
+                <div class="action-group">
+                    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">
+                        <i class="zmdi zmdi-edit"></i> Edit Details
+                    </a>
+                    <a asp-action="Index" class="btn btn-secondary">
+                        <i class="zmdi zmdi-arrow-left"></i> Back to List
+                    </a>
+                </div>
+            </div>
+        </div>
+
     </div>
 </div>

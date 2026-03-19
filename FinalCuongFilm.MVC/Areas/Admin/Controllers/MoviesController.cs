@@ -41,10 +41,14 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 		}
 
 		// GET: Admin/Movies
-		public async Task<IActionResult> Index()
+		public async Task<IActionResult> Index(int page = 1)
 		{
-			var movies = await _movieService.GetAllAsync();
-			return View(movies);
+			int pageSize = 10; // Đặt số lượng phim hiển thị trên 1 trang (có thể đổi thành 5 hoặc 20)
+
+			// Gọi hàm phân trang vừa viết
+			var pagedData = await _movieService.GetPagedAsync(page, pageSize);
+
+			return View(pagedData); // Đẩy PagedResult ra View
 		}
 
 		[HttpPost]

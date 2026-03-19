@@ -1,4 +1,4 @@
-﻿@model IEnumerable<FinalCuongFilm.ApplicationCore.Entities.Genre>
+﻿@model FinalCuongFilm.Common.DTOs.PagedResult<FinalCuongFilm.Common.DTOs.GenreDto>
 
 @{
     ViewData["Title"] = "Genre Management";
@@ -237,11 +237,9 @@
         gap: 6px;
         border: 1px solid var(--border-color);
         background: var(--bg-white);
+        cursor: pointer;
+        font-family: inherit;
     }
-
-        .action-btn i {
-            font-size: 12px;
-        }
 
     .edit-btn {
         color: var(--text-dark);
@@ -296,6 +294,49 @@
         margin-bottom: 24px;
     }
 
+    /* ===== Pagination Styling ===== */
+    .pagination-container {
+        display: flex;
+        justify-content: center;
+        margin-top: 24px;
+        margin-bottom: 24px;
+    }
+
+    .pagination {
+        display: flex;
+        list-style: none;
+        padding: 0;
+        gap: 8px;
+    }
+
+    .page-item .page-link {
+        padding: 8px 16px;
+        border-radius: var(--radius-md);
+        border: 1px solid var(--border-color);
+        background: var(--bg-white);
+        color: var(--text-dark);
+        text-decoration: none;
+        transition: all 0.2s ease;
+        font-size: 14px;
+        font-weight: 500;
+    }
+
+    .page-item.active .page-link {
+        background: var(--primary-color);
+        color: white;
+        border-color: var(--primary-color);
+    }
+
+    .page-item.disabled .page-link {
+        color: var(--text-light);
+        background: var(--bg-light);
+        pointer-events: none;
+    }
+
+    .page-item:not(.active):not(.disabled) .page-link:hover {
+        background: var(--bg-hover);
+    }
+
     /* Responsive */
     @@media (max-width: 1024px) {
         .data-table {
@@ -317,20 +358,9 @@
             grid-template-columns: 1fr;
         }
 
-        .data-table th,
-        .data-table td {
+        .data-table th, .data-table td {
             padding: 14px 16px;
         }
-
-            .data-table th:first-child,
-            .data-table td:first-child {
-                padding-left: 20px;
-            }
-
-            .data-table th:last-child,
-            .data-table td:last-child {
-                padding-right: 20px;
-            }
 
         .action-buttons {
             flex-direction: column;
@@ -340,24 +370,6 @@
         .action-btn {
             width: 100%;
             justify-content: center;
-        }
-    }
-
-    @@media (max-width: 480px) {
-        .page-title {
-            font-size: 20px;
-        }
-
-        .genre-name {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 8px;
-        }
-
-        .genre-icon {
-            width: 28px;
-            height: 28px;
-            font-size: 12px;
         }
     }
 </style>
@@ -373,25 +385,23 @@
         </div>
     </div>
 
-    <!-- Stats Bar -->
     <div class="stats-bar">
         <div class="stat-card">
-            <div class="stat-number">@Model.Count()</div>
+            <div class="stat-number">@(Model?.TotalCount ?? 0)</div>
             <div class="stat-label">Total Genres</div>
         </div>
         <div class="stat-card">
-            <div class="stat-number">@Model.Count(g => !string.IsNullOrEmpty(g.Description))</div>
-            <div class="stat-label">With Description</div>
+            <div class="stat-number">@(Model?.Items?.Count(g => !string.IsNullOrEmpty(g.Description)) ?? 0)</div>
+            <div class="stat-label">With Desc (This Page)</div>
         </div>
         <div class="stat-card">
-            <div class="stat-number">@Model.Count(g => g.Name.Length <= 20)</div>
-            <div class="stat-label">Short Names</div>
+            <div class="stat-number">@(Model?.Items?.Count(g => g.Name != null && g.Name.Length <= 20) ?? 0)</div>
+            <div class="stat-label">Short Names (This Page)</div>
         </div>
     </div>
 
-    <!-- Table -->
     <div class="table-container">
-        @if (Model.Any())
+        @if (Model != null && Model.Items != null && Model.Items.Any())
         {
             <table class="data-table">
                 <thead>
@@ -403,7 +413,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var item in Model)
+                    @foreach (var item in Model.Items)
                     {
                         <tr>
                             <td>
@@ -411,11 +421,11 @@
                                     <div class="genre-icon">
                                         @GetGenreIcon(item.Name)
                                     </div>
-                                    @Html.DisplayFor(modelItem => item.Name)
+                                    @item.Name
                                 </div>
                             </td>
                             <td>
-                                <span class="genre-slug">@Html.DisplayFor(modelItem => item.Slug)</span>
+                                <span class="genre-slug">@item.Slug</span>
                             </td>
                             <td>
                                 <div class="genre-description" title="@item.Description">
@@ -437,15 +447,36 @@
                                     <a asp-action="Details" asp-route-id="@item.Id" class="action-btn details-btn">
                                         View
                                     </a>
-                                    <a asp-action="Delete" asp-route-id="@item.Id" class="action-btn delete-btn">
-                                        Delete
-                                    </a>
+                                    <form asp-action="Delete" asp-route-id="@item.Id" method="post" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this genre?');">
+                                        <button type="submit" class="action-btn delete-btn">
+                                            Delete
+                                        </button>
+                                    </form>
                                 </div>
                             </td>
                         </tr>
                     }
                 </tbody>
             </table>
+
+            <div class="pagination-container">
+                <ul class="pagination">
+                    <li class="page-item @(!Model.HasPreviousPage ? "disabled" : "")">
+                        <a class="page-link" asp-action="Index" asp-route-page="@(Model.PageIndex - 1)">Previous</a>
+                    </li>
+
+                    @for (int i = 1; i <= Model.TotalPages; i++)
+                    {
+                        <li class="page-item @(i == Model.PageIndex ? "active" : "")">
+                            <a class="page-link" asp-action="Index" asp-route-page="@i">@i</a>
+                        </li>
+                    }
+
+                    <li class="page-item @(!Model.HasNextPage ? "disabled" : "")">
+                        <a class="page-link" asp-action="Index" asp-route-page="@(Model.PageIndex + 1)">Next</a>
+                    </li>
+                </ul>
+            </div>
         }
         else
         {
@@ -466,6 +497,8 @@
 @functions {
     string GetGenreIcon(string genreName)
     {
+        if (string.IsNullOrEmpty(genreName)) return "⭐";
+
         var iconMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
             ["Action"] = "🎯",
@@ -502,20 +535,4 @@
         var index = Math.Abs(hash) % defaultIcons.Length;
         return defaultIcons[index];
     }
-}
-
-@section Scripts {
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Confirm delete
-            const deleteButtons = document.querySelectorAll('.delete-btn');
-            deleteButtons.forEach(button => {
-                button.addEventListener('click', function(e) {
-                    if (!confirm('Are you sure you want to delete this genre?')) {
-                        e.preventDefault();
-                    }
-                });
-            });
-        });
-    </script>
 }

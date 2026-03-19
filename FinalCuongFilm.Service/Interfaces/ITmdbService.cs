@@ -10,7 +10,7 @@ namespace FinalCuongFilm.Service.Interfaces
 		Task<TmdbCreditsResponse?> GetMovieCreditsAsync(long tmdbId);
 		Task<TmdbMovieDetailsResponse?> GetMovieDetailsAsync(long tmdbId);
 
-		// TV Series (Mới)
+		// TV Series 
 		Task<TmdbMovieDto?> SearchTvShowAsync(string title);
 		Task<TmdbMovieDetailsResponse?> GetTvShowDetailsAsync(long tmdbId);
 		Task<TmdbCreditsResponse?> GetTvCreditsAsync(long tmdbId);

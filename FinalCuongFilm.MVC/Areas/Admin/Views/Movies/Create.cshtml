@@ -21,7 +21,7 @@
         --nf-blue: #3498db;
         --nf-yellow: #f39c12;
     }
-    /* ── Page Header ── */
+    /*  Page Header  */
     .nf-page-header {
         margin-bottom: 24px;
         padding-bottom: 16px;
@@ -43,7 +43,7 @@
         color: var(--nf-lgray);
         font-size: .9rem;
     }
-    /* ── Card ── */
+    /*  Card  */
     .nf-card {
         background: var(--nf-card);
         border: 1px solid var(--nf-border);
@@ -75,7 +75,7 @@
     .nf-card-bd {
         padding: 22px 24px;
     }
-    /* ── Form Grid ── */
+    /*  Form Grid  */
     .nf-grid {
         display: grid;
         grid-template-columns: repeat(2,1fr);
@@ -88,7 +88,7 @@
 
     .nf-fgroup {
     }
-    /* ── Labels & Controls ── */
+    /*  Labels & Controls  */
     .nf-label {
         display: block;
         font-size: .72rem;
@@ -146,7 +146,7 @@
         margin-top: 3px;
         display: block;
     }
-    /* ── Image URL preview (shared pattern) ── */
+    /*  Image URL preview (shared pattern)  */
     .nf-url-group {
         display: flex;
         gap: 8px;
@@ -215,7 +215,7 @@
         .nf-preview-clear:hover {
             background: var(--nf-red);
         }
-    /* ── Trailer URL preview embed ── */
+    /*  Trailer URL preview embed  */
     .nf-embed-preview {
         margin-top: 10px;
         border-radius: 6px;
@@ -235,7 +235,7 @@
             border: none;
             border-radius: 6px;
         }
-    /* ── Upload file input ── */
+    /*  Upload file input  */
     .nf-file-input-wrap {
         margin-top: 10px;
         padding: 10px 13px;
@@ -299,7 +299,7 @@
             height: 1px;
             background: var(--nf-border);
         }
-    /* ── Select2-like tag picker for Actors/Genres ── */
+    /*  Select2-like tag picker for Actors/Genres  */
     .nf-tag-picker {
     }
 
@@ -418,7 +418,7 @@
         font-style: italic;
         padding: 2px 4px;
     }
-    /* ── Active toggle ── */
+    /*  Active toggle  */
     .nf-toggle {
         display: flex;
         align-items: center;
@@ -442,7 +442,7 @@
             cursor: pointer;
             margin: 0;
         }
-    /* ── Validation ── */
+    /*  Validation  */
     .nf-val-banner {
         background: rgba(229,9,20,.1);
         border: 1px solid rgba(229,9,20,.4);
@@ -457,7 +457,7 @@
             margin: 6px 0 0;
             padding-left: 18px;
         }
-    /* ── Buttons ── */
+    /*  Buttons  */
     .nf-btn {
         display: inline-flex;
         align-items: center;
@@ -503,7 +503,7 @@
             background: var(--nf-border);
             color: var(--nf-white);
         }
-    /* ── Form Actions ── */
+    /*  Form Actions  */
     .nf-form-actions {
         display: flex;
         gap: 12px;
@@ -511,7 +511,7 @@
         border-top: 1px solid var(--nf-border);
         flex-wrap: wrap;
     }
-    /* ── Scrollbar ── */
+    /*  Scrollbar  */
     .nf-tag-dropdown::-webkit-scrollbar {
         width: 5px;
     }
@@ -524,7 +524,7 @@
         background: var(--nf-border);
         border-radius: 3px;
     }
-    /* ── Responsive ── */
+    /*  Responsive  */
     @@media(max-width:768px) {
         .nf-grid {
             grid-template-columns: 1fr;
@@ -762,7 +762,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', function () {
 
-            /* ── Slug ── */
+            /*  Slug  */
             const titleEl = document.getElementById('titleInput');
             const slugEl  = document.getElementById('slugInput');
             let slugLocked = false;
@@ -770,7 +770,7 @@
             titleEl.addEventListener('input', () => { if (!slugLocked) slugEl.value = toSlug(titleEl.value); });
             slugEl.addEventListener('input',  () => { slugLocked = slugEl.value.length > 0; });
 
-            /* ── Tag Picker Factory ── */
+            /*  Tag Picker Factory  */
             function buildTagPicker(selectId, searchId, dropdownId, chipsId) {
                 const sel      = document.getElementById(selectId);
                 const search   = document.getElementById(searchId);
@@ -830,7 +830,7 @@
             buildTagPicker('actorSelect', 'actorSearch', 'actorDropdown', 'actorChips');
             buildTagPicker('genreSelect', 'genreSearch', 'genreDropdown', 'genreChips');
 
-            /* ── Submit feedback ── */
+            /*  Submit feedback  */
             document.getElementById('createForm').addEventListener('submit', () => {
                 const btn = document.getElementById('submitBtn');
                 btn.innerHTML = '<i class="zmdi zmdi-hourglass-alt"></i> Saving…';
@@ -838,7 +838,7 @@
             });
         });
 
-        /* ── Poster File Upload Preview ── */
+        /*  Poster File Upload Preview  */
         function onPosterFileChange(input) {
             const wrap = document.getElementById('posterPreview');
             const img  = document.getElementById('posterPreviewImg');
@@ -863,7 +863,7 @@
             }
         }
 
-        /* ── Poster URL Preview ── */
+        /*  Poster URL Preview  */
         function previewPoster() {
             const url  = document.getElementById('posterUrlInput').value.trim();
             const wrap = document.getElementById('posterPreview');
@@ -883,7 +883,7 @@
             document.getElementById('posterPreviewImg').src = '';
         }
 
-        /* ── Trailer Preview ── */
+        /*  Trailer Preview  */
         function previewTrailer() {
             const url  = document.getElementById('trailerUrlInput').value.trim();
             const wrap = document.getElementById('trailerPreview');

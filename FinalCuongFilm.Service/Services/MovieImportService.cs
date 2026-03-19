@@ -73,7 +73,7 @@ namespace FinalCuongFilm.Service.Services
 					countryId = country.Id;
 				}
 
-				// B. TẠO MOVIE (Quyết định Type ở đây)
+				// B. TẠO MOVIE 
 				var movie = new Movie
 				{
 					Title = movieDetails.Title,
@@ -82,7 +82,7 @@ namespace FinalCuongFilm.Service.Services
 					PosterUrl = !string.IsNullOrEmpty(movieDetails.Poster_Path) ? "https://image.tmdb.org/t/p/w500" + movieDetails.Poster_Path : null,
 					TmdbId = movieDetails.Id,
 					Status = MovieStatus.Completed,
-					Type = isTvSeries ? MovieType.Series : MovieType.Movie, // <--- SET TYPE CHÍNH XÁC
+					Type = isTvSeries ? MovieType.Series : MovieType.Movie, //  SET TYPE
 					IsActive = true,
 					CountryId = countryId,
 					DurationMinutes = movieDetails.Runtime,

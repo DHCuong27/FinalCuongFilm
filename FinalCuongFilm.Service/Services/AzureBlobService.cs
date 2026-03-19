@@ -36,12 +36,12 @@ namespace FinalCuongFilm.Service.Services
 		{
 			try
 			{
-				// ✅ FIX: Create PRIVATE containers (no public access)
+				//  Create PRIVATE containers (no public access)
 				await CreateContainerIfNotExistsAsync(VIDEO_CONTAINER, PublicAccessType.None);
 				await CreateContainerIfNotExistsAsync(POSTER_CONTAINER, PublicAccessType.None);
 				await CreateContainerIfNotExistsAsync(SUBTITLE_CONTAINER, PublicAccessType.None);
 
-				_logger.LogInformation("✅ All containers created with PRIVATE access. SAS tokens will be used for access.");
+				_logger.LogInformation(" All containers created with PRIVATE access. SAS tokens will be used for access.");
 			}
 			catch (Exception ex)
 			{
@@ -172,7 +172,7 @@ namespace FinalCuongFilm.Service.Services
 				sasBuilder.SetPermissions(BlobSasPermissions.Read);
 
 				var sasUri = blobClient.GenerateSasUri(sasBuilder);
-				_logger.LogInformation($"✅ Generated SAS URL for {blobUriBuilder.BlobName} (expires in {expiryHours}h)");
+				_logger.LogInformation($" Generated SAS URL for {blobUriBuilder.BlobName} (expires in {expiryHours}h)");
 
 				return sasUri.ToString();
 			}
@@ -252,6 +252,29 @@ namespace FinalCuongFilm.Service.Services
 			};
 		}
 
+		public async Task<string> UploadStreamAsync(Stream stream, string fileName, string folderPath)
+		{
+			var containerClient = _blobServiceClient.GetBlobContainerClient(VIDEO_CONTAINER);
+			var blobName = string.IsNullOrEmpty(folderPath) ? fileName : $"{folderPath.TrimEnd('/')}/{fileName}";
+			var blobClient = containerClient.GetBlobClient(blobName);
+
+			var contentType = GetContentType(Path.GetExtension(fileName));
+			var blobHttpHeaders = new BlobHttpHeaders
+			{
+				ContentType = contentType,
+				CacheControl = "public, max-age=31536000"
+			};
+
+			await blobClient.UploadAsync(stream, new BlobUploadOptions
+			{
+				HttpHeaders = blobHttpHeaders
+			});
+
+			_logger.LogInformation($"Uploaded stream as {blobName} to {VIDEO_CONTAINER} with ContentType: {contentType}");
+
+			return blobClient.Uri.ToString();
+		}
+
 		private string GetContentType(string fileExtension)
 		{
 			return fileExtension.ToLowerInvariant() switch
@@ -268,6 +291,8 @@ namespace FinalCuongFilm.Service.Services
 				".webp" => "image/webp",
 				".srt" => "text/plain",
 				".vtt" => "text/vtt",
+				".m3u8" => "application/x-mpegURL", // Fix HLS playlist
+				".ts" => "video/MP2T",              // Fix HLS segment
 				_ => "application/octet-stream"
 			};
 		}

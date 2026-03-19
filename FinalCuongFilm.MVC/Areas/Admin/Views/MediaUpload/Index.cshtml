@@ -8,133 +8,438 @@
     var episodeTitle = ViewBag.EpisodeTitle as string;
 }
 
-<div class="row">
-    <div class="col-md-12">
-        <div class="overview-wrap">
-            <h2 class="title-1">
-                @ViewData["Title"]
-                @if (!string.IsNullOrEmpty(episodeTitle))
-                {
-                    <small class="text-muted"> - @episodeTitle</small>
-                }
-                else if (!string.IsNullOrEmpty(movieTitle))
-                {
-                    <small class="text-muted"> - @movieTitle</small>
-                }
-            </h2>
-            <div>
-                <a asp-action="UploadVideo" asp-route-movieId="@movieId" class="au-btn au-btn-icon au-btn--green">
-                    <i class="zmdi zmdi-upload"></i>Upload Video
-                </a>
-                <a asp-action="UploadVideo" asp-route-movieId="@movieId" class="au-btn au-btn-icon au-btn--blue">
-                    <i class="zmdi zmdi-plus"></i>Nhập URL Video
-                </a>
-            </div>
-        </div>
-    </div>
-</div>
+<style>
+    :root {
+        --primary-color: #2563eb;
+        --secondary-color: #64748b;
+        --success-color: #10b981;
+        --warning-color: #f59e0b;
+        --danger-color: #ef4444;
+        --text-dark: #1e293b;
+        --text-muted: #64748b;
+        --border-color: #e2e8f0;
+        --bg-light: #f8fafc;
+        --bg-white: #ffffff;
+        --radius-md: 8px;
+        --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+        --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1);
+    }
 
-@if (episodeId.HasValue || movieId.HasValue)
-{
-    <div class="row m-t-15">
-        <div class="col-md-12">
-            @if (episodeId.HasValue && movieId.HasValue)
+    /* Container & Header */
+    .media-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 24px 20px;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+
+    .page-title {
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--text-dark);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .page-subtitle {
+        font-size: 16px;
+        color: var(--text-muted);
+        font-weight: 500;
+    }
+
+    /* Navigation Bar */
+    .nav-bar {
+        background: var(--bg-white);
+        padding: 12px 16px;
+        border-radius: var(--radius-md);
+        border: 1px solid var(--border-color);
+        margin-bottom: 24px;
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    /* Buttons */
+    .btn-custom {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 16px;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.2s;
+        border: 1px solid transparent;
+        cursor: pointer;
+    }
+
+    .btn-upload {
+        background: var(--success-color);
+        color: white;
+    }
+
+        .btn-upload:hover {
+            background: #059669;
+            color: white;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+        }
+
+    .btn-back {
+        background: var(--bg-light);
+        color: var(--text-dark);
+        border-color: var(--border-color);
+    }
+
+        .btn-back:hover {
+            background: #e2e8f0;
+            color: var(--text-dark);
+        }
+
+    /* Table Styling */
+    .table-container {
+        background: var(--bg-white);
+        border-radius: var(--radius-md);
+        box-shadow: var(--shadow-sm);
+        border: 1px solid var(--border-color);
+        overflow-x: auto; /* Giúp bảng vuốt ngang được trên mobile */
+    }
+
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 900px;
+    }
+
+        .data-table thead {
+            background: var(--bg-light);
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .data-table th {
+            padding: 16px;
+            text-align: left;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
+
+        .data-table td {
+            padding: 16px;
+            border-bottom: 1px solid var(--border-color);
+            vertical-align: middle;
+            font-size: 14px;
+            color: var(--text-dark);
+        }
+
+        .data-table tbody tr:hover {
+            background: #f8fafc;
+        }
+
+    /* File Info Styling */
+    .file-name {
+        font-weight: 600;
+        color: var(--text-dark);
+        margin-bottom: 4px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .file-url {
+        color: var(--text-muted);
+        font-size: 12px;
+        max-width: 250px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis; /* Cắt ngắn URL dài */
+        display: block;
+        font-family: monospace;
+        background: var(--bg-light);
+        padding: 2px 6px;
+        border-radius: 4px;
+        border: 1px solid var(--border-color);
+    }
+
+    /* Badges */
+    .badge {
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        display: inline-block;
+    }
+
+    .badge-video {
+        background: #dcfce7;
+        color: #166534;
+        border: 1px solid #bbf7d0;
+    }
+
+    .badge-subtitle {
+        background: #fef3c7;
+        color: #92400e;
+        border: 1px solid #fde68a;
+    }
+
+    .badge-other {
+        background: #f1f5f9;
+        color: #475569;
+        border: 1px solid #e2e8f0;
+    }
+
+    .quality-badge {
+        background: var(--primary-color);
+        color: white;
+        padding: 3px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+    }
+
+    /* Action Links */
+    .action-group {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+    }
+
+    .action-btn {
+        width: 32px;
+        height: 32px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 6px;
+        color: var(--text-muted);
+        background: var(--bg-light);
+        border: 1px solid var(--border-color);
+        transition: all 0.2s;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+        .action-btn:hover {
+            background: var(--bg-white);
+        }
+
+        .action-btn.play:hover {
+            color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .action-btn.view:hover {
+            color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .action-btn.edit:hover {
+            color: var(--warning-color);
+            border-color: var(--warning-color);
+        }
+
+        .action-btn.delete:hover {
+            color: var(--danger-color);
+            border-color: var(--danger-color);
+            background: #fef2f2;
+        }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 48px 20px;
+        background: var(--bg-white);
+        border-radius: var(--radius-md);
+        border: 1px solid var(--border-color);
+    }
+
+        .empty-state i {
+            font-size: 48px;
+            color: #cbd5e1;
+            margin-bottom: 16px;
+        }
+
+    /* Responsive */
+    @@media (max-width: 768px) {
+        .media-container {
+            padding: 16px;
+        }
+
+        .page-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .btn-custom {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .nav-bar {
+            flex-direction: column;
+        }
+    }
+</style>
+
+<div class="media-container">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">
+                <i class="zmdi zmdi-folder"></i> @ViewData["Title"]
+            </h1>
+            @if (!string.IsNullOrEmpty(episodeTitle))
             {
-                <a asp-action="Index" asp-route-movieId="@movieId" class="btn btn-sm btn-secondary">
-                    <i class="fa fa-arrow-left"></i> Xem media của phim
-                </a>
+                <div class="page-subtitle">Tập phim: @episodeTitle</div>
             }
-            <a asp-action="Index" class="btn btn-sm btn-secondary">
-                <i class="fa fa-arrow-left"></i> Xem tất cả media files
+            else if (!string.IsNullOrEmpty(movieTitle))
+            {
+                <div class="page-subtitle">Phim: @movieTitle</div>
+            }
+        </div>
+        <div>
+            <a asp-action="UploadVideo" asp-route-movieId="@movieId" class="btn-custom btn-upload">
+                <i class="zmdi zmdi-cloud-upload"></i> Upload Video Mới
             </a>
         </div>
     </div>
-}
 
-<div class="row m-t-30">
-    <div class="col-md-12">
-        @if (Model != null && Model.Any())
-        {
-            <div class="table-responsive table--no-card m-b-40">
-                <table class="table table-borderless table-striped table-earning">
-                    <thead>
+    @if (episodeId.HasValue || movieId.HasValue)
+    {
+        <div class="nav-bar">
+            @if (episodeId.HasValue && movieId.HasValue)
+            {
+                <a asp-action="Index" asp-route-movieId="@movieId" class="btn-custom btn-back">
+                    <i class="zmdi zmdi-arrow-left"></i> Xem media của phim
+                </a>
+            }
+            <a asp-action="Index" class="btn-custom btn-back">
+                <i class="zmdi zmdi-apps"></i> Xem tất cả media files
+            </a>
+        </div>
+    }
+
+    @if (Model != null && Model.Any())
+    {
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Thông tin File</th>
+                        <th>Loại</th>
+                        <th>Chất lượng</th>
+                        <th>Kích thước</th>
+                        <th>Thuộc Phim/Tập</th>
+                        <th>Ngày Upload</th>
+                        <th>Hành động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
                         <tr>
-                            <th>File</th>
-                            <th>Loại</th>
-                            <th>Chất lượng</th>
-                            <th>Kích thước</th>
-                            <th>Phim/Tập</th>
-                            <th>Ngày upload</th>
-                            <th>Hành động</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var item in Model)
-                        {
-                            <tr>
-                                <td>
-                                    <strong>@item.FileName</strong><br />
-                                    <small class="text-muted">@item.FileUrl</small>
-                                </td>
-                                <td>
-                                    @if (item.FileType == "Video")
-                                    {
-                                        <span class="role admin">@item.FileType</span>
-                                    }
-                                    else if (item.FileType == "Subtitle")
-                                    {
-                                        <span class="role user">@item.FileType</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="role">@item.FileType</span>
-                                    }
-                                </td>
-                                <td>@item.Quality</td>
-                                <td>@item.FileSizeFormatted</td>
-                                <td>
-                                    @if (item.EpisodeId.HasValue)
-                                    {
-                                        <a asp-controller="Episodes" asp-action="Details" asp-route-id="@item.EpisodeId">
-                                            Tập @item.EpisodeNumber: @item.EpisodeTitle
-                                        </a>
-                                    }
-                                    else if (item.MovieId.HasValue)
-                                    {
-                                        <a asp-controller="Movies" asp-action="Details" asp-route-id="@item.MovieId">
-                                            @item.MovieTitle
-                                        </a>
-                                    }
-                                </td>
-                                <td>@item.UploadedAt.ToString("dd/MM/yyyy HH:mm")</td>
-                                <td>
-                                    <div class="table-data-feature">
-                                        <a href="@item.FileUrl" target="_blank" class="item" data-toggle="tooltip" title="Xem">
-                                            <i class="zmdi zmdi-play"></i>
-                                        </a>
-                                        <a asp-action="Details" asp-route-id="@item.Id" class="item" data-toggle="tooltip" title="Chi tiết">
-                                            <i class="zmdi zmdi-eye"></i>
-                                        </a>
-                                        <a asp-action="Edit" asp-route-id="@item.Id" class="item" data-toggle="tooltip" title="Sửa">
-                                            <i class="zmdi zmdi-edit"></i>
-                                        </a>
-                                        <a asp-action="Delete" asp-route-id="@item.Id" class="item" data-toggle="tooltip" title="Xóa">
+                            <td>
+                                <div class="file-name">
+                                    <i class="zmdi zmdi-file-video" style="color: var(--primary-color);"></i>
+                                    @item.FileName
+                                </div>
+                                <span class="file-url" title="@item.FileUrl">@item.FileUrl</span>
+                            </td>
+                            <td>
+                                @if (item.FileType == "Video")
+                                {
+                                    <span class="badge badge-video"><i class="zmdi zmdi-videocam"></i> Video</span>
+                                }
+                                else if (item.FileType == "Subtitle")
+                                {
+                                    <span class="badge badge-subtitle"><i class="zmdi zmdi-subtitles"></i> Phụ đề</span>
+                                }
+                                else
+                                {
+                                    <span class="badge badge-other">@item.FileType</span>
+                                }
+                            </td>
+                            <td>
+                                @if (!string.IsNullOrEmpty(item.Quality))
+                                {
+                                    <span class="quality-badge">@item.Quality</span>
+                                }
+                                else
+                                {
+                                    <span style="color: var(--text-muted);">-</span>
+                                }
+                            </td>
+                            <td style="font-family: monospace; color: var(--text-muted);">
+                                @item.FileSizeFormatted
+                            </td>
+                            <td>
+                                @if (item.EpisodeId.HasValue)
+                                {
+                                    <a asp-controller="Episodes" asp-action="Details" asp-route-id="@item.EpisodeId" style="text-decoration: none; color: var(--primary-color); font-weight: 500;">
+                                        Tập @item.EpisodeNumber: @item.EpisodeTitle
+                                    </a>
+                                }
+                                else if (item.MovieId.HasValue)
+                                {
+                                    <a asp-controller="Movies" asp-action="Details" asp-route-id="@item.MovieId" style="text-decoration: none; color: var(--primary-color); font-weight: 500;">
+                                        @item.MovieTitle
+                                    </a>
+                                }
+                                else
+                                {
+                                    <span style="color: var(--text-muted); font-style: italic;">File độc lập</span>
+                                }
+                            </td>
+                            <td style="color: var(--text-muted); font-size: 13px;">
+                                @item.UploadedAt.ToString("dd/MM/yyyy HH:mm")
+                            </td>
+                            <td>
+                                <div class="action-group">
+                                    <a href="@item.FileUrl" target="_blank" class="action-btn play" title="Xem/Tải file">
+                                        <i class="zmdi zmdi-play"></i>
+                                    </a>
+                                    <a asp-action="Details" asp-route-id="@item.Id" class="action-btn view" title="Chi tiết">
+                                        <i class="zmdi zmdi-eye"></i>
+                                    </a>
+                                    <a asp-action="Edit" asp-route-id="@item.Id" class="action-btn edit" title="Sửa">
+                                        <i class="zmdi zmdi-edit"></i>
+                                    </a>
+                                    <form asp-action="Delete" asp-route-id="@item.Id" method="post" style="margin: 0;" onsubmit="return confirm('Bạn có chắc chắn muốn xóa file này khỏi hệ thống không?');">
+                                        <button type="submit" class="action-btn delete" title="Xóa">
                                             <i class="zmdi zmdi-delete"></i>
-                                        </a>
-                                    </div>
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
-        }
-        else
-        {
-            <div class="alert alert-info">
-                <strong>Thông báo:</strong> Chưa có media file nào.
-                <a asp-action="Upload" asp-route-movieId="@movieId" asp-route-episodeId="@episodeId">Upload file mới</a>
-            </div>
-        }
-    </div>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <div class="empty-state">
+            <i class="zmdi zmdi-cloud-off"></i>
+            <h3 style="margin: 0 0 8px 0; color: var(--text-dark);">Chưa có Media File nào</h3>
+            <p style="color: var(--text-muted); margin-bottom: 24px;">Hãy upload video hoặc phụ đề đầu tiên cho mục này.</p>
+            <a asp-action="Upload" asp-route-movieId="@movieId" asp-route-episodeId="@episodeId" class="btn-custom btn-upload">
+                <i class="zmdi zmdi-upload"></i> Upload File Ngay
+            </a>
+        </div>
+    }
 </div>

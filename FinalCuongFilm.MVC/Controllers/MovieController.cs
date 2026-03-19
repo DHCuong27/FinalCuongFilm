@@ -1,6 +1,5 @@
 ﻿using FinalCuongFilm.MVC.Models.ViewModels;
 using FinalCuongFilm.Service.Interfaces;
-using FinalCuongFilm.Service.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -21,66 +20,40 @@ namespace FinalCuongFilm.MVC.Controllers
 		private readonly ILogger<MovieController> _logger;
 
 		public MovieController(
-			IMovieService movieService,
-			IFavoriteService favoriteService,
-			IReviewService reviewService,
-			IEpisodeService episodeService,
-			IMediaFileService mediaFileService,
-			IGenreService genreService,
-			ICountryService countryService,
-			IActorService actorService,
-			IAzureBlobService azureBlobService,
-			ILogger<MovieController> logger)
+			IMovieService movieService, IFavoriteService favoriteService,
+			IReviewService reviewService, IEpisodeService episodeService,
+			IMediaFileService mediaFileService, IGenreService genreService,
+			ICountryService countryService, IActorService actorService,
+			IAzureBlobService azureBlobService, ILogger<MovieController> logger)
 		{
-			_movieService = movieService;
-			_favoriteService = favoriteService;
-			_reviewService = reviewService;
-			_episodeService = episodeService;
-			_mediaFileService = mediaFileService;
-			_genreService = genreService;
-			_countryService = countryService;
-			_actorService = actorService;
-			_azureBlobService = azureBlobService;
-			_logger = logger;
+			_movieService = movieService; _favoriteService = favoriteService;
+			_reviewService = reviewService; _episodeService = episodeService;
+			_mediaFileService = mediaFileService; _genreService = genreService;
+			_countryService = countryService; _actorService = actorService;
+			_azureBlobService = azureBlobService; _logger = logger;
 		}
 
-		// GET: /Movie?search=&genreId=&countryId=&releaseYear=&type=&sortBy=&pageNumber=&pageSize=
+		// GET: /Movie
 		public async Task<IActionResult> Index(
-			string? search = null,
-			Guid? genreId = null,
-			Guid? countryId = null,
-			int? releaseYear = null,
-			int? type = null,
-			string sortBy = "latest",
-			int pageNumber = 1,
-			int pageSize = 12)
+			string? search = null, Guid? genreId = null, Guid? countryId = null,
+			int? releaseYear = null, int? type = null, string sortBy = "latest",
+			int pageNumber = 1, int pageSize = 12)
 		{
-
 			var allMovies = await _movieService.GetAllAsync();
 			var genres = await _genreService.GetAllAsync();
 			var countries = await _countryService.GetAllAsync();
 
 			var query = allMovies.Where(m => m.IsActive).AsEnumerable();
 
-			// ── Filter ──
 			if (!string.IsNullOrWhiteSpace(search))
-				query = query.Where(m =>
-					m.Title.Contains(search, StringComparison.OrdinalIgnoreCase) ||
-					(m.Description?.Contains(search, StringComparison.OrdinalIgnoreCase) ?? false));
+				query = query.Where(m => m.Title.Contains(search, StringComparison.OrdinalIgnoreCase) ||
+										(m.Description?.Contains(search, StringComparison.OrdinalIgnoreCase) ?? false));
 
-			if (genreId.HasValue)
-				query = query.Where(m => m.SelectedGenreIds.Contains(genreId.Value));
+			if (genreId.HasValue) query = query.Where(m => m.SelectedGenreIds.Contains(genreId.Value));
+			if (countryId.HasValue) query = query.Where(m => m.CountryId == countryId.Value);
+			if (releaseYear.HasValue) query = query.Where(m => m.ReleaseYear == releaseYear.Value);
+			if (type.HasValue) query = query.Where(m => (int)m.Type == type.Value);
 
-			if (countryId.HasValue)
-				query = query.Where(m => m.CountryId == countryId.Value);
-
-			if (releaseYear.HasValue)
-				query = query.Where(m => m.ReleaseYear == releaseYear.Value);
-
-			if (type.HasValue)
-				query = query.Where(m => (int)m.Type == type.Value);
-
-			// ── Sort ──
 			query = sortBy switch
 			{
 				"popular" => query.OrderByDescending(m => m.ViewCount),
@@ -90,20 +63,9 @@ namespace FinalCuongFilm.MVC.Controllers
 				_ => query.OrderByDescending(m => m.ReleaseYear)
 			};
 
-			// ── Pagination ──
 			var filteredList = query.ToList();
 			var totalItems = filteredList.Count;
-			var pagedMovies = filteredList
-				.Skip((pageNumber - 1) * pageSize)
-				.Take(pageSize)
-				.ToList();
-
-			var pageTitle = type switch
-			{
-				1 => "Movies",
-				2 => "TV Series",
-				_ => "All Films"
-			};
+			var pagedMovies = filteredList.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToList();
 
 			var vm = new MovieFilterViewModel
 			{
@@ -119,65 +81,50 @@ namespace FinalCuongFilm.MVC.Controllers
 				PageNumber = pageNumber,
 				PageSize = pageSize,
 				TotalItems = totalItems,
-				PageTitle = pageTitle,
+				PageTitle = type switch { 1 => "Movies", 2 => "TV Series", _ => "All Films" },
 				PageSubTitle = $"{totalItems} films found"
 			};
 
 			return View(vm);
 		}
 
-		// GET: /Movie/Detail/{slug}
+		// Details: /Movie/Detail/{slug}
 		public async Task<IActionResult> Detail(string slug)
 		{
-			if (string.IsNullOrEmpty(slug))
-				return NotFound();
+			if (string.IsNullOrEmpty(slug)) return NotFound();
 
 			var allMovies = await _movieService.GetAllAsync();
 			var movie = allMovies.FirstOrDefault(m => m.Slug == slug && m.IsActive);
-
-			if (movie == null)
-				return NotFound();
+			if (movie == null) return NotFound();
 
 			var episodes = await _episodeService.GetByMovieIdAsync(movie.Id);
 			var mediaFiles = await _mediaFileService.GetByMovieIdAsync(movie.Id);
 
-			// THÊM MỚI: Lấy danh sách diễn viên của phim
-			// Giả sử bạn có _actorService và hàm GetActorsByMovieIdAsync trả về List<ActorDto>
-			var actors = allMovies.FirstOrDefault(m => m.Id == movie.Id)?.SelectedActorIds != null
-    ? await _actorService.GetAllAsync()
-        .ContinueWith(task => task.Result.Where(a => movie.SelectedActorIds.Contains(a.Id)).ToList())
-    : new List<FinalCuongFilm.Common.DTOs.ActorDto>();
-
-			// Lấy genres và countries cho navigation
-			var genres = await _genreService.GetAllAsync();
-			var countries = await _countryService.GetAllAsync();
+			var actors = new List<FinalCuongFilm.Common.DTOs.ActorDto>();
+			if (movie.SelectedActorIds != null && movie.SelectedActorIds.Any())
+			{
+				var allActors = await _actorService.GetAllAsync();
+				actors = allActors.Where(a => movie.SelectedActorIds.Contains(a.Id)).ToList();
+			}
 
 			var relatedMovies = allMovies
-				.Where(m => m.IsActive &&
-							m.Id != movie.Id &&
-							(m.CountryId == movie.CountryId ||
-							 m.SelectedGenreIds.Intersect(movie.SelectedGenreIds).Any()))
+				.Where(m => m.IsActive && m.Id != movie.Id &&
+							(m.CountryId == movie.CountryId || m.SelectedGenreIds.Intersect(movie.SelectedGenreIds).Any()))
 				.OrderByDescending(m => m.ViewCount)
-				.Take(6)
-				.ToList();
+				.Take(6).ToList();
 
-			ViewBag.Genres = genres; // Sửa lại một chút để tái sử dụng biến genres ở trên, tránh gọi DB 2 lần
-			ViewBag.Countries = countries; // Tương tự với countries
+			ViewBag.Genres = await _genreService.GetAllAsync();
+			ViewBag.Countries = await _countryService.GetAllAsync();
 
 			var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-			ViewBag.IsFavorited = false;
-			if (userId != null)
-				ViewBag.IsFavorited = await _favoriteService.IsFavoriteAsync(userId, movie.Id);
+			ViewBag.IsFavorited = userId != null && await _favoriteService.IsFavoriteAsync(userId, movie.Id);
 
 			try { ViewBag.Rating = await _reviewService.GetMovieRatingAsync(movie.Id); }
 			catch { ViewBag.Rating = null; }
 
 			var reviews = await _reviewService.GetMovieReviewsAsync(movie.Id, approvedOnly: true);
 			ViewBag.Reviews = reviews.Take(5);
-
-			ViewBag.UserReview = null;
-			if (userId != null)
-				ViewBag.UserReview = await _reviewService.GetUserReviewForMovieAsync(userId, movie.Id);
+			ViewBag.UserReview = userId != null ? await _reviewService.GetUserReviewForMovieAsync(userId, movie.Id) : null;
 
 			var viewModel = new MovieDetailsViewModel
 			{
@@ -185,158 +132,133 @@ namespace FinalCuongFilm.MVC.Controllers
 				Episodes = episodes.Where(e => e.IsActive).OrderBy(e => e.EpisodeNumber).ToList(),
 				MediaFiles = mediaFiles.ToList(),
 				RelatedMovies = relatedMovies,
-
-				// THÊM MỚI: Gán danh sách diễn viên vào ViewModel
-				Actors = actors.ToList()
+				Actors = actors
 			};
 
 			return View(viewModel);
 		}
 
-		// GET: /Movie/Watch/{slug}?ep=1
+
+		// Watch: /Movie/Watch/{slug}?ep=1
 		[AllowAnonymous]
 		[Route("Movie/Watch/{slug}")]
 		public async Task<IActionResult> Watch(string slug, int? ep = null)
 		{
-			_logger.LogInformation($"[Watch] slug={slug}, ep={ep}");
-
-			if (string.IsNullOrEmpty(slug))
-			{
-				TempData["Error"] = "Movie not found.";
-				return RedirectToAction("Index", "Home");
-			}
+			if (string.IsNullOrEmpty(slug)) return RedirectToAction("Index", "Home");
 
 			try
 			{
+				// 1. Lấy thông tin phim
+				// Lưu ý: Nếu Service của bạn có hàm GetBySlugAsync(slug) thì nên dùng, 
+				// dùng GetAllAsync() rồi lọc sẽ hơi chậm nếu web có hàng vạn phim.
 				var allMovies = await _movieService.GetAllAsync();
-				var movie = allMovies.FirstOrDefault(m =>
-					m.Slug.Equals(slug, StringComparison.OrdinalIgnoreCase) && m.IsActive);
+				var movie = allMovies.FirstOrDefault(m => string.Equals(m.Slug, slug, StringComparison.OrdinalIgnoreCase) && m.IsActive);
+				if (movie == null) return RedirectToAction("Index", "Home");
 
-				if (movie == null)
-				{
-					TempData["Error"] = $"Movie not found: {slug}";
-					return RedirectToAction("Index", "Home");
-				}
-
-				// Lấy genres và countries cho navigation
-				ViewBag.Genres = await _genreService.GetAllAsync();
-				ViewBag.Countries = await _countryService.GetAllAsync();
-
-				FinalCuongFilm.Common.DTOs.MediaFileDto? selectedMediaFile = null;
+				// 2. Xử lý logic Tập phim & Lấy danh sách File Media
+				var allEpisodes = new List<FinalCuongFilm.Common.DTOs.EpisodeDto>();
 				FinalCuongFilm.Common.DTOs.EpisodeDto? currentEpisode = null;
-				List<FinalCuongFilm.Common.DTOs.MediaFileDto> allQualityOptions = new();
-				List<FinalCuongFilm.Common.DTOs.EpisodeDto> allEpisodes = new();
+				IEnumerable<FinalCuongFilm.Common.DTOs.MediaFileDto> mediaFiles;
 
 				if (movie.Type == ApplicationCore.Entities.Enum.MovieType.Series)
 				{
 					var episodes = await _episodeService.GetByMovieIdAsync(movie.Id);
-					allEpisodes = episodes
-						.Where(e => e.IsActive)
-						.OrderBy(e => e.EpisodeNumber)
-						.ToList();
+					allEpisodes = episodes.Where(e => e.IsActive).OrderBy(e => e.EpisodeNumber).ToList();
 
-					if (!allEpisodes.Any())
-					{
-						TempData["Error"] = "This series has no episodes yet.";
-						return RedirectToAction("Detail", new { slug });
-					}
+					if (!allEpisodes.Any()) return RedirectToAction("Detail", new { slug });
 
 					int targetEp = ep ?? 1;
-					currentEpisode = allEpisodes.FirstOrDefault(e => e.EpisodeNumber == targetEp)
-									 ?? allEpisodes.First();
-
-					var episodeMedia = await _mediaFileService.GetByEpisodeIdAsync(currentEpisode.Id);
-					allQualityOptions = episodeMedia
-						.Where(m => m.FileType == "video")
-						.OrderByDescending(m => m.Quality)
-						.ToList();
-
-					selectedMediaFile = allQualityOptions.FirstOrDefault();
+					currentEpisode = allEpisodes.FirstOrDefault(e => e.EpisodeNumber == targetEp) ?? allEpisodes.First();
+					mediaFiles = await _mediaFileService.GetByEpisodeIdAsync(currentEpisode.Id);
 				}
 				else
 				{
-					var movieMedia = await _mediaFileService.GetByMovieIdAsync(movie.Id);
-					allQualityOptions = movieMedia
-						.Where(m => m.FileType == "video")
-						.OrderByDescending(m => m.Quality)
-						.ToList();
-
-					selectedMediaFile = allQualityOptions.FirstOrDefault();
+					mediaFiles = await _mediaFileService.GetByMovieIdAsync(movie.Id);
 				}
 
-				if (selectedMediaFile == null)
-				{
-					TempData["Error"] = "Video not available yet. Please try again later.";
-					return RedirectToAction("Detail", new { slug });
-				}
-
-				var streamingUrl = await _azureBlobService.GetStreamingUrlAsync(selectedMediaFile.FileUrl, expiryHours: 4);
+				// 3. Tối ưu hóa xử lý Streaming URL (HLS vs MP4)
+				string? streamingUrl = null;
 				var qualitySources = new List<object>();
-				foreach (var qf in allQualityOptions)
+				var hlsFile = mediaFiles.FirstOrDefault(m => m.FileType?.ToLower() == "hls");
+
+				if (hlsFile != null)
 				{
-					var qUrl = await _azureBlobService.GetStreamingUrlAsync(qf.FileUrl, expiryHours: 4);
-					qualitySources.Add(new { id = qf.Id, quality = qf.Quality ?? "Auto", url = qUrl });
+					streamingUrl = await _azureBlobService.GetStreamingUrlAsync(hlsFile.FileUrl, expiryHours: 12);
+					ViewBag.MediaType = "hls";
+					qualitySources.Add(new { id = hlsFile.Id, quality = "Auto (HLS)", url = streamingUrl });
+				}
+				else
+				{
+					// Dự phòng: Lấy các file MP4 thường
+					var videoFiles = mediaFiles.Where(m => m.FileType?.ToLower() == "video").OrderByDescending(m => m.Quality).ToList();
+					if (videoFiles.Any())
+					{
+						ViewBag.MediaType = "mp4";
+
+						// TỐI ƯU: Xin SAS Token từ Azure ĐỒNG THỜI cho tất cả các độ phân giải
+						var sasTasks = videoFiles.Select(async qf =>
+						{
+							var qUrl = await _azureBlobService.GetStreamingUrlAsync(qf.FileUrl, expiryHours: 4);
+							return new { id = qf.Id, quality = qf.Quality ?? "HD", url = qUrl };
+						});
+
+						var resolvedSources = await Task.WhenAll(sasTasks);
+						qualitySources.AddRange(resolvedSources);
+
+						// Lấy link có chất lượng cao nhất làm mặc định
+						streamingUrl = resolvedSources.First().url;
+					}
 				}
 
-				var subtitleFiles = new List<object>();
-				var allMediaForSub = currentEpisode != null
-					? await _mediaFileService.GetByEpisodeIdAsync(currentEpisode.Id)
-					: await _mediaFileService.GetByMovieIdAsync(movie.Id);
+				if (string.IsNullOrEmpty(streamingUrl)) return RedirectToAction("Detail", new { slug });
 
-				foreach (var sub in allMediaForSub.Where(m => m.FileType == "subtitle"))
+				// 4. TỐI ƯU: Xử lý Phụ đề (Subtitles) đồng thời
+				var subtitleFilesList = mediaFiles.Where(m => m.FileType?.ToLower() == "subtitle").ToList();
+				var subtitleTasks = subtitleFilesList.Select(async sub =>
 				{
 					var subUrl = await _azureBlobService.GetStreamingUrlAsync(sub.FileUrl, expiryHours: 4);
-					subtitleFiles.Add(new { language = sub.Language ?? "Unknown", url = subUrl, label = sub.Language ?? "Subtitle" });
-				}
+					return new { language = sub.Language ?? "en", url = subUrl, label = sub.Language ?? "Subtitle" };
+				});
+				var subtitleFiles = await Task.WhenAll(subtitleTasks);
 
+				// 5. Tăng lượt xem & Lấy dữ liệu râu ria
 				await _movieService.IncrementViewCountAsync(movie.Id);
 
-				// THÊM MỚI 1: Khởi tạo MovieWatchViewModel
-				var viewModel = new FinalCuongFilm.MVC.Models.ViewModels.MovieWatchViewModel
+				var actors = new List<FinalCuongFilm.Common.DTOs.ActorDto>();
+				if (movie.SelectedActorIds != null && movie.SelectedActorIds.Any())
+				{
+					var allActors = await _actorService.GetAllAsync();
+					actors = allActors.Where(a => movie.SelectedActorIds.Contains(a.Id)).ToList();
+				}
+
+				var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+				// Đổ dữ liệu đồng loạt ra ViewBag để tối ưu thời gian chờ
+				ViewBag.Genres = await _genreService.GetAllAsync();
+				ViewBag.Countries = await _countryService.GetAllAsync();
+				ViewBag.IsFavorited = userId != null && await _favoriteService.IsFavoriteAsync(userId, movie.Id);
+				ViewBag.StreamingUrl = streamingUrl;
+				ViewBag.QualitySources = qualitySources;
+				ViewBag.SubtitleFiles = subtitleFiles;
+				ViewBag.Actors = actors;
+
+				var viewModel = new MovieWatchViewModel
 				{
 					Movie = movie,
 					Episodes = allEpisodes,
 					CurrentEpisode = currentEpisode,
-					MediaFiles = allQualityOptions
+					MediaFiles = mediaFiles.ToList()
 				};
 
-				// THÊM MỚI 2: Lấy trạng thái Yêu thích (Favorite)
-				var userId = User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier);
-				bool isFavorited = false;
-				if (userId != null)
-				{
-					isFavorited = await _favoriteService.IsFavoriteAsync(userId, movie.Id);
-				}
-
-				// THÊM MỚI 3: Lấy danh sách diễn viên (Giả sử bạn có _actorService)
-				// Nếu chưa có service này, bạn hãy tạo hoặc cmt dòng này lại tạm thời nhé
-				var allActors = await _actorService.GetAllAsync();
-var actors = movie.SelectedActorIds != null
-    ? allActors.Where(a => movie.SelectedActorIds.Contains(a.Id)).ToList()
-    : new List<FinalCuongFilm.Common.DTOs.ActorDto>();
-
-				// Gán các biến phụ trợ vào ViewBag
-				ViewBag.StreamingUrl = streamingUrl;
-				ViewBag.QualitySources = qualitySources;
-				ViewBag.SubtitleFiles = subtitleFiles;
-				ViewBag.MovieId = movie.Id;
-				ViewBag.EpisodeId = currentEpisode?.Id;
-				ViewBag.IsFavorited = isFavorited;
-				ViewBag.Actors = actors;
-
-				_logger.LogInformation($"[Watch] Success: {movie.Title}, quality options: {qualitySources.Count}");
-
-				// THÊM MỚI 4: Truyền viewModel vào View thay vì để trống
 				return View(viewModel);
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError(ex, "[Watch] Exception");
-				TempData["Error"] = $"Error: {ex.Message}";
+				_logger.LogError(ex, "[Watch] Lỗi nghiêm trọng khi load phim: {Slug}", slug);
 				return RedirectToAction("Index", "Home");
 			}
 		}
-
+		// Watch by ID: /Movie/WatchById/{id}
 		public async Task<IActionResult> WatchById(Guid id)
 		{
 			var movie = await _movieService.GetByIdAsync(id);

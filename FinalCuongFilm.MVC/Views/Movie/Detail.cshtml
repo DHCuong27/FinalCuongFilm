@@ -9,7 +9,6 @@
     var rating = ViewBag.Rating as FinalCuongFilm.Common.DTOs.MovieRatingDto;
     var reviews = ViewBag.Reviews as IEnumerable<FinalCuongFilm.Common.DTOs.ReviewDto>;
     var userReview = ViewBag.UserReview as FinalCuongFilm.Common.DTOs.ReviewDto;
-
     var currentUrl = Url.Action("Detail", "Movie", new { slug = Model.Movie.Slug });
 }
 
@@ -1032,13 +1031,6 @@
                             <span class="info-value">@Model.Movie.CountryName</span>
                         </div>
                     }
-                    @* @if (!string.IsNullOrEmpty(Model.Movie.LanguageName))
-                    {
-                        <div class="info-row">
-                            <span class="info-label">Language</span>
-                            <span class="info-value">@Model.Movie.LanguageName</span>
-                        </div>
-                    } *@
                     <div class="info-row">
                         <span class="info-label">Type</span>
                         <span class="info-value">@Model.Movie.Type</span>

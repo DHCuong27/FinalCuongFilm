@@ -6,9 +6,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FinalCuongFilm.API.Controllers
 {
-	/// <summary>
+	
 	/// API endpoints for managing actors
-	/// </summary>
+
 	[Route("api/[controller]")]
 	[ApiController]
 	[Produces("application/json")]
@@ -23,9 +23,9 @@ namespace FinalCuongFilm.API.Controllers
 			_logger = logger;
 		}
 
-		/// <summary>
+		
 		/// Lấy danh sách tất cả diễn viên (có phân trang + tìm kiếm)
-		/// </summary>
+	
 		[HttpGet]
 		[ProducesResponseType(typeof(ApiResponse<PaginatedResult<ActorDto>>), StatusCodes.Status200OK)]
 		public async Task<ActionResult<ApiResponse<PaginatedResult<ActorDto>>>> GetAll(
@@ -45,9 +45,9 @@ namespace FinalCuongFilm.API.Controllers
 			return Ok(ApiResponse<PaginatedResult<ActorDto>>.SuccessResult(result));
 		}
 
-		/// <summary>
+		
 		/// Lấy diễn viên theo ID
-		/// </summary>
+	
 		[HttpGet("{id:guid}")]
 		[ProducesResponseType(typeof(ApiResponse<ActorDto>), StatusCodes.Status200OK)]
 		[ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
@@ -60,9 +60,9 @@ namespace FinalCuongFilm.API.Controllers
 			return Ok(ApiResponse<ActorDto>.SuccessResult(actor));
 		}
 
-		/// <summary>
+		
 		/// Tạo diễn viên mới [Admin]
-		/// </summary>
+	
 		[HttpPost]
 		[Authorize(Roles = "Admin")]
 		[ProducesResponseType(typeof(ApiResponse<ActorDto>), StatusCodes.Status201Created)]
@@ -86,9 +86,9 @@ namespace FinalCuongFilm.API.Controllers
 			}
 		}
 
-		/// <summary>
+		
 		/// Cập nhật diễn viên [Admin]
-		/// </summary>
+	
 		[HttpPut("{id:guid}")]
 		[Authorize(Roles = "Admin")]
 		[ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
@@ -112,9 +112,9 @@ namespace FinalCuongFilm.API.Controllers
 			return Ok(ApiResponse<object>.SuccessResult(new { id }, "Cập nhật diễn viên thành công"));
 		}
 
-		/// <summary>
+		
 		/// Xóa diễn viên [Admin]
-		/// </summary>
+	
 		[HttpDelete("{id:guid}")]
 		[Authorize(Roles = "Admin")]
 		[ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]

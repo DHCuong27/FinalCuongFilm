@@ -412,8 +412,12 @@
         <p class="nf-page-sub">Full information for this movie entry</p>
     </div>
     <div class="nf-header-actions">
-        <a asp-action="Edit" asp-route-id="@Model.Id" class="nf-btn nf-btn-red"><i class="zmdi zmdi-edit"></i> Edit</a>
-        <a asp-action="Delete" asp-route-id="@Model.Id" class="nf-btn nf-btn-danger-ghost"><i class="zmdi zmdi-delete"></i> Delete</a>
+        <a asp-action="Edit"  asp-route-id="@Model.Id" class="nf-btn nf-btn-red"><i class="zmdi zmdi-edit"></i> Edit</a>
+        <form asp-action="Delete" asp-route-id="@Model.Id" method="post" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this movie?');">
+            <button type="submit" class="nf-btn nf-btn-danger-ghost">
+                <i class="zmdi zmdi-delete"></i> Delete
+            </button>
+        </form>
         <a asp-action="Index" class="nf-btn nf-btn-ghost"><i class="zmdi zmdi-arrow-left"></i> Back</a>
     </div>
 </div>
@@ -563,17 +567,7 @@
             </div>
         }
 
-        <!-- Actions -->
-        <div class="nf-card">
-            <div class="nf-card-hd"><i class="zmdi zmdi-settings"></i> Actions</div>
-            <div class="nf-card-bd">
-                <div class="nf-action-row">
-                    <a asp-action="Edit" asp-route-id="@Model.Id" class="nf-btn nf-btn-red"><i class="zmdi zmdi-edit"></i> Edit Movie</a>
-                    <a asp-action="Delete" asp-route-id="@Model.Id" class="nf-btn nf-btn-danger-ghost"><i class="zmdi zmdi-delete"></i> Delete Movie</a>
-                    <a asp-action="Index" class="nf-btn nf-btn-ghost"><i class="zmdi zmdi-arrow-left"></i> Back to List</a>
-                </div>
-            </div>
-        </div>
+     
 
     </div>
 </div>

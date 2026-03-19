@@ -19,7 +19,7 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 
 		public async Task<IActionResult> Index()
 		{
-			// Thống kê
+
 			ViewBag.TotalMovies = await _context.Movies.CountAsync();
 			ViewBag.TotalActors = await _context.Actors.CountAsync();
 			ViewBag.TotalGenres = await _context.Genres.CountAsync();

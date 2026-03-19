@@ -1,7 +1,8 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using FinalCuongFilm.Common.DTOs;
 using FinalCuongFilm.Service.Interfaces;
-using FinalCuongFilm.Common.DTOs;
+using Hangfire;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 {
@@ -13,6 +14,7 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 		private readonly IMediaFileService _mediaFileService;
 		private readonly IMovieService _movieService;
 		private readonly IEpisodeService _episodeService;
+		private readonly IVideoConversionService _videoConversionService;
 		private readonly ILogger<MediaUploadController> _logger;
 
 		public MediaUploadController(
@@ -20,12 +22,14 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 			IMediaFileService mediaFileService,
 			IMovieService movieService,
 			IEpisodeService episodeService,
+			IVideoConversionService videoConversionService,
 			ILogger<MediaUploadController> logger)
 		{
 			_azureBlobService = azureBlobService;
 			_mediaFileService = mediaFileService;
 			_movieService = movieService;
 			_episodeService = episodeService;
+			_videoConversionService = videoConversionService;
 			_logger = logger;
 		}
 
@@ -233,70 +237,94 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 			return View();
 		}
 
+
 		// POST: Admin/MediaUpload/UploadVideo
 		[HttpPost]
 		[RequestSizeLimit(5_000_000_000)] // 5GB
 		[RequestFormLimits(MultipartBodyLengthLimit = 5_000_000_000)]
 		public async Task<IActionResult> UploadVideo([FromForm] VideoUploadDto dto)
 		{
-			if (!ModelState.IsValid)
-			{
-				return Json(new { success = false, message = "Dữ liệu không hợp lệ" });
-			}
+			if (!ModelState.IsValid) return Json(new { success = false, message = "Invalid data" });
 
 			try
 			{
 				var movie = await _movieService.GetByIdAsync(dto.MovieId);
-				if (movie == null)
+				if (movie == null) return Json(new { success = false, message = "Movie not found" });
+
+				// Tự động tìm EpisodeId nếu là phim Series
+				if (movie.Type == ApplicationCore.Entities.Enum.MovieType.Series && dto.EpisodeNumber.HasValue)
 				{
-					return Json(new { success = false, message = "Không tìm thấy phim" });
+					if (dto.EpisodeId == null)
+					{
+						var episodes = await _episodeService.GetByMovieIdAsync(movie.Id);
+						var targetEp = episodes.FirstOrDefault(e => e.EpisodeNumber == dto.EpisodeNumber.Value);
+						if (targetEp != null) dto.EpisodeId = targetEp.Id;
+						else return Json(new { success = false, message = $"Episode {dto.EpisodeNumber} not created yet." });
+					}
 				}
 
-				string videoUrl;
-				long fileSize = 0;
-				string fileName;
-
+				// TRƯỜNG HỢP 1: Nhập link thủ công (Manual URL)
 				if (!string.IsNullOrEmpty(dto.ManualUrl))
 				{
-					videoUrl = NormalizeAzureUrl(dto.ManualUrl);
-					fileName = "Manual URL";
-					_logger.LogInformation("Using manual URL: {Url}", videoUrl);
+					string hlsUrl = NormalizeAzureUrl(dto.ManualUrl);
+					_logger.LogInformation("Using manual URL: {Url}", hlsUrl);
+
+					var manualMediaDto = new MediaFileCreateDto
+					{
+						FileName = "Manual URL",
+						FileUrl = hlsUrl,
+						FileType = "hls", // Mặc định coi link ngoài là luồng HLS
+						Quality = dto.Quality ?? "Auto",
+						Language = dto.Language ?? "vi",
+						FileSizeBytes = 0,
+						MovieId = dto.MovieId,
+						EpisodeId = dto.EpisodeId
+					};
+					await _mediaFileService.CreateAsync(manualMediaDto);
+
+					return Json(new { success = true, message = "Lưu URL thủ công thành công!" });
 				}
+
+				// TRƯỜNG HỢP 2: Upload file Video từ máy tính
 				else if (dto.VideoFile != null && dto.VideoFile.Length > 0)
 				{
-					videoUrl = await _azureBlobService.UploadVideoAsync(
-						dto.VideoFile,
-						movie.Slug,
-						dto.EpisodeNumber
-					);
-					fileName = dto.VideoFile.FileName;
-					fileSize = dto.VideoFile.Length;
+					// 1. Chỉ upload MP4 gốc lên Azure (Nhanh, mất vài chục giây)
+					string originalUrl = await _azureBlobService.UploadVideoAsync(dto.VideoFile, movie.Slug, dto.EpisodeNumber);
+					long fileSize = dto.VideoFile.Length;
+
+					// 2. Lưu Database NGAY LẬP TỨC với thông tin của MP4 gốc trước
+					var mediaFileDto = new MediaFileCreateDto
+					{
+						FileName = dto.VideoFile.FileName,
+						FileUrl = originalUrl,
+						FileType = "video", // Tạm thời để là video thường chờ xử lý
+						Quality = "Processing...", // Đánh dấu đang xử lý
+						Language = dto.Language ?? "vi",
+						FileSizeBytes = fileSize,
+						MovieId = dto.MovieId,
+						EpisodeId = dto.EpisodeId
+					};
+					var createdMedia = await _mediaFileService.CreateAsync(mediaFileDto);
+
+					// 3. ĐẨY JOB VÀO HANGFIRE
+					// Hangfire sẽ nhận tham số và chạy ngầm hàm ProcessVideoBackgroundJobAsync
+					BackgroundJob.Enqueue<IVideoConversionService>(service =>
+						service.ProcessVideoBackgroundJobAsync(createdMedia.Id, originalUrl, movie.Slug, dto.EpisodeNumber ?? 1));
+
+					// 4. Trả về kết quả ngay cho giao diện
+					return Json(new { success = true, message = "Video đã tải lên! Hệ thống đang nén HLS ngầm, bạn có thể đóng thông báo này." });
 				}
+
+				// TRƯỜNG HỢP 3: Không nhập gì cả
 				else
 				{
-					return Json(new { success = false, message = "Vui lòng chọn file hoặc nhập URL" });
+					return Json(new { success = false, message = "Vui lòng chọn file Video hoặc nhập URL." });
 				}
-
-				var mediaFileDto = new MediaFileCreateDto
-				{
-					FileName = fileName,
-					FileUrl = videoUrl,
-					FileType = "video",
-					Quality = dto.Quality,
-					Language = dto.Language ?? "vi",
-					FileSizeBytes = fileSize,
-					MovieId = dto.MovieId,
-					EpisodeId = dto.EpisodeId
-				};
-
-				await _mediaFileService.CreateAsync(mediaFileDto);
-
-				return Json(new { success = true, message = "Thêm video thành công!", videoUrl });
-			}
+			} // Đã thêm dấu ngoặc nhọn đóng khối try bị thiếu
 			catch (Exception ex)
 			{
 				_logger.LogError(ex, "Error processing video");
-				return Json(new { success = false, message = "Lỗi: " + ex.Message });
+				return Json(new { success = false, message = "Error: " + ex.Message });
 			}
 		}
 
@@ -379,7 +407,7 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 				return Json(new
 				{
 					success = false,
-					message = "Lỗi kết nối: " + ex.Message,
+					message = "Error Connect: " + ex.Message,
 					details = ex.InnerException?.Message
 				});
 			}

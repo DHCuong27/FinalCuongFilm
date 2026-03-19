@@ -10,5 +10,7 @@ namespace FinalCuongFilm.Service.Interfaces
 		Task<bool> UpdateAsync(CountryUpdateDto dto);
 		Task<bool> DeleteAsync(Guid id);
 		Task<bool> ExistsAsync(Guid id);
+
+		Task<PagedResult<CountryDto>> GetPagedAsync(int page = 1, int pageSize = 10);
 	}
 }

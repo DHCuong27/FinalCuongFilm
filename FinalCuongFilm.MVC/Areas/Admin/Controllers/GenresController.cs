@@ -1,5 +1,7 @@
 ﻿using FinalCuongFilm.ApplicationCore.Entities;
 using FinalCuongFilm.DataLayer;
+using FinalCuongFilm.Service.Interfaces;
+using FinalCuongFilm.Service.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -17,19 +19,28 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
     {
         private readonly CuongFilmDbContext _context;
 
-        public GenresController(CuongFilmDbContext context)
+
+		private readonly IGenreService _genreService;
+
+		public GenresController(CuongFilmDbContext context, IGenreService genreService)
         {
-            _context = context;
+			_genreService = genreService;
+			_context = context;
         }
 
-        // GET: Genre
-        public async Task<IActionResult> Index()
-        {
-            return View(await _context.Genres.ToListAsync());
-        }
+		// GET: Genre
+		public async Task<IActionResult> Index(int page = 1)
+		{
+			int pageSize = 10;
 
-        // GET: Genre/Details/5
-        public async Task<IActionResult> Details(Guid? id)
+			// Gọi hàm phân trang vừa viết
+			var pagedData = await _genreService.GetPagedAsync(page, pageSize);
+
+			return View(pagedData); // Đẩy PagedResult ra View
+		}
+
+		// GET: Genre/Details/5
+		public async Task<IActionResult> Details(Guid? id)
         {
             if (id == null)
             {

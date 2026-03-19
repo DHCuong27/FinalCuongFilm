@@ -29,7 +29,7 @@ builder.Services.AddControllers()
 // Application services
 builder.Services.AddApplicationServices(builder.Configuration);
 
-// ✅ FIX CỦA BẠN NẰM Ở ĐÂY: Phải đăng ký Service TRƯỚC khi build app
+//  FIX CỦA BẠN NẰM Ở ĐÂY: Phải đăng ký Service TRƯỚC khi build app
 // Đăng ký HttpClient cho TmdbService
 builder.Services.AddHttpClient<ITmdbService, TmdbService>();
 // Đăng ký Service xử lý Import

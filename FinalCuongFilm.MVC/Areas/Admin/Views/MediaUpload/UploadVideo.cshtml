@@ -2,197 +2,257 @@
     ViewData["Title"] = "Upload Video";
     Layout = "~/Areas/Admin/Views/Shared/_LayoutAdmin.cshtml";
 }
-<style>
-    /* ===== Simple & Clean Styles ===== */
 
-    body {
-        background-color: #f8f9fa;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+<style>
+    :root {
+        --primary-color: #2563eb;
+        --secondary-color: #64748b;
+        --success-color: #10b981;
+        --warning-color: #f59e0b;
+        --danger-color: #ef4444;
+        --text-dark: #1e293b;
+        --text-muted: #64748b;
+        --border-color: #e2e8f0;
+        --bg-light: #f8fafc;
+        --bg-white: #ffffff;
+        --radius-md: 8px;
+        --radius-lg: 12px;
+        --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+        --input-focus-ring: rgba(37, 99, 235, 0.2);
     }
 
-    /* Card Styles */
+    body {
+        background-color: #f1f5f9;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    .upload-container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 24px 20px;
+    }
+
+    /* Card Styling */
     .card {
-        border: 1px solid #dee2e6;
-        border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        margin-bottom: 20px;
+        background: var(--bg-white);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-sm);
+        border: 1px solid var(--border-color);
+        overflow: hidden;
     }
 
     .card-header {
-        background-color: #007bff;
-        color: white;
-        border-bottom: 1px solid #dee2e6;
-        padding: 15px 20px;
-        border-radius: 8px 8px 0 0;
+        background: var(--bg-light);
+        padding: 16px 24px;
+        border-bottom: 1px solid var(--border-color);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 12px;
     }
 
     .card-title {
         font-size: 18px;
-        font-weight: 600;
+        font-weight: 700;
+        color: var(--text-dark);
         margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+        .card-title i {
+            color: var(--primary-color);
+        }
+
+    .card-body {
+        padding: 32px 24px;
     }
 
     /* Form Elements */
     .form-group {
-        margin-bottom: 20px;
+        margin-bottom: 24px;
     }
 
-        .form-group label {
-            font-weight: 600;
-            color: #495057;
-            margin-bottom: 8px;
-            display: block;
-        }
+    .form-label {
+        display: block;
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text-dark);
+        margin-bottom: 8px;
+    }
+
+    .required-star {
+        color: var(--danger-color);
+    }
 
     .form-control {
-        border: 1px solid #ced4da;
-        border-radius: 4px;
-        padding: 10px 12px;
+        width: 100%;
+        padding: 10px 14px;
         font-size: 14px;
-        transition: border-color 0.15s ease-in-out;
+        color: var(--text-dark);
+        background-color: var(--bg-white);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-md);
+        transition: all 0.2s;
+        box-sizing: border-box;
     }
 
         .form-control:focus {
-            border-color: #80bdff;
-            outline: 0;
-            box-shadow: 0 0 0 0.2rem rgba(0,123,255,0.25);
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px var(--input-focus-ring);
         }
 
-    .custom-file {
+    select.form-control {
+        cursor: pointer;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 14px center;
+        padding-right: 40px;
+    }
+
+    /* Segmented Control (Toggle Upload Method) */
+    .segmented-control {
+        display: flex;
+        background: var(--bg-light);
+        padding: 4px;
+        border-radius: var(--radius-md);
+        border: 1px solid var(--border-color);
+    }
+
+    .segment-label {
+        flex: 1;
+        text-align: center;
+        padding: 8px 16px;
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text-muted);
+        cursor: pointer;
+        border-radius: 6px;
+        transition: all 0.2s;
+        margin: 0;
+    }
+
+    .segment-input {
+        display: none;
+    }
+
+        .segment-input:checked + .segment-label {
+            background: var(--bg-white);
+            color: var(--primary-color);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+    /* Custom File Input (Dropzone Style) */
+    .file-drop-area {
         position: relative;
-        display: block;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 20px;
+        border: 2px dashed #cbd5e1;
+        border-radius: var(--radius-md);
+        background-color: var(--bg-light);
+        transition: all 0.2s;
+        cursor: pointer;
+        text-align: center;
+    }
+
+        .file-drop-area:hover {
+            border-color: var(--primary-color);
+            background-color: #eff6ff;
+        }
+
+    .file-drop-icon {
+        font-size: 48px;
+        color: #94a3b8;
+        margin-bottom: 12px;
     }
 
     .custom-file-input {
-        position: relative;
-        z-index: 2;
-        width: 100%;
-        height: calc(2.25rem + 2px);
-        margin: 0;
-        opacity: 0;
-    }
-
-    .custom-file-label {
         position: absolute;
+        width: 100%;
+        height: 100%;
         top: 0;
-        right: 0;
         left: 0;
-        z-index: 1;
-        height: calc(2.25rem + 2px);
-        padding: .375rem .75rem;
-        font-weight: 400;
-        line-height: 1.5;
-        color: #495057;
-        background-color: #fff;
-        border: 1px solid #ced4da;
-        border-radius: .25rem;
-    }
-
-        .custom-file-label::after {
-            position: absolute;
-            top: 0;
-            right: 0;
-            bottom: 0;
-            z-index: 3;
-            display: block;
-            height: calc(calc(2.25rem + 2px) - 1px * 2);
-            padding: .375rem .75rem;
-            line-height: 1.5;
-            color: #495057;
-            content: "Browse";
-            background-color: #e9ecef;
-            border-left: inherit;
-            border-radius: 0 .25rem .25rem 0;
-        }
-
-    /* Buttons */
-    .btn {
-        padding: 10px 20px;
-        font-size: 14px;
-        font-weight: 600;
-        border-radius: 4px;
+        opacity: 0;
         cursor: pointer;
-        border: 1px solid transparent;
-        transition: all 0.2s ease;
     }
 
-    .btn-primary {
-        background-color: #007bff;
-        border-color: #007bff;
-        color: white;
-    }
-
-        .btn-primary:hover {
-            background-color: #0056b3;
-            border-color: #0056b3;
-        }
-
-    .btn-secondary {
-        background-color: #6c757d;
-        border-color: #6c757d;
-        color: white;
-    }
-
-        .btn-secondary:hover {
-            background-color: #545b62;
-            border-color: #4e555b;
-        }
-
-    .btn-info {
-        background-color: #17a2b8;
-        border-color: #17a2b8;
-        color: white;
-    }
-
-        .btn-info:hover {
-            background-color: #138496;
-            border-color: #117a8b;
-        }
-
-    .btn-lg {
-        padding: 12px 24px;
+    .custom-file-label-text {
         font-size: 16px;
+        font-weight: 600;
+        color: var(--primary-color);
     }
 
-    .btn-sm {
-        padding: 5px 10px;
-        font-size: 12px;
+    .custom-file-hint {
+        font-size: 13px;
+        color: var(--text-muted);
+        margin-top: 8px;
     }
 
     /* File Info Box */
-    #fileInfo {
-        background-color: #e9ecef;
-        border: 1px solid #ced4da;
-        border-radius: 4px;
-        padding: 15px;
-        margin-top: 10px;
+    .file-info-box {
+        background-color: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: var(--radius-md);
+        padding: 16px;
+        margin-top: 16px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+
+    .file-info-icon {
+        font-size: 32px;
+        color: var(--success-color);
+    }
+
+    .file-details {
+        flex: 1;
+    }
+
+    .file-name-txt {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text-dark);
+        margin-bottom: 4px;
+        word-break: break-all;
+    }
+
+    .file-size-txt {
+        font-size: 13px;
+        color: var(--text-muted);
     }
 
     /* Progress Bar */
+    .progress-container {
+        margin-top: 24px;
+        background: var(--bg-white);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-md);
+        padding: 20px;
+    }
+
     .progress {
-        height: 25px;
-        background-color: #e9ecef;
-        border-radius: 4px;
+        height: 12px;
+        background-color: var(--bg-light);
+        border-radius: 10px;
         overflow: hidden;
-        margin: 20px 0;
+        margin-bottom: 12px;
     }
 
     .progress-bar {
-        background-color: #28a745;
+        background-color: var(--success-color);
         height: 100%;
-        text-align: center;
-        line-height: 25px;
-        color: white;
-        font-weight: 600;
+        width: 0%;
         transition: width 0.3s ease;
-    }
-
-    .progress-bar-striped {
         background-image: linear-gradient(45deg, rgba(255,255,255,0.15) 25%, transparent 25%, transparent 50%, rgba(255,255,255,0.15) 50%, rgba(255,255,255,0.15) 75%, transparent 75%, transparent);
         background-size: 1rem 1rem;
-    }
-
-    .progress-bar-animated {
         animation: progress-bar-stripes 1s linear infinite;
     }
 
@@ -206,261 +266,260 @@
         }
     }
 
-    /* Alerts */
-    .alert {
-        padding: 15px;
-        border-radius: 4px;
-        margin-bottom: 20px;
-        border: 1px solid transparent;
+    .progress-status {
+        display: flex;
+        justify-content: space-between;
+        font-size: 13px;
+        color: var(--text-muted);
+        font-weight: 500;
     }
 
-    .alert-info {
-        color: #0c5460;
-        background-color: #d1ecf1;
-        border-color: #bee5eb;
+    /* Buttons */
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 10px 20px;
+        border-radius: var(--radius-md);
+        font-size: 14px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.2s;
+        border: none;
+        cursor: pointer;
+    }
+
+    .btn-primary {
+        background: var(--primary-color);
+        color: white;
+    }
+
+        .btn-primary:hover {
+            background: #1d4ed8;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+        }
+
+        .btn-primary:disabled {
+            background: #94a3b8;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+    .btn-secondary {
+        background: white;
+        color: var(--text-dark);
+        border: 1px solid var(--border-color);
+    }
+
+        .btn-secondary:hover {
+            background: var(--bg-light);
+            border-color: var(--text-muted);
+        }
+
+    .btn-info {
+        background: #0ea5e9;
+        color: white;
+        font-size: 13px;
+        padding: 6px 12px;
+    }
+
+        .btn-info:hover {
+            background: #0284c7;
+        }
+
+    .action-group {
+        display: flex;
+        gap: 12px;
+        margin-top: 32px;
+        padding-top: 24px;
+        border-top: 1px solid var(--border-color);
+    }
+
+    /* Layout Grid */
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+
+    /* Alerts */
+    .alert {
+        padding: 16px;
+        border-radius: var(--radius-md);
+        margin-top: 16px;
+        font-size: 14px;
+        display: flex;
+        gap: 10px;
+        align-items: center;
     }
 
     .alert-success {
-        color: #155724;
-        background-color: #d4edda;
-        border-color: #c3e6cb;
+        background: #ecfdf5;
+        color: #166534;
+        border: 1px solid #a7f3d0;
     }
 
     .alert-danger {
-        color: #721c24;
-        background-color: #f8d7da;
-        border-color: #f5c6cb;
+        background: #fef2f2;
+        color: #991b1b;
+        border: 1px solid #fecaca;
     }
 
-    /* Text Helpers */
-    .text-danger {
-        color: #dc3545 !important;
-    }
-
-    .text-muted {
-        color: #6c757d !important;
-    }
-
-    .text-center {
-        text-align: center;
-    }
-
-    .mt-2 {
-        margin-top: 10px;
-    }
-
-    .mt-3 {
-        margin-top: 15px;
-    }
-
-    .mb-3 {
-        margin-bottom: 15px;
-    }
-
-    /* Layout Utilities */
-    .row {
-        display: flex;
-        flex-wrap: wrap;
-        margin-right: -15px;
-        margin-left: -15px;
-    }
-
-    .col-md-6 {
-        flex: 0 0 50%;
-        max-width: 50%;
-        padding-right: 15px;
-        padding-left: 15px;
-    }
-
-    .col-12 {
-        flex: 0 0 100%;
-        max-width: 100%;
-        padding-right: 15px;
-        padding-left: 15px;
-    }
-
-    /* Episode Section */
-    #episodeSection {
-        background-color: #f8f9fa;
-        border: 1px solid #dee2e6;
-        border-radius: 4px;
-        padding: 15px;
-        margin-bottom: 20px;
-    }
-
-    /* Responsive */
-    @@media (max-width: 768px) {
-        .col-md-6 {
-            flex: 0 0 100%;
-            max-width: 100%;
+    @@media (max-width: 640px) {
+        .form-row {
+            grid-template-columns: 1fr;
+            gap: 0;
         }
 
-        .btn-lg {
+        .action-group {
+            flex-direction: column;
+        }
+
+        .btn {
             width: 100%;
-            margin-bottom: 10px;
+        }
+
+        .card-header {
+            flex-direction: column;
+            align-items: flex-start;
         }
     }
 </style>
 
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header">
-                    <h3 class="card-title">
-                        <i class="fas fa-upload"></i> Upload Video lên Azure
-                    </h3>
-                    <div class="card-tools">
-                        <button type="button" class="btn btn-sm btn-info" onclick="testConnection()">
-                            <i class="fas fa-check-circle"></i> Test Connection
-                        </button>
+<div class="upload-container">
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i class="zmdi zmdi-cloud-upload"></i> Upload Video to Azure
+            </h3>
+            <button type="button" class="btn btn-info" onclick="testConnection()">
+                <i class="zmdi zmdi-check-circle"></i> Test Connection
+            </button>
+        </div>
+
+        <div class="card-body">
+            <form id="uploadForm" enctype="multipart/form-data">
+                @Html.AntiForgeryToken()
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Select Movie <span class="required-star">*</span></label>
+                        <select id="movieSelect" class="form-control" required>
+                            <option value="">-- Choose a movie --</option>
+                            @if (ViewBag.Movies != null)
+                            {
+                                foreach (var movie in ViewBag.Movies)
+                                {
+                                    <option value="@movie.Id" data-type="@movie.Type">
+                                        @movie.Title (@movie.Type)
+                                    </option>
+                                }
+                            }
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Quality</label>
+                        <select id="qualitySelect" class="form-control">
+                            <option value="1080p">1080p (Full HD)</option>
+                            <option value="720p">720p (HD)</option>
+                            <option value="480p">480p (SD)</option>
+                            <option value="360p">360p</option>
+                        </select>
                     </div>
                 </div>
 
-                <div class="card-body">
-                    <form id="uploadForm" enctype="multipart/form-data">
-                        @Html.AntiForgeryToken()
+                <div class="form-row" id="episodeSection" style="display: none;">
+                    <div class="form-group">
+                        <label class="form-label">Episode Number <span class="required-star">*</span></label>
+                        <input type="number" id="episodeNumber" class="form-control" min="1" placeholder="Ex: 1, 2, 3...">
+                    </div>
+                </div>
 
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label>Chọn Phim <span class="text-danger">*</span></label>
-                                    <select id="movieSelect" class="form-control" required>
-                                        <option value="">-- Chọn phim --</option>
-                                        @if (ViewBag.Movies != null)
-                                        {
-                                            foreach (var movie in ViewBag.Movies)
-                                            {
-                                                <option value="@movie.Id" data-type="@movie.Type">
-                                                    @movie.Title (@movie.Type)
-                                                </option>
-                                            }
-                                        }
-                                    </select>
-                                </div>
-                            </div>
+                <div class="form-group">
+                    <label class="form-label">Upload Method:</label>
+                    <div class="segmented-control">
+                        <input type="radio" name="uploadMethod" id="uploadFile" class="segment-input" checked>
+                        <label for="uploadFile" class="segment-label">Upload Local File</label>
 
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label>Chất lượng</label>
-                                    <select id="qualitySelect" class="form-control">
-                                        <option value="1080p">1080p (Full HD)</option>
-                                        <option value="720p">720p (HD)</option>
-                                        <option value="480p">480p (SD)</option>
-                                        <option value="360p">360p</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
+                        <input type="radio" name="uploadMethod" id="uploadUrl" class="segment-input">
+                        <label for="uploadUrl" class="segment-label">Provide URL</label>
+                    </div>
+                </div>
 
-                        <div class="row" id="episodeSection" style="display: none;">
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label>Số tập <span class="text-danger">*</span></label>
-                                    <input type="number" id="episodeNumber" class="form-control" min="1" placeholder="VD: 1, 2, 3...">
-                                </div>
-                            </div>
-                        </div>
+                <div id="fileUploadSection" class="form-group">
+                    <label class="form-label">Select Video File <span class="required-star">*</span></label>
 
-                        <div class="form-group mb-3">
-                            <label class="form-label fw-bold">Phương thức:</label>
-                            <div class="btn-group w-100" role="group">
-                                <input type="radio" class="btn-check" name="uploadMethod" id="uploadFile" checked>
-                                <label class="btn btn-outline-primary" for="uploadFile">Upload File</label>
-                                <input type="radio" class="btn-check" name="uploadMethod" id="uploadUrl">
-                                <label class="btn btn-outline-primary" for="uploadUrl">Nhập URL</label>
-                            </div>
-                        </div>
-
-                        <div id="fileUploadSection" class="form-group">
-                            <label>Chọn File Video <span class="text-danger">*</span></label>
-                            <div class="custom-file">
-                                <input type="file"
-                                       id="videoFile"
-                                       class="custom-file-input"
-                                       accept="video/*,.mp4,.mkv,.avi,.webm">
-                                <label class="custom-file-label" for="videoFile">Chọn video...</label>
-                            </div>
-                            <small class="form-text text-muted">
-                                Định dạng: MP4, MKV, AVI, WebM. Kích thước tối đa: 5GB
-                            </small>
-                        </div>
-
-                        <div id="urlUploadSection" class="form-group mb-3" style="display: none;">
-                            <label for="manualUrl" class="form-label fw-bold">Video URL</label>
-                            <input type="url" class="form-control" id="manualUrl" name="ManualUrl" placeholder="https://...blob.core.windows.net/videos/movie.mp4">
-                        </div>
-
-                        <div class="form-group">
-                            <div id="fileInfo" class="alert alert-info" style="display: none;">
-                                <strong>File đã chọn:</strong>
-                                <div id="fileName"></div>
-                                <div id="fileSize"></div>
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <button type="submit" class="btn btn-primary btn-lg" id="uploadBtn">
-                                <i class="fas fa-cloud-upload-alt"></i> Upload Video
-                            </button>
-                            <a href="@Url.Action("Index", "Movies")" class="btn btn-secondary btn-lg">
-                                <i class="fas fa-times"></i> Hủy
-                            </a>
-                        </div>
-                    </form>
-
-                    <!-- Progress Bar -->
-                    <div id="uploadProgress" style="display: none;">
-                        <div class="progress">
-                            <div id="progressBar"
-                                 class="progress-bar progress-bar-striped progress-bar-animated"
-                                 role="progressbar"
-                                 style="width: 0%">
-                                0%
-                            </div>
-                        </div>
-                        <div class="text-center mt-2">
-                            <small id="uploadStatus">Đang upload...</small>
-                        </div>
+                    <div class="file-drop-area">
+                        <i class="zmdi zmdi-collection-video file-drop-icon"></i>
+                        <span class="custom-file-label-text">Click to browse or drag file here</span>
+                        <span class="custom-file-hint">Format: MP4, MKV, AVI, WebM. Max size: 5GB.</span>
+                        <input type="file" id="videoFile" class="custom-file-input" accept="video/*,.mp4,.mkv,.avi,.webm">
                     </div>
 
-                    <!-- Upload Result -->
-                    <div id="uploadResult" class="mt-3"></div>
+                    <div id="fileInfo" class="file-info-box" style="display: none;">
+                        <i class="zmdi zmdi-check-circle file-info-icon"></i>
+                        <div class="file-details">
+                            <div id="fileName" class="file-name-txt"></div>
+                            <div id="fileSize" class="file-size-txt"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="urlUploadSection" class="form-group" style="display: none;">
+                    <label for="manualUrl" class="form-label">Video URL <span class="required-star">*</span></label>
+                    <input type="url" class="form-control" id="manualUrl" placeholder="https://...blob.core.windows.net/videos/movie.mp4">
+                </div>
+
+                <div class="action-group">
+                    <button type="submit" class="btn btn-primary" id="uploadBtn">
+                        <i class="zmdi zmdi-cloud-upload"></i> Start Upload
+                    </button>
+                    <a href="@Url.Action("Index", "Movies")" class="btn btn-secondary">
+                        <i class="zmdi zmdi-close"></i> Cancel
+                    </a>
+                </div>
+            </form>
+
+            <div id="uploadProgress" class="progress-container" style="display: none;">
+                <div class="progress">
+                    <div id="progressBar" class="progress-bar" role="progressbar"></div>
+                </div>
+                <div class="progress-status">
+                    <span id="uploadStatusText">Uploading...</span>
+                    <span id="uploadPercentage">0%</span>
                 </div>
             </div>
+
+            <div id="uploadResult"></div>
         </div>
     </div>
 </div>
 
 @section Scripts {
-    <!-- ✅ THÊM JQUERY NẾU CHƯA CÓ -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
     <script>
         $(document).ready(function() {
-            console.log('jQuery loaded:', typeof jQuery); // Should show "function"
-
             // Toggle upload method
-            document.querySelectorAll('input[name="uploadMethod"]').forEach(radio => {
-                radio.addEventListener('change', function() {
-                    if (this.id === 'uploadFile') {
-                        document.getElementById('fileUploadSection').style.display = 'block';
-                        document.getElementById('urlUploadSection').style.display = 'none';
-                    } else {
-                        document.getElementById('fileUploadSection').style.display = 'none';
-                        document.getElementById('urlUploadSection').style.display = 'block';
-                    }
-                });
+            $('input[name="uploadMethod"]').on('change', function() {
+                if (this.id === 'uploadFile') {
+                    $('#fileUploadSection').show();
+                    $('#urlUploadSection').hide();
+                } else {
+                    $('#fileUploadSection').hide();
+                    $('#urlUploadSection').show();
+                }
             });
 
             // Test Connection button
             window.testConnection = function() {
-                console.log('testConnection called');
-
                 fetch('/Admin/MediaUpload/TestConnection')
                     .then(response => response.json())
                     .then(data => {
-                        console.log('Response:', data);
                         if (data.success) {
                             alert('✅ ' + data.message + '\n\nTest URL: ' + data.testUrl);
                         } else {
@@ -468,29 +527,29 @@
                         }
                     })
                     .catch(error => {
-                        console.error('Error:', error);
-                        alert('❌ Lỗi: ' + error.message);
+                        alert('❌ Connection Error: ' + error.message);
                     });
             };
 
             // Update file label when file selected
             $('#videoFile').on('change', function() {
-                const fileName = $(this).val().split('\\').pop();
-                $(this).next('.custom-file-label').html(fileName);
-
                 const file = this.files[0];
                 if (file) {
                     const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
                     const sizeGB = (file.size / (1024 * 1024 * 1024)).toFixed(2);
 
-                    $('#fileName').text(`Tên: ${file.name}`);
-                    $('#fileSize').text(`Kích thước: ${sizeGB > 1 ? sizeGB + ' GB' : sizeMB + ' MB'}`);
-                    $('#fileInfo').show();
+                    $('#fileName').text(`Name: ${file.name}`);
+                    $('#fileSize').text(`Size: ${sizeGB > 1 ? sizeGB + ' GB' : sizeMB + ' MB'}`);
+
+                    $('.file-drop-area').css('border-color', 'var(--success-color)');
+                    $('.custom-file-label-text').text('File selected! Click to change.');
+                    $('#fileInfo').fadeIn();
 
                     if (file.size > 5 * 1024 * 1024 * 1024) {
-                        alert('File vượt quá 5GB!');
+                        alert('File exceeds the 5GB limit!');
                         $(this).val('');
-                        $(this).next('.custom-file-label').html('Chọn video...');
+                        $('.file-drop-area').css('border-color', '#cbd5e1');
+                        $('.custom-file-label-text').text('Click to browse or drag file here');
                         $('#fileInfo').hide();
                     }
                 }
@@ -502,7 +561,7 @@
                 const movieType = selectedOption.data('type');
 
                 if (movieType === 'Series') {
-                    $('#episodeSection').show();
+                    $('#episodeSection').fadeIn();
                     $('#episodeNumber').prop('required', true);
                 } else {
                     $('#episodeSection').hide();
@@ -522,18 +581,18 @@
                 const videoFile = $('#videoFile')[0].files[0];
 
                 if (!movieId) {
-                    alert('Vui lòng chọn phim');
+                    alert('Please select a movie.');
                     return;
                 }
 
                 if (useUrl) {
                     if (!manualUrl) {
-                        alert('Vui lòng nhập URL video');
+                        alert('Please provide a video URL.');
                         return;
                     }
                 } else {
                     if (!videoFile) {
-                        alert('Vui lòng chọn file video');
+                        alert('Please select a video file.');
                         return;
                     }
                 }
@@ -561,21 +620,20 @@
             const xhr = new XMLHttpRequest();
 
             // Disable form
-            $('#uploadBtn').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Đang upload...');
-            $('#uploadProgress').show();
+            $('#uploadBtn').prop('disabled', true).html('<i class="zmdi zmdi-spinner zmdi-hc-spin"></i> Uploading...');
+            $('#uploadProgress').fadeIn();
             $('#uploadResult').empty();
 
             // Upload progress
             xhr.upload.addEventListener('progress', function(e) {
                 if (e.lengthComputable) {
                     const percentComplete = (e.loaded / e.total) * 100;
-                    $('#progressBar')
-                        .css('width', percentComplete + '%')
-                        .text(percentComplete.toFixed(1) + '%');
+                    $('#progressBar').css('width', percentComplete + '%');
+                    $('#uploadPercentage').text(percentComplete.toFixed(1) + '%');
 
                     const uploadedMB = (e.loaded / (1024 * 1024)).toFixed(2);
                     const totalMB = (e.total / (1024 * 1024)).toFixed(2);
-                    $('#uploadStatus').text(`Đã upload: ${uploadedMB} MB / ${totalMB} MB`);
+                    $('#uploadStatusText').text(`${uploadedMB} MB / ${totalMB} MB Uploaded`);
                 }
             });
 
@@ -588,15 +646,19 @@
                         if (response.success) {
                             $('#uploadResult').html(`
                                 <div class="alert alert-success">
-                                    <i class="fas fa-check-circle"></i> ${response.message}
-                                    <br><small>URL: ${response.videoUrl}</small>
+                                    <i class="zmdi zmdi-check-circle"></i>
+                                    <div>
+                                        <strong>Success!</strong> ${response.message}<br>
+                                        <small style="font-family: monospace;">URL: ${response.videoUrl}</small>
+                                    </div>
                                 </div>
                             `);
 
                             // Reset form
                             $('#uploadForm')[0].reset();
                             $('#fileInfo').hide();
-                            $('.custom-file-label').html('Chọn video...');
+                            $('.file-drop-area').css('border-color', '#cbd5e1');
+                            $('.custom-file-label-text').text('Click to browse or drag file here');
 
                             setTimeout(() => {
                                 window.location.href = '/Admin/Movies';
@@ -604,38 +666,42 @@
                         } else {
                             $('#uploadResult').html(`
                                 <div class="alert alert-danger">
-                                    <i class="fas fa-exclamation-triangle"></i> ${response.message}
+                                    <i class="zmdi zmdi-alert-triangle"></i>
+                                    <div><strong>Error!</strong> ${response.message}</div>
                                 </div>
                             `);
                         }
                     } catch (e) {
                         $('#uploadResult').html(`
                             <div class="alert alert-danger">
-                                <i class="fas fa-exclamation-triangle"></i> Lỗi parse response
+                                <i class="zmdi zmdi-alert-triangle"></i>
+                                <div><strong>Error!</strong> Failed to parse server response.</div>
                             </div>
                         `);
                     }
                 } else {
                     $('#uploadResult').html(`
                         <div class="alert alert-danger">
-                            <i class="fas fa-exclamation-triangle"></i> Lỗi upload: ${xhr.status}
+                            <i class="zmdi zmdi-alert-triangle"></i>
+                            <div><strong>Upload Failed!</strong> Server returned status code: ${xhr.status}</div>
                         </div>
                     `);
                 }
 
                 // Re-enable form
-                $('#uploadBtn').prop('disabled', false).html('<i class="fas fa-cloud-upload-alt"></i> Upload Video');
-                $('#uploadProgress').hide();
+                $('#uploadBtn').prop('disabled', false).html('<i class="zmdi zmdi-cloud-upload"></i> Start Upload');
+                setTimeout(() => { $('#uploadProgress').fadeOut(); }, 1000);
             });
 
             // Upload error
             xhr.addEventListener('error', function() {
                 $('#uploadResult').html(`
                     <div class="alert alert-danger">
-                        <i class="fas fa-exclamation-triangle"></i> Lỗi kết nối khi upload
+                        <i class="zmdi zmdi-alert-polygon"></i>
+                        <div><strong>Connection Error!</strong> Failed to connect to the server during upload.</div>
                     </div>
                 `);
-                $('#uploadBtn').prop('disabled', false).html('<i class="fas fa-cloud-upload-alt"></i> Upload Video');
+                $('#uploadBtn').prop('disabled', false).html('<i class="zmdi zmdi-cloud-upload"></i> Start Upload');
                 $('#uploadProgress').hide();
             });
 

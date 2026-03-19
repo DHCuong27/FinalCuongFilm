@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using System.IO;
+using Microsoft.AspNetCore.Http;
 
 namespace FinalCuongFilm.Service.Interfaces
 {
@@ -13,6 +14,7 @@ namespace FinalCuongFilm.Service.Interfaces
 		Task<string> GetStreamingUrlAsync(string blobUrl, int expiryHours = 24);
 		Task<bool> ExistsAsync(string blobUrl);
 		Task<BlobMetadata> GetMetadataAsync(string blobUrl);
+		Task<string> UploadStreamAsync(Stream stream, string fileName, string folderPath);
 	}
 
 

@@ -1,6 +1,5 @@
 ﻿using FinalCuongFilm.API.Models.Response;
 using FinalCuongFilm.ApplicationCore.Entities.Identity;
-using FinalCuongFilm.DataLayer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;

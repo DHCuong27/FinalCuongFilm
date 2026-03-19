@@ -1,12 +1,7 @@
-﻿using System.Net.Http;
-using System.Text.Json;
-using System.Threading.Tasks;
-using System.Linq;
+﻿using FinalCuongFilm.Common.DTOs;
 using FinalCuongFilm.Service.Interfaces;
-using FinalCuongFilm.Common.DTOs;
 using Microsoft.Extensions.Configuration;
-using System;
-using System.Collections.Generic;
+using System.Text.Json;
 
 namespace FinalCuongFilm.Service.Services
 {
@@ -22,7 +17,7 @@ namespace FinalCuongFilm.Service.Services
 			_apiKey = config["TmdbSettings:ApiKey"];
 		}
 
-		// ── MOVIE METHODS ────────────────────────────────────────────────
+		//  MOVIE METHODS 
 		public async Task<TmdbMovieDto?> SearchMovieAsync(string title)
 		{
 			var encodedTitle = Uri.EscapeDataString(title);
@@ -34,6 +29,7 @@ namespace FinalCuongFilm.Service.Services
 			return result?.Results.FirstOrDefault();
 		}
 
+		// Get 
 		public async Task<TmdbCreditsResponse?> GetMovieCreditsAsync(long tmdbId)
 		{
 			var response = await _httpClient.GetStringAsync($"{_baseUrl}/movie/{tmdbId}/credits?api_key={_apiKey}");
@@ -47,7 +43,7 @@ namespace FinalCuongFilm.Service.Services
 			return JsonSerializer.Deserialize<TmdbMovieDetailsResponse>(response, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 		}
 
-		// ── TV SHOW METHODS (NEW) ────────────────────────────────────────
+		//  TV SHOW METHODS (NEW) 
 		public async Task<TmdbMovieDto?> SearchTvShowAsync(string title)
 		{
 			var encodedTitle = Uri.EscapeDataString(title);

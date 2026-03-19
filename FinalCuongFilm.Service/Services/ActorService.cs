@@ -1,4 +1,5 @@
-﻿using FinalCuongFilm.ApplicationCore.Entities;
+﻿using AutoMapper;
+using FinalCuongFilm.ApplicationCore.Entities;
 using FinalCuongFilm.Common.DTOs;
 using FinalCuongFilm.Common.Helpers;
 using FinalCuongFilm.DataLayer;
@@ -10,9 +11,11 @@ namespace FinalCuongFilm.Service.Services
 	public class ActorService : IActorService
 	{
 		private readonly CuongFilmDbContext _context;
+		private readonly IMapper _mapper;
 
-		public ActorService(CuongFilmDbContext context)
+		public ActorService(CuongFilmDbContext context, IMapper mapper)
 		{
+			_mapper = mapper;
 			_context = context;
 		}
 
@@ -113,10 +116,36 @@ namespace FinalCuongFilm.Service.Services
 			await _context.SaveChangesAsync();
 			return true;
 		}
+		public async Task<PagedResult<ActorDto>> GetPagedAsync(int pageIndex = 1, int pageSize = 10)
+		{
+
+			if (pageIndex < 1) pageIndex = 1;
+			if (pageSize < 1) pageSize = 10;
+
+			var query = _context.Actors.AsQueryable();
+
+			int totalCount = await query.CountAsync();
+
+			var items = await query.OrderByDescending(m => m.MovieActors.Count()) // Sắp xếp theo số lượng phim
+						   .Skip((pageIndex - 1) * pageSize)
+						   .Take(pageSize)
+						   .ToListAsync();
+
+			var dtos = _mapper.Map<List<ActorDto>>(items);
+
+			return new PagedResult<ActorDto>
+			{
+				Items = dtos,
+				TotalCount = totalCount,
+				PageIndex = pageIndex,
+				PageSize = pageSize
+			};
+		}
 
 		public async Task<bool> ExistsAsync(Guid id)
 		{
 			return await _context.Actors.AnyAsync(a => a.Id == id);
 		}
+
 	}
 }

@@ -1,7 +1,7 @@
-﻿@model IEnumerable<FinalCuongFilm.ApplicationCore.Entities.Country>
+﻿@model FinalCuongFilm.Common.DTOs.PagedResult<FinalCuongFilm.Common.DTOs.CountryDto>
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Country Management";
 }
 
 <style>
@@ -20,73 +20,169 @@
         color: #333;
     }
 
-    /* Create button */
-    p a {
-        display: inline-block;
-        padding: 8px 16px;
-        background: #f8f9fa;
-        border: 1px solid #dee2e6;
-        border-radius: 4px;
-        color: #333;
-        text-decoration: none;
-        font-size: 14px;
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
         margin-bottom: 20px;
     }
 
-        p a:hover {
-            background: #e9ecef;
-            border-color: #ced4da;
+    .total-badge {
+        font-size: 14px;
+        background: #007bff;
+        color: white;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-weight: 500;
+        margin-left: 10px;
+        vertical-align: middle;
+    }
+
+    /* Create button */
+    .create-btn {
+        display: inline-block;
+        padding: 8px 16px;
+        background: #007bff;
+        border: 1px solid #007bff;
+        border-radius: 4px;
+        color: #fff;
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 500;
+        transition: all 0.2s;
+    }
+
+        .create-btn:hover {
+            background: #0056b3;
+            border-color: #004a99;
+            color: #fff;
         }
 
     /* Table styling */
+    .table-wrapper {
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        overflow: hidden;
+        border: 1px solid #e9ecef;
+    }
+
     .table {
         width: 100%;
         border-collapse: collapse;
-        background: #fff;
+        margin-bottom: 0;
     }
 
         .table thead {
             background: #f8f9fa;
+            border-bottom: 2px solid #dee2e6;
         }
 
         .table th {
-            padding: 12px 16px;
+            padding: 14px 16px;
             text-align: left;
             font-weight: 600;
-            color: #333;
-            border-bottom: 2px solid #dee2e6;
-            font-size: 14px;
+            color: #495057;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .table td {
-            padding: 12px 16px;
+            padding: 14px 16px;
             border-bottom: 1px solid #e9ecef;
-            color: #555;
+            color: #333;
             font-size: 14px;
+            vertical-align: middle;
         }
 
         .table tbody tr:hover {
             background: #f8f9fa;
         }
 
-        /* Action links */
-        .table td a {
-            color: #007bff;
-            text-decoration: none;
-            margin: 0 8px 0 0;
-            font-size: 13px;
+        .table tbody tr:last-child td {
+            border-bottom: none;
         }
 
-            .table td a:hover {
+    /* Action links */
+    .action-links {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+    }
+
+        .action-links a, .action-links button {
+            color: #007bff;
+            text-decoration: none;
+            font-size: 13px;
+            background: none;
+            border: none;
+            padding: 0;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+            .action-links a:hover, .action-links button:hover {
                 text-decoration: underline;
+                color: #0056b3;
             }
 
-            /* Separator for action links */
-            .table td a:not(:last-child)::after {
-                content: "|";
-                margin-left: 8px;
-                color: #dee2e6;
+        .action-links .delete-btn {
+            color: #dc3545;
+        }
+
+            .action-links .delete-btn:hover {
+                color: #c82333;
             }
+
+    /* ===== Pagination Styling ===== */
+    .pagination-container {
+        display: flex;
+        justify-content: center;
+        margin-top: 24px;
+        margin-bottom: 24px;
+    }
+
+    .pagination {
+        display: flex;
+        list-style: none;
+        padding: 0;
+        gap: 5px;
+    }
+
+    .page-item .page-link {
+        padding: 8px 16px;
+        border-radius: 4px;
+        border: 1px solid #dee2e6;
+        background: #fff;
+        color: #007bff;
+        text-decoration: none;
+        transition: all 0.2s;
+        font-size: 14px;
+    }
+
+    .page-item.active .page-link {
+        background: #007bff;
+        color: white;
+        border-color: #007bff;
+    }
+
+    .page-item.disabled .page-link {
+        color: #6c757d;
+        background: #f8f9fa;
+        pointer-events: none;
+    }
+
+    .page-item:not(.active):not(.disabled) .page-link:hover {
+        background: #e9ecef;
+    }
+
+    /* Empty state */
+    .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+        color: #6c757d;
+    }
 
     /* Responsive adjustments */
     @@media (max-width: 768px) {
@@ -94,65 +190,114 @@
             padding: 15px;
         }
 
-        h1 {
-            font-size: 20px;
+        .page-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 15px;
         }
 
-        .table th,
-        .table td {
+        h1 {
+            font-size: 20px;
+            margin-bottom: 0;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        .table th, .table td {
             padding: 10px 12px;
             font-size: 13px;
         }
 
-            .table td a {
-                display: block;
-                margin: 5px 0;
-            }
-
-                .table td a:not(:last-child)::after {
-                    content: "";
-                    margin: 0;
-                }
+        .action-links {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 8px;
+        }
     }
 </style>
-<h1>Index</h1>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Name)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.IsoCode)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Slug)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Name)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.IsoCode)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Slug)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-            </td>
-        </tr>
-}
-    </tbody>
-</table>
+<div class="container">
+    <div class="page-header">
+        <h1>
+            @ViewData["Title"]
+            <span class="total-badge">Total: @(Model?.TotalCount ?? 0)</span>
+        </h1>
+        <a asp-action="Create" class="create-btn">+ Create New Country</a>
+    </div>
+
+    <div class="table-wrapper">
+        @if (Model != null && Model.Items != null && Model.Items.Any())
+        {
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>ISO Code</th>
+                        <th>Slug</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.Items)
+                    {
+                        <tr>
+                            <td>
+                                <strong>@item.Name</strong>
+                            </td>
+                            <td>
+                                <span style="background: #f8f9fa; padding: 2px 6px; border-radius: 4px; border: 1px solid #dee2e6; font-family: monospace;">
+                                    @item.IsoCode
+                                </span>
+                            </td>
+                            <td>
+                                <span style="color: #6c757d;">@item.Slug</span>
+                            </td>
+                            <td>
+                                <div class="action-links">
+                                    <a asp-action="Edit" asp-route-id="@item.Id">Edit</a>
+                                    <span style="color: #dee2e6;">|</span>
+                                    <a asp-action="Details" asp-route-id="@item.Id">Details</a>
+                                    <span style="color: #dee2e6;">|</span>
+                                    <form asp-action="Delete" asp-route-id="@item.Id" method="post" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this country?');">
+                                        <button type="submit" class="delete-btn">Delete</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <div class="empty-state">
+                <i class="zmdi zmdi-globe" style="font-size: 40px; margin-bottom: 10px; display: block; color: #ced4da;"></i>
+                <p>No countries found. Please add a new country.</p>
+            </div>
+        }
+    </div>
+
+    @if (Model != null && Model.TotalPages > 1)
+    {
+        <div class="pagination-container">
+            <ul class="pagination">
+                <li class="page-item @(!Model.HasPreviousPage ? "disabled" : "")">
+                    <a class="page-link" asp-action="Index" asp-route-page="@(Model.PageIndex - 1)">Previous</a>
+                </li>
+
+                @for (int i = 1; i <= Model.TotalPages; i++)
+                {
+                    <li class="page-item @(i == Model.PageIndex ? "active" : "")">
+                        <a class="page-link" asp-action="Index" asp-route-page="@i">@i</a>
+                    </li>
+                }
+
+                <li class="page-item @(!Model.HasNextPage ? "disabled" : "")">
+                    <a class="page-link" asp-action="Index" asp-route-page="@(Model.PageIndex + 1)">Next</a>
+                </li>
+            </ul>
+        </div>
+    }
+</div>

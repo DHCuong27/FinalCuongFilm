@@ -247,6 +247,33 @@ namespace FinalCuongFilm.Service.Services
 				.ToListAsync();
 		}
 
+		// Pagination 
+		public async Task<PagedResult<MovieDto>> GetPagedAsync(int pageIndex = 1, int pageSize = 10)
+		{
+			
+			if (pageIndex < 1) pageIndex = 1;
+			if (pageSize < 1) pageSize = 10;
+
+			var query = _context.Movies.AsQueryable();
+
+			int totalCount = await query.CountAsync();
+
+			var items = await query.OrderByDescending(m => m.CreatedAt) 
+								   .Skip((pageIndex - 1) * pageSize)
+								   .Take(pageSize)
+								   .ToListAsync();
+
+			var dtos = _mapper.Map<List<MovieDto>>(items);
+
+			return new PagedResult<MovieDto>
+			{
+				Items = dtos,
+				TotalCount = totalCount,
+				PageIndex = pageIndex,
+				PageSize = pageSize
+			};
+		}
+
 		#endregion
 	}
 }

@@ -1,7 +1,8 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using FinalCuongFilm.Common.DTOs;
+﻿using FinalCuongFilm.Common.DTOs;
 using FinalCuongFilm.Service.Interfaces;
+using FinalCuongFilm.Service.Services;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 {
@@ -11,16 +12,21 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 	{
 		private readonly IActorService _actorService;
 
+
 		public ActorsController(IActorService actorService)
 		{
 			_actorService = actorService;
 		}
 
 		// GET: Admin/Actors
-		public async Task<IActionResult> Index()
+		public async Task<IActionResult> Index(int page = 1)
 		{
-			var actors = await _actorService.GetAllAsync();
-			return View(actors);
+			int pageSize = 20; 
+
+			// Gọi hàm phân trang vừa viết
+			var pagedData = await _actorService.GetPagedAsync(page, pageSize);
+
+			return View(pagedData); // Đẩy PagedResult ra View
 		}
 
 		// GET: Admin/Actors/Details/5

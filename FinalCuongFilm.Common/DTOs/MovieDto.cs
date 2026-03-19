@@ -9,6 +9,7 @@ namespace FinalCuongFilm.Common.DTOs
 		public string Slug { get; set; } = string.Empty;
 		public string? Description { get; set; }
 
+
 		public int? ReleaseYear { get; set; }
 		public long ViewCount { get; set; }
 		public int? DurationMinutes { get; set; }
@@ -21,15 +22,19 @@ namespace FinalCuongFilm.Common.DTOs
 		public Guid CountryId { get; set; }
 
 		// Navigation properties 
+
 		public string? CountryName { get; set; }
 		public string? LanguageName { get; set; }
 
 		public string? GenreName { get; set; }
 
 		// Collections cho many-to-many
+
+		public List<ActorDto> Actors { get; set; }
 		public List<Guid> SelectedActorIds { get; set; } = new();
 		public List<Guid> SelectedGenreIds { get; set; } = new();
 		public List<Guid> SelectedCountryIds { get; set; } = new();
+
 	}
 
 	public class MovieCreateDto

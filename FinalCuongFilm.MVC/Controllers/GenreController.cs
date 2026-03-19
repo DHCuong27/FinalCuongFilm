@@ -41,7 +41,7 @@ namespace FinalCuongFilm.MVC.Controllers
 
 			var allMovies = await _movieService.GetAllAsync();
 
-			//  FIX: Dùng SelectedGenreIds thay vì SelectedCountryIds (bug gốc)
+			//  Dùng SelectedGenreIds thay vì SelectedCountryIds (bug gốc)
 			var query = allMovies
 				.Where(m => m.IsActive && m.SelectedGenreIds.Contains(genre.Id))
 				.AsEnumerable();

@@ -4,55 +4,351 @@
     ViewData["Title"] = "Delete Media File";
 }
 
-<div class="row">
-    <div class="col-md-12">
-        <h2 class="title-1 text-danger">
-            <i class="zmdi zmdi-delete"></i> @ViewData["Title"]
-        </h2>
-    </div>
+<style>
+    :root {
+        --bg-danger-light: #fff5f5;
+        --bg-danger-dark: #2d1a1a;
+        --bg-card: #1e1e1e;
+        --bg-card-secondary: #2a2a2a;
+        --border-color: #3a3a3a;
+        --text-primary: #f0f0f0;
+        --text-secondary: #b0b0b0;
+        --text-muted: #8a8a8a;
+        --danger: #dc3545;
+        --danger-hover: #bb2d3b;
+        --danger-light: #ff6b6b20;
+        --secondary: #4a4a4a;
+        --secondary-hover: #5a5a5a;
+        --accent-blue: #4a9eff;
+        --success: #28a745;
+    }
+
+    body {
+        background: #141414;
+        color: var(--text-primary);
+    }
+
+    /* Page header */
+    .page-header {
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .page-title {
+        font-size: 2rem;
+        font-weight: 500;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+        .page-title.text-danger {
+            color: var(--danger) !important;
+        }
+
+        .page-title i {
+            font-size: 2rem;
+        }
+
+    /* Cards */
+    .modern-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        transition: transform 0.2s, box-shadow 0.2s;
+        height: 100%;
+    }
+
+        .modern-card:hover {
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+        }
+
+    .card-header {
+        background: var(--bg-card-secondary);
+        border-bottom: 1px solid var(--border-color);
+        padding: 1.25rem 1.5rem;
+    }
+
+        .card-header h5 {
+            margin: 0;
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+            .card-header h5 i {
+                color: var(--accent-blue);
+            }
+
+    .card-body {
+        padding: 1.5rem;
+    }
+
+    /* Alert */
+    .alert-modern {
+        background: var(--bg-danger-dark);
+        border-left: 4px solid var(--danger);
+        border-radius: 8px;
+        padding: 1rem 1.25rem;
+        margin-bottom: 2rem;
+        display: flex;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+
+        .alert-modern i {
+            font-size: 1.5rem;
+            color: var(--danger);
+        }
+
+        .alert-modern strong {
+            color: var(--danger);
+            font-weight: 600;
+        }
+
+        .alert-modern span {
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+    /* Definition list */
+    .dl-modern {
+        display: flex;
+        flex-wrap: wrap;
+        margin: 0;
+        gap: 1rem;
+    }
+
+        .dl-modern dt {
+            width: 120px;
+            font-weight: 500;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            padding: 0.75rem 0;
+            border-bottom: 1px dashed var(--border-color);
+        }
+
+        .dl-modern dd {
+            flex: 1;
+            margin-left: 0;
+            padding: 0.75rem 0;
+            border-bottom: 1px dashed var(--border-color);
+            color: var(--text-primary);
+            font-size: 0.95rem;
+        }
+
+            .dl-modern dt:last-of-type,
+            .dl-modern dd:last-of-type {
+                border-bottom: none;
+            }
+
+    /* Role badges */
+    .role-badge {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 500;
+        background: var(--bg-card-secondary);
+        border: 1px solid var(--border-color);
+        color: var(--text-secondary);
+    }
+
+        .role-badge.video {
+            background: rgba(74, 158, 255, 0.1);
+            border-color: var(--accent-blue);
+            color: var(--accent-blue);
+        }
+
+        .role-badge.subtitle {
+            background: rgba(40, 167, 69, 0.1);
+            border-color: var(--success);
+            color: var(--success);
+        }
+
+    /* Buttons */
+    .btn-modern {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.6rem 1.5rem;
+        font-size: 0.95rem;
+        font-weight: 500;
+        border-radius: 6px;
+        border: 1px solid transparent;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-decoration: none;
+        background: transparent;
+        color: var(--text-primary);
+    }
+
+        .btn-modern i {
+            font-size: 1.1rem;
+        }
+
+        .btn-modern:hover {
+            text-decoration: none;
+        }
+
+    .btn-danger-modern {
+        background: var(--danger);
+        color: white;
+        border-color: var(--danger);
+    }
+
+        .btn-danger-modern:hover {
+            background: var(--danger-hover);
+            border-color: var(--danger-hover);
+            color: white;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+        }
+
+    .btn-secondary-modern {
+        background: var(--secondary);
+        color: var(--text-primary);
+        border-color: var(--border-color);
+    }
+
+        .btn-secondary-modern:hover {
+            background: var(--secondary-hover);
+            color: var(--text-primary);
+            transform: translateY(-1px);
+        }
+
+    .button-group {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+
+    /* File link */
+    .file-link {
+        display: block;
+        padding: 1rem;
+        background: var(--bg-card-secondary);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        color: var(--accent-blue);
+        text-decoration: none;
+        word-break: break-all;
+        font-size: 0.9rem;
+        margin-top: 0.5rem;
+        transition: all 0.2s;
+    }
+
+        .file-link:hover {
+            background: #3a3a3a;
+            color: var(--accent-blue);
+            border-color: var(--accent-blue);
+        }
+
+        .file-link i {
+            margin-right: 0.5rem;
+        }
+
+    /* Video player */
+    .video-wrapper {
+        margin-top: 1.5rem;
+        background: var(--bg-card-secondary);
+        border-radius: 8px;
+        overflow: hidden;
+        border: 1px solid var(--border-color);
+    }
+
+    video {
+        width: 100%;
+        display: block;
+        background: black;
+    }
+
+    /* Responsive */
+    @@media (max-width: 768px) {
+        .dl-modern dt {
+            width: 100%;
+            padding-bottom: 0.25rem;
+            border-bottom: none;
+        }
+
+        .dl-modern dd {
+            width: 100%;
+            padding-top: 0;
+            padding-bottom: 1rem;
+            margin-left: 0;
+            border-bottom: 1px dashed var(--border-color);
+        }
+
+        .button-group {
+            flex-direction: column;
+        }
+
+        .btn-modern {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
+
+<div class="page-header">
+    <h2 class="page-title text-danger">
+        <i class="zmdi zmdi-delete"></i> @ViewData["Title"]
+    </h2>
 </div>
 
-<div class="row m-t-30">
+<div class="row">
     <div class="col-md-8">
-        <div class="card border-danger">
+        <div class="modern-card">
+            <div class="card-header">
+                <h5><i class="zmdi zmdi-info"></i> Thông tin file</h5>
+            </div>
             <div class="card-body">
-
-                <div class="alert alert-danger">
-                    <strong>Cảnh báo!</strong> Hành động này không thể hoàn tác.
+                <div class="alert-modern">
+                    <i class="zmdi zmdi-alert-circle"></i>
+                    <div>
+                        <strong>Cảnh báo!</strong>
+                        <span>Hành động này không thể hoàn tác. File sẽ bị xóa vĩnh viễn khỏi hệ thống.</span>
+                    </div>
                 </div>
 
-                <dl class="row">
+                <dl class="dl-modern">
+                    <dt>Tên file</dt>
+                    <dd>@Model.FileName</dd>
 
-                    <dt class="col-sm-3">Tên file</dt>
-                    <dd class="col-sm-9">@Model.FileName</dd>
-
-                    <dt class="col-sm-3">Loại</dt>
-                    <dd class="col-sm-9">
+                    <dt>Loại</dt>
+                    <dd>
                         @if (Model.FileType == "Video")
                         {
-                            <span class="role admin">Video</span>
+                            <span class="role-badge video">Video</span>
                         }
                         else if (Model.FileType == "Subtitle")
                         {
-                            <span class="role user">Subtitle</span>
+                            <span class="role-badge subtitle">Subtitle</span>
                         }
                         else
                         {
-                            <span class="role">@Model.FileType</span>
+                            <span class="role-badge">@Model.FileType</span>
                         }
                     </dd>
 
-                    <dt class="col-sm-3">Chất lượng</dt>
-                    <dd class="col-sm-9">@Model.Quality</dd>
+                    <dt>Chất lượng</dt>
+                    <dd>@Model.Quality</dd>
 
-                    <dt class="col-sm-3">Ngôn ngữ</dt>
-                    <dd class="col-sm-9">@Model.Language</dd>
+                    <dt>Ngôn ngữ</dt>
+                    <dd>@Model.Language</dd>
 
-                    <dt class="col-sm-3">Kích thước</dt>
-                    <dd class="col-sm-9">@Model.FileSizeFormatted</dd>
+                    <dt>Kích thước</dt>
+                    <dd>@Model.FileSizeFormatted</dd>
 
-                    <dt class="col-sm-3">Phim / Tập</dt>
-                    <dd class="col-sm-9">
+                    <dt>Phim / Tập</dt>
+                    <dd>
                         @if (Model.EpisodeId.HasValue)
                         {
                             <span>
@@ -65,45 +361,43 @@
                         }
                     </dd>
 
-                    <dt class="col-sm-3">Ngày upload</dt>
-                    <dd class="col-sm-9">
-                        @Model.UploadedAt.ToString("dd/MM/yyyy HH:mm")
-                    </dd>
-
+                    <dt>Ngày upload</dt>
+                    <dd>@Model.UploadedAt.ToString("dd/MM/yyyy HH:mm")</dd>
                 </dl>
 
                 <form asp-action="Delete" method="post">
                     <input type="hidden" asp-for="Id" />
-
-                    <div class="m-t-30">
-                        <button type="submit" class="btn btn-danger">
+                    <div class="button-group">
+                        <button type="submit" class="btn-modern btn-danger-modern">
                             <i class="zmdi zmdi-delete"></i> Xác nhận xóa
                         </button>
-
-                        <a asp-action="Index" class="btn btn-secondary">
+                        <a asp-action="Index" class="btn-modern btn-secondary-modern">
                             <i class="zmdi zmdi-arrow-left"></i> Hủy
                         </a>
                     </div>
                 </form>
-
             </div>
         </div>
     </div>
 
     <div class="col-md-4">
-        <div class="card">
+        <div class="modern-card">
+            <div class="card-header">
+                <h5><i class="zmdi zmdi-file"></i> File</h5>
+            </div>
             <div class="card-body">
-                <h5>File</h5>
-                <a href="@Model.FileUrl" target="_blank">
-                    @Model.FileUrl
+                <a href="@Model.FileUrl" target="_blank" class="file-link">
+                    <i class="zmdi zmdi-link"></i> @Model.FileUrl
                 </a>
 
                 @if (Model.FileType == "Video")
                 {
-                    <hr />
-                    <video controls width="100%">
-                        <source src="@Model.FileUrl" type="video/mp4" />
-                    </video>
+                    <div class="video-wrapper">
+                        <video controls>
+                            <source src="@Model.FileUrl" type="video/mp4" />
+                            Trình duyệt không hỗ trợ video.
+                        </video>
+                    </div>
                 }
             </div>
         </div>

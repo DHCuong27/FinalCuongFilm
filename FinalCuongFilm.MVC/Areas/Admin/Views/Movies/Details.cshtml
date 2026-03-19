@@ -3,7 +3,7 @@
 @using static FinalCuongFilm.ApplicationCore.Entities.Enum
 
 @{
-    ViewData["Title"] = "Film Detail";
+    ViewData["Title"] = "Movie Detail";
 }
 
 <style>
@@ -230,7 +230,7 @@
     }
 
     /* Description Section */
-    .description-section {
+    .description-section, .actor-section {
         margin-top: 24px;
         padding-top: 24px;
         border-top: 1px solid var(--border-color);
@@ -259,6 +259,48 @@
         border-radius: var(--radius-md);
         max-height: 200px;
         overflow-y: auto;
+    }
+
+    /* Actors Section */
+    .actor-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .actor-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: var(--bg-light);
+        padding: 6px 14px 6px 6px;
+        border-radius: 30px;
+        border: 1px solid var(--border-color);
+        transition: all 0.2s ease;
+    }
+
+        .actor-item:hover {
+            background: white;
+            box-shadow: var(--shadow-sm);
+            border-color: var(--primary-light);
+        }
+
+    .actor-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        object-fit: cover;
+        background: #e5e7eb;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+    }
+
+    .actor-name {
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--text-dark);
     }
 
     /* Trailer Button */
@@ -354,62 +396,56 @@
 
     /* Responsive */
     @@media (max-width: 768px) {
-        .movie-content
+        .movie-content {
+            flex-direction: column;
+            padding: 20px;
+        }
 
-    {
-        flex-direction: column;
-        padding: 20px;
-    }
+        .poster-section {
+            width: 100%;
+            max-width: 300px;
+            margin: 0 auto;
+        }
 
-    .poster-section {
-        width: 100%;
-        max-width: 300px;
-        margin: 0 auto;
-    }
+        .poster-image, .no-poster {
+            height: 350px;
+        }
 
-    .poster-image, .no-poster {
-        height: 350px;
-    }
+        .details-grid {
+            grid-template-columns: 1fr;
+        }
 
-    .details-grid {
-        grid-template-columns: 1fr;
-    }
+        .action-buttons {
+            flex-direction: column;
+        }
 
-    .action-buttons {
-        flex-direction: column;
-    }
-
-    .btn {
-        width: 100%;
-    }
-
+        .btn {
+            width: 100%;
+        }
     }
 
     @@media (max-width: 480px) {
-        .movie-detail-container
+        .movie-detail-container {
+            padding: 16px;
+        }
 
-    {
-        padding: 16px;
-    }
+        .page-title {
+            font-size: 24px;
+        }
 
-    .page-title {
-        font-size: 24px;
-    }
+        .movie-title {
+            font-size: 20px;
+        }
 
-    .movie-title {
-        font-size: 20px;
-    }
+        .movie-meta {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 8px;
+        }
 
-    .movie-meta {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 8px;
-    }
-
-    .poster-image, .no-poster {
-        height: 300px;
-    }
-
+        .poster-image, .no-poster {
+            height: 300px;
+        }
     }
 
     /* Scrollbar Styling */
@@ -443,7 +479,7 @@
     <div class="page-header">
         <div>
             <h1 class="page-title">@ViewData["Title"]</h1>
-            <div class="page-subtitle">Xem chi tiết thông tin phim</div>
+            <div class="page-subtitle">View full movie information</div>
         </div>
     </div>
 
@@ -451,12 +487,11 @@
         <div class="card-header">
             <h3>
                 <i>🎬</i>
-                Thông tin phim
+                Movie Information
             </h3>
         </div>
 
         <div class="movie-content">
-            <!-- Poster Section -->
             <div class="poster-section">
                 <div class="poster-wrapper">
                     @if (!string.IsNullOrEmpty(Model.PosterUrl))
@@ -468,15 +503,14 @@
                     {
                         <div class="no-poster">
                             <div>
-                                <div style="font-size: 48px; margin-bottom: 10px;">📽️</div>
-                                <div>Chưa có poster</div>
+                                <div style="font-size: 48px; margin-bottom: 10px; text-align: center;">📽️</div>
+                                <div>No poster available</div>
                             </div>
                         </div>
                     }
                 </div>
             </div>
 
-            <!-- Info Section -->
             <div class="info-section">
                 <h2 class="movie-title">@Model.Title</h2>
 
@@ -487,7 +521,7 @@
                     </div>
                     <div class="meta-item">
                         <i>⏱️</i>
-                        <span>@Model.DurationMinutes phút</span>
+                        <span>@Model.DurationMinutes mins</span>
                     </div>
                     <div class="meta-item">
                         <i>🌍</i>
@@ -506,33 +540,32 @@
                     </div>
 
                     <div class="detail-item">
-                        <div class="detail-label">Loại phim</div>
+                        <div class="detail-label">Movie Type</div>
                         <div class="detail-value">@Model.Type</div>
                     </div>
 
                     <div class="detail-item">
-                        <div class="detail-label">Trạng thái</div>
+                        <div class="detail-label">Status</div>
                         <div class="detail-value">
                             <div class="status-badges">
                                 <span class="badge badge-info">@Model.Status</span>
                                 @if (Model.IsActive)
                                 {
-                                    <span class="badge badge-success">Hoạt động</span>
+                                    <span class="badge badge-success">Active</span>
                                 }
                                 else
                                 {
-                                    <span class="badge badge-secondary">Tạm ẩn</span>
+                                    <span class="badge badge-secondary">Hidden</span>
                                 }
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Description -->
                 <div class="description-section">
                     <div class="section-title">
                         <i>📝</i>
-                        Mô tả
+                        Description
                     </div>
                     <div class="description-content">
                         @if (!string.IsNullOrEmpty(Model.Description))
@@ -541,12 +574,11 @@
                         }
                         else
                         {
-                            <span style="color: var(--text-gray); font-style: italic;">Chưa có mô tả</span>
+                            <span style="color: var(--text-gray); font-style: italic;">No description available</span>
                         }
                     </div>
                 </div>
 
-                <!-- Trailer -->
                 @if (!string.IsNullOrEmpty(Model.TrailerUrl))
                 {
                     <div class="trailer-section">
@@ -556,32 +588,30 @@
                         </div>
                         <a href="@Model.TrailerUrl" target="_blank" class="trailer-btn">
                             <i>▶️</i>
-                            Xem trailer trên YouTube
+                            Watch trailer on YouTube
                         </a>
                     </div>
                 }
             </div>
         </div>
 
-        <!-- Action Buttons -->
-        <div class="card-body">
+        <div class="card-body" style="padding: 0 24px 24px 24px;">
             <div class="action-buttons">
-                @* FIX: Show 'Manage Episodes' only if it is a Series *@
                 @if (Model.Type == MovieType.Series)
                 {
                     <a asp-controller="Episodes" asp-action="Index" asp-route-movieId="@Model.Id" class="btn btn-warning">
                         <i>📂</i>
-                        Quản lý tập
+                        Manage Episodes
                     </a>
                 }
 
                 <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">
                     <i>✏️</i>
-                    Chỉnh sửa
+                    Edit
                 </a>
                 <a asp-action="Index" class="btn btn-secondary">
                     <i>←</i>
-                    Quay lại danh sách
+                    Back to List
                 </a>
             </div>
         </div>

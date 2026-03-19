@@ -7,10 +7,20 @@ using FinalCuongFilm.Service.Services;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-
+using Hangfire;
+Xabe.FFmpeg.FFmpeg.SetExecutablesPath(@"C:\ffmpeg\bin");
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.WebHost.ConfigureKestrel(serverOptions =>
+{
+	serverOptions.Limits.MaxRequestBodySize = 5_000_000_000;
+});
+
+builder.Services.Configure<FormOptions>(options =>
+{
+    options.MultipartBodyLengthLimit = 5_000_000_000; // Đổi lại thành 5GB cho đồng bộ
+});
 //  DATABASE 
 builder.Services.AddDbContext<CuongFilmDbContext>(options =>
 	options.UseSqlServer(
@@ -19,6 +29,14 @@ builder.Services.AddDbContext<CuongFilmDbContext>(options =>
 builder.Services.AddDbContext<CuongFilmIdentityDbContext>(options =>
 	options.UseSqlServer(
 		builder.Configuration.GetConnectionString("CuongFilmIdentityConnection")));
+
+builder.Services.AddHangfire(configuration => configuration
+	.SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+	.UseSimpleAssemblyNameTypeSerializer()
+	.UseRecommendedSerializerSettings()
+	.UseSqlServerStorage(builder.Configuration.GetConnectionString("CuongFilmConnection")));
+
+builder.Services.AddHangfireServer();
 
 builder.Services.AddIdentity<CuongFilmUser, CuongFilmRole>(options =>
 {
@@ -63,6 +81,7 @@ builder.Services.AddScoped<IMovieImportService, MovieImportService>();
 
 // Service upload file lên Azure Blob Storage
 builder.Services.AddScoped<IAzureBlobService, AzureBlobService>();
+builder.Services.AddScoped<IVideoConversionService, VideoConversionService>();
 
 // Cấu hình upload file size
 builder.Services.Configure<FormOptions>(options =>
@@ -96,6 +115,8 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
+
+app.UseHangfireDashboard("/hangfire");
 
 app.UseSession();
 app.UseAuthentication();
