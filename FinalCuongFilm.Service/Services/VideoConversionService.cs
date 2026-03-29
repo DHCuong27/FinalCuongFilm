@@ -62,23 +62,23 @@ namespace FinalCuongFilm.Service.Services
 				// 2. Transcode bằng FFmpeg
 				_logger.LogInformation($"[FFMPEG] Bắt đầu chia nhỏ và nén Video đa phân giải...");
 				string ffmpegArgs =
-	$"-i \"{localInputPath}\" " +
-	"-map 0:v:0 -map 0:v:0 -map 0:v:0 -map 0:a:0 -map 0:a:0 -map 0:a:0 " +
+				$"-i \"{localInputPath}\" " +
+				"-map 0:v:0 -map 0:v:0 -map 0:v:0 -map 0:a:0 -map 0:a:0 -map 0:a:0 " +
 
-	// Thêm -preset ultrafast vào từng luồng
-	"-s:v:0 1920x1080 -c:v:0 libx264 -preset ultrafast -b:v:0 3000k -profile:v:0 main " +
-	"-s:v:1 1280x720 -c:v:1 libx264 -preset ultrafast -b:v:1 1500k -profile:v:1 main " +
-	"-s:v:2 854x480 -c:v:2 libx264 -preset ultrafast -b:v:2 800k -profile:v:2 main " +
+				// Thêm -preset ultrafast vào từng luồng
+				"-s:v:0 1920x1080 -c:v:0 libx264 -preset ultrafast -b:v:0 3000k -profile:v:0 main " +
+				"-s:v:1 1280x720 -c:v:1 libx264 -preset ultrafast -b:v:1 1500k -profile:v:1 main " +
+				"-s:v:2 854x480 -c:v:2 libx264 -preset ultrafast -b:v:2 800k -profile:v:2 main " +
 
-	"-c:a aac -b:a 128k " +
-	"-var_stream_map \"v:0,a:0,name:1080p v:1,a:1,name:720p v:2,a:2,name:480p\" " +
-	"-hls_time 10 -hls_list_size 0 -master_pl_name master.m3u8 " +
-	$"-f hls \"{localOutputDir}/%v/playlist.m3u8\"";
+				"-c:a aac -b:a 128k " +
+				"-var_stream_map \"v:0,a:0,name:1080p v:1,a:1,name:720p v:2,a:2,name:480p\" " +
+				"-hls_time 10 -hls_list_size 0 -master_pl_name master.m3u8 " +
+				$"-f hls \"{localOutputDir}/%v/playlist.m3u8\"";
 
 				var conversion = FFmpeg.Conversions.New().AddParameter(ffmpegArgs);
 				await conversion.Start();
 
-				// 3. Upload lên Azure theo luồng có kiểm soát (Chống sập mạng)
+				// 3. Upload video lên Azure 
 				_logger.LogInformation($"[UPLOAD] Bắt đầu đẩy hàng loạt file .ts và .m3u8 lên Azure...");
 
 				string azureFolder = $"movies/{slug}/ep{episodeNumber}/hls";
@@ -134,26 +134,26 @@ namespace FinalCuongFilm.Service.Services
 			}
 		}
 
-		// Trong VideoConversionService.cs thêm hàm này:
+		// Hang fire 
 		public async Task ProcessVideoBackgroundJobAsync(Guid mediaFileId, string mp4Url, string slug, int episodeNumber)
 		{
 			try
 			{
-				// 1. Chạy hàm convert nặng nề
+				// 1. Chạy hàm convert 
 				string masterM3u8Url = await ConvertToHlsAsync(mp4Url, slug, episodeNumber);
 
 				// 2. Cập nhật Database sau khi xong
 				var mediaFile = await _mediaFileService.GetByIdAsync(mediaFileId);
 				if (mediaFile != null)
 				{
-					// FIX LỖI: Tạo một đối tượng UpdateDto mới và copy dữ liệu cũ sang, kèm theo dữ liệu mới
+					
 					var updateDto = new FinalCuongFilm.Common.DTOs.MediaFileUpdateDto
 					{
 						Id = mediaFile.Id,
 						FileName = mediaFile.FileName,
-						FileUrl = masterM3u8Url, // Cập nhật link HLS mới
-						FileType = "hls",        // Đổi định dạng thành hls
-						Quality = "Auto",        // Đổi trạng thái từ "Processing..." thành "Auto"
+						FileUrl = masterM3u8Url, 
+						FileType = "hls",        
+						Quality = "Auto",     
 						Language = mediaFile.Language,
 						FileSizeBytes = mediaFile.FileSizeBytes,
 						MovieId = mediaFile.MovieId,
@@ -169,7 +169,7 @@ namespace FinalCuongFilm.Service.Services
 			catch (Exception ex)
 			{
 				_logger.LogError(ex, $"[HANGFIRE] Lỗi khi xử lý ngầm video cho MediaId: {mediaFileId}");
-				// Nếu cần, bạn có thể tạo updateDto để set Quality = "Lỗi Convert" ở đây
+				
 			}
 		}
 	}

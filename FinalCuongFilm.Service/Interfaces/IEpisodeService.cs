@@ -11,5 +11,7 @@ namespace FinalCuongFilm.Service.Interfaces
 		Task<bool> UpdateAsync(EpisodeUpdateDto dto);
 		Task<bool> DeleteAsync(Guid id);
 		Task<bool> ExistsAsync(Guid id);
+
+		Task<PagedResult<EpisodeDto>> GetPagedAsync(string? searchString = null, int pageIndex = 1, int pageSize = 10);
 	}
 }

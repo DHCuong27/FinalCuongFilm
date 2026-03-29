@@ -19,6 +19,7 @@ namespace FinalCuongFilm.Service.Services
 			_context = context;
 		}
 
+		// Get all actor
 		public async Task<IEnumerable<ActorDto>> GetAllAsync()
 		{
 			return await _context.Actors
@@ -34,6 +35,7 @@ namespace FinalCuongFilm.Service.Services
 				.ToListAsync();
 		}
 
+		// Get actor by id
 		public async Task<ActorDto?> GetByIdAsync(Guid id)
 		{
 			var actor = await _context.Actors.FindAsync(id);
@@ -51,6 +53,7 @@ namespace FinalCuongFilm.Service.Services
 			};
 		}
 
+		// Create new actor
 		public async Task<ActorDto> CreateAsync(ActorCreateDto dto)
 		{
 			var slug = SlugHelper.GenerateSlug(dto.Name);
@@ -79,6 +82,7 @@ namespace FinalCuongFilm.Service.Services
 			};
 		}
 
+		// Update actor
 		public async Task<bool> UpdateAsync(ActorUpdateDto dto)
 		{
 			var actor = await _context.Actors.FindAsync(dto.Id);
@@ -97,6 +101,7 @@ namespace FinalCuongFilm.Service.Services
 			return true;
 		}
 
+		// Delete actor
 		public async Task<bool> DeleteAsync(Guid id)
 		{
 			var actor = await _context.Actors
@@ -116,20 +121,34 @@ namespace FinalCuongFilm.Service.Services
 			await _context.SaveChangesAsync();
 			return true;
 		}
-		public async Task<PagedResult<ActorDto>> GetPagedAsync(int pageIndex = 1, int pageSize = 10)
-		{
 
+		// Pagination with search
+		public async Task<PagedResult<ActorDto>> GetPagedAsync(string? searchString = null, int pageIndex = 1, int pageSize = 10)
+		{
 			if (pageIndex < 1) pageIndex = 1;
 			if (pageSize < 1) pageSize = 10;
 
+			// 1. Lấy toàn bộ danh sách Actor ra chờ sẵn
 			var query = _context.Actors.AsQueryable();
 
+			// 2. LOGIC TÌM KIẾM Ở ĐÂY: Nếu có chữ tìm kiếm thì lọc lại query
+			if (!string.IsNullOrEmpty(searchString))
+			{
+				// Chuyển về chữ thường để tìm kiếm không phân biệt Hoa/Thường
+				var searchLower = searchString.ToLower();
+
+				query = query.Where(a => a.Name.ToLower().Contains(searchLower)
+									  || a.Slug.ToLower().Contains(searchLower));
+			}
+
+			// 3. Đếm số lượng sau khi đã lọc (để chia số trang cho đúng)
 			int totalCount = await query.CountAsync();
 
-			var items = await query.OrderByDescending(m => m.MovieActors.Count()) // Sắp xếp theo số lượng phim
-						   .Skip((pageIndex - 1) * pageSize)
-						   .Take(pageSize)
-						   .ToListAsync();
+			// 4. Phân trang như bình thường
+			var items = await query.OrderByDescending(m => m.Id)
+								   .Skip((pageIndex - 1) * pageSize)
+								   .Take(pageSize)
+								   .ToListAsync();
 
 			var dtos = _mapper.Map<List<ActorDto>>(items);
 
@@ -142,6 +161,7 @@ namespace FinalCuongFilm.Service.Services
 			};
 		}
 
+	
 		public async Task<bool> ExistsAsync(Guid id)
 		{
 			return await _context.Actors.AnyAsync(a => a.Id == id);

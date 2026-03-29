@@ -1,4 +1,5 @@
-﻿using FinalCuongFilm.ApplicationCore.Entities;
+﻿using AutoMapper;
+using FinalCuongFilm.ApplicationCore.Entities;
 using FinalCuongFilm.Common.DTOs;
 using FinalCuongFilm.DataLayer;
 using FinalCuongFilm.Service.Interfaces;
@@ -9,10 +10,12 @@ namespace FinalCuongFilm.Service.Services
 	public class EpisodeService : IEpisodeService
 	{
 		private readonly CuongFilmDbContext _context;
+		private readonly IMapper _mapper;
 
-		public EpisodeService(CuongFilmDbContext context)
+		public EpisodeService(CuongFilmDbContext context, IMapper mapper)
 		{
 			_context = context;
+			_mapper = mapper;
 		}
 
 		public async Task<IEnumerable<EpisodeDto>> GetAllAsync()
@@ -92,7 +95,7 @@ namespace FinalCuongFilm.Service.Services
 			if (episode == null)
 				return false;
 
-			// Kiểm tra nghiệp vụ: không cho xóa nếu có media files
+		
 			if (episode.MediaFiles.Any())
 			{
 				throw new InvalidOperationException("Không thể xóa tập phim đã có media files. Vui lòng xóa tất cả media files trước.");
@@ -106,6 +109,39 @@ namespace FinalCuongFilm.Service.Services
 		public async Task<bool> ExistsAsync(Guid id)
 		{
 			return await _context.Episodes.AnyAsync(e => e.Id == id);
+		}
+
+		public async Task<PagedResult<EpisodeDto>> GetPagedAsync(string? searchString = null, int pageIndex = 1, int pageSize = 10)
+		{
+			if (pageIndex < 1) pageIndex = 1;
+			if (pageSize < 1) pageSize = 10;
+
+			var query = _context.Episodes
+				.Include(e => e.Movie)
+				.AsQueryable();
+
+			if (!string.IsNullOrWhiteSpace(searchString))
+			{
+				query = query.Where(e => e.Title.Contains(searchString) ||
+										 e.Description.Contains(searchString));
+			}
+
+			int totalCount = await query.CountAsync();
+
+			var items = await query.OrderBy(e => e.EpisodeNumber)
+								   .Skip((pageIndex - 1) * pageSize)
+								   .Take(pageSize)
+								   .ToListAsync();
+
+			var dtos = _mapper.Map<List<EpisodeDto>>(items);
+
+			return new PagedResult<EpisodeDto>
+			{
+				Items = dtos,
+				TotalCount = totalCount,
+				PageIndex = pageIndex,
+				PageSize = pageSize
+			};
 		}
 
 		private static EpisodeDto MapToDto(Episode episode)

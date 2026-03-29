@@ -19,6 +19,7 @@ namespace FinalCuongFilm.Service.Services
 			_context = context;
 		}
 
+		// Get all country
 		public async Task<IEnumerable<CountryDto>> GetAllAsync()
 		{
 			return await _context.Countries
@@ -32,6 +33,7 @@ namespace FinalCuongFilm.Service.Services
 				.ToListAsync();
 		}
 
+		// Get country by id
 		public async Task<CountryDto?> GetByIdAsync(Guid id)
 		{
 			var country = await _context.Countries.FindAsync(id);
@@ -47,6 +49,7 @@ namespace FinalCuongFilm.Service.Services
 			};
 		}
 
+		// Create new country
 		public async Task<CountryDto> CreateAsync(CountryCreateDto dto)
 		{
 			var slug = SlugHelper.GenerateSlug(dto.Name);
@@ -71,6 +74,7 @@ namespace FinalCuongFilm.Service.Services
 			};
 		}
 
+		// Update country
 		public async Task<bool> UpdateAsync(CountryUpdateDto dto)
 		{
 			var country = await _context.Countries.FindAsync(dto.Id);
@@ -87,6 +91,7 @@ namespace FinalCuongFilm.Service.Services
 			return true;
 		}
 
+		// Delete country
 		public async Task<bool> DeleteAsync(Guid id)
 		{
 			var country = await _context.Countries.FindAsync(id);
@@ -105,6 +110,7 @@ namespace FinalCuongFilm.Service.Services
 			return true;
 		}
 
+		// Get paged country
 		public async Task<PagedResult<CountryDto>> GetPagedAsync(int pageIndex = 1, int pageSize = 10)
 		{
 

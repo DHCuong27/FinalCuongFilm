@@ -55,16 +55,16 @@ namespace FinalCuongFilm.Service.Services
 			{
 				// A. XỬ LÝ QUỐC GIA
 				Guid? countryId = null;
-				var firstCountry = movieDetails.Production_Countries?.FirstOrDefault();
+				var firstCountry = movieDetails.ProductionCountries?.FirstOrDefault();
 				if (firstCountry != null)
 				{
-					var country = await _dbContext.Countries.FirstOrDefaultAsync(c => c.IsoCode == firstCountry.Iso_3166_1);
+					var country = await _dbContext.Countries.FirstOrDefaultAsync(c => c.IsoCode == firstCountry.Iso31661);
 					if (country == null)
 					{
 						country = new Country
 						{
 							Name = firstCountry.Name,
-							IsoCode = firstCountry.Iso_3166_1,
+							IsoCode = firstCountry.Iso31661,
 							Slug = SlugHelper.GenerateSlug(firstCountry.Name)
 						};
 						_dbContext.Countries.Add(country);
@@ -79,14 +79,14 @@ namespace FinalCuongFilm.Service.Services
 					Title = movieDetails.Title,
 					Slug = SlugHelper.GenerateSlug(movieDetails.Title) + "-" + movieDetails.Id,
 					Description = movieDetails.Overview,
-					PosterUrl = !string.IsNullOrEmpty(movieDetails.Poster_Path) ? "https://image.tmdb.org/t/p/w500" + movieDetails.Poster_Path : null,
+					PosterUrl = !string.IsNullOrEmpty(movieDetails.PosterPath) ? "https://image.tmdb.org/t/p/w500" + movieDetails.PosterPath : null,
 					TmdbId = movieDetails.Id,
 					Status = MovieStatus.Completed,
-					Type = isTvSeries ? MovieType.Series : MovieType.Movie, //  SET TYPE
+					Type = isTvSeries ? MovieType.Series : MovieType.Movie,
 					IsActive = true,
 					CountryId = countryId,
 					DurationMinutes = movieDetails.Runtime,
-					ReleaseYear = !string.IsNullOrEmpty(movieDetails.Release_Date) ? DateTime.Parse(movieDetails.Release_Date).Year : DateTime.Now.Year
+					ReleaseYear = !string.IsNullOrEmpty(movieDetails.ReleaseDate) ? DateTime.Parse(movieDetails.ReleaseDate).Year : DateTime.Now.Year
 				};
 
 				_dbContext.Movies.Add(movie);
@@ -125,7 +125,7 @@ namespace FinalCuongFilm.Service.Services
 							{
 								Name = cast.Name,
 								Slug = SlugHelper.GenerateSlug(cast.Name) + "-" + cast.Id,
-								AvartUrl = !string.IsNullOrEmpty(cast.Profile_Path) ? "https://image.tmdb.org/t/p/w300" + cast.Profile_Path : null,
+								AvartUrl = !string.IsNullOrEmpty(cast.ProfilePath) ? "https://image.tmdb.org/t/p/w300" + cast.ProfilePath : null,
 								TmdbId = cast.Id,
 								Gender = cast.Gender == 1 ? "Female" : (cast.Gender == 2 ? "Male" : "Unknown")
 							};

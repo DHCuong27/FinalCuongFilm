@@ -29,13 +29,14 @@ namespace FinalCuongFilm.Service.Services
 			return result?.Results.FirstOrDefault();
 		}
 
-		// Get 
+		// Get  Movie Credits (Cast & Crew)
 		public async Task<TmdbCreditsResponse?> GetMovieCreditsAsync(long tmdbId)
 		{
 			var response = await _httpClient.GetStringAsync($"{_baseUrl}/movie/{tmdbId}/credits?api_key={_apiKey}");
 			return JsonSerializer.Deserialize<TmdbCreditsResponse>(response, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 		}
 
+		// Get Movie Details (including genres, production countries, etc.)
 		public async Task<TmdbMovieDetailsResponse?> GetMovieDetailsAsync(long tmdbId)
 		{
 			var url = $"{_baseUrl}/movie/{tmdbId}?api_key={_apiKey}";
@@ -64,8 +65,8 @@ namespace FinalCuongFilm.Service.Services
 				Id = firstResult.GetProperty("id").GetInt64(),
 				Title = firstResult.GetProperty("name").GetString() ?? "", // TV dùng 'name'
 				Overview = firstResult.TryGetProperty("overview", out var ov) ? ov.GetString() : "",
-				Poster_Path = firstResult.TryGetProperty("poster_path", out var pp) ? pp.GetString() : "",
-				Release_Date = firstResult.TryGetProperty("first_air_date", out var fad) ? fad.GetString() : "" // TV dùng 'first_air_date'
+				PosterPath = firstResult.TryGetProperty("poster_path", out var pp) ? pp.GetString() : "",
+				ReleaseDate = firstResult.TryGetProperty("first_air_date", out var fad) ? fad.GetString() : "" // TV dùng 'first_air_date'
 			};
 		}
 
@@ -83,11 +84,11 @@ namespace FinalCuongFilm.Service.Services
 				Id = root.GetProperty("id").GetInt64(),
 				Title = root.GetProperty("name").GetString() ?? "",
 				Overview = root.TryGetProperty("overview", out var ov) ? ov.GetString() : "",
-				Poster_Path = root.TryGetProperty("poster_path", out var pp) ? pp.GetString() : "",
-				Release_Date = root.TryGetProperty("first_air_date", out var fad) ? fad.GetString() : "",
+				PosterPath = root.TryGetProperty("poster_path", out var pp) ? pp.GetString() : "",
+				ReleaseDate = root.TryGetProperty("first_air_date", out var fad) ? fad.GetString() : "",
 				Runtime = root.TryGetProperty("episode_run_time", out var ert) && bindingRunTime(ert) > 0 ? bindingRunTime(ert) : 45,
 				Genres = JsonSerializer.Deserialize<List<TmdbGenreDto>>(root.GetProperty("genres").GetRawText(), new JsonSerializerOptions { PropertyNameCaseInsensitive = true }),
-				Production_Countries = JsonSerializer.Deserialize<List<TmdbCountryDto>>(root.GetProperty("production_countries").GetRawText(), new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
+				ProductionCountries = JsonSerializer.Deserialize<List<TmdbCountryDto>>(root.GetProperty("production_countries").GetRawText(), new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
 			};
 
 			return details;

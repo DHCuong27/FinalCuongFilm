@@ -1,7 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using FinalCuongFilm.Service.Interfaces;
-using System;
-using System.Threading.Tasks;
+﻿using FinalCuongFilm.Service.Interfaces;
+using Microsoft.AspNetCore.Mvc;
 
 namespace FinalCuongFilm.API.Controllers
 {

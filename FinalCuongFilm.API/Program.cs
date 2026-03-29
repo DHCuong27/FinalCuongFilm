@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ── 1. ĐĂNG KÝ SERVICES (DEPENDENCY INJECTION) ───────────────────────────
+// ── 1. ĐĂNG KÝ SERVICES (DEPENDENCY INJECTION) 
 
 // Database
 builder.Services.AddDbContext<CuongFilmDbContext>(options =>
@@ -29,7 +29,6 @@ builder.Services.AddControllers()
 // Application services
 builder.Services.AddApplicationServices(builder.Configuration);
 
-//  FIX CỦA BẠN NẰM Ở ĐÂY: Phải đăng ký Service TRƯỚC khi build app
 // Đăng ký HttpClient cho TmdbService
 builder.Services.AddHttpClient<ITmdbService, TmdbService>();
 // Đăng ký Service xử lý Import
@@ -69,7 +68,7 @@ var app = builder.Build();
 // =========================================================================
 
 
-// ── 2. MIDDLEWARE PIPELINE (ĐÚNG THỨ TỰ) ─────────────────────────────────
+// ── 2. MIDDLEWARE PIPELINE (ĐÚNG THỨ TỰ) ──────
 
 // 1. Global exception handling — phải đứng ĐẦU TIÊN
 app.UseMiddleware<ExceptionHandlingMiddleware>();

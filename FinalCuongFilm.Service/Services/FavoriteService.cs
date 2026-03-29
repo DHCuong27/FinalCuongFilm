@@ -67,7 +67,7 @@ namespace FinalCuongFilm.Service.Services
 				throw new KeyNotFoundException("Không tìm thấy phim!");
 			}
 
-			// ✅ Check user exists
+			//  Check user exists
 			var user = await _userManager.FindByIdAsync(userId);
 			if (user == null)
 			{
@@ -116,6 +116,53 @@ namespace FinalCuongFilm.Service.Services
 		{
 			return await _context.Favorites
 				.CountAsync(f => f.MovieId == movieId);
+		}
+
+		// 1. Hàm lấy danh sách lịch sử xem
+		public async Task<IEnumerable<MovieDto>> GetUserWatchHistoryAsync(string userId)
+		{
+			var history = await _context.WatchHistories // Đảm bảo bạn đã tạo bảng WatchHistories trong DbContext
+				.Include(h => h.Movie) // Bắt buộc Include để lấy được Data của phim
+				.Where(h => h.UserId == userId)
+				.OrderByDescending(h => h.LastWatchedAt) // Sắp xếp phim mới xem nhất lên đầu
+				.Select(h => new MovieDto
+				{
+					Id = h.Movie.Id,
+					Title = h.Movie.Title,
+					Slug = h.Movie.Slug,
+					PosterUrl = h.Movie.PosterUrl
+				})
+				.ToListAsync();
+
+			return history;
+		}
+
+		// 2. Hàm lưu/cập nhật lịch sử (Gọi hàm này ở MovieController khi bấm xem phim)
+		public async Task SaveWatchHistoryAsync(string userId, Guid movieId)
+		{
+			// Kiểm tra xem user này đã từng xem bộ phim này chưa
+			var existingHistory = await _context.WatchHistories
+				.FirstOrDefaultAsync(h => h.UserId == userId && h.MovieId == movieId);
+
+			if (existingHistory != null)
+			{
+				// Nếu đã xem rồi, chỉ cần cập nhật lại thời gian xem thành hiện tại
+				existingHistory.LastWatchedAt = DateTime.UtcNow;
+			}
+			else
+			{
+				// Nếu chưa xem bao giờ, tạo record lịch sử mới
+				var newHistory = new WatchHistory
+				{
+					UserId = userId,
+					MovieId = movieId,
+					LastWatchedAt = DateTime.UtcNow
+				};
+				_context.WatchHistories.Add(newHistory);
+			}
+
+			// Lưu thay đổi vào Database
+			await _context.SaveChangesAsync();
 		}
 	}
 }

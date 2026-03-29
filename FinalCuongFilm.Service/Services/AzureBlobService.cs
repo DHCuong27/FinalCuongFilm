@@ -32,6 +32,7 @@ namespace FinalCuongFilm.Service.Services
 			_ = EnsureContainersExistAsync();
 		}
 
+		// Ensure the necessary containers exist with appropriate access levels
 		private async Task EnsureContainersExistAsync()
 		{
 			try
@@ -49,6 +50,7 @@ namespace FinalCuongFilm.Service.Services
 			}
 		}
 
+		// Create container if it doesn't exist, with specified access type
 		private async Task CreateContainerIfNotExistsAsync(string containerName, PublicAccessType accessType = PublicAccessType.None)
 		{
 			try
@@ -73,6 +75,7 @@ namespace FinalCuongFilm.Service.Services
 			}
 		}
 
+		// Upload file to specified container, with optional custom filename
 		public async Task<string> UploadAsync(IFormFile file, string containerName, string? customFileName = null)
 		{
 			if (file == null || file.Length == 0)
@@ -100,6 +103,7 @@ namespace FinalCuongFilm.Service.Services
 			return blobClient.Uri.ToString();
 		}
 
+		// Specialized upload methods for different media types
 		public async Task<string> UploadVideoAsync(IFormFile file, string movieSlug, int? episodeNumber = null)
 		{
 			var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
@@ -114,6 +118,8 @@ namespace FinalCuongFilm.Service.Services
 			return await UploadAsync(file, VIDEO_CONTAINER, fileName);
 		}
 
+
+		// Upload poster with organized folder structure
 		public async Task<string> UploadPosterAsync(IFormFile file, string movieSlug)
 		{
 			var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
@@ -126,6 +132,7 @@ namespace FinalCuongFilm.Service.Services
 			return await UploadAsync(file, POSTER_CONTAINER, fileName);
 		}
 
+		// Upload subtitle with organized folder structure
 		public async Task<string> UploadSubtitleAsync(IFormFile file, string movieSlug, string language)
 		{
 			var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
@@ -138,6 +145,7 @@ namespace FinalCuongFilm.Service.Services
 			return await UploadAsync(file, SUBTITLE_CONTAINER, fileName);
 		}
 
+		// Generate a streaming URL with SAS token for secure access
 		public async Task<string> GetStreamingUrlAsync(string blobUrl, int expiryHours = 24)
 		{
 			try
@@ -183,6 +191,7 @@ namespace FinalCuongFilm.Service.Services
 			}
 		}
 
+		// Delete blob by URL
 		public async Task<bool> DeleteAsync(string blobUrl)
 		{
 			try
@@ -209,11 +218,13 @@ namespace FinalCuongFilm.Service.Services
 			}
 		}
 
+		// Specialized delete methods for different media types (optional, can also use DeleteAsync directly)
 		public Task DeleteFileAsync(string fileUrl)
 		{
 			return DeleteAsync(fileUrl);
 		}
 
+		// Check if blob exists by URL
 		public async Task<bool> ExistsAsync(string blobUrl)
 		{
 			try
@@ -232,6 +243,7 @@ namespace FinalCuongFilm.Service.Services
 			}
 		}
 
+		// Get blob metadata by URL
 		public async Task<BlobMetadata> GetMetadataAsync(string blobUrl)
 		{
 			var uri = new Uri(blobUrl);
@@ -252,6 +264,7 @@ namespace FinalCuongFilm.Service.Services
 			};
 		}
 
+		// Upload a stream with specified filename and folder path, returning the blob URL
 		public async Task<string> UploadStreamAsync(Stream stream, string fileName, string folderPath)
 		{
 			var containerClient = _blobServiceClient.GetBlobContainerClient(VIDEO_CONTAINER);
@@ -275,6 +288,7 @@ namespace FinalCuongFilm.Service.Services
 			return blobClient.Uri.ToString();
 		}
 
+		// Map file extensions to content types for proper handling in Azure Blob Storage
 		private string GetContentType(string fileExtension)
 		{
 			return fileExtension.ToLowerInvariant() switch
@@ -291,8 +305,8 @@ namespace FinalCuongFilm.Service.Services
 				".webp" => "image/webp",
 				".srt" => "text/plain",
 				".vtt" => "text/vtt",
-				".m3u8" => "application/x-mpegURL", // Fix HLS playlist
-				".ts" => "video/MP2T",              // Fix HLS segment
+				".m3u8" => "application/x-mpegURL", //  HLS playlist
+				".ts" => "video/MP2T",              //  HLS segment
 				_ => "application/octet-stream"
 			};
 		}

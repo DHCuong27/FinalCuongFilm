@@ -1,5 +1,5 @@
 ﻿using FinalCuongFilm.ApplicationCore.Entities;
-using FinalCuongFilm.ApplicationCore.Entities.Identity; //  THÊM
+using FinalCuongFilm.ApplicationCore.Entities.Identity; 
 using FinalCuongFilm.Common.DTOs;
 using FinalCuongFilm.DataLayer;
 using FinalCuongFilm.Service.Interfaces;
@@ -18,6 +18,8 @@ namespace FinalCuongFilm.Service.Services
 			_context = context;
 			_userManager = userManager;
 		}
+
+		// Get reviews for a movie, optionally only approved ones
 
 		public async Task<IEnumerable<ReviewDto>> GetMovieReviewsAsync(Guid movieId, bool approvedOnly = true)
 		{

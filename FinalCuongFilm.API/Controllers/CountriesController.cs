@@ -1,4 +1,5 @@
 ﻿using FinalCuongFilm.API.Models.Response;
+using FinalCuongFilm.ApplicationCore.Entities;
 using FinalCuongFilm.Common.DTOs;
 using FinalCuongFilm.Service.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -44,7 +45,7 @@ namespace FinalCuongFilm.API.Controllers
 		{
 			var country = await _countryService.GetByIdAsync(id);
 			if (country == null)
-				return NotFound(ApiResponse<CountryDto>.FailureResult($"Không tìm thấy quốc gia ID={id}", statusCode: 404));
+				return NotFound(ApiResponse<CountryDto>.FailureResult($"No country found ID={id}", statusCode: 404));
 
 			return Ok(ApiResponse<CountryDto>.SuccessResult(country));
 		}
@@ -58,17 +59,17 @@ namespace FinalCuongFilm.API.Controllers
 		public async Task<ActionResult<ApiResponse<CountryDto>>> Create([FromBody] CountryCreateDto dto)
 		{
 			if (!ModelState.IsValid)
-				return BadRequest(ApiResponse<CountryDto>.FailureResult("Dữ liệu không hợp lệ"));
+				return BadRequest(ApiResponse<CountryDto>.FailureResult("Invalid data"));
 
 			try
 			{
 				var created = await _countryService.CreateAsync(dto);
 				return CreatedAtAction(nameof(GetById), new { id = created.Id },
-					ApiResponse<CountryDto>.SuccessResult(created, "Tạo quốc gia thành công", 201));
+					ApiResponse<CountryDto>.SuccessResult(created, "Creating a successful nation", 201));
 			}
 			catch (Exception ex)
 			{
-				return StatusCode(500, ApiResponse<CountryDto>.FailureResult("Lỗi khi tạo quốc gia", ex.Message, 500));
+				return StatusCode(500, ApiResponse<CountryDto>.FailureResult("Error creating a country", ex.Message, 500));
 			}
 		}
 
@@ -80,19 +81,19 @@ namespace FinalCuongFilm.API.Controllers
 		public async Task<ActionResult<ApiResponse<object>>> Update(Guid id, [FromBody] CountryUpdateDto dto)
 		{
 			if (!ModelState.IsValid)
-				return BadRequest(ApiResponse<object>.FailureResult("Dữ liệu không hợp lệ"));
+				return BadRequest(ApiResponse<object>.FailureResult("Invalid data"));
 			if (id != dto.Id)
-				return BadRequest(ApiResponse<object>.FailureResult("ID không khớp"));
+				return BadRequest(ApiResponse<object>.FailureResult("ID not match"));
 
 			var exists = await _countryService.ExistsAsync(id);
 			if (!exists)
-				return NotFound(ApiResponse<object>.FailureResult($"Không tìm thấy quốc gia ID={id}", statusCode: 404));
+				return NotFound(ApiResponse<object>.FailureResult($"No country found ID={id}", statusCode: 404));
 
 			var result = await _countryService.UpdateAsync(dto);
 			if (!result)
-				return StatusCode(500, ApiResponse<object>.FailureResult("Cập nhật thất bại", statusCode: 500));
+				return StatusCode(500, ApiResponse<object>.FailureResult("Update failed", statusCode: 500));
 
-			return Ok(ApiResponse<object>.SuccessResult(new { id }, "Cập nhật quốc gia thành công"));
+			return Ok(ApiResponse<object>.SuccessResult(new { id }, "Country update successful"));
 		}
 
 		/// <summary>
@@ -104,13 +105,13 @@ namespace FinalCuongFilm.API.Controllers
 		{
 			var exists = await _countryService.ExistsAsync(id);
 			if (!exists)
-				return NotFound(ApiResponse<object>.FailureResult($"Không tìm thấy quốc gia ID={id}", statusCode: 404));
+				return NotFound(ApiResponse<object>.FailureResult($"No country found ID={id}", statusCode: 404));
 
 			var result = await _countryService.DeleteAsync(id);
 			if (!result)
-				return StatusCode(500, ApiResponse<object>.FailureResult("Xóa thất bại", statusCode: 500));
+				return StatusCode(500, ApiResponse<object>.FailureResult("Delete failed", statusCode: 500));
 
-			return Ok(ApiResponse<object>.SuccessResult(new { id }, "Xóa quốc gia thành công"));
+			return Ok(ApiResponse<object>.SuccessResult(new { id }, "Country deletion successful"));
 		}
 	}
 }
