@@ -1,242 +1,271 @@
 ﻿@model FinalCuongFilm.Common.DTOs.LanguageCreateDto
 
 @{
-    ViewData["Title"] = "Thêm Ngôn ngữ Mới";
+    ViewData["Title"] = "Create New Language";
 }
 
 <style>
-    /* Netflix-style basic CSS */
-    body {
-        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-        background-color: #f3f3f3;
-        margin: 0;
-        padding: 20px;
+    :root {
+        --primary-color: #2563eb;
+        --secondary-color: #64748b;
+        --success-color: #10b981;
+        --warning-color: #f59e0b;
+        --danger-color: #ef4444;
+        --text-dark: #1e293b;
+        --text-muted: #64748b;
+        --border-color: #e2e8f0;
+        --bg-light: #f8fafc;
+        --bg-white: #ffffff;
+        --radius-md: 8px;
+        --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+        --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1);
     }
 
-    .title-1 {
-        font-size: 2.2rem;
-        font-weight: 500;
-        color: #333;
-        margin-bottom: 20px;
-        letter-spacing: -0.5px;
+    /* Container & Header */
+    .media-container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 24px 20px;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     }
 
-    .card {
-        background-color: #fff;
-        border-radius: 4px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        margin-bottom: 20px;
+    .page-header {
+        margin-bottom: 24px;
     }
 
-    .card-header {
-        padding: 15px 20px;
-        background-color: #fff;
-        border-bottom: 2px solid #e50914;
-        font-weight: 500;
-        font-size: 1.2rem;
-        color: #333;
+    .page-title {
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--text-dark);
+        margin: 0 0 8px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
     }
 
-    .card-body {
-        padding: 20px;
+    /* Form Card */
+    .form-card {
+        background: var(--bg-white);
+        border-radius: var(--radius-md);
+        box-shadow: var(--shadow-sm);
+        border: 1px solid var(--border-color);
+        margin-bottom: 24px;
+        overflow: hidden;
+        max-width: 600px; /* Thu hẹp lại vì form này ít trường */
     }
 
+    .form-card-header {
+        background: var(--bg-light);
+        padding: 16px 24px;
+        border-bottom: 1px solid var(--border-color);
+        font-weight: 600;
+        color: var(--text-dark);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+        .form-card-header i {
+            color: var(--primary-color);
+            font-size: 18px;
+        }
+
+    .form-card-body {
+        padding: 24px;
+    }
+
+    /* Inputs */
     .form-group {
         margin-bottom: 20px;
     }
 
-    .form-control-label {
+    .form-label {
         display: block;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
         margin-bottom: 8px;
-        font-weight: 500;
-        color: #333;
-        font-size: 0.95rem;
+        display: flex;
+        align-items: center;
+        gap: 6px;
     }
+
+        .form-label .req {
+            color: var(--danger-color);
+        }
 
     .form-control {
         width: 100%;
-        padding: 10px 12px;
-        font-size: 1rem;
-        line-height: 1.5;
-        color: #333;
-        background-color: #fff;
-        border: 1px solid #ddd;
-        border-radius: 2px;
-        transition: border-color 0.15s ease-in-out;
+        padding: 10px 14px;
+        font-size: 14px;
+        color: var(--text-dark);
+        background: var(--bg-white);
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        transition: all 0.2s;
         box-sizing: border-box;
-        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        font-family: inherit;
     }
 
         .form-control:focus {
             outline: none;
-            border-color: #e50914;
-            box-shadow: 0 0 0 2px rgba(229, 9, 20, 0.1);
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
         }
 
         .form-control[readonly] {
-            background-color: #f9f9f9;
-            color: #666;
+            background-color: var(--bg-light);
+            color: var(--text-muted);
             cursor: not-allowed;
         }
 
     .text-danger {
-        color: #e50914;
-        font-size: 0.85rem;
-        margin-top: 5px;
+        color: var(--danger-color);
+        font-size: 13px;
+        margin-top: 6px;
         display: block;
     }
 
-    .btn {
-        display: inline-block;
-        font-weight: 400;
-        text-align: center;
-        white-space: nowrap;
-        vertical-align: middle;
-        border: 1px solid transparent;
-        padding: 10px 20px;
-        font-size: 0.95rem;
-        line-height: 1.5;
-        border-radius: 2px;
-        transition: all 0.15s ease-in-out;
-        cursor: pointer;
-        text-decoration: none;
-        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-    }
-
-    .btn-primary {
-        color: #fff;
-        background-color: #e50914;
-        border-color: #e50914;
-    }
-
-        .btn-primary:hover {
-            background-color: #b2070f;
-            border-color: #b2070f;
-        }
-
-    .btn-secondary {
-        color: #333;
-        background-color: #fff;
-        border-color: #ddd;
-    }
-
-        .btn-secondary:hover {
-            background-color: #f5f5f5;
-            border-color: #ccc;
-        }
-
-    .btn-sm {
-        padding: 8px 16px;
-        font-size: 0.85rem;
-    }
-
-    .fa {
-        margin-right: 5px;
-    }
-
-    .row {
-        margin-left: -10px;
-        margin-right: -10px;
-    }
-
-    .col-md-12, .col-md-6 {
-        padding-left: 10px;
-        padding-right: 10px;
-        box-sizing: border-box;
-    }
-
-    .col-md-12 {
-        width: 100%;
-    }
-
-    .col-md-6 {
-        width: 50%;
-    }
-
-    .m-t-30 {
-        margin-top: 30px;
-    }
-
+    /* Badges & Hints */
     .badge-info {
-        display: inline-block;
-        padding: 3px 8px;
-        background-color: #e6f3ff;
-        color: #0066cc;
-        border-radius: 2px;
-        font-size: 0.8rem;
-        margin-left: 10px;
+        font-size: 12px;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-weight: 500;
     }
 
-    /* Auto-generate indicator */
     .auto-generate-hint {
-        font-size: 0.8rem;
-        color: #666;
-        margin-top: 5px;
+        font-size: 12px;
+        color: var(--text-muted);
+        margin-top: 6px;
         font-style: italic;
     }
 
     .generating {
-        background-color: #fff3cd;
-        border-color: #ffc107;
+        background-color: #fef3c7 !important; /* amber-100 */
+        border-color: #f59e0b !important; /* amber-500 */
         transition: background-color 0.3s ease;
+    }
+
+    /* Buttons */
+    .action-bar {
+        display: flex;
+        gap: 12px;
+        padding-top: 8px;
+    }
+
+    .btn-custom {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 20px;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.2s;
+        border: 1px solid transparent;
+        cursor: pointer;
+        font-family: inherit;
+    }
+
+    .btn-primary {
+        background: var(--primary-color);
+        color: white;
+    }
+
+        .btn-primary:hover {
+            background: #1d4ed8;
+            color: white;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+        }
+
+    .btn-back {
+        background: var(--bg-light);
+        color: var(--text-dark);
+        border-color: var(--border-color);
+    }
+
+        .btn-back:hover {
+            background: #e2e8f0;
+            color: var(--text-dark);
+        }
+
+    /* Responsive */
+    @@media (max-width: 768px) {
+        .form-card
+
+    {
+        max-width: 100%;
+    }
+
+    .action-bar {
+        flex-direction: column;
+    }
+
+    .btn-custom {
+        width: 100%;
+        justify-content: center;
+    }
+
     }
 </style>
 
-<div class="row">
-    <div class="col-md-12">
-        <h2 class="title-1">@ViewData["Title"]</h2>
+<div class="media-container">
+    <div class="page-header">
+        <h1 class="page-title">
+            <i class="zmdi zmdi-plus-circle"></i> @ViewData["Title"]
+        </h1>
     </div>
-</div>
 
-<div class="row m-t-30">
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header">
-                <strong>Thông tin ngôn ngữ</strong>
+    <form asp-action="Create" method="post" id="languageForm">
+        <div asp-validation-summary="ModelOnly" class="text-danger" style="margin-bottom: 16px;"></div>
+
+        <div class="form-card">
+            <div class="form-card-header">
+                <i class="zmdi zmdi-globe"></i> Language Details
             </div>
-            <div class="card-body card-block">
-                <form asp-action="Create" method="post" id="languageForm">
-                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-
-                    <div class="form-group">
-                        <label asp-for="Name" class="form-control-label">
-                            Tên ngôn ngữ <span class="text-danger">*</span>
-                            <span class="badge-info" id="nameStatus"></span>
-                        </label>
-                        <input asp-for="Name" class="form-control" id="languageName"
-                               placeholder="Ví dụ: Tiếng Việt, English, 日本語..."
-                               autocomplete="off" />
-                        <span asp-validation-for="Name" class="text-danger"></span>
-                        <div class="auto-generate-hint" id="nameHint">
-                            Nhập tên ngôn ngữ để tự động tạo slug
-                        </div>
+            <div class="form-card-body">
+                <div class="form-group">
+                    <label asp-for="Name" class="form-label">
+                        Language Name <span class="req">*</span>
+                        <span class="badge-info" id="nameStatus"></span>
+                    </label>
+                    <input asp-for="Name" class="form-control" id="languageName"
+                           placeholder="e.g. English, Vietnamese, Japanese..."
+                           autocomplete="off" />
+                    <span asp-validation-for="Name" class="text-danger"></span>
+                    <div class="auto-generate-hint" id="nameHint">
+                        Enter a language name to auto-generate the slug
                     </div>
+                </div>
 
-                    <div class="form-group">
-                        <label asp-for="Slug" class="form-control-label">
-                            Slug <span class="badge-info" id="slugStatus"></span>
-                        </label>
-                        <input asp-for="Slug" class="form-control" id="languageSlug"
-                               placeholder="Tự động tạo từ tên ngôn ngữ..."
-                               readonly />
-                        <span asp-validation-for="Slug" class="text-danger"></span>
-                        <div class="auto-generate-hint" id="slugHint">
-                            Slug sẽ được tự động tạo từ tên ngôn ngữ
-                        </div>
+                <div class="form-group">
+                    <label asp-for="Slug" class="form-label">
+                        URL Slug <span class="badge-info" id="slugStatus"></span>
+                    </label>
+                    <input asp-for="Slug" class="form-control" id="languageSlug"
+                           placeholder="Auto-generated from name..."
+                           readonly />
+                    <span asp-validation-for="Slug" class="text-danger"></span>
+                    <div class="auto-generate-hint" id="slugHint">
+                        The slug is automatically generated from the language name
                     </div>
-
-                    <div class="form-actions form-group">
-                        <button type="submit" class="btn btn-primary btn-sm" id="submitBtn">
-                            <i class="fa fa-save"></i> Lưu
-                        </button>
-                        <a asp-action="Index" class="btn btn-secondary btn-sm">
-                            <i class="fa fa-times"></i> Hủy
-                        </a>
-                    </div>
-                </form>
+                </div>
             </div>
         </div>
-    </div>
+
+        <div class="action-bar">
+            <button type="submit" class="btn-custom btn-primary" id="submitBtn">
+                <i class="zmdi zmdi-check"></i> Save
+            </button>
+            <a asp-action="Index" class="btn-custom btn-back">
+                <i class="zmdi zmdi-close"></i> Cancel
+            </a>
+        </div>
+    </form>
 </div>
 
 @section Scripts {
@@ -270,7 +299,7 @@
 
                 let slug = name.trim()
                     .toLowerCase()
-                    // Remove diacritics (dấu tiếng Việt)
+                    // Remove diacritics
                     .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
                     // Replace đ with d
                     .replace(/đ/g, 'd')
@@ -301,25 +330,25 @@
 
                 // Update status indicators
                 if (name.trim() !== '') {
-                    nameStatus.textContent = '✓ Đang nhập';
-                    nameStatus.style.color = '#28a745';
+                    nameStatus.textContent = '✓ Typing';
+                    nameStatus.style.color = 'var(--success-color)';
 
                     if (newSlug) {
-                        slugStatus.textContent = '✓ Đã tạo';
-                        slugStatus.style.color = '#28a745';
-                        slugHint.textContent = 'Slug đã được tạo tự động từ tên ngôn ngữ';
+                        slugStatus.textContent = '✓ Generated';
+                        slugStatus.style.color = 'var(--success-color)';
+                        slugHint.textContent = 'Slug has been successfully generated.';
 
                         // Preview the URL structure
-                        nameHint.innerHTML = `URL sẽ là: <strong>/languages/${newSlug}</strong>`;
+                        nameHint.innerHTML = `Preview URL: <strong>/languages/${newSlug}</strong>`;
                     } else {
-                        slugStatus.textContent = '⏳ Đang chờ';
-                        slugStatus.style.color = '#ffc107';
+                        slugStatus.textContent = '⏳ Waiting';
+                        slugStatus.style.color = 'var(--warning-color)';
                     }
                 } else {
                     nameStatus.textContent = '';
                     slugStatus.textContent = '';
-                    nameHint.textContent = 'Nhập tên ngôn ngữ để tự động tạo slug';
-                    slugHint.textContent = 'Slug sẽ được tự động tạo từ tên ngôn ngữ';
+                    nameHint.textContent = 'Enter a language name to auto-generate the slug';
+                    slugHint.textContent = 'The slug is automatically generated from the language name';
                 }
 
                 // Remove generating class after a short delay
@@ -343,19 +372,19 @@
             }
 
             // Add tooltip for slug field
-            slugInput.title = 'Slug được tự động tạo từ tên ngôn ngữ, không thể chỉnh sửa thủ công';
+            slugInput.title = 'Auto-generated field. Cannot be edited manually.';
 
             // Prevent manual editing of slug field
             slugInput.addEventListener('keydown', (e) => {
                 e.preventDefault();
                 // Show subtle notification
                 const originalValue = slugHint.textContent;
-                slugHint.textContent = '⚠️ Slug không thể chỉnh sửa thủ công';
-                slugHint.style.color = '#e50914';
+                slugHint.textContent = '⚠️ Slug cannot be edited manually.';
+                slugHint.style.color = 'var(--danger-color)';
 
                 setTimeout(() => {
                     slugHint.textContent = originalValue;
-                    slugHint.style.color = '#666';
+                    slugHint.style.color = 'var(--text-muted)';
                 }, 2000);
             });
 
@@ -365,7 +394,7 @@
 
                 if (!name) {
                     e.preventDefault();
-                    alert('Vui lòng nhập tên ngôn ngữ');
+                    alert('Please enter a language name.');
                     nameInput.focus();
                     return false;
                 }
@@ -376,19 +405,19 @@
                 }
 
                 // Show saving state
-                submitBtn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Đang lưu...';
+                submitBtn.innerHTML = '<i class="zmdi zmdi-spinner zmdi-hc-spin"></i> Saving...';
                 submitBtn.disabled = true;
 
                 return true;
             });
 
             // Add some examples placeholder
-            const examples = ['Tiếng Việt', 'English', '日本語', '中文', 'Français'];
+            const examples = ['English', 'Vietnamese', 'Japanese', 'Chinese', 'French'];
             let exampleIndex = 0;
 
             setInterval(() => {
                 if (nameInput.value === '') {
-                    nameInput.placeholder = `Ví dụ: ${examples[exampleIndex]}`;
+                    nameInput.placeholder = `e.g. ${examples[exampleIndex]}`;
                     exampleIndex = (exampleIndex + 1) % examples.length;
                 }
             }, 2000);

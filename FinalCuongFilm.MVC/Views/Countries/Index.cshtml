@@ -307,16 +307,16 @@
             — Page <span>@Model.PageNumber</span> / <span>@(Model.TotalPages == 0 ? 1 : Model.TotalPages)</span>
         </div>
         <form method="get" asp-action="Index" asp-controller="Countries" class="sort-group">
-            <input type="hidden" name="slug" value="@countrySlug" />
+            <input type="hidden" name="slug" value="@ViewBag.Country" />
+
             <label for="sortBy"><i class="fas fa-sort"></i> Sort by:</label>
             <select name="sortBy" id="sortBy" class="filter-select" onchange="this.form.submit()">
-                <option value="latest" selected="@(Model.SortBy == "latest" ? "selected" : null)">Latest</option>
-                <option value="popular" selected="@(Model.SortBy == "popular" ? "selected" : null)">Most Popular</option>
-                <option value="title" selected="@(Model.SortBy == "title" ? "selected" : null)">Name A-Z</option>
+                <option value="latest" selected="@(Model.SortBy == "latest")">Latest</option>
+                <option value="popular" selected="@(Model.SortBy == "popular")">Most Popular</option>
+                <option value="title" selected="@(Model.SortBy == "title")">Name A-Z</option>
             </select>
         </form>
     </div>
-
     @if (Model.Movies.Any())
     {
         <div class="movies-grid">

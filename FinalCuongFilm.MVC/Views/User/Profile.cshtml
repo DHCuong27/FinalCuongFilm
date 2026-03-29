@@ -1,0 +1,409 @@
+﻿@model FinalCuongFilm.ApplicationCore.Entities.Identity.CuongFilmUser
+
+@{
+    ViewData["Title"] = "My Profile";
+    Layout = "_LayoutUser";
+
+    // Lấy Avatar từ Model, nếu null thì dùng ảnh mặc định
+    var userAvatar = Model?.AvatarUrl ?? "/img/avatar.jpg";
+}
+
+<style>
+    /* NETFLIX THEME & PROFILE STYLES */
+    :root {
+        --nf-bg: #141414;
+        --nf-card-bg: #1f1f1f;
+        --nf-text: #e5e5e5;
+        --nf-text-muted: #8c8c8c;
+        --nf-red: #e50914;
+        --nf-red-hover: #b20710;
+        --nf-border: #333333;
+        --nf-input: #2b2b2b;
+    }
+
+    body {
+        background-color: var(--nf-bg);
+        color: var(--nf-text);
+    }
+
+    /* Bố cục trang */
+    .profile-container {
+        padding-top: 3rem;
+        padding-bottom: 5rem;
+        min-height: 80vh;
+        max-width: 1200px;
+    }
+
+    /* Sidebar Navigation */
+    .nf-sidebar {
+        background-color: transparent;
+        border-radius: 0;
+    }
+
+        .nf-sidebar .list-group-item {
+            background-color: transparent;
+            color: var(--nf-text-muted);
+            border: none;
+            padding: 15px 20px;
+            font-size: 1.1rem;
+            font-weight: 500;
+            border-left: 4px solid transparent;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+            .nf-sidebar .list-group-item:hover {
+                color: #fff;
+                background-color: rgba(255, 255, 255, 0.05);
+            }
+
+            .nf-sidebar .list-group-item.active {
+                background-color: rgba(229, 9, 20, 0.1);
+                color: #fff;
+                border-left: 4px solid var(--nf-red);
+                font-weight: 600;
+            }
+
+        .nf-sidebar i {
+            width: 30px;
+            text-align: center;
+            margin-right: 10px;
+        }
+
+    /* Cấu trúc Card chung */
+    .profile-card {
+        background-color: var(--nf-card-bg);
+        border: 1px solid var(--nf-border);
+        border-radius: 8px;
+        padding: 25px;
+        margin-bottom: 25px;
+    }
+
+    .profile-card-header {
+        font-size: 1.4rem;
+        font-weight: 600;
+        margin-bottom: 20px;
+        color: #fff;
+        border-bottom: 1px solid var(--nf-border);
+        padding-bottom: 15px;
+    }
+
+    /* Form & Input */
+    .nf-form-label {
+        color: var(--nf-text-muted);
+        font-size: 0.9rem;
+        margin-bottom: 8px;
+    }
+
+    .nf-input {
+        background-color: var(--nf-input);
+        color: #fff;
+        border: 1px solid var(--nf-border);
+        border-radius: 4px;
+        padding: 10px 15px;
+    }
+
+        .nf-input:focus {
+            background-color: #333;
+            border-color: var(--nf-text-muted);
+            color: #fff;
+            box-shadow: none;
+        }
+
+    /* Avatar Box */
+    .avatar-wrapper {
+        position: relative;
+        width: 120px;
+        height: 120px;
+        margin-bottom: 15px;
+    }
+
+    .user-avatar-large {
+        width: 100%;
+        height: 100%;
+        border-radius: 8px;
+        object-fit: cover;
+        border: 2px solid var(--nf-border);
+    }
+
+    .avatar-edit-btn {
+        position: absolute;
+        bottom: -10px;
+        right: -10px;
+        background-color: var(--nf-red);
+        color: white;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        border: 2px solid var(--nf-card-bg);
+        transition: transform 0.2s;
+    }
+
+        .avatar-edit-btn:hover {
+            transform: scale(1.1);
+            background-color: var(--nf-red-hover);
+        }
+
+    /* Nút bấm */
+    .btn-nf-primary {
+        background-color: var(--nf-red);
+        color: #fff;
+        border: none;
+        padding: 10px 24px;
+        font-weight: 600;
+        border-radius: 4px;
+        transition: 0.2s;
+    }
+
+        .btn-nf-primary:hover {
+            background-color: var(--nf-red-hover);
+            color: #fff;
+        }
+
+    .btn-nf-secondary {
+        background-color: transparent;
+        color: #fff;
+        border: 1px solid var(--nf-text-muted);
+        padding: 10px 24px;
+        font-weight: 600;
+        border-radius: 4px;
+        transition: 0.2s;
+    }
+
+        .btn-nf-secondary:hover {
+            border-color: #fff;
+            background-color: rgba(255,255,255,0.1);
+        }
+
+    /* Avatar Grid (Trong Modal) */
+    .avatar-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+        gap: 15px;
+        margin-top: 15px;
+    }
+
+    .avatar-option {
+        width: 100%;
+        aspect-ratio: 1;
+        border-radius: 8px;
+        cursor: pointer;
+        border: 3px solid transparent;
+        transition: 0.2s;
+    }
+
+        .avatar-option:hover, .avatar-option.selected {
+            border-color: var(--nf-red);
+            transform: scale(1.05);
+        }
+
+    /* Dark Modal */
+    .modal-content {
+        background-color: var(--nf-card-bg);
+        border: 1px solid var(--nf-border);
+    }
+
+    .modal-header {
+        border-bottom: 1px solid var(--nf-border);
+    }
+
+    .modal-footer {
+        border-top: 1px solid var(--nf-border);
+    }
+
+    .btn-close {
+        filter: invert(1) grayscale(100%) brightness(200%);
+    }
+</style>
+
+<div class="container profile-container">
+    <div class="row">
+
+        <div class="col-12 col-md-3 mb-4">
+            <div class="list-group nf-sidebar">
+                <a asp-controller="User" asp-action="Profile" class="list-group-item active">
+                    <i class="zmdi zmdi-account-circle"></i> Edit Profile
+                </a>
+
+                <a asp-controller="User" asp-action="MyList" class="list-group-item">
+                    <i class="zmdi zmdi-bookmark"></i> My List
+                </a>
+
+                <a asp-controller="User" asp-action="ContinueWatching" class="list-group-item">
+                    <i class="zmdi zmdi-time-restore"></i> Watch History
+                </a>
+
+                <a asp-controller="Auth" asp-action="Logout" class="list-group-item mt-4" style="color: var(--nf-red);">
+                    <i class="zmdi zmdi-sign-in"></i> Sign Out
+                </a>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-9">
+
+            @if (TempData["ProfileSuccess"] != null)
+            {
+                <div class="alert alert-success" style="background-color: rgba(25, 135, 84, 0.2); border-color: #198754; color: #fff;">
+                    <i class="zmdi zmdi-check-circle"></i> @TempData["ProfileSuccess"]
+                </div>
+            }
+            @if (TempData["PasswordSuccess"] != null)
+            {
+                <div class="alert alert-success" style="background-color: rgba(25, 135, 84, 0.2); border-color: #198754; color: #fff;">
+                    <i class="zmdi zmdi-check-circle"></i> @TempData["PasswordSuccess"]
+                </div>
+            }
+            @if (TempData["PasswordError"] != null)
+            {
+                <div class="alert alert-danger" style="background-color: rgba(220, 53, 69, 0.2); border-color: #dc3545; color: #fff;">
+                    <i class="zmdi zmdi-alert-circle"></i> @TempData["PasswordError"]
+                </div>
+            }
+
+            <div class="profile-card d-flex align-items-center gap-4">
+                <div class="avatar-wrapper">
+                    <img src="@userAvatar" id="current-avatar" class="user-avatar-large" alt="User Avatar" />
+                    <div class="avatar-edit-btn" data-bs-toggle="modal" data-bs-target="#avatarModal" title="Change Avatar">
+                        <i class="zmdi zmdi-camera"></i>
+                    </div>
+                </div>
+                <div>
+                    <h4 style="color: #fff; margin-bottom: 5px;">@User.Identity?.Name</h4>
+                    <p style="color: var(--nf-text-muted); margin-bottom: 10px;">Member since Jan 2024</p>
+                    <span class="badge" style="background: rgba(255,255,255,0.1); font-size: 0.9rem; padding: 6px 12px;">
+                        <i class="zmdi zmdi-movie"></i> 42 Movies Watched
+                    </span>
+                </div>
+            </div>
+
+            <div class="profile-card">
+                <h3 class="profile-card-header">Personal Information</h3>
+
+                <form asp-action="UpdateProfile" method="post" class="d-flex align-items-end gap-3 flex-wrap">
+                    <div class="flex-grow-1" style="max-width: 400px;">
+                        <label class="nf-form-label">Full Name</label>
+                        <input type="text" name="FullName" class="form-control nf-input" value="@User.Identity?.Name" placeholder="Enter your full name">
+                    </div>
+                    <button type="submit" class="btn-nf-primary mb-1">Save Name</button>
+                </form>
+            </div>
+
+            <div class="profile-card d-flex justify-content-between align-items-center flex-wrap gap-3">
+                <div>
+                    <h3 class="profile-card-header mb-1" style="border-bottom: none; padding-bottom: 0;">Security</h3>
+                    <p class="text-muted mb-0" style="font-size: 0.95rem;">Update your password to keep your account secure.</p>
+                </div>
+                <button type="button" class="btn-nf-secondary" data-bs-toggle="modal" data-bs-target="#passwordModal">
+                    Change Password
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="avatarModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content text-white">
+            <form asp-action="UpdateAvatar" method="post" enctype="multipart/form-data">
+                <div class="modal-header border-bottom-0 pb-0">
+                    <h5 class="modal-title">Change Avatar</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+
+                    <p class="nf-form-label mb-2">Choose from library</p>
+                    <div class="avatar-grid mb-4">
+                        <img src="~/img/flag/CubaFlag.jpg" class="avatar-option" onclick="selectLibraryAvatar(this)" />
+                        <img src="~/img/flag/EnglandFlag.png" class="avatar-option" onclick="selectLibraryAvatar(this)" />
+                        <img src="~/img/flag/RussiaFlag.png" class="avatar-option" onclick="selectLibraryAvatar(this)" />
+                        <img src="~/img/flag/Vnflag.png" class="avatar-option" onclick="selectLibraryAvatar(this)" />
+                    </div>
+
+                    <input type="hidden" name="SelectedAvatarUrl" id="selectedLibraryAvatar" />
+
+                    <div class="text-center my-3" style="color: var(--nf-text-muted);">OR</div>
+
+                    <p class="nf-form-label mb-2">Upload from device</p>
+                    <input type="file" name="AvatarFile" id="uploadAvatarInput" class="form-control nf-input" accept="image/*" onchange="previewUploadedAvatar(this)">
+                    <small class="text-muted d-block mt-2">Max file size: 2MB. Format: JPG, PNG.</small>
+
+                </div>
+                <div class="modal-footer border-top-0">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn-nf-primary">Save Avatar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="passwordModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content text-white">
+            <form asp-action="ChangePassword" method="post">
+                <div class="modal-header border-bottom-0 pb-0">
+                    <h5 class="modal-title">Change Password</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-4">
+                        <label class="nf-form-label">Current Password</label>
+                        <input type="password" name="OldPassword" class="form-control nf-input" required>
+                    </div>
+                    <div class="mb-4">
+                        <label class="nf-form-label">New Password</label>
+                        <input type="password" name="NewPassword" class="form-control nf-input" required minlength="6">
+                    </div>
+                    <div class="mb-2">
+                        <label class="nf-form-label">Confirm New Password</label>
+                        <input type="password" name="ConfirmPassword" class="form-control nf-input" required minlength="6">
+                    </div>
+                </div>
+                <div class="modal-footer border-top-0">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn-nf-primary">Update Password</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Hàm 1: Xử lý khi bấm vào ảnh có sẵn trong Modal Avatar
+    function selectLibraryAvatar(element) {
+        let options = document.querySelectorAll('.avatar-option');
+        options.forEach(opt => opt.classList.remove('selected'));
+
+        element.classList.add('selected');
+
+        let imgSrc = element.getAttribute('src');
+        document.getElementById('selectedLibraryAvatar').value = imgSrc;
+
+        // Preview ảnh mượt mà
+        document.getElementById('current-avatar').src = imgSrc;
+        document.getElementById('uploadAvatarInput').value = '';
+    }
+
+    // Hàm 2: Xử lý Live Preview khi người dùng Upload ảnh từ máy
+    function previewUploadedAvatar(input) {
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+
+            reader.onload = function (e) {
+                document.getElementById('current-avatar').src = e.target.result;
+            }
+
+            reader.readAsDataURL(input.files[0]);
+
+            // Xóa lựa chọn thư viện ảnh cũ nếu có
+            let options = document.querySelectorAll('.avatar-option');
+            options.forEach(opt => opt.classList.remove('selected'));
+            document.getElementById('selectedLibraryAvatar').value = '';
+        }
+    }
+</script>

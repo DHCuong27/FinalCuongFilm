@@ -31,10 +31,9 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 		{
 			int pageSize = 10;
 
-			// Gọi hàm phân trang vừa viết
 			var pagedData = await _countryService.GetPagedAsync(page, pageSize);
 
-			return View(pagedData); // Đẩy PagedResult ra View
+			return View(pagedData); 
 		}
 
 		// GET: Countries/Details/5

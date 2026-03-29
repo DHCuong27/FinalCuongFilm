@@ -1,4 +1,7 @@
-﻿<!DOCTYPE html>
+﻿@using FinalCuongFilm.ApplicationCore.Entities.Identity
+@using Microsoft.AspNetCore.Identity
+@inject UserManager<CuongFilmUser> UserManager
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -23,6 +26,7 @@
             background-color: #0f0f0f;
             color: #ffffff;
             font-family: 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            padding-top: 80px;
         }
 
         .wrapper {
@@ -184,7 +188,7 @@
                     color: #e50914;
                 }
 
-        /* Search Suggestions */
+        /* Search Suggestions Box */
         .suggestions-box {
             position: absolute;
             top: 100%;
@@ -194,7 +198,8 @@
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 8px;
             margin-top: 8px;
-            overflow: hidden;
+            max-height: 350px;
+            overflow-y: auto;
             z-index: 1000;
             box-shadow: 0 8px 24px rgba(0,0,0,0.5);
             backdrop-filter: blur(10px);
@@ -216,6 +221,7 @@
 
             .suggestion-item:hover {
                 background: rgba(229, 9, 20, 0.1);
+                color: white;
             }
 
             .suggestion-item img {
@@ -225,6 +231,20 @@
                 border-radius: 4px;
                 margin-right: 15px;
             }
+
+        /* Tùy chỉnh thanh cuộn cho mượt */
+        .suggestions-box::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .suggestions-box::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .suggestions-box::-webkit-scrollbar-thumb {
+            background: #e50914;
+            border-radius: 3px;
+        }
 
         /* Mega Menu */
         .mega-menu {
@@ -412,17 +432,12 @@
                     width: 100%;
                 }
         }
-
-        body {
-            padding-top: 80px;
-        }
     </style>
 
     @await RenderSectionAsync("Styles", required: false)
 </head>
 <body>
     <div class="wrapper">
-        <!-- Navigation -->
         <nav class="navbar navbar-expand-lg netflix-nav" id="mainNav">
             <div class="container-fluid px-4">
                 <a class="navbar-brand" href="/">
@@ -484,86 +499,100 @@
                         </li>
 
                         <li class="nav-item">
-                            <a class="nav-link" href="#">Movies</a>
+                            <a asp-controller="Home" asp-action="Browse" asp-route-type="1" class="nav-link">Movies</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="#">TV Series</a>
+                            <a class="nav-link" asp-controller="Home" asp-action="Browse" asp-route-type="2">TV Series</a>
                         </li>
                     </ul>
 
                     <div class="d-flex align-items-center">
-                        <!-- Search -->
+
                         <div class="search-container">
                             <form action="/Search" method="get" id="searchForm">
-                                <input type="text" name="q" id="searchInput" placeholder="Search Movie,Actor..." autocomplete="off" />
+                                <input type="text" name="q" id="searchInput" placeholder="Search Movie..." autocomplete="off" />
                                 <button type="submit"><i class="fas fa-search"></i></button>
                             </form>
+
                             <div id="searchSuggestions" class="suggestions-box" style="display: none;"></div>
                         </div>
 
-                        <!-- User Menu -->
-                        @if (User.Identity?.IsAuthenticated == true)
-                        {
-                            <div class="dropdown ms-3">
-                                <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
-                                    <div class="user-avatar me-2">
-                                        @User.Identity.Name?.Substring(0, 1).ToUpper()
-                                    </div>
-                                    <span class="d-none d-lg-inline">@User.Identity.Name</span>
-                                </a>
-                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                                    <li>
-                                        <a class="dropdown-item" asp-controller="Home" asp-action="Profile">
-                                            <i class="fas fa-user me-2"></i> Profile
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item" asp-controller="Home" asp-action="ContinueWatching">
-                                            <i class="fas fa-play-circle me-2"></i> Continue Watching
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item" asp-controller="Home" asp-action="MyList">
-                                            <i class="fas fa-list me-2"></i> My List
-                                        </a>
-                                    </li>
-                                    <li><hr class="dropdown-divider" /></li>
-                                    @if (User.IsInRole("Admin"))
-                                    {
+                        @{
+                            // Xử lý lấy Avatar của User đang đăng nhập
+                            string avatarUrl = "/img/avatar.jpg"; // Đường dẫn mặc định nếu user chưa có ảnh
+                            if (User.Identity?.IsAuthenticated == true)
+                            {
+                                var currentUser = await UserManager.GetUserAsync(User);
+                                if (currentUser != null && !string.IsNullOrEmpty(currentUser.AvatarUrl))
+                                {
+                                    avatarUrl = currentUser.AvatarUrl;
+                                }
+                            }
+                        }
+
+                        <div class="d-flex align-items-center">
+                            @if (User.Identity?.IsAuthenticated == true)
+                            {
+                                <div class="dropdown ms-3">
+                                    <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" style="text-decoration: none;">
+                                        <img src="@avatarUrl" alt="User Avatar" class="user-avatar me-2" style="width: 35px; height: 35px; border-radius: 50%; object-fit: cover; border: 1px solid rgba(255,255,255,0.2);" />
+                                        <span class="d-none d-lg-inline text-white">@User.Identity.Name</span>
+                                    </a>
+
+                                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown" style="background-color: var(--nf-card-bg, #1f1f1f); border: 1px solid var(--nf-border, #333);">
                                         <li>
-                                            <a class="dropdown-item" asp-area="Admin" asp-controller="Dashboard" asp-action="Index">
-                                                <i class="fas fa-cog me-2"></i> Admin Dashboard
+                                            <a class="dropdown-item text-light" asp-controller="User" asp-action="Profile" onmouseover="this.style.backgroundColor='rgba(255,255,255,0.1)'" onmouseout="this.style.backgroundColor='transparent'">
+                                                <i class="fas fa-user me-2"></i> Profile
                                             </a>
                                         </li>
-                                        <li><hr class="dropdown-divider" /></li>
-                                    }
-                                    <li>
-                                        <form asp-area="Identity" asp-page="/Account/Logout" method="post" class="d-inline">
-                                            <button type="submit" class="dropdown-item">
-                                                <i class="fas fa-sign-out-alt me-2"></i> Logout
-                                            </button>
-                                        </form>
-                                    </li>
-                                </ul>
-                            </div>
-                        }
-                        else
-                        {
-                            <a class="nav-link ms-3" asp-area="Identity" asp-page="/Account/Login">
-                                <i class="fas fa-sign-in-alt me-1"></i> Login
-                            </a>
-                        }
+                                        <li>
+                                            <a class="dropdown-item text-light" asp-controller="User" asp-action="ContinueWatching" onmouseover="this.style.backgroundColor='rgba(255,255,255,0.1)'" onmouseout="this.style.backgroundColor='transparent'">
+                                                <i class="fas fa-play-circle me-2"></i> Continue Watching
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item text-light" asp-controller="User" asp-action="MyList" onmouseover="this.style.backgroundColor='rgba(255,255,255,0.1)'" onmouseout="this.style.backgroundColor='transparent'">
+                                                <i class="fas fa-list me-2"></i> My List
+                                            </a>
+                                        </li>
+                                        <li><hr class="dropdown-divider" style="border-color: #404040;" /></li>
+
+                                        @if (User.IsInRole("Admin"))
+                                        {
+                                            <li>
+                                                <a class="dropdown-item text-light" asp-area="Admin" asp-controller="Dashboard" asp-action="Index" onmouseover="this.style.backgroundColor='rgba(255,255,255,0.1)'" onmouseout="this.style.backgroundColor='transparent'">
+                                                    <i class="fas fa-cog me-2"></i> Admin Dashboard
+                                                </a>
+                                            </li>
+                                            <li><hr class="dropdown-divider" style="border-color: #404040;" /></li>
+                                        }
+
+                                        <li>
+                                            <form asp-area="Identity" asp-page="/Account/Logout" method="post" class="d-inline">
+                                                <button type="submit" class="dropdown-item text-light" onmouseover="this.style.backgroundColor='rgba(229, 9, 20, 0.8)'" onmouseout="this.style.backgroundColor='transparent'">
+                                                    <i class="fas fa-sign-out-alt me-2"></i> Logout
+                                                </button>
+                                            </form>
+                                        </li>
+                                    </ul>
+                                </div>
+                            }
+                            else
+                            {
+                                <a class="nav-link ms-3 text-white" asp-area="Identity" asp-page="/Account/Login">
+                                    <i class="fas fa-sign-in-alt me-1"></i> Login
+                                </a>
+                            }
+                        </div>
                     </div>
                 </div>
             </div>
         </nav>
 
-        <!-- Main Content -->
         <main>
             @RenderBody()
         </main>
 
-        <!-- Netflix Style Footer -->
         <footer class="netflix-footer">
             <div class="footer-content">
                 <div class="social-links">
@@ -632,7 +661,6 @@
         </footer>
     </div>
 
-    <!-- Scripts -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
@@ -671,8 +699,9 @@
 
                             if (data && data.length > 0) {
                                 data.forEach(movie => {
+                                    // ĐÃ FIX 404: Đổi từ /Movie/Detail/${movie.slug} sang /Movie/Detail?slug=${movie.slug}
                                     const item = `
-                                        <a href="/Movie/Detail/${movie.slug}" class="suggestion-item">
+                                        <a href="/Movie/Detail?slug=${movie.slug}" class="suggestion-item">
                                             <img src="${movie.posterUrl || 'https://via.placeholder.com/40x60/2d2d2d/ffffff?text=No+Poster'}"
                                                  alt="${movie.title}"
                                                  onerror="this.src='https://via.placeholder.com/40x60/2d2d2d/ffffff?text=No+Poster'">

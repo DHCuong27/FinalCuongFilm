@@ -285,8 +285,8 @@
                                 <i class="fas fa-photo-video"></i>Manage Media
                             </a>
                         </li>
-                        <li class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "Users" ? "active" : "")">
-                            <a asp-area="Admin" asp-controller="Users" asp-action="Index">
+                        <li class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "User" ? "active" : "")">
+                            <a asp-area="Admin" asp-controller="User" asp-action="Index">
                                 <i class="fas fa-photo-video"></i> Manage Users
                             </a>
                         </li>
@@ -350,6 +350,11 @@
                         <li class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "MediaUpload" ? "active" : "")">
                             <a asp-area="Admin" asp-controller="MediaUpload" asp-action="Index">
                                 <i class="fas fa-photo-video"></i>Manage Media
+                            </a>
+                        </li>
+                        <li class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "User" ? "active" : "")">
+                            <a asp-area="Admin" asp-controller="User" asp-action="Index">
+                                <i class="fas fa-photo-video"></i>Manage User
                             </a>
                         </li>
                     </ul>

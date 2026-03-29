@@ -1,5 +1,319 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model FinalCuongFilm.Common.DTOs.EpisodeUpdateDto
+
 @{
+    ViewData["Title"] = "Edit Episode";
+}
+
+<style>
+    :root {
+        --primary-color: #2563eb;
+        --secondary-color: #64748b;
+        --success-color: #10b981;
+        --warning-color: #f59e0b;
+        --danger-color: #ef4444;
+        --text-dark: #1e293b;
+        --text-muted: #64748b;
+        --border-color: #e2e8f0;
+        --bg-light: #f8fafc;
+        --bg-white: #ffffff;
+        --radius-md: 8px;
+        --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+        --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1);
+    }
+
+    /* Container & Header */
+    .media-container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 24px 20px;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    .page-header {
+        margin-bottom: 24px;
+    }
+
+    .page-title {
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--text-dark);
+        margin: 0 0 8px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .page-subtitle {
+        color: var(--text-muted);
+        font-size: 15px;
+        margin: 0;
+    }
+
+    /* Form Validation Banner */
+    .val-banner {
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        color: var(--danger-color);
+        padding: 16px;
+        border-radius: var(--radius-md);
+        margin-bottom: 24px;
+        font-size: 14px;
+    }
+
+        .val-banner ul {
+            margin: 8px 0 0 16px;
+            padding: 0;
+        }
+
+    /* Card Styling */
+    .form-card {
+        background: var(--bg-white);
+        border-radius: var(--radius-md);
+        box-shadow: var(--shadow-sm);
+        border: 1px solid var(--border-color);
+        margin-bottom: 24px;
+        overflow: hidden;
+    }
+
+    .form-card-header {
+        background: var(--bg-light);
+        padding: 16px 24px;
+        border-bottom: 1px solid var(--border-color);
+        font-weight: 600;
+        color: var(--text-dark);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+        .form-card-header i {
+            color: var(--primary-color);
+            font-size: 18px;
+        }
+
+    .form-card-body {
+        padding: 24px;
+    }
+
+    /* Grid & Inputs */
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+    }
+
+    .form-col-full {
+        grid-column: 1 / -1;
+    }
+
+    .form-group {
+        margin-bottom: 16px;
+    }
+
+    .form-label {
+        display: block;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 8px;
+    }
+
+        .form-label .req {
+            color: var(--danger-color);
+            margin-left: 4px;
+        }
+
+    .form-control {
+        width: 100%;
+        padding: 10px 14px;
+        font-size: 14px;
+        color: var(--text-dark);
+        background: var(--bg-white);
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        transition: all 0.2s;
+        box-sizing: border-box;
+        font-family: inherit;
+    }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .form-control::placeholder {
+            color: #94a3b8;
+        }
+
+    .text-danger {
+        color: var(--danger-color);
+        font-size: 13px;
+        margin-top: 6px;
+        display: block;
+    }
+
+    .form-hint {
+        display: block;
+        font-size: 12px;
+        color: var(--text-muted);
+        margin-top: 6px;
+    }
+
+    /* Buttons */
+    .action-bar {
+        display: flex;
+        gap: 12px;
+        padding-top: 8px;
+    }
+
+    .btn-custom {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 20px;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.2s;
+        border: 1px solid transparent;
+        cursor: pointer;
+        font-family: inherit;
+    }
+
+    .btn-primary {
+        background: var(--primary-color);
+        color: white;
+    }
+
+        .btn-primary:hover {
+            background: #1d4ed8;
+            color: white;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+        }
+
+    .btn-back {
+        background: var(--bg-light);
+        color: var(--text-dark);
+        border-color: var(--border-color);
+    }
+
+        .btn-back:hover {
+            background: #e2e8f0;
+            color: var(--text-dark);
+        }
+
+    /* Responsive */
+    @@media (max-width: 768px) {
+        .form-grid
+
+    {
+        grid-template-columns: 1fr;
+    }
+
+    .action-bar {
+        flex-direction: column;
+    }
+
+    .btn-custom {
+        width: 100%;
+        justify-content: center;
+    }
+
+    }
+</style>
+
+<div class="media-container">
+    <div class="page-header">
+        <h1 class="page-title">
+            <i class="zmdi zmdi-edit"></i> Edit Episode
+        </h1>
+        <p class="page-subtitle">Update metadata and link configuration for this episode</p>
+    </div>
+
+    <form asp-action="Edit" method="post" id="editForm">
+        <input type="hidden" asp-for="Id" />
+
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div class="val-banner">
+                <strong>Please fix the errors below:</strong>
+                <ul>
+                    @foreach (var e in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                    {
+                        <li>@e.ErrorMessage</li>
+                    }
+                </ul>
+            </div>
+        }
+
+        <div class="form-card">
+            <div class="form-card-header">
+                <i class="zmdi zmdi-info-outline"></i> Basic Information
+            </div>
+            <div class="form-card-body">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Episode Number <span class="req">*</span></label>
+                        <input asp-for="EpisodeNumber" class="form-control" type="number" placeholder="e.g. 1" />
+                        <span asp-validation-for="EpisodeNumber" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Title <span class="req">*</span></label>
+                        <input asp-for="Title" class="form-control" placeholder="e.g. Episode 1: The Beginning" />
+                        <span asp-validation-for="Title" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Duration (minutes)</label>
+                        <input asp-for="DurationMinutes" class="form-control" type="number" placeholder="e.g. 120" />
+                        <span asp-validation-for="DurationMinutes" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Air Date</label>
+                        <input asp-for="AirDate" class="form-control" type="date" />
+                        <span asp-validation-for="AirDate" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-card">
+            <div class="form-card-header">
+                <i class="zmdi zmdi-movie"></i> Movie Assignment
+            </div>
+            <div class="form-card-body">
+                <div class="form-grid">
+                    <div class="form-group form-col-full">
+                        <label class="form-label">Associated Movie <span class="req">*</span></label>
+                        <select asp-for="MovieId" class="form-control" asp-items="ViewBag.MovieId">
+                            <option value="">-- Select Movie --</option>
+                        </select>
+                        <span class="form-hint">Ensure this is linked to the correct 'Series' movie.</span>
+                        <span asp-validation-for="MovieId" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="action-bar">
+            <button type="submit" class="btn-custom btn-primary" id="submitBtn">
+                <i class="zmdi zmdi-check"></i> Save Changes
+            </button>
+            <a asp-action="Index" class="btn-custom btn-back">
+                <i class="zmdi zmdi-arrow-left"></i> Cancel
+            </a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }

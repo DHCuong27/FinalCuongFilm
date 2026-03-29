@@ -129,7 +129,6 @@ namespace FinalCuongFilm.MVC.Controllers
 		}
 
 		// GET: /Stream/Progress/{movieId}?episodeId=...
-		// Lấy lại vị trí xem từ Session
 		[HttpGet]
 		public IActionResult GetProgress(Guid movieId, Guid? episodeId = null)
 		{

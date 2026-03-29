@@ -32,7 +32,7 @@
     <Folder Include="Areas\Admin\Data\" />
     <Folder Include="Areas\Admin\Models\" />
     <Folder Include="Areas\Identity\Data\" />
-    <Folder Include="Views\User\" />
+    <Folder Include="wwwroot\uploads\media\" />
   </ItemGroup>
 
   <ItemGroup>

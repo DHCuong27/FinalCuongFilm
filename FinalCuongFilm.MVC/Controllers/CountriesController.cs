@@ -21,15 +21,14 @@ namespace FinalCuongFilm.MVC.Controllers
 		}
 
 		public async Task<IActionResult> Index(
-			string slug,
-			string sortBy = "Latest",
-			int pageNumber = 1,
-			int pageSize = 12)
+		string slug,
+		string sortBy = "latest", // ĐÃ FIX: Chữ 'l' viết thường cho đồng bộ với View
+		int pageNumber = 1,
+		int pageSize = 12)
 		{
 			if (string.IsNullOrEmpty(slug))
 				return NotFound();
 
-		
 			var allCountries = await _countryService.GetAllAsync();
 			var country = allCountries.FirstOrDefault(c => c.Slug == slug);
 
@@ -38,15 +37,13 @@ namespace FinalCuongFilm.MVC.Controllers
 
 			var allGenres = await _genreService.GetAllAsync();
 
-			
 			ViewBag.Genres = allGenres;
 			ViewBag.Countries = allCountries;
-			ViewBag.Country = country.Slug;
+			ViewBag.Country = country.Slug; // Giữ lại Slug để ném ra View
 
 			// Retrieving and filtering movies
 			var allMovies = await _movieService.GetAllAsync();
 
-			
 			var query = allMovies
 					.Where(m => m.IsActive && m.CountryId == country.Id)
 					.AsEnumerable();
@@ -56,7 +53,7 @@ namespace FinalCuongFilm.MVC.Controllers
 				"popular" => query.OrderByDescending(m => m.ViewCount),
 				"year_asc" => query.OrderBy(m => m.ReleaseYear),
 				"title" => query.OrderBy(m => m.Title),
-				_ => query.OrderByDescending(m => m.ReleaseYear) 
+				_ => query.OrderByDescending(m => m.ReleaseYear)
 			};
 
 			var filteredList = query.ToList();
@@ -68,12 +65,12 @@ namespace FinalCuongFilm.MVC.Controllers
 				.Take(pageSize)
 				.ToList();
 
-			// 8.Pack in VM
+			// Pack in VM
 			var vm = new MovieFilterViewModel
 			{
 				Movies = pagedMovies,
-				Genres = allGenres,      
-				Countries = allCountries, 
+				Genres = allGenres,
+				Countries = allCountries,
 				CountryId = country.Id,
 				SortBy = sortBy,
 				PageNumber = pageNumber,

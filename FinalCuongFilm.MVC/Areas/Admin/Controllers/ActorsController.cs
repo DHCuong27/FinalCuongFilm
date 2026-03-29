@@ -19,14 +19,17 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 		}
 
 		// GET: Admin/Actors
-		public async Task<IActionResult> Index(int page = 1)
+		public async Task<IActionResult> Index(string? searchString, int page = 1)
 		{
-			int pageSize = 20; 
+			int pageSize = 10;
 
-			// Gọi hàm phân trang vừa viết
-			var pagedData = await _actorService.GetPagedAsync(page, pageSize);
+			// Gửi chữ tìm kiếm hiện tại sang View bằng ViewBag để hiển thị lại lên ô input
+			ViewBag.CurrentSearch = searchString;
 
-			return View(pagedData); // Đẩy PagedResult ra View
+			// Gọi Service và truyền searchString xuống
+			var pagedData = await _actorService.GetPagedAsync(searchString, page, pageSize);
+
+			return View(pagedData);
 		}
 
 		// GET: Admin/Actors/Details/5

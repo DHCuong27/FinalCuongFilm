@@ -57,6 +57,79 @@
         font-weight: 500;
         text-transform: none;
     }
+
+    /* ===== Thêm CSS cho Search Box ===== */
+    .search-box {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+        .search-box .form-control {
+            width: 250px;
+            border-radius: 20px;
+            padding: 8px 16px;
+            border: 1px solid #e5e5e5;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+            .search-box .form-control:focus {
+                border-color: #007bff;
+                box-shadow: 0 0 5px rgba(0,123,255,0.2);
+                outline: none;
+            }
+
+    .search-btn {
+        background: #007bff;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s;
+        cursor: pointer;
+    }
+
+        .search-btn:hover {
+            background: #0056b3;
+        }
+
+    .clear-btn {
+        background: #6c757d;
+        color: white;
+        text-decoration: none;
+        border-radius: 50%;
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s;
+    }
+
+        .clear-btn:hover {
+            background: #5a6268;
+            color: white;
+        }
+
+    /* Đảm bảo flexbox cho thanh công cụ */
+    .overview-wrap {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+
+    .toolbar-actions {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
 </style>
 
 <div class="row">
@@ -66,9 +139,27 @@
                 @ViewData["Title"]
                 <span class="total-badge">Total: @(Model?.TotalCount ?? 0) actors</span>
             </h2>
-            <a asp-action="Create" class="au-btn au-btn-icon au-btn--blue">
-                <i class="zmdi zmdi-plus"></i>Add New
-            </a>
+
+            <div class="toolbar-actions">
+                <form asp-action="Index" method="get" class="search-box">
+                    <input type="text" name="searchString" value="@ViewBag.CurrentSearch" class="form-control" placeholder="Search by name or slug..." autocomplete="off" />
+
+                    <button type="submit" class="search-btn" title="Search">
+                        <i class="zmdi zmdi-search"></i>
+                    </button>
+
+                    @if (!string.IsNullOrEmpty((string)ViewBag.CurrentSearch))
+                    {
+                        <a asp-action="Index" class="clear-btn" title="Clear search">
+                            <i class="zmdi zmdi-close"></i>
+                        </a>
+                    }
+                </form>
+
+                <a asp-action="Create" class="au-btn au-btn-icon au-btn--blue" style="margin-bottom: 0;">
+                    <i class="zmdi zmdi-plus"></i>Add New
+                </a>
+            </div>
         </div>
     </div>
 </div>
@@ -135,18 +226,18 @@
                     <nav aria-label="Page navigation">
                         <ul class="pagination">
                             <li class="page-item @(!Model.HasPreviousPage ? "disabled" : "")">
-                                <a class="page-link" asp-action="Index" asp-route-page="@(Model.PageIndex - 1)">Previous</a>
+                                <a class="page-link" asp-action="Index" asp-route-page="@(Model.PageIndex - 1)" asp-route-searchString="@ViewBag.CurrentSearch">Previous</a>
                             </li>
 
                             @for (int i = 1; i <= Model.TotalPages; i++)
                             {
                                 <li class="page-item @(i == Model.PageIndex ? "active" : "")">
-                                    <a class="page-link" asp-action="Index" asp-route-page="@i">@i</a>
+                                    <a class="page-link" asp-action="Index" asp-route-page="@i" asp-route-searchString="@ViewBag.CurrentSearch">@i</a>
                                 </li>
                             }
 
                             <li class="page-item @(!Model.HasNextPage ? "disabled" : "")">
-                                <a class="page-link" asp-action="Index" asp-route-page="@(Model.PageIndex + 1)">Next</a>
+                                <a class="page-link" asp-action="Index" asp-route-page="@(Model.PageIndex + 1)" asp-route-searchString="@ViewBag.CurrentSearch">Next</a>
                             </li>
                         </ul>
                     </nav>
@@ -157,7 +248,7 @@
         {
             <div class="alert alert-info mt-3">
                 <i class="zmdi zmdi-info"></i>
-                <strong>Notice:</strong> No actors found. <a asp-action="Create" class="alert-link">Add new actor</a>
+                <strong>Notice:</strong> No actors found matching your search criteria. <a asp-action="Index" class="alert-link">Clear search</a> or <a asp-action="Create" class="alert-link">Add new actor</a>
             </div>
         }
     </div>

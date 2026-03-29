@@ -1,6 +1,7 @@
-﻿using FinalCuongFilm.Datalayer;
+﻿using FinalCuongFilm.ApplicationCore.Entities.Identity;
 using FinalCuongFilm.DataLayer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -11,9 +12,12 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 	public class AdminController : Controller
 	{
 		private readonly CuongFilmDbContext _context;
+		private readonly UserManager<CuongFilmUser> _userManager;
+		
 
-		public AdminController(CuongFilmDbContext context)
+		public AdminController(CuongFilmDbContext context, UserManager<CuongFilmUser> userManager)
 		{
+			_userManager = userManager;
 			_context = context;
 		}
 
@@ -27,7 +31,7 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 			ViewBag.TotalLanguages = await _context.Languages.CountAsync();
 			ViewBag.TotalEpisodes = await _context.Episodes.CountAsync();
 			ViewBag.TotalMediaFiles = await _context.MediaFiles.CountAsync();
-			//ViewBag.TotalUsers = await _context.Users.CountAsync();
+			ViewBag.TotalUsers = await _userManager.Users.CountAsync();
 
 			return View();
 		}

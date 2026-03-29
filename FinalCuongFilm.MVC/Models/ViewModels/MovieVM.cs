@@ -33,12 +33,17 @@ namespace FinalCuongFilm.MVC.Models.ViewModels
 
 	public class HomeFilterViewModel
 	{
-		// Hero sections (không phân trang)
+
 		public List<MovieDto> LatestMovies { get; set; } = new();
 		public List<MovieDto> PopularMovies { get; set; } = new();
-
-		// Section "Tất Cả Phim" có filter + phân trang
 		public MovieFilterViewModel AllMoviesFilter { get; set; } = new();
+
+
+		public List<MovieDto> ContinueWatchingMovies { get; set; } = new();
+
+
+		public List<MovieDto> KoreanMovies { get; set; } = new();
+		public List<MovieDto> ChineseMovies { get; set; } = new();
 	}
 	public class MovieDetailsViewModel
 	{

@@ -240,7 +240,7 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 
 		// POST: Admin/MediaUpload/UploadVideo
 		[HttpPost]
-		[RequestSizeLimit(5_000_000_000)] // 5GB
+		[RequestSizeLimit(5_000_000_000)] 
 		[RequestFormLimits(MultipartBodyLengthLimit = 5_000_000_000)]
 		public async Task<IActionResult> UploadVideo([FromForm] VideoUploadDto dto)
 		{
@@ -263,7 +263,7 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 					}
 				}
 
-				// TRƯỜNG HỢP 1: Nhập link thủ công (Manual URL)
+				//  Nhập link thủ công (Manual URL)
 				if (!string.IsNullOrEmpty(dto.ManualUrl))
 				{
 					string hlsUrl = NormalizeAzureUrl(dto.ManualUrl);
@@ -285,10 +285,10 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 					return Json(new { success = true, message = "Lưu URL thủ công thành công!" });
 				}
 
-				// TRƯỜNG HỢP 2: Upload file Video từ máy tính
+				// Upload file Video từ máy tính
 				else if (dto.VideoFile != null && dto.VideoFile.Length > 0)
 				{
-					// 1. Chỉ upload MP4 gốc lên Azure (Nhanh, mất vài chục giây)
+					// 1. Chỉ upload MP4 gốc lên Azure 
 					string originalUrl = await _azureBlobService.UploadVideoAsync(dto.VideoFile, movie.Slug, dto.EpisodeNumber);
 					long fileSize = dto.VideoFile.Length;
 
@@ -297,7 +297,7 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 					{
 						FileName = dto.VideoFile.FileName,
 						FileUrl = originalUrl,
-						FileType = "video", // Tạm thời để là video thường chờ xử lý
+						FileType = "video", // video gốc chờ xử lý
 						Quality = "Processing...", // Đánh dấu đang xử lý
 						Language = dto.Language ?? "vi",
 						FileSizeBytes = fileSize,
@@ -307,20 +307,19 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 					var createdMedia = await _mediaFileService.CreateAsync(mediaFileDto);
 
 					// 3. ĐẨY JOB VÀO HANGFIRE
-					// Hangfire sẽ nhận tham số và chạy ngầm hàm ProcessVideoBackgroundJobAsync
 					BackgroundJob.Enqueue<IVideoConversionService>(service =>
 						service.ProcessVideoBackgroundJobAsync(createdMedia.Id, originalUrl, movie.Slug, dto.EpisodeNumber ?? 1));
 
 					// 4. Trả về kết quả ngay cho giao diện
-					return Json(new { success = true, message = "Video đã tải lên! Hệ thống đang nén HLS ngầm, bạn có thể đóng thông báo này." });
+					return Json(new { success = true, message = "Video has been uploaded! The system is compressing HLS in the background; you can close this notification." });
 				}
 
-				// TRƯỜNG HỢP 3: Không nhập gì cả
+				
 				else
 				{
-					return Json(new { success = false, message = "Vui lòng chọn file Video hoặc nhập URL." });
+					return Json(new { success = false, message = "Please select the video file." });
 				}
-			} // Đã thêm dấu ngoặc nhọn đóng khối try bị thiếu
+			} 
 			catch (Exception ex)
 			{
 				_logger.LogError(ex, "Error processing video");
@@ -337,7 +336,7 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 				var movie = await _movieService.GetByIdAsync(movieId);
 				if (movie == null)
 				{
-					return Json(new { success = false, message = "Không tìm thấy phim" });
+					return Json(new { success = false, message = "Film not found." });
 				}
 
 				var posterUrl = await _azureBlobService.UploadPosterAsync(posterFile, movie.Slug);

@@ -1,63 +1,265 @@
 ﻿@model IEnumerable<FinalCuongFilm.Common.DTOs.LanguageDto>
 
 @{
-    ViewData["Title"] = "Quản lý Ngôn ngữ";
+    ViewData["Title"] = "Language Management";
+    Layout = "~/Areas/Admin/Views/Shared/_LayoutAdmin.cshtml";
 }
 
-<div class="row">
-    <div class="col-md-12">
-        <div class="overview-wrap">
-            <h2 class="title-1">@ViewData["Title"]</h2>
-            <a asp-action="Create" class="au-btn au-btn-icon au-btn--blue">
-                <i class="zmdi zmdi-plus"></i>Thêm mới
-            </a>
-        </div>
-    </div>
+<style>
+    /* Kế thừa hệ thống CSS Variables chuẩn của Admin */
+    :root {
+        --primary-color: #2563eb;
+        --secondary-color: #f8fafc;
+        --text-main: #1e293b;
+        --text-muted: #64748b;
+        --bg-card: #ffffff;
+        --border-color: #e2e8f0;
+        --radius-md: 8px;
+        --radius-lg: 12px;
+        --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+        --transition: all 0.2s ease;
+    }
+
+    /* ===== Page Header ===== */
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+
+    .page-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--text-main);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .btn-create {
+        background: var(--primary-color);
+        color: white;
+        padding: 10px 20px;
+        border-radius: 6px;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: var(--transition);
+        border: none;
+    }
+
+        .btn-create:hover {
+            background: #1d4ed8;
+            color: white;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+        }
+
+    /* ===== Bảng Dữ Liệu ===== */
+    .table-container {
+        background: var(--bg-card);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-sm);
+        border: 1px solid var(--border-color);
+        overflow: hidden;
+    }
+
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+        .data-table th {
+            background: var(--secondary-color);
+            padding: 16px;
+            text-align: left;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .data-table td {
+            padding: 16px;
+            border-bottom: 1px solid var(--border-color);
+            vertical-align: middle;
+            font-size: 14px;
+            color: var(--text-main);
+        }
+
+        .data-table tbody tr:hover {
+            background-color: #f8fafc;
+        }
+
+    /* Custom Elements */
+    .lang-name {
+        font-weight: 600;
+        font-size: 15px;
+    }
+
+    .lang-slug {
+        background: #f1f5f9;
+        color: #db2777;
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-family: monospace;
+        font-size: 13px;
+        font-weight: 500;
+    }
+
+    /* ===== Nút Hành Động (Icon Buttons) ===== */
+    .action-group {
+        display: flex;
+        gap: 8px;
+        justify-content: flex-start;
+    }
+
+    .action-btn {
+        width: 32px;
+        height: 32px;
+        border-radius: 6px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--secondary-color);
+        color: var(--text-muted);
+        border: 1px solid var(--border-color);
+        transition: var(--transition);
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+        .action-btn:hover {
+            background: #fff;
+        }
+
+        .action-btn.view:hover {
+            color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .action-btn.edit:hover {
+            color: #ca8a04;
+            border-color: #ca8a04;
+        }
+
+        .action-btn.delete:hover {
+            color: #dc2626;
+            border-color: #dc2626;
+            background: #fef2f2;
+        }
+
+    /* ===== Empty State ===== */
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+    }
+
+    .empty-icon {
+        font-size: 64px;
+        color: #cbd5e1;
+        margin-bottom: 16px;
+        display: block;
+    }
+
+    .empty-title {
+        margin: 0 0 8px;
+        color: var(--text-main);
+        font-size: 1.25rem;
+    }
+
+    .empty-desc {
+        color: var(--text-muted);
+        margin-bottom: 24px;
+    }
+
+    /* Responsive */
+    @@media (max-width: 576px) {
+        .page-header
+
+    {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .btn-create {
+        justify-content: center;
+    }
+
+    .data-table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+
+    }
+</style>
+
+<div class="page-header">
+    <h1 class="page-title">
+        <i class="zmdi zmdi-translate"></i> @ViewData["Title"]
+    </h1>
+    <a asp-action="Create" class="btn-create">
+        <i class="zmdi zmdi-plus"></i> Add New
+    </a>
 </div>
 
-<div class="row m-t-30">
-    <div class="col-md-12">
-        @if (Model != null && Model.Any())
-        {
-            <div class="table-responsive table--no-card m-b-40">
-                <table class="table table-borderless table-striped table-earning">
-                    <thead>
-                        <tr>
-                            <th>Tên</th>
-                            <th>Slug</th>
-                            <th>Hành động</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var item in Model)
-                        {
-                            <tr>
-                                <td><strong>@item.Name</strong></td>
-                                <td><code>@item.Slug</code></td>
-                                <td>
-                                    <div class="table-data-feature">
-                                        <a asp-action="Details" asp-route-id="@item.Id" class="item" data-toggle="tooltip" title="Chi tiết">
-                                            <i class="zmdi zmdi-eye"></i>
-                                        </a>
-                                        <a asp-action="Edit" asp-route-id="@item.Id" class="item" data-toggle="tooltip" title="Sửa">
-                                            <i class="zmdi zmdi-edit"></i>
-                                        </a>
-                                        <a asp-action="Delete" asp-route-id="@item.Id" class="item" data-toggle="tooltip" title="Xóa">
-                                            <i class="zmdi zmdi-delete"></i>
-                                        </a>
-                                    </div>
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
-        }
-        else
-        {
-            <div class="alert alert-info">
-                <strong>Thông báo:</strong> Chưa có ngôn ngữ nào. <a asp-action="Create">Thêm ngôn ngữ mới</a>
-            </div>
-        }
-    </div>
+<div class="table-container">
+    @if (Model != null && Model.Any())
+    {
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Language Name</th>
+                    <th>URL Slug</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>
+                            <span class="lang-name">@item.Name</span>
+                        </td>
+                        <td>
+                            <span class="lang-slug">@item.Slug</span>
+                        </td>
+                        <td>
+                            <div class="action-group">
+                                <a asp-action="Details" asp-route-id="@item.Id" class="action-btn view" title="View Details">
+                                    <i class="zmdi zmdi-eye"></i>
+                                </a>
+                                <a asp-action="Edit" asp-route-id="@item.Id" class="action-btn edit" title="Edit">
+                                    <i class="zmdi zmdi-edit"></i>
+                                </a>
+                                <form asp-action="Delete" asp-route-id="@item.Id" method="post" style="margin:0;" onsubmit="return confirm('Are you sure you want to delete the language: @item.Name?');">
+                                    <button type="submit" class="action-btn delete" title="Delete">
+                                        <i class="zmdi zmdi-delete"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <div class="empty-state">
+            <i class="zmdi zmdi-globe-alt empty-icon"></i>
+            <h3 class="empty-title">No Languages Found</h3>
+            <p class="empty-desc">There are currently no languages in the system. Create your first one!</p>
+            <a asp-action="Create" class="btn-create">
+                <i class="zmdi zmdi-plus"></i> Create First Language
+            </a>
+        </div>
+    }
 </div>

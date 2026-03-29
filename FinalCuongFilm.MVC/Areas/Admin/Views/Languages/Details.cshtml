@@ -2,34 +2,205 @@
 
 @{
     ViewData["Title"] = "Chi tiết Ngôn ngữ";
+    Layout = "~/Areas/Admin/Views/Shared/_LayoutAdmin.cshtml";
 }
 
-<div class="row">
-    <div class="col-md-12">
-        <h2 class="title-1">@ViewData["Title"]</h2>
-    </div>
+<style>
+    :root {
+        --primary-color: #2563eb;
+        --text-main: #1e293b;
+        --text-muted: #64748b;
+        --bg-card: #ffffff;
+        --bg-light: #f8fafc;
+        --border-color: #e2e8f0;
+        --radius-lg: 12px;
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        --transition: all 0.2s ease;
+    }
+
+    /* Tiêu đề trang */
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .page-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--text-main);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    /* Container bao bọc Card để không bị bè ra quá to trên màn hình rộng */
+    .detail-container {
+        max-width: 600px;
+    }
+
+    /* Style cho Card thông tin */
+    .detail-card {
+        background: var(--bg-card);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--border-color);
+        overflow: hidden;
+        margin-bottom: 24px;
+    }
+
+    .detail-header {
+        background: var(--bg-light);
+        padding: 16px 24px;
+        border-bottom: 1px solid var(--border-color);
+        font-weight: 600;
+        color: var(--text-main);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .detail-body {
+        padding: 24px;
+    }
+
+    /* Nhóm thông tin (Key - Value) */
+    .info-group {
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 16px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+        .info-group:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+
+    .info-label {
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--text-muted);
+        font-weight: 600;
+        margin-bottom: 6px;
+    }
+
+    .info-value {
+        font-size: 1.1rem;
+        color: var(--text-main);
+        font-weight: 500;
+    }
+
+        .info-value code {
+            background: #f1f5f9;
+            color: #db2777; /* Màu hồng nổi bật cho Slug */
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 0.95rem;
+        }
+
+    /* Cụm nút bấm */
+    .action-buttons {
+        display: flex;
+        gap: 12px;
+    }
+
+    .btn-custom {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 10px 20px;
+        border-radius: 6px;
+        font-size: 0.95rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: var(--transition);
+        border: 1px solid transparent;
+        cursor: pointer;
+    }
+
+    .btn-primary-custom {
+        background: var(--primary-color);
+        color: white;
+    }
+
+        .btn-primary-custom:hover {
+            background: #1d4ed8;
+            color: white;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+        }
+
+    .btn-secondary-custom {
+        background: white;
+        color: var(--text-main);
+        border-color: var(--border-color);
+    }
+
+        .btn-secondary-custom:hover {
+            background: var(--bg-light);
+            color: var(--primary-color);
+            border-color: #cbd5e1;
+        }
+
+    /* Xử lý Responsive (Tự động co giãn trên điện thoại) */
+    @@media (max-width: 576px) {
+        .page-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+        }
+
+        .btn-custom {
+            width: 100%;
+        }
+    }
+</style>
+
+<div class="page-header">
+    <h1 class="page-title">
+        <i class="zmdi zmdi-info-outline"></i> @ViewData["Title"]
+    </h1>
 </div>
 
-<div class="row m-t-30">
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header">
-                <strong>Thông tin ngôn ngữ</strong>
-            </div>
-            <div class="card-body">
-                <dl class="row">
-                    <dt class="col-sm-4">Tên:</dt>
-                    <dd class="col-sm-8">@Model.Name</dd>
-
-                    <dt class="col-sm-4">Slug:</dt>
-                    <dd class="col-sm-8"><code>@Model.Slug</code></dd>
-                </dl>
-            </div>
+<div class="detail-container">
+    <div class="detail-card">
+        <div class="detail-header">
+            <i class="zmdi zmdi-translate"></i> Language information
         </div>
+        <div class="detail-body">
 
-        <div class="m-t-20">
-            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">Chỉnh sửa</a>
-            <a asp-action="Index" class="btn btn-secondary">Quay lại danh sách</a>
+            <div class="info-group">
+                <span class="info-label">Language name</span>
+                <span class="info-value">@Model.Name</span>
+            </div>
+
+            <div class="info-group">
+                <span class="info-label">Slug </span>
+                <span class="info-value"><code>@Model.Slug</code></span>
+            </div>
+
         </div>
+    </div>
+
+    <div class="action-buttons">
+        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn-custom btn-primary-custom">
+            <i class="zmdi zmdi-edit"></i> Edit
+        </a>
+        <a asp-action="Index" class="btn-custom btn-secondary-custom">
+            <i class="zmdi zmdi-arrow-left"></i> Back to list
+        </a>
     </div>
 </div>

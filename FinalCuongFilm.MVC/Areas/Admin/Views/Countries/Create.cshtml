@@ -1,126 +1,284 @@
 ﻿@model FinalCuongFilm.ApplicationCore.Entities.Country
 
 @{
-    ViewData["Title"] = "Create";
+    ViewData["Title"] = "Create New Country";
 }
 
 <style>
-    /* Basic CSS - No colors, just structure */
-    body {
-        font-family: Arial, Helvetica, sans-serif;
-        margin: 20px;
+    :root {
+        --primary-color: #2563eb;
+        --secondary-color: #64748b;
+        --success-color: #10b981;
+        --warning-color: #f59e0b;
+        --danger-color: #ef4444;
+        --text-dark: #1e293b;
+        --text-muted: #64748b;
+        --border-color: #e2e8f0;
+        --bg-light: #f8fafc;
+        --bg-white: #ffffff;
+        --radius-md: 8px;
+        --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+        --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1);
     }
 
-    h1, h4 {
-        margin-bottom: 10px;
+    /* Container & Header */
+    .media-container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 24px 20px;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     }
 
-    hr {
-        margin: 20px 0;
-        border: 1px solid #ddd;
+    .page-header {
+        margin-bottom: 24px;
     }
 
-    .row {
-        margin: 15px 0;
+    .page-title {
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--text-dark);
+        margin: 0 0 8px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
     }
 
-    .col-md-4 {
-        width: 33.33%;
+    /* Form Card */
+    .form-card {
+        background: var(--bg-white);
+        border-radius: var(--radius-md);
+        box-shadow: var(--shadow-sm);
+        border: 1px solid var(--border-color);
+        margin-bottom: 24px;
+        overflow: hidden;
+        max-width: 600px;
     }
 
+    .form-card-header {
+        background: var(--bg-light);
+        padding: 16px 24px;
+        border-bottom: 1px solid var(--border-color);
+        font-weight: 600;
+        color: var(--text-dark);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+        .form-card-header i {
+            color: var(--primary-color);
+            font-size: 18px;
+        }
+
+    .form-card-body {
+        padding: 24px;
+    }
+
+    /* Inputs */
     .form-group {
-        margin-bottom: 15px;
+        margin-bottom: 20px;
     }
 
-    .control-label {
+    .form-label {
         display: block;
-        margin-bottom: 5px;
-        font-weight: bold;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
     }
+
+        .form-label .req {
+            color: var(--danger-color);
+        }
 
     .form-control {
         width: 100%;
-        padding: 8px;
-        border: 1px solid #ccc;
-        border-radius: 4px;
+        padding: 10px 14px;
+        font-size: 14px;
+        color: var(--text-dark);
+        background: var(--bg-white);
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        transition: all 0.2s;
         box-sizing: border-box;
+        font-family: inherit;
     }
 
         .form-control:focus {
-            outline: 1px solid #666;
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
         }
 
-    .btn-primary {
-        padding: 8px 16px;
-        background-color: #333;
-        color: white;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-    }
-
-        .btn-primary:hover {
-            background-color: #555;
+        .form-control[readonly] {
+            background-color: var(--bg-light);
+            color: var(--text-muted);
+            cursor: not-allowed;
         }
 
     .text-danger {
-        color: #ff0000;
-        font-size: 12px;
-        margin-top: 3px;
+        color: var(--danger-color);
+        font-size: 13px;
+        margin-top: 6px;
         display: block;
     }
 
-    a {
-        color: #0066cc;
-        text-decoration: none;
+    /* Badges & Hints */
+    .badge-info {
+        font-size: 12px;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-weight: 500;
     }
 
-        a:hover {
-            text-decoration: underline;
+    .auto-generate-hint {
+        font-size: 12px;
+        color: var(--text-muted);
+        margin-top: 6px;
+        font-style: italic;
+    }
+
+    .generating {
+        background-color: #fef3c7 !important;
+        border-color: #f59e0b !important;
+        transition: background-color 0.3s ease;
+    }
+
+    /* Buttons */
+    .action-bar {
+        display: flex;
+        gap: 12px;
+        padding-top: 8px;
+    }
+
+    .btn-custom {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 20px;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.2s;
+        border: 1px solid transparent;
+        cursor: pointer;
+        font-family: inherit;
+    }
+
+    .btn-primary {
+        background: var(--primary-color);
+        color: white;
+    }
+
+        .btn-primary:hover {
+            background: #1d4ed8;
+            color: white;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
         }
 
-    .auto-generate-badge {
-        font-size: 11px;
-        color: #666;
-        margin-left: 5px;
+    .btn-back {
+        background: var(--bg-light);
+        color: var(--text-dark);
+        border-color: var(--border-color);
+    }
+
+        .btn-back:hover {
+            background: #e2e8f0;
+            color: var(--text-dark);
+        }
+
+    /* Responsive */
+    @@media (max-width: 768px) {
+        .form-card
+
+    {
+        max-width: 100%;
+    }
+
+    .action-bar {
+        flex-direction: column;
+    }
+
+    .btn-custom {
+        width: 100%;
+        justify-content: center;
+    }
+
     }
 </style>
 
-<h1>Create</h1>
-
-<h4>Country</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Create">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group">
-                <label asp-for="Name" class="control-label"></label>
-                <input asp-for="Name" class="form-control" id="countryName" placeholder="Enter country name..." />
-                <span asp-validation-for="Name" class="text-danger"></span>
-                <span class="auto-generate-badge" id="nameIndicator"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="IsoCode" class="control-label"></label>
-                <input asp-for="IsoCode" class="form-control" id="isoCode" placeholder="Auto-generated from name..." readonly />
-                <span asp-validation-for="IsoCode" class="text-danger"></span>
-                <span class="auto-generate-badge" id="isoIndicator">Auto-generating...</span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Slug" class="control-label"></label>
-                <input asp-for="Slug" class="form-control" id="slug" placeholder="Auto-generated from name..." readonly />
-                <span asp-validation-for="Slug" class="text-danger"></span>
-                <span class="auto-generate-badge" id="slugIndicator">Auto-generating...</span>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
-            </div>
-        </form>
+<div class="media-container">
+    <div class="page-header">
+        <h1 class="page-title">
+            <i class="zmdi zmdi-plus-circle"></i> @ViewData["Title"]
+        </h1>
     </div>
-</div>
 
-<div>
-    <a asp-action="Index">Back to List</a>
+    <form asp-action="Create" method="post" id="countryForm">
+        <div asp-validation-summary="ModelOnly" class="text-danger" style="margin-bottom: 16px;"></div>
+
+        <div class="form-card">
+            <div class="form-card-header">
+                <i class="zmdi zmdi-globe"></i> Country Details
+            </div>
+            <div class="form-card-body">
+                <div class="form-group">
+                    <label asp-for="Name" class="form-label">
+                        Country Name <span class="req">*</span>
+                        <span class="badge-info" id="nameStatus"></span>
+                    </label>
+                    <input asp-for="Name" class="form-control" id="countryName"
+                           placeholder="e.g. United States, Japan, Vietnam..."
+                           autocomplete="off" />
+                    <span asp-validation-for="Name" class="text-danger"></span>
+                    <div class="auto-generate-hint" id="nameHint">
+                        Enter a country name to auto-generate the ISO Code and Slug
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="IsoCode" class="form-label">
+                        ISO Code <span class="badge-info" id="isoStatus"></span>
+                    </label>
+                    <input asp-for="IsoCode" class="form-control" id="isoCode"
+                           placeholder="Auto-generated (e.g. USA, JPN)..."
+                           readonly />
+                    <span asp-validation-for="IsoCode" class="text-danger"></span>
+                    <div class="auto-generate-hint" id="isoHint">
+                        3-letter ISO Code is automatically generated
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Slug" class="form-label">
+                        URL Slug <span class="badge-info" id="slugStatus"></span>
+                    </label>
+                    <input asp-for="Slug" class="form-control" id="slug"
+                           placeholder="Auto-generated from name..."
+                           readonly />
+                    <span asp-validation-for="Slug" class="text-danger"></span>
+                    <div class="auto-generate-hint" id="slugHint">
+                        The slug is automatically generated from the country name
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="action-bar">
+            <button type="submit" class="btn-custom btn-primary" id="submitBtn">
+                <i class="zmdi zmdi-check"></i> Save
+            </button>
+            <a asp-action="Index" class="btn-custom btn-back">
+                <i class="zmdi zmdi-close"></i> Cancel
+            </a>
+        </div>
+    </form>
 </div>
 
 @section Scripts {
@@ -135,10 +293,17 @@
             const isoCodeInput = document.getElementById('isoCode');
             const slugInput = document.getElementById('slug');
 
-            // Indicator elements
-            const nameIndicator = document.getElementById('nameIndicator');
-            const isoIndicator = document.getElementById('isoIndicator');
-            const slugIndicator = document.getElementById('slugIndicator');
+            // Status elements
+            const nameStatus = document.getElementById('nameStatus');
+            const isoStatus = document.getElementById('isoStatus');
+            const slugStatus = document.getElementById('slugStatus');
+
+            const nameHint = document.getElementById('nameHint');
+            const isoHint = document.getElementById('isoHint');
+            const slugHint = document.getElementById('slugHint');
+
+            // Submit button
+            const submitBtn = document.getElementById('submitBtn');
 
             // Debounce timer
             let debounceTimer;
@@ -150,9 +315,7 @@
                 }
 
                 // Take first 3 letters, uppercase
-                let iso = name.trim()
-                    .substring(0, 3)
-                    .toUpperCase();
+                let iso = name.trim().substring(0, 3).toUpperCase();
 
                 // Remove diacritics and special characters
                 iso = iso.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
@@ -176,14 +339,10 @@
 
                 let slug = name.trim()
                     .toLowerCase()
-                    // Remove diacritics
                     .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-                    // Replace spaces and special characters with hyphens
                     .replace(/[^a-z0-9\s-]/g, '')
                     .replace(/\s+/g, '-')
-                    // Remove multiple hyphens
                     .replace(/-+/g, '-')
-                    // Remove leading/trailing hyphens
                     .replace(/^-+|-+$/g, '');
 
                 return slug;
@@ -192,6 +351,10 @@
             // Update fields in real-time
             function updateFields() {
                 const name = nameInput.value;
+
+                // Add generating class for visual feedback
+                isoCodeInput.classList.add('generating');
+                slugInput.classList.add('generating');
 
                 // Generate new values
                 const newIsoCode = generateIsoCode(name);
@@ -203,28 +366,37 @@
 
                 // Update indicators
                 if (name.trim() !== '') {
-                    nameIndicator.textContent = '✓ Auto-generating';
+                    nameStatus.textContent = '✓ Typing';
+                    nameStatus.style.color = 'var(--success-color)';
+
+                    if (newIsoCode) {
+                        isoStatus.textContent = '✓ Generated';
+                        isoStatus.style.color = 'var(--success-color)';
+                    }
+
+                    if (newSlug) {
+                        slugStatus.textContent = '✓ Generated';
+                        slugStatus.style.color = 'var(--success-color)';
+                        nameHint.innerHTML = `Preview URL: <strong>/countries/${newSlug}</strong>`;
+                    }
                 } else {
-                    nameIndicator.textContent = '';
+                    nameStatus.textContent = '';
+                    isoStatus.textContent = '';
+                    slugStatus.textContent = '';
+                    nameHint.textContent = 'Enter a country name to auto-generate the ISO Code and Slug';
                 }
 
-                if (newIsoCode) {
-                    isoIndicator.textContent = '✓ Generated';
-                } else {
-                    isoIndicator.textContent = 'Enter name to generate';
-                }
-
-                if (newSlug) {
-                    slugIndicator.textContent = '✓ Generated';
-                } else {
-                    slugIndicator.textContent = 'Enter name to generate';
-                }
+                // Remove generating class after a short delay
+                setTimeout(() => {
+                    isoCodeInput.classList.remove('generating');
+                    slugInput.classList.remove('generating');
+                }, 300);
             }
 
             // Debounced update function
             function debouncedUpdate() {
                 clearTimeout(debounceTimer);
-                debounceTimer = setTimeout(updateFields, 100);
+                debounceTimer = setTimeout(updateFields, 150);
             }
 
             // Event listeners
@@ -235,31 +407,37 @@
                 updateFields();
             }
 
-            // Add tooltips for readonly fields
-            isoCodeInput.title = 'Auto-generated from country name';
-            slugInput.title = 'Auto-generated from country name';
+            // Prevent manual editing and show hints
+            function preventManualEdit(inputElement, hintElement, originalHintText) {
+                inputElement.addEventListener('keydown', (e) => {
+                    e.preventDefault();
+                    hintElement.textContent = '⚠️ This field is auto-generated and cannot be edited.';
+                    hintElement.style.color = 'var(--danger-color)';
 
-            // Prevent manual editing of readonly fields
-            isoCodeInput.addEventListener('keydown', (e) => {
-                e.preventDefault();
-                alert('IsoCode is auto-generated from the country name');
-            });
+                    setTimeout(() => {
+                        hintElement.textContent = originalHintText;
+                        hintElement.style.color = 'var(--text-muted)';
+                    }, 2500);
+                });
+            }
 
-            slugInput.addEventListener('keydown', (e) => {
-                e.preventDefault();
-                alert('Slug is auto-generated from the country name');
-            });
+            preventManualEdit(isoCodeInput, isoHint, '3-letter ISO Code is automatically generated');
+            preventManualEdit(slugInput, slugHint, 'The slug is automatically generated from the country name');
 
             // Form validation
-            document.querySelector('form').addEventListener('submit', (e) => {
+            document.getElementById('countryForm').addEventListener('submit', (e) => {
                 const name = nameInput.value.trim();
 
                 if (!name) {
                     e.preventDefault();
-                    alert('Please enter a country name');
+                    alert('Please enter a country name.');
                     nameInput.focus();
                     return false;
                 }
+
+                // Show saving state
+                submitBtn.innerHTML = '<i class="zmdi zmdi-spinner zmdi-hc-spin"></i> Saving...';
+                submitBtn.disabled = true;
 
                 return true;
             });

@@ -43,14 +43,14 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 		// GET: Admin/Movies
 		public async Task<IActionResult> Index(int page = 1)
 		{
-			int pageSize = 10; // Đặt số lượng phim hiển thị trên 1 trang (có thể đổi thành 5 hoặc 20)
+			int pageSize = 10; 
 
-			// Gọi hàm phân trang vừa viết
 			var pagedData = await _movieService.GetPagedAsync(page, pageSize);
 
-			return View(pagedData); // Đẩy PagedResult ra View
+			return View(pagedData); 
 		}
 
+		// POST: Admin/Movies/ImportFromTmdb
 		[HttpPost]
 		[ValidateAntiForgeryToken]
 		public async Task<IActionResult> ImportFromTmdb([FromForm] string title)

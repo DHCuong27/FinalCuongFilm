@@ -1,0 +1,214 @@
+﻿@model IEnumerable<FinalCuongFilm.Common.DTOs.MovieDto>
+@{
+    Layout = "_LayoutUser";
+    ViewData["Title"] = "My List";
+}
+
+<style>
+    /* NETFLIX THEME CHUNG (Đồng bộ với Profile) */
+    :root {
+        --nf-bg: #141414;
+        --nf-card-bg: #1f1f1f;
+        --nf-text: #e5e5e5;
+        --nf-text-muted: #8c8c8c;
+        --nf-red: #e50914;
+        --nf-red-hover: #b20710;
+        --nf-border: #333333;
+    }
+
+    body {
+        background-color: var(--nf-bg);
+        color: var(--nf-text);
+    }
+
+    .profile-container {
+        padding-top: 3rem;
+        padding-bottom: 5rem;
+        min-height: 80vh;
+        max-width: 1200px;
+    }
+
+    /* Sidebar Navigation (Đồng bộ với Profile) */
+    .nf-sidebar {
+        background-color: transparent;
+        border-radius: 0;
+    }
+
+        .nf-sidebar .list-group-item {
+            background-color: transparent;
+            color: var(--nf-text-muted);
+            border: none;
+            padding: 15px 20px;
+            font-size: 1.1rem;
+            font-weight: 500;
+            border-left: 4px solid transparent;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+            .nf-sidebar .list-group-item:hover {
+                color: #fff;
+                background-color: rgba(255, 255, 255, 0.05);
+            }
+
+            .nf-sidebar .list-group-item.active {
+                background-color: rgba(229, 9, 20, 0.1);
+                color: #fff;
+                border-left: 4px solid var(--nf-red);
+                font-weight: 600;
+            }
+
+        .nf-sidebar i {
+            width: 30px;
+            text-align: center;
+            margin-right: 10px;
+        }
+
+    /* Cấu trúc Card chung (Đồng bộ với Profile) */
+    .profile-card {
+        background-color: var(--nf-card-bg);
+        border: 1px solid var(--nf-border);
+        border-radius: 8px;
+        padding: 25px;
+        min-height: 500px;
+    }
+
+    .profile-card-header {
+        font-size: 1.4rem;
+        font-weight: 600;
+        margin-bottom: 20px;
+        color: #fff;
+        border-bottom: 1px solid var(--nf-border);
+        padding-bottom: 15px;
+    }
+
+    /* Movie Card Styles (Riêng cho My List) */
+    .nf-movie-card {
+        position: relative;
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        cursor: pointer;
+        border-radius: 4px;
+        overflow: hidden;
+    }
+
+        .nf-movie-card:hover {
+            transform: scale(1.08);
+            z-index: 10;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.8);
+        }
+
+    .nf-poster {
+        width: 100%;
+        aspect-ratio: 2/3;
+        object-fit: cover;
+        border-radius: 4px;
+    }
+
+    .nf-movie-title {
+        color: #fff;
+        font-size: 1rem;
+        font-weight: 600;
+        margin-top: 8px;
+        margin-bottom: 2px;
+        text-decoration: none;
+        display: block;
+    }
+
+        .nf-movie-title:hover {
+            text-decoration: underline;
+            color: #fff;
+        }
+
+    /* Nút xóa khỏi danh sách */
+    .btn-remove-fav {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: rgba(0,0,0,0.7);
+        color: white;
+        border: 1px solid rgba(255,255,255,0.2);
+        border-radius: 50%;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: 0.2s;
+    }
+
+    .nf-movie-card:hover .btn-remove-fav {
+        opacity: 1;
+    }
+
+    .btn-remove-fav:hover {
+        background: var(--nf-red);
+        border-color: var(--nf-red);
+    }
+</style>
+
+<div class="container profile-container">
+    <div class="row">
+
+        <div class="col-12 col-md-3 mb-4">
+            <div class="list-group nf-sidebar">
+                <a asp-controller="User" asp-action="Profile" class="list-group-item">
+                    <i class="zmdi zmdi-account-circle"></i> Edit Profile
+                </a>
+
+                <a asp-controller="User" asp-action="MyList" class="list-group-item active">
+                    <i class="zmdi zmdi-bookmark"></i> My List
+                </a>
+
+                <a asp-controller="User" asp-action="ContinueWatching" class="list-group-item">
+                    <i class="zmdi zmdi-time-restore"></i> Watch History
+                </a>
+
+                <a asp-controller="Auth" asp-action="Logout" class="list-group-item mt-4" style="color: var(--nf-red);">
+                    <i class="zmdi zmdi-sign-in"></i> Sign Out
+                </a>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-9">
+            <div class="profile-card">
+                <h3 class="profile-card-header">@ViewData["Title"]</h3>
+
+                <div class="row g-3">
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var item in Model)
+                        {
+                            <div class="col-6 col-md-4 col-lg-3">
+                                <div class="nf-movie-card">
+                                    <a asp-controller="Movie" asp-action="Details" asp-route-slug="@item.Slug">
+                                        <img src="@item.PosterUrl" alt="@item.Title" class="nf-poster" />
+                                    </a>
+
+                                    <form asp-controller="Favorite" asp-action="Remove" asp-route-movieId="@item.Id" method="post" onsubmit="return confirm('Remove from My List?');">
+                                        <button type="submit" class="btn-remove-fav" title="Remove from My List">
+                                            <i class="zmdi zmdi-close"></i>
+                                        </button>
+                                    </form>
+
+                                    <a asp-controller="Movie" asp-action="Details" asp-route-slug="@item.Slug" class="nf-movie-title text-truncate">
+                                        @item.Title
+                                    </a>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="col-12 text-center py-5">
+                            <i class="zmdi zmdi-bookmark-outline" style="font-size: 4rem; color: var(--nf-border);"></i>
+                            <h4 class="mt-3" style="color: var(--nf-text);">Your List is empty</h4>
+                            <p style="color: var(--nf-text-muted);">Add shows and movies that you want to watch later.</p>
+                            <a asp-controller="Home" asp-action="Index" class="btn btn-outline-light mt-3" style="border-color: var(--nf-border);">Explore Movies</a>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

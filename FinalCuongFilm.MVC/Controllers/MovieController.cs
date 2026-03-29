@@ -149,8 +149,6 @@ namespace FinalCuongFilm.MVC.Controllers
 			try
 			{
 				// 1. Lấy thông tin phim
-				// Lưu ý: Nếu Service của bạn có hàm GetBySlugAsync(slug) thì nên dùng, 
-				// dùng GetAllAsync() rồi lọc sẽ hơi chậm nếu web có hàng vạn phim.
 				var allMovies = await _movieService.GetAllAsync();
 				var movie = allMovies.FirstOrDefault(m => string.Equals(m.Slug, slug, StringComparison.OrdinalIgnoreCase) && m.IsActive);
 				if (movie == null) return RedirectToAction("Index", "Home");
@@ -232,6 +230,23 @@ namespace FinalCuongFilm.MVC.Controllers
 				}
 
 				var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+				// ==========================================
+				// FIX Ở ĐÂY: LƯU LỊCH SỬ XEM PHIM CÓ TRY CATCH
+				// ==========================================
+				if (userId != null)
+				{
+					try
+					{
+						// LƯU Ý: Phải đảm bảo bạn đã Inject _favoriteService vào MovieController
+						await _favoriteService.SaveWatchHistoryAsync(userId, movie.Id);
+					}
+					catch (Exception ex)
+					{
+						// Nếu lỗi (ví dụ chưa có cột DB, sai ID,...) thì chỉ ghi log, KHÔNG văng lỗi chết trang xem phim
+						_logger.LogWarning(ex, "Không thể lưu lịch sử xem phim cho User {UserId}, Movie {MovieId}", userId, movie.Id);
+					}
+				}
 
 				// Đổ dữ liệu đồng loạt ra ViewBag để tối ưu thời gian chờ
 				ViewBag.Genres = await _genreService.GetAllAsync();

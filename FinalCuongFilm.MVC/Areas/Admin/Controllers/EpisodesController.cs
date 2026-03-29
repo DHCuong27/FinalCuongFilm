@@ -27,23 +27,27 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 		}
 
 		// GET: Admin/Episodes
-		public async Task<IActionResult> Index(Guid? movieId)
+		public async Task<IActionResult> Index(Guid? movieId, int page = 1)
 		{
-			IEnumerable<EpisodeDto> episodes;
+			int pageSize = 10;
+
+			PagedResult<EpisodeDto> result;
 
 			if (movieId.HasValue)
 			{
-				episodes = await _episodeService.GetByMovieIdAsync(movieId.Value);
+				
+				result = await _episodeService.GetPagedAsync(movieId.Value.ToString(), page, pageSize);
+
 				var movie = await _movieService.GetByIdAsync(movieId.Value);
 				ViewBag.MovieTitle = movie?.Title;
 				ViewBag.MovieId = movieId.Value;
 			}
 			else
 			{
-				episodes = await _episodeService.GetAllAsync();
+				result = await _episodeService.GetPagedAsync(null, page, pageSize);
 			}
 
-			return View(episodes);
+			return View(result); // 
 		}
 
 		// GET: Admin/Episodes/Details/5

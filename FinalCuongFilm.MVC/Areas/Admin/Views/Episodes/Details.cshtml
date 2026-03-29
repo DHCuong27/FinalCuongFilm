@@ -1,62 +1,253 @@
 ﻿@model FinalCuongFilm.Common.DTOs.EpisodeDto
 
 @{
-    ViewData["Title"] = "Chi tiết Episode";
+    ViewData["Title"] = "Episode Details";
 }
 
-<div class="row">
-    <div class="col-md-12">
-        <h2 class="title-1">Chi tiết Episode</h2>
+<style>
+    :root {
+        --primary-color: #2563eb;
+        --secondary-color: #64748b;
+        --success-color: #10b981;
+        --warning-color: #f59e0b;
+        --danger-color: #ef4444;
+        --text-dark: #1e293b;
+        --text-muted: #64748b;
+        --border-color: #e2e8f0;
+        --bg-light: #f8fafc;
+        --bg-white: #ffffff;
+        --radius-md: 8px;
+        --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+        --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1);
+    }
+
+    /* Container & Header */
+    .media-container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 24px 20px;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+
+    .page-title {
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--text-dark);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    /* Details Card */
+    .details-card {
+        background: var(--bg-white);
+        border-radius: var(--radius-md);
+        box-shadow: var(--shadow-sm);
+        border: 1px solid var(--border-color);
+        padding: 0;
+        margin-bottom: 24px;
+        overflow: hidden;
+    }
+
+    .detail-row {
+        display: flex;
+        padding: 16px 24px;
+        border-bottom: 1px solid var(--border-color);
+        transition: background-color 0.2s;
+    }
+
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+
+        .detail-row:hover {
+            background: var(--bg-light);
+        }
+
+    .detail-label {
+        width: 30%;
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .detail-value {
+        width: 70%;
+        font-size: 15px;
+        color: var(--text-dark);
+        font-weight: 500;
+    }
+
+    /* Badges */
+    .badge-status {
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        display: inline-block;
+    }
+
+    .badge-active {
+        background: #dcfce7;
+        color: #166534;
+        border: 1px solid #bbf7d0;
+    }
+
+    .badge-inactive {
+        background: #f1f5f9;
+        color: #475569;
+        border: 1px solid #e2e8f0;
+    }
+
+    /* Buttons */
+    .action-bar {
+        display: flex;
+        gap: 12px;
+    }
+
+    .btn-custom {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 20px;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.2s;
+        border: 1px solid transparent;
+        cursor: pointer;
+    }
+
+    .btn-edit {
+        background: var(--primary-color);
+        color: white;
+    }
+
+        .btn-edit:hover {
+            background: #1d4ed8;
+            color: white;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+        }
+
+    .btn-back {
+        background: var(--bg-light);
+        color: var(--text-dark);
+        border-color: var(--border-color);
+    }
+
+        .btn-back:hover {
+            background: #e2e8f0;
+            color: var(--text-dark);
+        }
+
+    /* Responsive */
+    @@media (max-width: 768px) {
+        .detail-row
+
+    {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .detail-label, .detail-value {
+        width: 100%;
+    }
+
+    .action-bar {
+        flex-direction: column;
+    }
+
+    .btn-custom {
+        width: 100%;
+        justify-content: center;
+    }
+
+    }
+</style>
+
+<div class="media-container">
+    <div class="page-header">
+        <h1 class="page-title">
+            <i class="zmdi zmdi-info-outline" style="color: var(--primary-color);"></i> @ViewData["Title"]
+        </h1>
     </div>
-</div>
 
-<div class="row m-t-30">
-    <div class="col-md-8">
-        <div class="card">
-            <div class="card-header">
-                <strong>Thông tin Episode</strong>
-            </div>
-            <div class="card-body">
-                <dl class="row">
-                    <dt class="col-sm-3">Số tập:</dt>
-                    <dd class="col-sm-9"><strong class="text-primary">Tập @Model.EpisodeNumber</strong></dd>
-
-                    <dt class="col-sm-3">Tiêu đề:</dt>
-                    <dd class="col-sm-9">@Model.Title</dd>
-
-                    <dt class="col-sm-3">Mô tả:</dt>
-                    <dd class="col-sm-9">@(Model.Description ?? "Chưa có mô tả")</dd>
-
-                    <dt class="col-sm-3">Thời lượng:</dt>
-                    <dd class="col-sm-9">@Model.DurationMinutes phút</dd>
-
-                    @if (Model.AirDate.HasValue)
-                    {
-                        <dt class="col-sm-3">Ngày phát sóng:</dt>
-                        <dd class="col-sm-9">@Model.AirDate.Value.ToString("dd/MM/yyyy")</dd>
-                    }
-
-                    <dt class="col-sm-3">Trạng thái:</dt>
-                    <dd class="col-sm-9">
-                        @if (Model.IsActive)
-                        {
-                            <span class="badge badge-success">Active</span>
-                        }
-                        else
-                        {
-                            <span class="badge badge-secondary">Inactive</span>
-                        }
-                    </dd>
-
-                    <dt class="col-sm-3">Lượt xem:</dt>
-                    <dd class="col-sm-9">@Model.ViewCount.ToString("N0")</dd>
-                </dl>
+    <div class="details-card">
+        <div class="detail-row">
+            <div class="detail-label">Episode Number</div>
+            <div class="detail-value">
+                <span style="color: var(--primary-color); font-weight: 700;">
+                    Episode @Model.EpisodeNumber
+                </span>
             </div>
         </div>
 
-        <div class="m-t-20">
-            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">Chỉnh sửa</a>
-            <a asp-action="Index" class="btn btn-secondary">Quay lại danh sách</a>
+        <div class="detail-row">
+            <div class="detail-label">Title</div>
+            <div class="detail-value">@Model.Title</div>
         </div>
+
+        <div class="detail-row">
+            <div class="detail-label">Description</div>
+            <div class="detail-value" style="color: @(string.IsNullOrEmpty(Model.Description) ? "var(--text-muted)" : "var(--text-dark)"); font-style: @(string.IsNullOrEmpty(Model.Description) ? "italic" : "normal");">
+                @(string.IsNullOrEmpty(Model.Description) ? "No description available" : Model.Description)
+            </div>
+        </div>
+
+        <div class="detail-row">
+            <div class="detail-label">Duration</div>
+            <div class="detail-value">@Model.DurationMinutes minutes</div>
+        </div>
+
+        @if (Model.AirDate.HasValue)
+        {
+            <div class="detail-row">
+                <div class="detail-label">Air Date</div>
+                <div class="detail-value">@Model.AirDate.Value.ToString("MM/dd/yyyy")</div>
+            </div>
+        }
+
+        <div class="detail-row">
+            <div class="detail-label">Status</div>
+            <div class="detail-value">
+                @if (Model.IsActive)
+                {
+                    <span class="badge-status badge-active">Active</span>
+                }
+                else
+                {
+                    <span class="badge-status badge-inactive">Inactive</span>
+                }
+            </div>
+        </div>
+
+        <div class="detail-row">
+            <div class="detail-label">View Count</div>
+            <div class="detail-value" style="font-family: monospace; font-size: 16px;">
+                @Model.ViewCount.ToString("N0")
+            </div>
+        </div>
+    </div>
+
+    <div class="action-bar">
+        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn-custom btn-edit">
+            <i class="zmdi zmdi-edit"></i> Edit
+        </a>
+        <a asp-action="Index" class="btn-custom btn-back">
+            <i class="zmdi zmdi-arrow-left"></i> Back to List
+        </a>
     </div>
 </div>

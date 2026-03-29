@@ -395,9 +395,9 @@
             <h3 class="card-title">
                 <i class="zmdi zmdi-cloud-upload"></i> Upload Video to Azure
             </h3>
-            <button type="button" class="btn btn-info" onclick="testConnection()">
+            @* <button type="button" class="btn btn-info" onclick="testConnection()">
                 <i class="zmdi zmdi-check-circle"></i> Test Connection
-            </button>
+            </button> *@
         </div>
 
         <div class="card-body">
@@ -439,7 +439,7 @@
                     </div>
                 </div>
 
-                <div class="form-group">
+                @* <div class="form-group">
                     <label class="form-label">Upload Method:</label>
                     <div class="segmented-control">
                         <input type="radio" name="uploadMethod" id="uploadFile" class="segment-input" checked>
@@ -448,7 +448,7 @@
                         <input type="radio" name="uploadMethod" id="uploadUrl" class="segment-input">
                         <label for="uploadUrl" class="segment-label">Provide URL</label>
                     </div>
-                </div>
+                </div> *@
 
                 <div id="fileUploadSection" class="form-group">
                     <label class="form-label">Select Video File <span class="required-star">*</span></label>
@@ -469,10 +469,10 @@
                     </div>
                 </div>
 
-                <div id="urlUploadSection" class="form-group" style="display: none;">
+                @* <div id="urlUploadSection" class="form-group" style="display: none;">
                     <label for="manualUrl" class="form-label">Video URL <span class="required-star">*</span></label>
                     <input type="url" class="form-control" id="manualUrl" placeholder="https://...blob.core.windows.net/videos/movie.mp4">
-                </div>
+                </div> *@
 
                 <div class="action-group">
                     <button type="submit" class="btn btn-primary" id="uploadBtn">

@@ -1,7 +1,7 @@
 ﻿@model IEnumerable<FinalCuongFilm.Common.DTOs.MediaFileDto>
 
 @{
-    ViewData["Title"] = "Quản lý Media Files";
+    ViewData["Title"] = "Media Files Management";
     var movieId = ViewBag.MovieId as Guid?;
     var episodeId = ViewBag.EpisodeId as Guid?;
     var movieTitle = ViewBag.MovieTitle as string;
@@ -113,7 +113,7 @@
         border-radius: var(--radius-md);
         box-shadow: var(--shadow-sm);
         border: 1px solid var(--border-color);
-        overflow-x: auto; /* Giúp bảng vuốt ngang được trên mobile */
+        overflow-x: auto;
     }
 
     .data-table {
@@ -166,7 +166,7 @@
         max-width: 250px;
         white-space: nowrap;
         overflow: hidden;
-        text-overflow: ellipsis; /* Cắt ngắn URL dài */
+        text-overflow: ellipsis;
         display: block;
         font-family: monospace;
         background: var(--bg-light);
@@ -304,16 +304,16 @@
             </h1>
             @if (!string.IsNullOrEmpty(episodeTitle))
             {
-                <div class="page-subtitle">Tập phim: @episodeTitle</div>
+                <div class="page-subtitle">Episode: @episodeTitle</div>
             }
             else if (!string.IsNullOrEmpty(movieTitle))
             {
-                <div class="page-subtitle">Phim: @movieTitle</div>
+                <div class="page-subtitle">Movie: @movieTitle</div>
             }
         </div>
         <div>
             <a asp-action="UploadVideo" asp-route-movieId="@movieId" class="btn-custom btn-upload">
-                <i class="zmdi zmdi-cloud-upload"></i> Upload Video Mới
+                <i class="zmdi zmdi-cloud-upload"></i> Upload New Video
             </a>
         </div>
     </div>
@@ -324,11 +324,11 @@
             @if (episodeId.HasValue && movieId.HasValue)
             {
                 <a asp-action="Index" asp-route-movieId="@movieId" class="btn-custom btn-back">
-                    <i class="zmdi zmdi-arrow-left"></i> Xem media của phim
+                    <i class="zmdi zmdi-arrow-left"></i> View Movie Media
                 </a>
             }
             <a asp-action="Index" class="btn-custom btn-back">
-                <i class="zmdi zmdi-apps"></i> Xem tất cả media files
+                <i class="zmdi zmdi-apps"></i> View All Media Files
             </a>
         </div>
     }
@@ -339,13 +339,13 @@
             <table class="data-table">
                 <thead>
                     <tr>
-                        <th>Thông tin File</th>
-                        <th>Loại</th>
-                        <th>Chất lượng</th>
-                        <th>Kích thước</th>
-                        <th>Thuộc Phim/Tập</th>
-                        <th>Ngày Upload</th>
-                        <th>Hành động</th>
+                        <th>File Information</th>
+                        <th>Type</th>
+                        <th>Quality</th>
+                        <th>Size</th>
+                        <th>Belongs To</th>
+                        <th>Upload Date</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -366,7 +366,7 @@
                                 }
                                 else if (item.FileType == "Subtitle")
                                 {
-                                    <span class="badge badge-subtitle"><i class="zmdi zmdi-subtitles"></i> Phụ đề</span>
+                                    <span class="badge badge-subtitle"><i class="zmdi zmdi-subtitles"></i> Subtitle</span>
                                 }
                                 else
                                 {
@@ -390,7 +390,7 @@
                                 @if (item.EpisodeId.HasValue)
                                 {
                                     <a asp-controller="Episodes" asp-action="Details" asp-route-id="@item.EpisodeId" style="text-decoration: none; color: var(--primary-color); font-weight: 500;">
-                                        Tập @item.EpisodeNumber: @item.EpisodeTitle
+                                        Ep @item.EpisodeNumber: @item.EpisodeTitle
                                     </a>
                                 }
                                 else if (item.MovieId.HasValue)
@@ -401,25 +401,25 @@
                                 }
                                 else
                                 {
-                                    <span style="color: var(--text-muted); font-style: italic;">File độc lập</span>
+                                    <span style="color: var(--text-muted); font-style: italic;">Standalone File</span>
                                 }
                             </td>
                             <td style="color: var(--text-muted); font-size: 13px;">
-                                @item.UploadedAt.ToString("dd/MM/yyyy HH:mm")
+                                @item.UploadedAt.ToString("MM/dd/yyyy HH:mm")
                             </td>
                             <td>
                                 <div class="action-group">
-                                    <a href="@item.FileUrl" target="_blank" class="action-btn play" title="Xem/Tải file">
+                                    <a href="@item.FileUrl" target="_blank" class="action-btn play" title="View/Download">
                                         <i class="zmdi zmdi-play"></i>
                                     </a>
-                                    <a asp-action="Details" asp-route-id="@item.Id" class="action-btn view" title="Chi tiết">
+                                    <a asp-action="Details" asp-route-id="@item.Id" class="action-btn view" title="Details">
                                         <i class="zmdi zmdi-eye"></i>
                                     </a>
-                                    <a asp-action="Edit" asp-route-id="@item.Id" class="action-btn edit" title="Sửa">
+                                    <a asp-action="Edit" asp-route-id="@item.Id" class="action-btn edit" title="Edit">
                                         <i class="zmdi zmdi-edit"></i>
                                     </a>
-                                    <form asp-action="Delete" asp-route-id="@item.Id" method="post" style="margin: 0;" onsubmit="return confirm('Bạn có chắc chắn muốn xóa file này khỏi hệ thống không?');">
-                                        <button type="submit" class="action-btn delete" title="Xóa">
+                                    <form asp-action="Delete" asp-route-id="@item.Id" method="post" style="margin: 0;" onsubmit="return confirm('Are you sure you want to delete this file from the system?');">
+                                        <button type="submit" class="action-btn delete" title="Delete">
                                             <i class="zmdi zmdi-delete"></i>
                                         </button>
                                     </form>
@@ -435,10 +435,10 @@
     {
         <div class="empty-state">
             <i class="zmdi zmdi-cloud-off"></i>
-            <h3 style="margin: 0 0 8px 0; color: var(--text-dark);">Chưa có Media File nào</h3>
-            <p style="color: var(--text-muted); margin-bottom: 24px;">Hãy upload video hoặc phụ đề đầu tiên cho mục này.</p>
+            <h3 style="margin: 0 0 8px 0; color: var(--text-dark);">No Media Files Found</h3>
+            <p style="color: var(--text-muted); margin-bottom: 24px;">Start by uploading the first video or subtitle for this section.</p>
             <a asp-action="Upload" asp-route-movieId="@movieId" asp-route-episodeId="@episodeId" class="btn-custom btn-upload">
-                <i class="zmdi zmdi-upload"></i> Upload File Ngay
+                <i class="zmdi zmdi-upload"></i> Upload File Now
             </a>
         </div>
     }
