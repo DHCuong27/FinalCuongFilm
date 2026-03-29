@@ -1,26 +1,18 @@
-﻿//using FinalCuongFilm.ApplicationCore.Entities.Identity;
+﻿using FinalCuongFilm.ApplicationCore.Entities.Identity; // Đường dẫn tới file User của bạn
 using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FinalCuongFilm.ApplicationCore.Entities
 {
 	public class WatchHistory
 	{
-		[Key]
-		public Guid Id { get; set; } = Guid.NewGuid();
+		public Guid Id { get; set; }
+
+		public string UserId { get; set; } = string.Empty;
+		public CuongFilmUser User { get; set; }
 
 		public Guid MovieId { get; set; }
-		[ForeignKey("MovieId")]
-		public Guid? EpisodeId { get; set; }
-		[ForeignKey("EpisodeId")]
+		public Movie Movie { get; set; }
 
-		public DateTime WatchedAt { get; set; } = DateTime.UtcNow;
-
-		
+		public DateTime LastWatchedAt { get; set; } = DateTime.UtcNow;
 	}
 }

@@ -230,9 +230,9 @@ namespace FinalCuongFilm.DataLayer
 			{
 				entity.ToTable("WatchHistories");
 				entity.HasKey(x => x.Id);
-				entity.Property(x => x.WatchedAt).IsRequired().HasDefaultValueSql("GETUTCDATE()");
+				entity.Property(x => x.LastWatchedAt).IsRequired().HasDefaultValueSql("GETUTCDATE()");
 				entity.HasIndex(x => x.MovieId);
-				entity.HasIndex(x => x.WatchedAt);
+				entity.HasIndex(x => x.LastWatchedAt);
 			});
 
 			modelBuilder.Entity<SearchSuggestion>(entity =>
