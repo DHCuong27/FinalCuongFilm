@@ -1,185 +1,221 @@
 ﻿@model FinalCuongFilm.ApplicationCore.Entities.Country
 
 @{
-    ViewData["Title"] = "Contries Details";
+    ViewData["Title"] = "Country Details";
 }
 
-<!DOCTYPE html>
-<html>
-<head>
-    <title>@ViewData["Title"]</title>
-</head>
+<style>
+    :root {
+        --primary-color: #2563eb;
+        --secondary-color: #64748b;
+        --success-color: #10b981;
+        --warning-color: #f59e0b;
+        --danger-color: #ef4444;
+        --text-dark: #1e293b;
+        --text-muted: #64748b;
+        --border-color: #e2e8f0;
+        --bg-light: #f8fafc;
+        --bg-white: #ffffff;
+        --radius-md: 8px;
+        --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+        --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1);
+    }
 
-<body>
-    <style>
+    /* Container & Header */
+    .media-container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 24px 20px;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+
+    .page-title {
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--text-dark);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    /* Details Card */
+    .details-card {
+        background: var(--bg-white);
+        border-radius: var(--radius-md);
+        box-shadow: var(--shadow-sm);
+        border: 1px solid var(--border-color);
+        padding: 0;
+        margin-bottom: 24px;
+        overflow: hidden;
+    }
+
+    .detail-row {
+        display: flex;
+        padding: 16px 24px;
+        border-bottom: 1px solid var(--border-color);
+        transition: background-color 0.2s;
+    }
+
+        .detail-row:last-child {
+            border-bottom: none;
         }
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            line-height: 1.5;
-            color: #1a1a1a;
-            background: #f8f9fa;
-            padding: 20px;
-            min-height: 100vh;
+        .detail-row:hover {
+            background: var(--bg-light);
         }
 
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            padding: 30px;
-        }
+    .detail-label {
+        width: 30%;
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
 
-        /* Header */
-        .header {
-            margin-bottom: 25px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid #eaeaea;
-        }
+    .detail-value {
+        width: 70%;
+        font-size: 15px;
+        color: var(--text-dark);
+        font-weight: 500;
+    }
 
-            .header h1 {
-                font-size: 22px;
-                font-weight: 600;
-                color: #2c3e50;
-                margin-bottom: 5px;
-            }
+    /* Badges */
+    .iso-badge {
+        background: var(--bg-light);
+        padding: 4px 10px;
+        border-radius: 4px;
+        border: 1px solid var(--border-color);
+        font-family: monospace;
+        color: var(--secondary-color);
+        font-weight: 600;
+        font-size: 14px;
+    }
 
-            .header h4 {
-                font-size: 15px;
-                font-weight: 500;
-                color: #7f8c8d;
-            }
+    .slug-text {
+        color: var(--text-muted);
+        font-family: monospace;
+    }
 
-        /* Details section */
-        .details-grid {
-            display: grid;
-            grid-template-columns: 150px 1fr;
-            gap: 15px;
-            margin-bottom: 25px;
-        }
+    /* Buttons */
+    .action-bar {
+        display: flex;
+        gap: 12px;
+    }
 
-        .detail-label {
-            font-weight: 500;
-            color: #555;
-            text-align: right;
-            padding-right: 15px;
-            font-size: 14px;
-        }
+    .btn-custom {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 20px;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.2s;
+        border: 1px solid transparent;
+        cursor: pointer;
+    }
 
-        .detail-value {
-            color: #2c3e50;
-            font-size: 15px;
-            padding: 2px 0;
-        }
+    .btn-edit {
+        background: var(--primary-color);
+        color: white;
+    }
 
-        /* Actions */
-        .actions {
-            display: flex;
-            gap: 10px;
-            padding-top: 20px;
-            border-top: 1px solid #eaeaea;
-            margin-top: 20px;
-        }
-
-        .btn {
-            padding: 8px 16px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            background: #f8f9fa;
-            color: #2c3e50;
-            text-decoration: none;
-            font-size: 14px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-            .btn:hover {
-                background: #e9ecef;
-                border-color: #ccc;
-            }
-
-        .btn-primary {
-            background: #3498db;
-            border-color: #2980b9;
+        .btn-edit:hover {
+            background: #1d4ed8;
             color: white;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
         }
 
-            .btn-primary:hover {
-                background: #2980b9;
-            }
+    .btn-back {
+        background: var(--bg-light);
+        color: var(--text-dark);
+        border-color: var(--border-color);
+    }
 
-        /* Responsive */
-        @@media (max-width: 768px) {
-            body {
-                padding: 10px;
-            }
-
-            .container {
-                padding: 20px;
-                border-radius: 6px;
-            }
-
-            .details-grid {
-                grid-template-columns: 1fr;
-                gap: 10px;
-            }
-
-            .detail-label {
-                text-align: left;
-                padding-right: 0;
-                font-weight: 600;
-                color: #444;
-            }
-
-            .actions {
-                flex-direction: column;
-            }
-
-            .btn {
-                width: 100%;
-                text-align: center;
-            }
+        .btn-back:hover {
+            background: #e2e8f0;
+            color: var(--text-dark);
         }
 
-        @@media (max-width: 480px) {
-            .container {
-                padding: 15px;
-            }
+    /* Responsive */
+    @@media (max-width: 768px) {
+        .detail-row
 
-            .header h1 {
-                font-size: 20px;
-            }
-        }
-    </style>
-    <div class="container">
-        <div class="header">
-            <h1>@Html.DisplayFor(model => model.Name)</h1>
-            <h4>Country Details</h4>
+    {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .detail-label, .detail-value {
+        width: 100%;
+    }
+
+    .action-bar {
+        flex-direction: column;
+    }
+
+    .btn-custom {
+        width: 100%;
+        justify-content: center;
+    }
+
+    }
+</style>
+
+<div class="media-container">
+    <div class="page-header">
+        <h1 class="page-title">
+            <i class="zmdi zmdi-globe" style="color: var(--primary-color);"></i> @ViewData["Title"]
+        </h1>
+    </div>
+
+    <div class="details-card">
+        <div class="detail-row">
+            <div class="detail-label">
+                @Html.DisplayNameFor(model => model.Name)
+            </div>
+            <div class="detail-value" style="font-size: 18px; font-weight: 700; color: var(--primary-color);">
+                @Html.DisplayFor(model => model.Name)
+            </div>
         </div>
 
-        <div class="details-grid">
-            <div class="detail-label">@Html.DisplayNameFor(model => model.Name)</div>
-            <div class="detail-value">@Html.DisplayFor(model => model.Name)</div>
-
-            <div class="detail-label">@Html.DisplayNameFor(model => model.IsoCode)</div>
-            <div class="detail-value">@Html.DisplayFor(model => model.IsoCode)</div>
-
-            <div class="detail-label">@Html.DisplayNameFor(model => model.Slug)</div>
-            <div class="detail-value">@Html.DisplayFor(model => model.Slug)</div>
+        <div class="detail-row">
+            <div class="detail-label">
+                @Html.DisplayNameFor(model => model.IsoCode)
+            </div>
+            <div class="detail-value">
+                <span class="iso-badge">@Html.DisplayFor(model => model.IsoCode)</span>
+            </div>
         </div>
 
-        <div class="actions">
-            <a href="@Url.Action("Edit", new { id = Model?.Id })" class="btn btn-primary">Edit</a>
-            <a href="@Url.Action("Index")" class="btn">Back to List</a>
+        <div class="detail-row">
+            <div class="detail-label">
+                @Html.DisplayNameFor(model => model.Slug)
+            </div>
+            <div class="detail-value">
+                <span class="slug-text">@Html.DisplayFor(model => model.Slug)</span>
+            </div>
         </div>
     </div>
-</body>
-</html>
+
+    <div class="action-bar">
+        <a asp-action="Edit" asp-route-id="@Model?.Id" class="btn-custom btn-edit">
+            <i class="zmdi zmdi-edit"></i> Edit Country
+        </a>
+        <a asp-action="Index" class="btn-custom btn-back">
+            <i class="zmdi zmdi-arrow-left"></i> Back to List
+        </a>
+    </div>
+</div>

@@ -6,570 +6,552 @@
 
 <style>
     :root {
-        --nf-red: #e50914;
-        --nf-red2: #f40612;
-        --nf-bg: #141414;
-        --nf-dark: #181818;
-        --nf-darker: #0f0f0f;
-        --nf-card: #1f1f1f;
-        --nf-input: #2a2a2a;
-        --nf-border: #333;
-        --nf-gray: #808080;
-        --nf-lgray: #b3b3b3;
-        --nf-white: #fff;
-        --nf-green: #2ecc71;
-        --nf-blue: #3498db;
-        --nf-yellow: #f39c12;
+        --primary-color: #2563eb;
+        --secondary-color: #64748b;
+        --success-color: #10b981;
+        --warning-color: #f59e0b;
+        --danger-color: #ef4444;
+        --text-dark: #1e293b;
+        --text-muted: #64748b;
+        --border-color: #e2e8f0;
+        --bg-light: #f8fafc;
+        --bg-white: #ffffff;
+        --radius-md: 8px;
+        --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+        --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1);
     }
 
-    /* ── Page Header ── */
-    .nf-page-header {
+    /* Container & Header */
+    .media-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 24px 20px;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+
+    .page-title {
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--text-dark);
+        margin: 0;
         display: flex;
         align-items: center;
-        justify-content: space-between;
+        gap: 8px;
+    }
+
+    .total-badge {
+        font-size: 13px;
+        background: var(--bg-light);
+        color: var(--primary-color);
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-weight: 600;
+        border: 1px solid var(--border-color);
+        margin-left: 8px;
+        vertical-align: middle;
+    }
+
+    /* Buttons */
+    .btn-custom {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 16px;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.2s;
+        border: 1px solid transparent;
+        cursor: pointer;
+        font-family: inherit;
+    }
+
+    .btn-primary {
+        background: var(--primary-color);
+        color: white;
+    }
+
+        .btn-primary:hover {
+            background: #1d4ed8;
+            color: white;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+        }
+
+    .btn-success {
+        background: var(--success-color);
+        color: white;
+    }
+
+        .btn-success:hover {
+            background: #059669;
+            color: white;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+        }
+
+    /* Import Section */
+    .import-section {
+        background: var(--bg-white);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-md);
+        padding: 20px;
         margin-bottom: 24px;
-        padding-bottom: 16px;
-        border-bottom: 2px solid var(--nf-border);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .import-header {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text-dark);
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .import-group {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+
+    .import-input {
+        flex-grow: 1;
+        min-width: 250px;
+        padding: 10px 16px;
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        font-size: 14px;
+        color: var(--text-dark);
+        background: var(--bg-light);
+        transition: all 0.2s;
+        font-family: inherit;
+    }
+
+        .import-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            background: var(--bg-white);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+    /* Table Toolbar */
+    .table-toolbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
         flex-wrap: wrap;
         gap: 12px;
     }
 
-    .nf-page-title {
-        font-size: 1.75rem;
-        font-weight: 700;
-        color: var(--nf-white);
-        margin: 0;
-    }
-
-        .nf-page-title span {
-            color: var(--nf-red);
-        }
-
-    /* ── Buttons ── */
-    .nf-btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 7px;
-        padding: 9px 20px;
-        font-size: .9rem;
-        font-weight: 600;
-        border-radius: 5px;
-        border: none;
-        cursor: pointer;
-        transition: all .2s;
-        text-decoration: none;
-        font-family: inherit;
-        line-height: 1.4;
-    }
-
-    .nf-btn-red {
-        background: var(--nf-red);
-        color: #fff;
-    }
-
-        .nf-btn-red:hover {
-            background: var(--nf-red2);
-            color: #fff;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(229,9,20,.35);
-        }
-
-    .nf-btn-blue {
-        background: var(--nf-blue);
-        color: #fff;
-    }
-
-    /* Icon Buttons */
-    .nf-btn-icon {
+    .search-wrapper {
         position: relative;
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
         display: flex;
         align-items: center;
-        justify-content: center;
-        color: white;
-        text-decoration: none;
-        transition: all 0.3s ease;
-        background: #2a2a2a;
-        border: 2px solid #404040;
     }
 
-        .nf-btn-icon:hover {
-            transform: translateY(-3px);
-        }
-
-        .nf-btn-icon.view:hover {
-            background: #3498db;
-            border-color: #3498db;
-            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
-        }
-
-        .nf-btn-icon.edit:hover {
-            background: #f5c518;
-            border-color: #f5c518;
-            box-shadow: 0 5px 15px rgba(245, 197, 24, 0.3);
-        }
-
-        .nf-btn-icon.del:hover {
-            background: #e50914;
-            border-color: #e50914;
-            box-shadow: 0 5px 15px rgba(229, 9, 20, 0.3);
-        }
-
-    /* ── Container & Table ── */
-    .nf-table-container {
-        background: linear-gradient(145deg, #1f1f1f 0%, #141414 100%);
-        border-radius: 16px;
-        padding: 1.5rem;
-        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-        border: 1px solid #2a2a2a;
-        margin: 1rem 0;
-    }
-
-    .nf-table-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 2rem;
-        flex-wrap: wrap;
-        gap: 1rem;
-    }
-
-    .nf-table-title {
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-        color: white;
-        font-weight: 600;
-        font-size: 1.2rem;
-    }
-
-        .nf-table-title i {
-            color: var(--nf-red);
-            font-size: 1.5rem;
-        }
-
-    .nf-count-badge {
-        background: #2a2a2a;
-        padding: 0.25rem 0.75rem;
+    .search-input {
+        width: 300px;
+        padding: 8px 16px 8px 36px;
         border-radius: 20px;
-        font-size: 0.85rem;
-        color: #b3b3b3;
-        font-weight: 500;
+        border: 1px solid var(--border-color);
+        background: var(--bg-white);
+        font-size: 14px;
+        color: var(--text-dark);
+        transition: all 0.2s;
     }
 
-    .nf-table-responsive {
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+    .search-icon {
+        position: absolute;
+        left: 12px;
+        color: var(--text-muted);
+        font-size: 18px;
+    }
+
+    /* Table Styling */
+    .table-container {
+        background: var(--bg-white);
+        border-radius: var(--radius-md);
+        box-shadow: var(--shadow-sm);
+        border: 1px solid var(--border-color);
         overflow-x: auto;
-        border-radius: 12px;
-        background: #1a1a1a;
     }
 
-    .nf-table {
+    .data-table {
         width: 100%;
         border-collapse: collapse;
         min-width: 900px;
-        color: var(--nf-white);
     }
 
-        .nf-table thead tr {
-            background: linear-gradient(145deg, #2a2a2a 0%, #1f1f1f 100%);
-            border-bottom: 2px solid var(--nf-red);
+        .data-table thead {
+            background: var(--bg-light);
+            border-bottom: 2px solid var(--border-color);
         }
 
-        .nf-table thead th {
-            padding: 1.2rem 1rem;
+        .data-table th {
+            padding: 16px;
+            text-align: left;
+            font-size: 13px;
             font-weight: 600;
-            font-size: 0.9rem;
+            color: var(--text-muted);
             text-transform: uppercase;
             letter-spacing: 0.5px;
             white-space: nowrap;
         }
 
-        .nf-table tbody tr {
-            border-bottom: 1px solid #2a2a2a;
-            transition: all 0.3s ease;
-        }
-
-            .nf-table tbody tr:hover {
-                background: #2a2a2a;
-                transform: scale(1.002);
-                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-            }
-
-        .nf-table tbody td {
-            padding: 1.2rem 1rem;
-            color: #b3b3b3;
+        .data-table td {
+            padding: 16px;
+            border-bottom: 1px solid var(--border-color);
             vertical-align: middle;
+            font-size: 14px;
+            color: var(--text-dark);
         }
 
-    /* ── Search Box ── */
-    .nf-search-box {
-        position: relative;
+        .data-table tbody tr:hover {
+            background: #f8fafc;
+        }
+
+        .data-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+    /* Posters & Badges */
+    .poster-wrapper {
+        width: 50px;
+        height: 70px;
+        border-radius: 6px;
+        overflow: hidden;
+        border: 1px solid var(--border-color);
+        background: var(--bg-light);
         display: flex;
         align-items: center;
+        justify-content: center;
+        box-shadow: var(--shadow-sm);
     }
 
-        .nf-search-box i {
-            position: absolute;
-            left: 1rem;
-            color: #808080;
-            font-size: 1.1rem;
-        }
-
-        .nf-search-box input {
-            background: #2a2a2a;
-            border: 2px solid #404040;
-            border-radius: 30px;
-            padding: 0.75rem 1rem 0.75rem 2.8rem;
-            color: white;
-            font-size: 0.9rem;
-            width: 250px;
-            transition: all 0.3s ease;
-        }
-
-            .nf-search-box input:focus {
-                outline: none;
-                border-color: var(--nf-red);
-                background: #333;
-                width: 300px;
-            }
-
-    /* ── Poster ── */
-    .nf-poster-wrapper {
-        position: relative;
-        width: 60px;
-        height: 80px;
-        border-radius: 8px;
-        overflow: hidden;
-        cursor: pointer;
-        box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
-        transition: all 0.3s ease;
-    }
-
-        .nf-poster-wrapper:hover {
-            transform: scale(1.1);
-            box-shadow: 0 10px 20px rgba(229, 9, 20, 0.3);
-        }
-
-    .nf-poster {
+    .poster-img {
         width: 100%;
         height: 100%;
         object-fit: cover;
     }
 
-    .nf-poster-empty {
-        width: 60px;
-        height: 80px;
-        background: linear-gradient(145deg, #2a2a2a 0%, #1f1f1f 100%);
-        border-radius: 8px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border: 2px dashed #404040;
-        color: #808080;
-        font-size: 1.5rem;
+    .poster-placeholder {
+        color: var(--text-muted);
+        font-size: 20px;
     }
 
-    /* ── Text & Badges ── */
-    .nf-title-wrapper {
+    .title-cell {
         display: flex;
-        text-align: center;
         flex-direction: column;
-        gap: 0.25rem;
+        gap: 4px;
     }
 
-    .nf-title {
-        color: white;
+    .slug-text {
+        color: var(--text-muted);
+        font-size: 12px;
+        font-family: monospace;
+        background: var(--bg-light);
+        padding: 2px 6px;
+        border-radius: 4px;
+        border: 1px solid var(--border-color);
+        display: inline-block;
+        width: fit-content;
+    }
+
+    .badge {
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 12px;
         font-weight: 600;
-        font-size: 1rem;
-    }
-
-    .nf-slug {
-        color: #808080;
-        font-size: 0.85rem;
-    }
-
-    .nf-badge {
         display: inline-flex;
-        align-items: center;s
-        gap: 0.25rem;
-        padding: 0.4rem 0.8rem;
-        border-radius: 30px;
-        font-size: 0.8rem;
-        font-weight: 600;
-        text-transform: uppercase;
-        white-space: nowrap;
-    }
-
-    .nf-badge-yellow {
-        background: rgba(245, 197, 24, 0.15);
-        color: #f5c518;
-        border: 1px solid rgba(245, 197, 24, 0.3);
-    }
-
-    .nf-badge-green {
-        background: rgba(46, 204, 113, 0.15);
-        color: #2ecc71;
-        border: 1px solid rgba(46, 204, 113, 0.3);
-    }
-
-    .nf-badge-blue {
-        background: rgba(52, 152, 219, 0.15);
-        color: #3498db;
-        border: 1px solid rgba(52, 152, 219, 0.3);
-    }
-
-    .nf-badge-gray {
-        background: rgba(128, 128, 128, 0.15);
-        color: #808080;
-        border: 1px solid rgba(128, 128, 128, 0.3);
-    }
-
-    .nf-country, .nf-year {
-        display: flex;
         align-items: center;
-        gap: 0.5rem;
-        color: #b3b3b3;
+        gap: 4px;
     }
 
-    .nf-status-group {
-        display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
+    .badge-type {
+        background: #fef3c7;
+        color: #d97706;
+        border: 1px solid #fde68a;
     }
 
-    .nf-actions {
-        display: flex;
-        gap: 0.75rem;
-        justify-content: center;
+    .badge-active {
+        background: #dcfce7;
+        color: #166534;
+        border: 1px solid #bbf7d0;
     }
 
-    /* ── Pagination ── */
-    .nf-table-footer {
-        margin-top: 2rem;
-        display: flex;
-        justify-content: center;
+    .badge-hidden {
+        background: #f1f5f9;
+        color: #475569;
+        border: 1px solid #e2e8f0;
     }
 
-    .nf-pagination {
+    /* Action Links */
+    .action-group {
         display: flex;
+        gap: 8px;
         align-items: center;
-        gap: 1rem;
-        background: #1a1a1a;
-        padding: 0.5rem;
-        border-radius: 40px;
-        border: 1px solid #2a2a2a;
     }
 
-    .nf-pagination-btn {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        border: none;
-        background: #2a2a2a;
-        color: white;
+    .action-btn {
+        width: 32px;
+        height: 32px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 6px;
+        color: var(--text-muted);
+        background: var(--bg-light);
+        border: 1px solid var(--border-color);
+        transition: all 0.2s;
         text-decoration: none;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.3s ease;
+        cursor: pointer;
     }
 
-        .nf-pagination-btn:hover:not(.disabled) {
-            background: var(--nf-red);
-            transform: scale(1.1);
-            color: white;
+        .action-btn:hover {
+            background: var(--bg-white);
         }
 
-        .nf-pagination-btn.disabled {
-            opacity: 0.3;
-            cursor: not-allowed;
-            pointer-events: none;
+        .action-btn.view:hover {
+            color: var(--primary-color);
+            border-color: var(--primary-color);
         }
 
-    .nf-pagination-info {
-        color: #b3b3b3;
-        font-size: 0.9rem;
+        .action-btn.edit:hover {
+            color: var(--warning-color);
+            border-color: var(--warning-color);
+        }
+
+        .action-btn.delete:hover {
+            color: var(--danger-color);
+            border-color: var(--danger-color);
+            background: #fef2f2;
+        }
+
+    /* Pagination */
+    .pagination-container {
+        display: flex;
+        justify-content: center;
+        margin-top: 24px;
+    }
+
+    .pagination {
+        display: flex;
+        list-style: none;
+        padding: 0;
+        gap: 6px;
+    }
+
+    .page-item .page-link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 36px;
+        height: 36px;
+        padding: 0 12px;
+        border-radius: 6px;
+        border: 1px solid var(--border-color);
+        background: var(--bg-white);
+        color: var(--text-dark);
+        text-decoration: none;
+        transition: all 0.2s;
+        font-size: 14px;
         font-weight: 500;
     }
 
-    /* ── Empty State ── */
-    .nf-empty-state {
-        text-align: center;
-        padding: 4rem 2rem;
-        background: linear-gradient(145deg, #1f1f1f 0%, #141414 100%);
-        border-radius: 16px;
-        border: 2px dashed #2a2a2a;
-        margin-top: 20px;
-    }
-
-    .nf-empty-icon {
-        width: 80px;
-        height: 80px;
-        background: #2a2a2a;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0 auto 1.5rem;
-        color: var(--nf-red);
-        font-size: 2.5rem;
-    }
-
-    .nf-empty-state h3 {
+    .page-item.active .page-link {
+        background: var(--primary-color);
         color: white;
-        font-weight: 600;
-        margin-bottom: 0.5rem;
+        border-color: var(--primary-color);
     }
 
-    .nf-empty-state p {
-        color: #808080;
-        margin-bottom: 1.5rem;
+    .page-item.disabled .page-link {
+        color: #94a3b8;
+        background: var(--bg-light);
+        pointer-events: none;
+        border-color: var(--border-color);
     }
 
-    /* ── Auto Import Section ── */
-    .nf-import-section {
-        background: var(--nf-card);
-        border: 1px solid var(--nf-border);
-        border-radius: 8px;
-        padding: 18px 20px;
-        margin-bottom: 24px;
-        box-shadow: 0 4px 20px rgba(0,0,0,.4);
+    .page-item:not(.active):not(.disabled) .page-link:hover {
+        background: var(--bg-light);
+        border-color: #cbd5e1;
     }
 
-    .nf-import-group {
-        display: flex;
-        gap: 12px;
-        align-items: center;
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 48px 20px;
+        background: var(--bg-white);
+        border-radius: var(--radius-md);
+        border: 1px solid var(--border-color);
     }
 
-    .nf-import-input {
-        flex-grow: 1;
-        background: var(--nf-input);
-        border: 1px solid var(--nf-border);
-        color: var(--nf-white);
-        padding: 10px 16px;
-        border-radius: 5px;
-        font-size: 0.95rem;
-    }
-
-        .nf-import-input:focus {
-            outline: none;
-            border-color: var(--nf-blue);
+        .empty-state i {
+            font-size: 48px;
+            color: #cbd5e1;
+            margin-bottom: 16px;
         }
+
+    /* =========================================
+           FIX LỖI CSS RESPONSIVE Ở ĐÂY
+           ========================================= */
+    @@media (max-width: 768px) {
+        .page-header
+
+    {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .table-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .search-wrapper, .search-input {
+        width: 100%;
+    }
+
+    .btn-custom {
+        width: 100%;
+        justify-content: center;
+    }
+
+    }
 </style>
 
-<div class="nf-page-header">
-    <h2 class="nf-page-title">Movie <span>Management</span></h2>
-    <a asp-action="Create" class="nf-btn nf-btn-red">
-        <i class="zmdi zmdi-plus"></i> Add New Movie
-    </a>
-</div>
-
-<div class="nf-import-section">
-    <div class="nf-import-group">
-        <input type="text" id="movieTitle" class="nf-import-input" placeholder="Auto import movie from TMDB (Ex: Interstellar, Inception...)" />
-        <button type="button" id="btnImport" class="nf-btn nf-btn-blue">
-            <i class="zmdi zmdi-cloud-download"></i> Auto Import
-        </button>
+<div class="media-container">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">
+                <i class="zmdi zmdi-movie"></i> @ViewData["Title"]
+            </h1>
+        </div>
+        <div>
+            <a asp-action="Create" class="btn-custom btn-primary">
+                <i class="zmdi zmdi-plus"></i> Add New Movie
+            </a>
+        </div>
     </div>
-    <div id="importStatus" class="mt-3" style="display: none; font-size: 0.9rem;">
-        <span id="importSpinner" class="zmdi zmdi-spinner zmdi-hc-spin" style="color:var(--nf-blue); margin-right:5px; display:none;"></span>
-        <span id="importMessage" style="color:var(--nf-lgray);">Pulling data...</span>
+
+    <div class="import-section">
+        <div class="import-header">
+            <i class="zmdi zmdi-cloud-download" style="color: var(--primary-color);"></i> Auto Import from TMDB
+        </div>
+        <div class="import-group">
+            <input type="text" id="movieTitle" class="import-input" placeholder="Enter movie title (e.g., Interstellar, Inception...)" />
+            <button type="button" id="btnImport" class="btn-custom btn-success">
+                <i class="zmdi zmdi-download"></i> Fetch Data
+            </button>
+        </div>
+        <div id="importStatus" class="mt-2" style="display: none; font-size: 13px; padding-top: 8px;">
+            <span id="importSpinner" class="zmdi zmdi-spinner zmdi-hc-spin" style="color: var(--primary-color); margin-right: 5px; display: none;"></span>
+            <span id="importMessage" style="color: var(--text-muted); font-weight: 500;">Pulling data...</span>
+        </div>
     </div>
-</div>
 
-<form id="antiforgeryForm">
-    @Html.AntiForgeryToken()
-</form>
+    <form id="antiforgeryForm">
+        @Html.AntiForgeryToken()
+    </form>
 
-@if (Model != null && Model.Items != null && Model.Items.Any())
-{
-    <div class="nf-table-container">
-        <div class="nf-table-header">
-            <div class="nf-table-title">
-                <i class="zmdi zmdi-format-list-bulleted"></i>
-                <span>Content List</span>
-                <span class="nf-count-badge">Total: @Model.TotalCount items</span>
+    @if (Model != null && Model.Items != null && Model.Items.Any())
+    {
+        <div class="table-toolbar">
+            <div style="font-weight: 600; color: var(--text-dark);">
+                Content List <span class="total-badge">@Model.TotalCount items</span>
             </div>
-            <div class="nf-table-filters">
-                <div class="nf-search-box">
-                    <i class="zmdi zmdi-search"></i>
-                    <input type="text" placeholder="Search current page..." id="tableSearch" />
-                </div>
+            <div class="search-wrapper">
+                <i class="zmdi zmdi-search search-icon"></i>
+                <input type="text" placeholder="Search current page..." id="tableSearch" class="search-input" />
             </div>
         </div>
 
-        <div class="nf-table-responsive">
-            <table class="nf-table">
+        <div class="table-container">
+            <table class="data-table">
                 <thead>
                     <tr>
                         <th width="80">Poster</th>
                         <th>Title</th>
-                        <th width="100">Type</th>
-                        <th width="120">Country</th>
+                        <th width="120">Type</th>
+                        <th width="140">Country</th>
                         <th width="80">Year</th>
-                        <th width="140">Status</th>
-                        <th width="140" style="text-align:center;">Actions</th>
+                        <th width="120">Status</th>
+                        <th width="140" style="text-align: center;">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach (var item in Model.Items)
                     {
-                        <tr class="nf-table-row">
+                        <tr class="data-table-row">
                             <td>
-                                @if (!string.IsNullOrEmpty(item.PosterUrl))
-                                {
-                                    <div class="nf-poster-wrapper">
-                                        <img src="@item.PosterUrl" alt="@item.Title" class="nf-poster" />
-                                    </div>
-                                }
-                                else
-                                {
-                                    <div class="nf-poster-empty">
-                                        <i class="zmdi zmdi-image"></i>
-                                    </div>
-                                }
-                            </td>
-                            <td class="td-title">
-                                <div class="nf-title-wrapper">
-                                    <strong class="nf-title">@item.Title</strong>
-                                    <span class="nf-slug">@item.Slug</span>
-                                </div>
-                            </td>
-                            <td>
-                                <span class="nf-badge nf-badge-yellow"><i class="zmdi zmdi-label"></i> @item.Type</span>
-                            </td>
-                            <td>
-                                <span class="nf-country"><i class="zmdi zmdi-globe"></i> @item.CountryName</span>
-                            </td>
-                            <td>
-                                <span class="nf-year">@item.ReleaseYear</span>
-                            </td>
-                            <td>
-                                <div class="nf-status-group">
-                                    @if (item.IsActive)
+                                <div class="poster-wrapper">
+                                    @if (!string.IsNullOrEmpty(item.PosterUrl))
                                     {
-                                        <span class="nf-badge nf-badge-green"><i class="zmdi zmdi-check-circle"></i> Active</span>
+                                        <img src="@item.PosterUrl" alt="@item.Title" class="poster-img" />
                                     }
                                     else
                                     {
-                                        <span class="nf-badge nf-badge-gray"><i class="zmdi zmdi-eye-off"></i> Hidden</span>
+                                        <div class="poster-placeholder">
+                                            <i class="zmdi zmdi-image"></i>
+                                        </div>
                                     }
                                 </div>
                             </td>
                             <td>
-                                <div class="nf-actions">
-                                    <a asp-action="Details" asp-route-id="@item.Id" class="nf-btn-icon view" title="View">
+                                <div class="title-cell">
+                                    <strong class="movie-title">@item.Title</strong>
+                                    <span class="slug-text">@item.Slug</span>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge badge-type type-badge"><i class="zmdi zmdi-label"></i> @item.Type</span>
+                            </td>
+                            <td>
+                                <span class="country-text" style="color: var(--text-muted);"><i class="zmdi zmdi-globe"></i> @item.CountryName</span>
+                            </td>
+                            <td>
+                                <span style="font-weight: 500; color: var(--text-dark);">@item.ReleaseYear</span>
+                            </td>
+                            <td>
+                                @if (item.IsActive)
+                                {
+                                    <span class="badge badge-active"><i class="zmdi zmdi-check-circle"></i> Active</span>
+                                }
+                                else
+                                {
+                                    <span class="badge badge-hidden"><i class="zmdi zmdi-eye-off"></i> Hidden</span>
+                                }
+                            </td>
+                            <td>
+                                <div class="action-group" style="justify-content: center;">
+                                    <a asp-action="Details" asp-route-id="@item.Id" class="action-btn view" title="View Details">
                                         <i class="zmdi zmdi-eye"></i>
                                     </a>
-                                    <a asp-action="Edit" asp-route-id="@item.Id" class="nf-btn-icon edit" title="Edit">
+                                    <a asp-action="Edit" asp-route-id="@item.Id" class="action-btn edit" title="Edit">
                                         <i class="zmdi zmdi-edit"></i>
                                     </a>
-                                    <a asp-action="Delete" asp-route-id="@item.Id" class="nf-btn-icon del" title="Delete" onclick="return confirm('Are you sure?')">
-                                        <i class="zmdi zmdi-delete"></i>
-                                    </a>
+                                    <form asp-action="Delete" asp-route-id="@item.Id" method="post" style="margin: 0;" onsubmit="return confirm('Are you sure you want to delete this movie?');">
+                                        <button type="submit" class="action-btn delete" title="Delete">
+                                            <i class="zmdi zmdi-delete"></i>
+                                        </button>
+                                    </form>
                                 </div>
                             </td>
                         </tr>
@@ -578,48 +560,56 @@
             </table>
         </div>
 
-        <div class="nf-table-footer">
-            <div class="nf-pagination">
-                <a href="@Url.Action("Index", new { page = Model.PageIndex - 1 })"
-                   class="nf-pagination-btn @(!Model.HasPreviousPage ? "disabled" : "")">
-                    <i class="zmdi zmdi-chevron-left"></i>
-                </a>
+        @if (Model.TotalPages > 1)
+        {
+            <div class="pagination-container">
+                <ul class="pagination">
+                    <li class="page-item @(!Model.HasPreviousPage ? "disabled" : "")">
+                        <a class="page-link" href="@Url.Action("Index", new { page = Model.PageIndex - 1 })">
+                            <i class="zmdi zmdi-chevron-left"></i>
+                        </a>
+                    </li>
 
-                <span class="nf-pagination-info">Page @Model.PageIndex of @Model.TotalPages</span>
+                    @for (int i = 1; i <= Model.TotalPages; i++)
+                    {
+                        <li class="page-item @(i == Model.PageIndex ? "active" : "")">
+                            <a class="page-link" href="@Url.Action("Index", new { page = i })">@i</a>
+                        </li>
+                    }
 
-                <a href="@Url.Action("Index", new { page = Model.PageIndex + 1 })"
-                   class="nf-pagination-btn @(!Model.HasNextPage ? "disabled" : "")">
-                    <i class="zmdi zmdi-chevron-right"></i>
-                </a>
+                    <li class="page-item @(!Model.HasNextPage ? "disabled" : "")">
+                        <a class="page-link" href="@Url.Action("Index", new { page = Model.PageIndex + 1 })">
+                            <i class="zmdi zmdi-chevron-right"></i>
+                        </a>
+                    </li>
+                </ul>
             </div>
+        }
+    }
+    else
+    {
+        <div class="empty-state">
+            <i class="zmdi zmdi-movie-alt"></i>
+            <h3 style="margin: 0 0 8px 0; color: var(--text-dark);">No Movies Found</h3>
+            <p style="color: var(--text-muted); margin-bottom: 24px;">There are no movies to display at the moment.</p>
+            <a asp-action="Create" class="btn-custom btn-primary">
+                <i class="zmdi zmdi-plus"></i> Add New Movie
+            </a>
         </div>
-    </div>
-}
-else
-{
-    <div class="nf-empty-state">
-        <div class="nf-empty-icon">
-            <i class="zmdi zmdi-alert-circle-o"></i>
-        </div>
-        <h3>No Items Found</h3>
-        <p>There are no movies to display at the moment.</p>
-        <a asp-action="Create" class="nf-btn nf-btn-red">
-            <i class="zmdi zmdi-plus"></i> Add New Movie
-        </a>
-    </div>
-}
+    }
+</div>
 
 @section Scripts {
     <script>
-        // --- CHỨC NĂNG TÌM KIẾM Ở CLIENT ---
+        // --- CLIENT-SIDE SEARCH FUNCTIONALITY ---
         document.getElementById('tableSearch')?.addEventListener('keyup', function() {
             const searchValue = this.value.toLowerCase();
-            const rows = document.querySelectorAll('.nf-table tbody tr');
+            const rows = document.querySelectorAll('.data-table tbody tr.data-table-row');
 
             rows.forEach(row => {
-                const title = row.querySelector('.nf-title')?.textContent.toLowerCase();
-                const type = row.querySelector('.nf-badge-yellow')?.textContent.toLowerCase();
-                const country = row.querySelector('.nf-country')?.textContent.toLowerCase();
+                const title = row.querySelector('.movie-title')?.textContent.toLowerCase();
+                const type = row.querySelector('.type-badge')?.textContent.toLowerCase();
+                const country = row.querySelector('.country-text')?.textContent.toLowerCase();
 
                 if (title?.includes(searchValue) || type?.includes(searchValue) || country?.includes(searchValue)) {
                     row.style.display = '';
@@ -629,8 +619,8 @@ else
             });
         });
 
-        // --- CHỨC NĂNG IMPORT TỪ TMDB ---
-        document.getElementById('btnImport').addEventListener('click', async function () {
+        // --- TMDB IMPORT FUNCTIONALITY ---
+        document.getElementById('btnImport')?.addEventListener('click', async function () {
             const titleInput = document.getElementById('movieTitle');
             const title = titleInput.value.trim();
             const btn = document.getElementById('btnImport');
@@ -639,7 +629,7 @@ else
             const msgSpan = document.getElementById('importMessage');
 
             if (!title) {
-                alert('Please input movie title to Import!');
+                alert('Please input a movie title to Import!');
                 titleInput.focus();
                 return;
             }
@@ -647,17 +637,25 @@ else
             btn.disabled = true;
             statusBox.style.display = 'block';
             spinner.style.display = 'inline-block';
-            msgSpan.style.color = 'var(--nf-lgray)';
-            msgSpan.innerText = `Loading movie information "${title}" from TMDB...`;
+            msgSpan.style.color = 'var(--text-muted)';
+            msgSpan.innerText = `Loading movie information for "${title}" from TMDB...`;
 
+            // Lấy token bảo mật từ form
             const token = document.querySelector('#antiforgeryForm input[name="__RequestVerificationToken"]').value;
+
             const formData = new FormData();
             formData.append('title', title);
+
+            // =========================================
+            // FIX LỖI 400 BAD REQUEST Ở ĐÂY
+            // Gắn token thẳng vào formData để ASP.NET Core tự động map
+            // =========================================
+            formData.append('__RequestVerificationToken', token);
 
             try {
                 const response = await fetch('@Url.Action("ImportFromTmdb", "Movies", new { area = "Admin" })', {
                     method: 'POST',
-                    headers: { 'RequestVerificationToken': token },
+                    // Bỏ thuộc tính headers chứa token lỗi cũ đi
                     body: formData
                 });
 
@@ -665,25 +663,26 @@ else
 
                 if (data.success) {
                     spinner.style.display = 'none';
-                    msgSpan.style.color = 'var(--nf-green)';
-                    msgSpan.innerHTML = `<i class="zmdi zmdi-check-circle"></i> ${data.message} page will refresh...`;
+                    msgSpan.style.color = 'var(--success-color)';
+                    msgSpan.innerHTML = `<i class="zmdi zmdi-check-circle"></i> ${data.message} The page will refresh shortly...`;
                     titleInput.value = '';
                     setTimeout(() => window.location.reload(), 1500);
                 } else {
                     spinner.style.display = 'none';
-                    msgSpan.style.color = 'var(--nf-red)';
+                    msgSpan.style.color = 'var(--danger-color)';
                     msgSpan.innerHTML = `<i class="zmdi zmdi-close-circle"></i> ${data.message}`;
                 }
             } catch (error) {
                 spinner.style.display = 'none';
-                msgSpan.style.color = 'var(--nf-red)';
+                msgSpan.style.color = 'var(--danger-color)';
                 msgSpan.innerHTML = `<i class="zmdi zmdi-alert-triangle"></i> Server connection error. Please try again.`;
             } finally {
                 btn.disabled = false;
             }
         });
 
-        document.getElementById('movieTitle').addEventListener('keypress', function (e) {
+        // Allow Enter key to trigger import
+        document.getElementById('movieTitle')?.addEventListener('keypress', function (e) {
             if (e.key === 'Enter') {
                 e.preventDefault();
                 document.getElementById('btnImport').click();

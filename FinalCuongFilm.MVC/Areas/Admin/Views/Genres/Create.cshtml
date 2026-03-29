@@ -2,227 +2,209 @@
 
 @{
     ViewData["Title"] = "Create Genre";
- 
 }
 
 <style>
-    /* Custom styles for Create Genre page */
+    :root {
+        --primary-color: #2563eb;
+        --secondary-color: #64748b;
+        --success-color: #10b981;
+        --warning-color: #f59e0b;
+        --danger-color: #ef4444;
+        --text-dark: #1e293b;
+        --text-muted: #64748b;
+        --border-color: #e2e8f0;
+        --bg-light: #f8fafc;
+        --bg-white: #ffffff;
+        --radius-md: 8px;
+        --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    /* Container */
     .create-genre-container {
-        padding: 30px 0;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 24px;
     }
 
+    /* Card */
     .genre-form-card {
-        background: white;
-        border-radius: 15px;
-        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+        background: var(--bg-white);
+        border-radius: var(--radius-md);
+        border: 1px solid var(--border-color);
+        box-shadow: var(--shadow-sm);
         overflow: hidden;
-        margin-bottom: 30px;
     }
 
+    /* Header */
     .genre-form-header {
-        background: linear-gradient(135deg, #dc3545, #ff6b6b);
-        color: white;
-        padding: 20px;
-        border-radius: 15px 15px 0 0;
+        padding: 16px 20px;
+        border-bottom: 1px solid var(--border-color);
+        background: var(--bg-light);
     }
 
         .genre-form-header h2 {
             margin: 0;
+            font-size: 20px;
             font-weight: 600;
-            font-size: 1.5rem;
+            color: var(--text-dark);
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
         }
 
-            .genre-form-header h2 i {
-                font-size: 1.2rem;
-            }
-
+    /* Body */
     .genre-form-body {
-        padding: 30px;
+        padding: 24px;
     }
 
-    .genre-form .form-label {
-        font-weight: 600;
-        color: #2d3748;
-        margin-bottom: 8px;
-        display: block;
-    }
-
-    .genre-form .form-control {
-        border: 2px solid #e9ecef;
-        border-radius: 10px;
-        padding: 12px 15px;
-        font-size: 14px;
-        transition: all 0.3s ease;
-        background: #f8f9fa;
-        width: 100%;
-    }
-
-        .genre-form .form-control:focus {
-            border-color: #dc3545;
-            box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.15);
-            background: white;
-            outline: none;
-        }
-
-    .genre-form .form-group {
-        margin-bottom: 25px;
-    }
-
-    .field-validation-error {
-        color: #e74c3c;
-        font-size: 12px;
-        margin-top: 5px;
-        display: block;
-    }
-
-    .validation-summary-errors {
-        background: #f8d7da;
-        border: 1px solid #f5c6cb;
-        color: #721c24;
-        padding: 15px;
-        border-radius: 8px;
+    /* Form */
+    .form-group {
         margin-bottom: 20px;
     }
 
-        .validation-summary-errors ul {
-            margin: 0;
-            padding-left: 20px;
-        }
-
-    .btn-genre {
-        padding: 12px 30px;
-        border-radius: 10px;
+    .form-label {
         font-weight: 600;
-        border: none;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
+        color: var(--text-dark);
+        margin-bottom: 6px;
+        display: block;
     }
 
-    .btn-genre-primary {
-        background: linear-gradient(135deg, #dc3545, #ff6b6b);
-        color: white;
-    }
-
-        .btn-genre-primary:hover {
-            background: linear-gradient(135deg, #c82333, #e95c5c);
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(220, 53, 69, 0.3);
-            color: white;
-            text-decoration: none;
-        }
-
-    .btn-genre-secondary {
-        background: #6c757d;
-        color: white;
-    }
-
-        .btn-genre-secondary:hover {
-            background: #5a6268;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(108, 117, 125, 0.3);
-            color: white;
-            text-decoration: none;
-        }
-
-    .form-actions {
-        display: flex;
-        gap: 15px;
-        margin-top: 30px;
-        flex-wrap: wrap;
-    }
-
-    .slug-generator-container {
-        position: relative;
-    }
-
-    .slug-generator-btn {
-        position: absolute;
-        right: 10px;
-        top: 50%;
-        transform: translateY(-50%);
-        background: #dc3545;
-        color: white;
-        border: none;
-        padding: 6px 15px;
+    .form-control {
+        width: 100%;
+        padding: 10px 14px;
         border-radius: 6px;
-        font-size: 12px;
-        cursor: pointer;
-        transition: background 0.3s ease;
+        border: 1px solid var(--border-color);
+        font-size: 14px;
+        transition: all 0.2s;
+        background: white;
     }
 
-        .slug-generator-btn:hover {
-            background: #c82333;
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
         }
 
     .help-text {
         font-size: 12px;
-        color: #6c757d;
-        margin-top: 5px;
-        display: block;
+        color: var(--text-muted);
+        margin-top: 4px;
     }
 
- 
+    /* Validation */
+    .field-validation-error {
+        color: var(--danger-color);
+        font-size: 12px;
+        margin-top: 4px;
+    }
+
+    .validation-summary-errors {
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        color: #991b1b;
+        padding: 12px;
+        border-radius: 6px;
+        margin-bottom: 16px;
+    }
+
+    /* Buttons */
+    .btn-custom {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 18px;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 500;
+        text-decoration: none;
+        border: 1px solid transparent;
+        transition: all 0.2s;
+    }
+
+    .btn-primary {
+        background: var(--primary-color);
+        color: white;
+    }
+
+        .btn-primary:hover {
+            background: #1d4ed8;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+        }
+
+    .btn-secondary {
+        background: var(--bg-light);
+        color: var(--text-dark);
+        border-color: var(--border-color);
+    }
+
+        .btn-secondary:hover {
+            background: #e2e8f0;
+        }
+
+    .form-actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 24px;
+        flex-wrap: wrap;
+    }
+
+    /* Responsive */
+    @@media (max-width: 768px) {
+        .create-genre-container {
+            padding: 16px;
+        }
+
+        .form-actions {
+            flex-direction: column;
+        }
+
+        .btn-custom {
+            width: 100%;
+            justify-content: center;
+        }
+    }
 </style>
 
 <div class="create-genre-container">
     <div class="genre-form-card">
         <div class="genre-form-header">
             <h2>
-                <i class="fas fa-plus-circle"></i>
+                <i class="zmdi zmdi-plus-circle"></i>
                 @ViewData["Title"]
             </h2>
         </div>
 
         <div class="genre-form-body">
-            <form asp-action="Create" class="genre-form">
+            <form asp-action="Create">
                 <div asp-validation-summary="ModelOnly" class="validation-summary-errors"></div>
 
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label asp-for="Name" class="form-label">
-                                <i class="fas fa-tag me-1"></i>Genre Name
-                            </label>
-                            <input asp-for="Name" class="form-control"
-                                   placeholder="Enter genre name (e.g., Action, Romance, Horror)" />
-                            <span asp-validation-for="Name" class="field-validation-error"></span>
-                            <span class="help-text">This will be displayed on the website</span>
-                        </div>
-                    </div>
-
-                    <div class="form-grid-full">
-                        <div class="form-group">
-                            <label class="form-label">Slug</label>
-                            <input asp-for="Slug" class="form-control" type="text" />
-                            <span asp-validation-for="Slug" class="text-danger"></span>
-                            @* <small class="form-text"></small> *@
-                        </div>
-                    </div>
-
+                <div class="form-group">
+                    <label asp-for="Name" class="form-label">Genre Name</label>
+                    <input asp-for="Name" class="form-control" placeholder="Action, Romance, Horror..." />
+                    <span asp-validation-for="Name" class="field-validation-error"></span>
+                    <span class="help-text">This will be displayed on the website</span>
                 </div>
 
                 <div class="form-group">
-                    <label asp-for="Description" class="form-label">
-                        <i class="fas fa-align-left me-1"></i>Description
-                    </label>
-                    <input asp-for="Description" class="form-control"
-                           placeholder="Enter a brief description of this genre..." />
+                    <label asp-for="Slug" class="form-label">Slug</label>
+                    <input asp-for="Slug" class="form-control" />
+                    <span asp-validation-for="Slug" class="field-validation-error"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Description" class="form-label">Description</label>
+                    <input asp-for="Description" class="form-control" placeholder="Optional..." />
                     <span asp-validation-for="Description" class="field-validation-error"></span>
-                    <span class="help-text">Describe what this genre represents (optional)</span>
                 </div>
 
                 <div class="form-actions">
-                    <button type="submit" class="btn-genre btn-genre-primary">
-                        <i class="fas fa-save"></i>Create Genre
+                    <button type="submit" class="btn-custom btn-primary">
+                        <i class="zmdi zmdi-save"></i> Create
                     </button>
-                    <a asp-action="Index" class="btn-genre btn-genre-secondary">
-                        <i class="fas fa-arrow-left"></i>Back to List
+
+                    <a asp-action="Index" class="btn-custom btn-secondary">
+                        <i class="zmdi zmdi-arrow-left"></i> Back
                     </a>
                 </div>
             </form>
@@ -236,85 +218,25 @@
     }
 
     <script>
-      
-             document.addEventListener('DOMContentLoaded', function () {
+        const titleInput = document.querySelector('input[name="Name"]');
+        const slugInput = document.querySelector('input[name="Slug"]');
 
+        function generateSlug(text) {
+            return text
+                .toLowerCase()
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "")
+                .replace(/đ/g, "d")
+                .replace(/[^a-z0-9\s-]/g, "")
+                .trim()
+                .replace(/\s+/g, "-")
+                .replace(/-+/g, "-");
+        }
 
-            const titleInput = document.querySelector('input[name="Name"]');
-            const slugInput = document.querySelector('input[name="Slug"]');
-
-            function generateSlug(text) {
-                return text
-                    .toLowerCase()
-                    .normalize("NFD")
-                    .replace(/[\u0300-\u036f]/g, "") 
-                    .replace(/đ/g, "d")
-                    .replace(/[^a-z0-9\s-]/g, "")
-                    .trim()
-                    .replace(/\s+/g, "-")
-                    .replace(/-+/g, "-");
-            }
-
-            if (titleInput && slugInput) {
-                titleInput.addEventListener('input', function () {
-                    slugInput.value = generateSlug(this.value);
-                });
-            }
-
-
-            function updateSelectTags(selectId, tagContainerId) {
-                const select = document.getElementById(selectId);
-                const tagContainer = document.getElementById(tagContainerId);
-
-                if (!select || !tagContainer) return;
-
-                function updateTags() {
-                    tagContainer.innerHTML = '';
-                    const selectedOptions = Array.from(select.selectedOptions);
-
-                    selectedOptions.forEach(option => {
-                        const tag = document.createElement('div');
-                        tag.className = 'select-tag';
-                        tag.innerHTML = `
-                            ${option.text}
-                            <span class="select-tag-remove" data-value="${option.value}">×</span>
-                        `;
-                        tagContainer.appendChild(tag);
-                    });
-                }
-
-                updateTags();
-                select.addEventListener('change', updateTags);
-
-                tagContainer.addEventListener('click', function (e) {
-                    if (e.target.classList.contains('select-tag-remove')) {
-                        const value = e.target.getAttribute('data-value');
-                        const option = select.querySelector(`option[value="${value}"]`);
-                        if (option) {
-                            option.selected = false;
-                            updateTags();
-                        }
-                    }
-                });
-            }
-
-            updateSelectTags('ActorIds', 'actorTags');
-            updateSelectTags('GenreIds', 'genreTags');
-
-            // ==============================
-            // FORM SUBMIT LOADING
-            // ==============================
-            const form = document.querySelector('form');
-            form.addEventListener('submit', function () {
-                const submitBtn = this.querySelector('button[type="submit"]');
-                if (submitBtn) {
-                    submitBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Đang xử lý...';
-                    submitBtn.disabled = true;
-                }
+        if (titleInput && slugInput) {
+            titleInput.addEventListener('input', function () {
+                slugInput.value = generateSlug(this.value);
             });
-
-        });
-
-
+        }
     </script>
 }

@@ -1,11 +1,13 @@
 ﻿using FinalCuongFilm.Common.DTOs;
-using FinalCuongFilm.DataLayer; // Lưu ý: Dùng 1 using DataLayer chuẩn thôi nhé
+using FinalCuongFilm.DataLayer;
 using FinalCuongFilm.Service.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using System;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -20,9 +22,8 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 		private readonly IGenreService _genreService;
 		private readonly CuongFilmDbContext _context;
 		private readonly IAzureBlobService _azureBlobService;
-
-		// Thêm Service Import vào đây
 		private readonly IMovieImportService _movieImportService;
+		private readonly ILogger<MoviesController> _logger;
 
 		public MoviesController(
 			IMovieService movieService,
@@ -30,24 +31,24 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 			IGenreService genreService,
 			CuongFilmDbContext context,
 			IAzureBlobService azureBlobService,
-			IMovieImportService movieImportService) // Inject vào
+			IMovieImportService movieImportService,
+			ILogger<MoviesController> logger) 
 		{
 			_movieService = movieService;
 			_actorService = actorService;
 			_genreService = genreService;
 			_context = context;
 			_azureBlobService = azureBlobService;
-			_movieImportService = movieImportService; // Gán biến
+			_movieImportService = movieImportService;
+			_logger = logger;
 		}
 
 		// GET: Admin/Movies
 		public async Task<IActionResult> Index(int page = 1)
 		{
-			int pageSize = 10; 
-
+			int pageSize = 10;
 			var pagedData = await _movieService.GetPagedAsync(page, pageSize);
-
-			return View(pagedData); 
+			return View(pagedData);
 		}
 
 		// POST: Admin/Movies/ImportFromTmdb
@@ -60,15 +61,13 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 
 			try
 			{
-				// Lấy kết quả từ Service
 				var result = await _movieImportService.ImportMovieAsync(title);
-
-				// Trả về đúng trạng thái và thông điệp thực tế
 				return Json(new { success = result.Success, message = result.Message });
 			}
 			catch (Exception ex)
 			{
 				var innerMessage = ex.InnerException != null ? ex.InnerException.Message : ex.Message;
+				_logger.LogError(ex, "Lỗi khi import phim từ TMDB: {MovieTitle}", title); // Dùng Logger
 				return Json(new { success = false, message = $"Error system: {innerMessage}" });
 			}
 		}
@@ -76,15 +75,12 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 		// GET: Admin/Movies/Details/5
 		public async Task<IActionResult> Details(Guid? id)
 		{
-			if (id == null)
-				return NotFound();
+			if (id == null) return NotFound();
 
 			var movie = await _movieService.GetByIdAsync(id.Value);
-			if (movie == null)
-				return NotFound();
+			if (movie == null) return NotFound();
 
 			return View(movie);
-
 		}
 
 		// GET: Admin/Movies/Create
@@ -114,9 +110,11 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 				{
 					if (posterFile != null && posterFile.Length > 0)
 					{
+						
 						var tempSlug = !string.IsNullOrEmpty(dto.Slug)
 							? dto.Slug
-							: dto.Title.ToLower().Replace(" ", "-");
+							: (dto.Title?.ToLower().Replace(" ", "-") ?? Guid.NewGuid().ToString());
+
 						dto.PosterUrl = await _azureBlobService.UploadPosterAsync(posterFile, tempSlug);
 					}
 
@@ -126,26 +124,18 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 				}
 				catch (DbUpdateException dbEx)
 				{
-					
 					var innerException = dbEx.InnerException?.Message ?? dbEx.Message;
 					ModelState.AddModelError("", $"Error database: {innerException}");
-
-					// Log to console
-					Console.WriteLine($"[ERROR] DbUpdateException: {innerException}");
-					Console.WriteLine($"[STACK] {dbEx.StackTrace}");
+					_logger.LogError(dbEx, "Lỗi Database khi tạo phim"); 
 				}
 				catch (Exception ex)
 				{
-					//  LOG LỖI CHUNG
 					var innerException = ex.InnerException?.Message ?? ex.Message;
 					ModelState.AddModelError("", $"Lỗi: {innerException}");
-
-					Console.WriteLine($"[ERROR] Exception: {innerException}");
-					Console.WriteLine($"[STACK] {ex.StackTrace}");
+					_logger.LogError(ex, "Lỗi hệ thống khi tạo phim"); 
 				}
 			}
 
-			// Reload dropdowns
 			await PopulateDropdowns();
 			return View(dto);
 		}
@@ -153,12 +143,10 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 		// GET: Admin/Movies/Edit/5
 		public async Task<IActionResult> Edit(Guid? id)
 		{
-			if (id == null)
-				return NotFound();
+			if (id == null) return NotFound();
 
 			var movie = await _movieService.GetByIdAsync(id.Value);
-			if (movie == null)
-				return NotFound();
+			if (movie == null) return NotFound();
 
 			var updateDto = new MovieUpdateDto
 			{
@@ -187,8 +175,7 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 		[ValidateAntiForgeryToken]
 		public async Task<IActionResult> Edit(Guid id, MovieUpdateDto dto, IFormFile? posterFile)
 		{
-			if (id != dto.Id)
-				return NotFound();
+			if (id != dto.Id) return NotFound();
 
 			if (posterFile != null && posterFile.Length > 0)
 			{
@@ -211,8 +198,7 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 					}
 
 					var result = await _movieService.UpdateAsync(id, dto);
-					if (result == null)
-						return NotFound();
+					if (result == null) return NotFound();
 
 					TempData["Success"] = "Update film successfully!";
 					return RedirectToAction(nameof(Index));
@@ -220,6 +206,7 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 				catch (Exception ex)
 				{
 					ModelState.AddModelError("", $"Fail to update: {ex.Message}");
+					_logger.LogError(ex, "Lỗi khi cập nhật phim {MovieId}", id);
 				}
 			}
 
@@ -230,12 +217,10 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 		// GET: Admin/Movies/Delete/5
 		public async Task<IActionResult> Delete(Guid? id)
 		{
-			if (id == null)
-				return NotFound();
+			if (id == null) return NotFound();
 
 			var movie = await _movieService.GetByIdAsync(id.Value);
-			if (movie == null)
-				return NotFound();
+			if (movie == null) return NotFound();
 
 			return View(movie);
 		}
@@ -248,8 +233,7 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 			try
 			{
 				var result = await _movieService.DeleteAsync(id);
-				if (!result)
-					return NotFound();
+				if (!result) return NotFound();
 
 				TempData["Success"] = "Delete film succesfully!";
 				return RedirectToAction(nameof(Index));
@@ -257,6 +241,12 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 			catch (InvalidOperationException ex)
 			{
 				TempData["Error"] = ex.Message;
+				return RedirectToAction(nameof(Delete), new { id });
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Lỗi khi xóa phim {MovieId}", id);
+				TempData["Error"] = "An error occurred while deleting the movie.";
 				return RedirectToAction(nameof(Delete), new { id });
 			}
 		}

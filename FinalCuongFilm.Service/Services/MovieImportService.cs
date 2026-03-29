@@ -23,11 +23,9 @@ namespace FinalCuongFilm.Service.Services
 
 		public async Task<(bool Success, string Message)> ImportMovieAsync(string title)
 		{
-			// BƯỚC 1: Tìm bên MOVIE trước
 			var searchResult = await _tmdbService.SearchMovieAsync(title);
 			bool isTvSeries = false;
 
-			// Nếu không thấy bên Movie, tìm tiếp bên TV SHOW
 			if (searchResult == null)
 			{
 				searchResult = await _tmdbService.SearchTvShowAsync(title);
@@ -35,12 +33,12 @@ namespace FinalCuongFilm.Service.Services
 			}
 
 			if (searchResult == null)
-				return (false, $"Không tìm thấy phim '{title}' trên TMDB (cả Movie và TV Show).");
+				return (false, $"Film not found '{title}' on TMDB (both Movie and TV Show).");
 
 			// Kiểm tra trùng trong DB
 			var isExist = await _dbContext.Movies.AnyAsync(m => m.TmdbId == searchResult.Id && m.Type == (isTvSeries ? MovieType.Series : MovieType.Movie));
 			if (isExist)
-				return (false, $"Phim '{searchResult.Title}' đã tồn tại trong hệ thống!");
+				return (false, $"Film '{searchResult.Title}' It already exists in the system!");
 
 			// BƯỚC 2: Lấy chi tiết
 			var movieDetails = isTvSeries
@@ -48,12 +46,12 @@ namespace FinalCuongFilm.Service.Services
 				: await _tmdbService.GetMovieDetailsAsync(searchResult.Id);
 
 			if (movieDetails == null)
-				return (false, $"Không lấy được chi tiết phim '{searchResult.Title}'.");
+				return (false, $"Unable to obtain film details. '{searchResult.Title}'.");
 
 			using var transaction = await _dbContext.Database.BeginTransactionAsync();
 			try
 			{
-				// A. XỬ LÝ QUỐC GIA
+				// A.import country
 				Guid? countryId = null;
 				var firstCountry = movieDetails.ProductionCountries?.FirstOrDefault();
 				if (firstCountry != null)
@@ -73,7 +71,7 @@ namespace FinalCuongFilm.Service.Services
 					countryId = country.Id;
 				}
 
-				// B. TẠO MOVIE 
+				// B. create movie
 				var movie = new Movie
 				{
 					Title = movieDetails.Title,
@@ -92,7 +90,7 @@ namespace FinalCuongFilm.Service.Services
 				_dbContext.Movies.Add(movie);
 				await _dbContext.SaveChangesAsync();
 
-				// C. XỬ LÝ THỂ LOẠI
+				// C. import genre
 				if (movieDetails.Genres != null)
 				{
 					foreach (var genreData in movieDetails.Genres)
@@ -109,7 +107,7 @@ namespace FinalCuongFilm.Service.Services
 					}
 				}
 
-				// D. XỬ LÝ DIỄN VIÊN
+				// D. import actor
 				var credits = isTvSeries
 					? await _tmdbService.GetTvCreditsAsync(movieDetails.Id)
 					: await _tmdbService.GetMovieCreditsAsync(movieDetails.Id);
