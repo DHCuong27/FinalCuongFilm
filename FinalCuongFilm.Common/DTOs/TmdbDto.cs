@@ -12,8 +12,8 @@ namespace FinalCuongFilm.Common.DTOs
 		public long Id { get; set; } // TmdbId
 		public string Title { get; set; } = string.Empty;
 		public string Overview { get; set; } = string.Empty;
-		public string Poster_Path { get; set; } = string.Empty;
-		public string Release_Date { get; set; } = string.Empty;
+		public string PosterPath { get; set; } = string.Empty;
+		public string ReleaseDate { get; set; } = string.Empty;
 	}
 
 	public class TmdbCreditsResponse
@@ -25,7 +25,7 @@ namespace FinalCuongFilm.Common.DTOs
 	{
 		public long Id { get; set; } // TmdbId
 		public string Name { get; set; } = string.Empty;
-		public string Profile_Path { get; set; } = string.Empty;
+		public string ProfilePath { get; set; } = string.Empty;
 		public int Gender { get; set; }
 	}
 
@@ -34,13 +34,13 @@ namespace FinalCuongFilm.Common.DTOs
 		public long Id { get; set; }
 		public string Title { get; set; }
 		public string Overview { get; set; }
-		public string Poster_Path { get; set; }
+		public string PosterPath { get; set; }
 
-		public string Release_Date { get; set; } // <-- Add this property to fix CS0117
+		public string ReleaseDate { get; set; } // <-- Add this property to fix CS0117
 		public int Runtime { get; set; }
 
 		public List<TmdbGenreDto>? Genres { get; set; }
-		public List<TmdbCountryDto>? Production_Countries { get; set; }
+		public List<TmdbCountryDto>? ProductionCountries { get; set; }
 	}
 
 	public class TmdbGenreDto
@@ -51,7 +51,7 @@ namespace FinalCuongFilm.Common.DTOs
 
 	public class TmdbCountryDto
 	{
-		public string Iso_3166_1 { get; set; } // Mã quốc gia (VD: US, VN, UK)
+		public string Iso31661 { get; set; } 
 		public string Name { get; set; }       // Tên quốc gia
 	}
 }

@@ -7,6 +7,8 @@
 		public string UserName { get; set; } = string.Empty;
 		public Guid MovieId { get; set; }
 		public string MovieTitle { get; set; } = string.Empty;
+
+		public string MovieSlug { get; set; } = string.Empty;
 		public string? MoviePosterUrl { get; set; }
 		public DateTime CreatedAt { get; set; }
 	}

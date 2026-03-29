@@ -1,5 +1,6 @@
 ﻿using static FinalCuongFilm.ApplicationCore.Entities.Enum;
 
+
 namespace FinalCuongFilm.Common.DTOs
 {
 	public class MovieDto
@@ -21,9 +22,13 @@ namespace FinalCuongFilm.Common.DTOs
 		public Guid LanguageId { get; set; }
 		public Guid CountryId { get; set; }
 
+		public string Name { get; set; } = string.Empty;
+
+
 		// Navigation properties 
 
-		public string? CountryName { get; set; }
+		public string? CountryName { get; set; } 
+
 		public string? LanguageName { get; set; }
 
 		public string? GenreName { get; set; }
