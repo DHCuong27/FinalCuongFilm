@@ -88,7 +88,7 @@ namespace FinalCuongFilm.Common.DTOs
 	public class TmdbCountryDto
 	{
 		[JsonPropertyName("iso_3166_1")] 
-		public string Iso31661 { get; set; }
+		public string Iso_3166_1 { get; set; }
 
 		[JsonPropertyName("name")]
 		public string Name { get; set; }

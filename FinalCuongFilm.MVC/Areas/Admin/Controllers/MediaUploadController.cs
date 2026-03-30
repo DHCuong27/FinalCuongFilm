@@ -297,7 +297,7 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 					{
 						FileName = dto.VideoFile.FileName,
 						FileUrl = originalUrl,
-						FileType = "video", // 
+						FileType = "video", 
 						Quality = "Processing...", 
 						Language = dto.Language ?? "vi",
 						FileSizeBytes = fileSize,

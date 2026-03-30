@@ -609,34 +609,7 @@
                             <span class="form-hint" style="margin-top: 8px;">Select image file (JPG, PNG, WEBP). Max 5MB.</span>
                         </div>
 
-                        <div class="upload-divider">or paste URL</div>
-
-                        <div class="url-group">
-                            <input asp-for="PosterUrl" class="form-control" id="posterUrlInput" placeholder="https://example.com/poster.jpg" />
-                            <button type="button" class="btn-outline" onclick="previewPoster()"><i class="zmdi zmdi-eye"></i> Preview</button>
-                            <button type="button" class="btn-outline" onclick="clearPoster()" style="color: var(--text-muted);"><i class="zmdi zmdi-close"></i> Clear</button>
-                        </div>
-                        <span class="form-hint">Paste a direct image link. Click Preview to check.</span>
-                        <span asp-validation-for="PosterUrl" class="text-danger"></span>
-
-                        <div class="img-preview-wrap" id="posterPreview">
-                            <img src="" alt="Poster preview" id="posterPreviewImg" />
-                            <button type="button" class="preview-clear-btn" onclick="clearPoster()" title="Remove Image">
-                                <i class="zmdi zmdi-close"></i>
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="form-group form-col-full" style="margin-top: 16px;">
-                        <label class="form-label">Trailer URL</label>
-                        <div class="url-group">
-                            <input asp-for="TrailerUrl" class="form-control" id="trailerUrlInput" placeholder="https://youtube.com/watch?v=…" />
-                            <button type="button" class="btn-outline" onclick="previewTrailer()"><i class="zmdi zmdi-play-circle"></i> Embed</button>
-                            <button type="button" class="btn-outline" onclick="clearTrailer()" style="color: var(--text-muted);"><i class="zmdi zmdi-close"></i> Clear</button>
-                        </div>
-                        <span class="form-hint">YouTube or Vimeo URL — click Embed to preview.</span>
-                        <span asp-validation-for="TrailerUrl" class="text-danger"></span>
-                        <div class="embed-preview" id="trailerPreview"></div>
+                     
                     </div>
                 </div>
             </div>

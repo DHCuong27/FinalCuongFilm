@@ -145,13 +145,21 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 		{
 			if (id == null) return NotFound();
 
-			var movie = await _movieService.GetByIdAsync(id.Value);
+			// 1. BẮT BUỘC phải Include bảng trung gian để lấy danh sách Actor và Genre cũ
+			var movie = await _context.Movies
+				.Include(m => m.MovieActors)
+				.Include(m => m.MovieGenres)
+				// Nếu có Country, Language thì không cần Include vì nó lưu thẳng ID ở bảng Movie
+				.FirstOrDefaultAsync(m => m.Id == id);
+
 			if (movie == null) return NotFound();
 
-			var updateDto = new MovieUpdateDto
+			// 2. Map dữ liệu sang DTO 
+			var dto = new MovieUpdateDto
 			{
 				Id = movie.Id,
 				Title = movie.Title,
+				Slug = movie.Slug,
 				Description = movie.Description,
 				ReleaseYear = movie.ReleaseYear,
 				DurationMinutes = movie.DurationMinutes,
@@ -160,14 +168,19 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 				Type = movie.Type,
 				Status = movie.Status,
 				IsActive = movie.IsActive,
-				LanguageId = movie.LanguageId,
-				CountryId = movie.CountryId,
-				ActorIds = movie.SelectedActorIds,
-				GenreIds = movie.SelectedGenreIds
+				CountryId = movie.CountryId ?? Guid.Empty,
+				LanguageId = movie.LanguageId ?? Guid.Empty, 
+				ActorIds = movie.MovieActors.Select(ma => ma.ActorId).ToList(),
+				GenreIds = movie.MovieGenres.Select(mg => mg.GenreId).ToList()
 			};
 
-			await PopulateDropdowns(movie.LanguageId, movie.CountryId, movie.SelectedActorIds, movie.SelectedGenreIds);
-			return View(updateDto);
+			// 3. Đổ danh sách tổng vào ViewBag để giao diện có dữ liệu tạo Dropdown
+			ViewBag.Countries = new SelectList(await _context.Countries.ToListAsync(), "Id", "Name");
+			ViewBag.Languages = new SelectList(await _context.Languages.ToListAsync(), "Id", "Name");
+			ViewBag.Actors = new SelectList(await _context.Actors.ToListAsync(), "Id", "Name");
+			ViewBag.Genres = new SelectList(await _context.Genres.ToListAsync(), "Id", "Name");
+
+			return View(dto);
 		}
 
 		// POST: Admin/Movies/Edit/5

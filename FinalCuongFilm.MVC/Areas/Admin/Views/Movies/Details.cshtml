@@ -396,56 +396,62 @@
 
     /* Responsive */
     @@media (max-width: 768px) {
-        .movie-content {
-            flex-direction: column;
-            padding: 20px;
-        }
+        .movie-content
 
-        .poster-section {
-            width: 100%;
-            max-width: 300px;
-            margin: 0 auto;
-        }
+    {
+        flex-direction: column;
+        padding: 20px;
+    }
 
-        .poster-image, .no-poster {
-            height: 350px;
-        }
+    .poster-section {
+        width: 100%;
+        max-width: 300px;
+        margin: 0 auto;
+    }
 
-        .details-grid {
-            grid-template-columns: 1fr;
-        }
+    .poster-image, .no-poster {
+        height: 350px;
+    }
 
-        .action-buttons {
-            flex-direction: column;
-        }
+    .details-grid {
+        grid-template-columns: 1fr;
+    }
 
-        .btn {
-            width: 100%;
-        }
+    .action-buttons {
+        flex-direction: column;
+    }
+
+    .btn {
+        width: 100%;
+    }
+
     }
 
     @@media (max-width: 480px) {
-        .movie-detail-container {
-            padding: 16px;
-        }
+        .movie-detail-container
 
-        .page-title {
-            font-size: 24px;
-        }
+    {
+        padding: 16px;
+    }
 
-        .movie-title {
-            font-size: 20px;
-        }
+    .page-title {
+        font-size: 24px;
+    }
 
-        .movie-meta {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 8px;
-        }
+    .movie-title {
+        font-size: 20px;
+    }
 
-        .poster-image, .no-poster {
-            height: 300px;
-        }
+    .movie-meta {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .poster-image, .no-poster {
+        height: 300px;
+    }
+
     }
 
     /* Scrollbar Styling */
@@ -517,19 +523,19 @@
                 <div class="movie-meta">
                     <div class="meta-item">
                         <i>📅</i>
-                        <span>@Model.ReleaseYear</span>
+                        <span>@(Model.ReleaseYear?.ToString() ?? "N/A")</span>
                     </div>
                     <div class="meta-item">
                         <i>⏱️</i>
-                        <span>@Model.DurationMinutes mins</span>
+                        <span>@(Model.DurationMinutes?.ToString() ?? "N/A") mins</span>
                     </div>
                     <div class="meta-item">
                         <i>🌍</i>
-                        <span>@Model.CountryName</span>
+                        <span>@(string.IsNullOrEmpty(Model.CountryName) ? "N/A" : Model.CountryName)</span>
                     </div>
                     <div class="meta-item">
                         <i>🗣️</i>
-                        <span>@Model.LanguageName</span>
+                        <span>@(string.IsNullOrEmpty(Model.LanguageName) ? "N/A" : Model.LanguageName)</span>
                     </div>
                 </div>
 
@@ -542,6 +548,11 @@
                     <div class="detail-item">
                         <div class="detail-label">Movie Type</div>
                         <div class="detail-value">@Model.Type</div>
+                    </div>
+
+                    <div class="detail-item">
+                        <div class="detail-label">Genre</div>
+                        <div class="detail-value">@(string.IsNullOrEmpty(Model.GenreName) ? "N/A" : Model.GenreName)</div>
                     </div>
 
                     <div class="detail-item">
@@ -559,6 +570,29 @@
                                 }
                             </div>
                         </div>
+                    </div>
+                </div>
+
+                <div class="actor-section">
+                    <div class="section-title">
+                        <i>👥</i>
+                        Cast & Crew (@Model.ActorName.Count)
+                    </div>
+                    <div class="actor-list">
+                        @if (Model.ActorName != null && Model.ActorName.Any())
+                        {
+                            foreach (var actorName in Model.ActorName)
+                            {
+                                <div class="actor-item">
+                                    <div class="actor-avatar">👤</div>
+                                    <div class="actor-name">@actorName</div>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <span style="color: var(--text-gray); font-style: italic; font-size: 14px;">No actor information available for this movie.</span>
+                        }
                     </div>
                 </div>
 

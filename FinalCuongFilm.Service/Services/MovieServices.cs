@@ -64,14 +64,33 @@ namespace FinalCuongFilm.Service.Services
 		public async Task<MovieDto?> GetByIdAsync(Guid id)
 		{
 			var movie = await _context.Movies
-				.AsNoTracking()
-				.Include(m => m.MovieGenres)
-					.ThenInclude(mg => mg.Genre)
 				.Include(m => m.MovieActors)
-					.ThenInclude(ma => ma.Actor)
-				.FirstOrDefaultAsync(m => m.Id == id && m.IsActive);
+					.ThenInclude(ma => ma.Actor) 
+				.FirstOrDefaultAsync(m => m.Id == id);
 
-			return movie == null ? null : _mapper.Map<MovieDto>(movie);
+			if (movie == null)
+				return null;
+
+			return new MovieDto
+			{
+				Id = movie.Id,
+				Title = movie.Title,
+				Slug = movie.Slug,
+				Type = movie.Type,
+				Description = movie.Description,
+				DurationMinutes = movie.DurationMinutes,
+				ReleaseYear = movie.ReleaseYear,
+				Status = movie.Status,
+				IsActive = movie.IsActive,
+				PosterUrl = movie.PosterUrl,
+				GenreName = movie.MovieGenres.FirstOrDefault()?.Genre?.Name,
+					CountryName = movie.Country != null ? movie.Country.Name : null,
+					LanguageName = movie.Language != null ? movie.Language.Name : null,
+				ActorName = movie.MovieActors
+								  .Where(ma => ma.Actor != null)
+								  .Select(ma => ma.Actor.Name)
+								  .ToList()
+			};
 		}
 
 		public async Task<MovieDto?> GetBySlugAsync(string slug)

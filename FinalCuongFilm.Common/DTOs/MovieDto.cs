@@ -35,7 +35,7 @@ namespace FinalCuongFilm.Common.DTOs
 
 		// Collections cho many-to-many
 
-		public List<ActorDto> Actors { get; set; }
+		public List<string> ActorName { get; set; } = new List<string>();
 		public List<Guid> SelectedActorIds { get; set; } = new();
 		public List<Guid> SelectedGenreIds { get; set; } = new();
 		public List<Guid> SelectedCountryIds { get; set; } = new();

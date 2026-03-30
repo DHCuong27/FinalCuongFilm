@@ -56,13 +56,13 @@ namespace FinalCuongFilm.Service.Services
 				var firstCountry = movieDetails.ProductionCountries?.FirstOrDefault();
 				if (firstCountry != null)
 				{
-					var country = await _dbContext.Countries.FirstOrDefaultAsync(c => c.IsoCode == firstCountry.Iso31661);
+					var country = await _dbContext.Countries.FirstOrDefaultAsync(c => c.IsoCode == firstCountry.Iso_3166_1);
 					if (country == null)
 					{
 						country = new Country
 						{
 							Name = firstCountry.Name,
-							IsoCode = firstCountry.Iso31661,
+							IsoCode = firstCountry.Iso_3166_1,
 							Slug = SlugHelper.GenerateSlug(firstCountry.Name)
 						};
 						_dbContext.Countries.Add(country);
