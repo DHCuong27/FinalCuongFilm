@@ -35,10 +35,13 @@ namespace FinalCuongFilm.Service.Services
 				.ToListAsync();
 		}
 
-		// Get actor by id
 		public async Task<ActorDto?> GetByIdAsync(Guid id)
 		{
-			var actor = await _context.Actors.FindAsync(id);
+			var actor = await _context.Actors
+				.Include(a => a.MovieActors)
+					.ThenInclude(ma => ma.Movie) // <-- BẮC CẦU SANG BẢNG MOVIE ĐỂ LẤY TÊN PHIM
+				.FirstOrDefaultAsync(a => a.Id == id);
+
 			if (actor == null)
 				return null;
 
@@ -49,28 +52,52 @@ namespace FinalCuongFilm.Service.Services
 				Slug = actor.Slug,
 				AvartUrl = actor.AvartUrl,
 				DateOfBirth = actor.DateOfBirth,
-				Gender = actor.Gender
+				Gender = actor.Gender,
+
+				SelectedMovieIds = actor.MovieActors.Select(ma => ma.MovieId).ToList(),
+
+				// MỚI: Lấy danh sách tên phim đẩy ra View
+				ParticipatedMovieTitles = actor.MovieActors
+											   .Where(ma => ma.Movie != null)
+											   .Select(ma => ma.Movie.Title)
+											   .ToList()
 			};
 		}
 
 		// Create new actor
 		public async Task<ActorDto> CreateAsync(ActorCreateDto dto)
 		{
-			var slug = SlugHelper.GenerateSlug(dto.Name);
-
+			// 1. Tạo thực thể Actor
 			var actor = new Actor
 			{
-				Id = Guid.NewGuid(),
 				Name = dto.Name,
-				Slug = slug,
+				Slug = SlugHelper.GenerateSlug(dto.Name), // Tạo Slug tự động từ tên
 				AvartUrl = dto.AvartUrl,
 				DateOfBirth = dto.DateOfBirth,
 				Gender = dto.Gender
 			};
 
+			// Thêm Actor vào DbContext (Lúc này Id mới được EF Core khởi tạo ngầm)
 			_context.Actors.Add(actor);
+
+			// 2. Xử lý mối quan hệ Nhiều - Nhiều (Gán Phim cho Diễn viên)
+			if (dto.MovieIds != null && dto.MovieIds.Any())
+			{
+				foreach (var movieId in dto.MovieIds)
+				{
+					var movieActor = new MovieActor
+					{
+						ActorId = actor.Id, // Link với ID của Actor vừa tạo
+						MovieId = movieId
+					};
+					_context.MovieActors.Add(movieActor);
+				}
+			}
+
+			// 3. Lưu toàn bộ xuống Database trong 1 Transaction duy nhất
 			await _context.SaveChangesAsync();
 
+			// 4. Trả về DTO
 			return new ActorDto
 			{
 				Id = actor.Id,
@@ -82,20 +109,41 @@ namespace FinalCuongFilm.Service.Services
 			};
 		}
 
-		// Update actor
 		public async Task<bool> UpdateAsync(ActorUpdateDto dto)
 		{
-			var actor = await _context.Actors.FindAsync(dto.Id);
-			if (actor == null)
-				return false;
+			// FIX 2.2: Include bảng trung gian để so sánh Phim Cũ và Phim Mới
+			var actor = await _context.Actors
+				.Include(a => a.MovieActors)
+				.FirstOrDefaultAsync(a => a.Id == dto.Id);
 
-			var slug = SlugHelper.GenerateSlug(dto.Name);
+			if (actor == null) return false;
 
+			// Cập nhật thông tin cơ bản
 			actor.Name = dto.Name;
-			actor.Slug = slug;
-			actor.AvartUrl = dto.AvartUrl;
+			actor.Slug = SlugHelper.GenerateSlug(dto.Name);
+			if (!string.IsNullOrEmpty(dto.AvartUrl))
+				actor.AvartUrl = dto.AvartUrl;
 			actor.DateOfBirth = dto.DateOfBirth;
 			actor.Gender = dto.Gender;
+
+			// ========================================================
+			// LOGIC CẬP NHẬT NHIỀU - NHIỀU (PARTICIPATED MOVIES)
+			// ========================================================
+			if (dto.MovieIds != null)
+			{
+				var existingMovieIds = actor.MovieActors.Select(ma => ma.MovieId).ToList();
+
+				// 1. Phim nào lúc trước có, nhưng giờ admin đã bỏ chọn (Xóa đi) -> Remove khỏi DB
+				var moviesToRemove = actor.MovieActors.Where(ma => !dto.MovieIds.Contains(ma.MovieId)).ToList();
+				_context.MovieActors.RemoveRange(moviesToRemove);
+
+				// 2. Phim nào mới được admin chọn thêm vào -> Add vào DB
+				var newMovieIds = dto.MovieIds.Except(existingMovieIds).ToList();
+				foreach (var movieId in newMovieIds)
+				{
+					_context.MovieActors.Add(new MovieActor { ActorId = actor.Id, MovieId = movieId });
+				}
+			}
 
 			await _context.SaveChangesAsync();
 			return true;

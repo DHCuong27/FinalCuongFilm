@@ -8,6 +8,9 @@
 		public string? AvartUrl { get; set; }
 		public DateTime? DateOfBirth { get; set; }
 		public string? Gender { get; set; }
+		public List<Guid> SelectedMovieIds { get; set; } = new List<Guid>();
+
+		public List<string> ParticipatedMovieTitles { get; set; } = new List<string>();
 	}
 
 	public class ActorCreateDto
@@ -16,6 +19,7 @@
 		public string? AvartUrl { get; set; }
 		public DateTime? DateOfBirth { get; set; }
 		public string? Gender { get; set; }
+		public List<Guid> MovieIds { get; set; } = new();
 	}
 
 	public class ActorUpdateDto : ActorCreateDto

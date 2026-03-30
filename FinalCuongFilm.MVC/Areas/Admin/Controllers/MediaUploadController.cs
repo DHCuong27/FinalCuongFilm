@@ -297,8 +297,8 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 					{
 						FileName = dto.VideoFile.FileName,
 						FileUrl = originalUrl,
-						FileType = "video", // video gốc chờ xử lý
-						Quality = "Processing...", // Đánh dấu đang xử lý
+						FileType = "video", // 
+						Quality = "Processing...", 
 						Language = dto.Language ?? "vi",
 						FileSizeBytes = fileSize,
 						MovieId = dto.MovieId,
@@ -411,16 +411,5 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 				});
 			}
 		}
-	}
-
-	public class VideoUploadDto
-	{
-		public Guid MovieId { get; set; }
-		public Guid? EpisodeId { get; set; }
-		public int? EpisodeNumber { get; set; }
-		public IFormFile? VideoFile { get; set; }
-		public string? ManualUrl { get; set; }
-		public string Quality { get; set; } = "1080p";
-		public string? Language { get; set; }
 	}
 }

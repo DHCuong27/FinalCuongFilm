@@ -248,28 +248,38 @@ namespace FinalCuongFilm.Service.Services
 		}
 
 		// Pagination 
-		public async Task<PagedResult<MovieDto>> GetPagedAsync(int pageIndex = 1, int pageSize = 10)
+		public async Task<PagedResult<MovieDto>> GetPagedAsync(int page, int pageSize)
 		{
-			
-			if (pageIndex < 1) pageIndex = 1;
-			if (pageSize < 1) pageSize = 10;
+			var query = _context.Movies
+				.Include(m => m.Country)
+				.AsQueryable();
 
-			var query = _context.Movies.AsQueryable();
+			var totalCount = await query.CountAsync();
 
-			int totalCount = await query.CountAsync();
+			var items = await query
+				.OrderByDescending(m => m.CreatedAt) 
+				.Skip((page - 1) * pageSize)
+				.Take(pageSize)
+				.Select(m => new MovieDto
+				{
+					Id = m.Id,
+					Title = m.Title,
+					Slug = m.Slug,
+					PosterUrl = m.PosterUrl,
+					Type = m.Type,
+					ReleaseYear = m.ReleaseYear,
+					IsActive = m.IsActive,
 
-			var items = await query.OrderByDescending(m => m.CreatedAt) 
-								   .Skip((pageIndex - 1) * pageSize)
-								   .Take(pageSize)
-								   .ToListAsync();
+					CountryName = m.Country != null ? m.Country.Name : "Unknown"
 
-			var dtos = _mapper.Map<List<MovieDto>>(items);
+				})
+				.ToListAsync();
 
 			return new PagedResult<MovieDto>
 			{
-				Items = dtos,
+				Items = items,
 				TotalCount = totalCount,
-				PageIndex = pageIndex,
+				PageIndex = page,
 				PageSize = pageSize
 			};
 		}

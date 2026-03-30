@@ -177,22 +177,22 @@
                 <div class="row g-3">
                     @if (Model != null && Model.Any())
                     {
-                        foreach (var item in Model)
+                        foreach (var movie in Model)
                         {
                             <div class="col-6 col-md-4 col-lg-3">
                                 <div class="nf-movie-card">
-                                    <a asp-controller="Movie" asp-action="Details" asp-route-slug="@item.Slug">
-                                        <img src="@item.PosterUrl" alt="@item.Title" class="nf-poster" />
+                                    <a asp-controller="Movie" asp-action="Detail" asp-route-slug="@movie.Slug">
+                                        <img src="@movie.PosterUrl" alt="@movie.Title" class="nf-poster" />
                                     </a>
 
-                                    <form asp-controller="Favorite" asp-action="Remove" asp-route-movieId="@item.Id" method="post" onsubmit="return confirm('Remove from My List?');">
+                                    <form asp-controller="Favorite" asp-action="Remove" asp-route-movieId="@movie.Id" method="post" onsubmit="return confirm('Remove from My List?');">
                                         <button type="submit" class="btn-remove-fav" title="Remove from My List">
                                             <i class="zmdi zmdi-close"></i>
                                         </button>
                                     </form>
 
-                                    <a asp-controller="Movie" asp-action="Details" asp-route-slug="@item.Slug" class="nf-movie-title text-truncate">
-                                        @item.Title
+                                    <a asp-controller="Movie" asp-action="Detail" asp-route-slug="@movie.Slug" class="nf-movie-title text-truncate">
+                                        @movie.Title
                                     </a>
                                 </div>
                             </div>

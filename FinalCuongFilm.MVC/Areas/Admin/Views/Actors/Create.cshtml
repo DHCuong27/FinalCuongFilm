@@ -27,7 +27,6 @@
         padding: 24px;
     }
 
-    /* Header */
     .page-header {
         margin-bottom: 24px;
     }
@@ -44,27 +43,25 @@
         border-radius: var(--radius-md);
         border: 1px solid var(--border-color);
         box-shadow: var(--shadow-sm);
-        overflow: hidden;
+        margin-bottom: 24px;
+        /* LỖI Ở ĐÂY: Đã xóa overflow: hidden; đổi thành visible để Dropdown không bị cắt */
+        overflow: visible;
     }
 
-    .form-header {
+    .form-header, .form-card-header {
         padding: 16px 20px;
         border-bottom: 1px solid var(--border-color);
         background: var(--bg-light);
+        font-size: 18px;
+        font-weight: 600;
+        color: var(--text-dark);
     }
 
-        .form-header h3 {
-            margin: 0;
-            font-size: 18px;
-            font-weight: 600;
-            color: var(--text-dark);
-        }
-
-    .form-body {
+    .form-body, .form-card-body {
         padding: 24px;
     }
 
-    /* Form */
+    /* Form Elements */
     .form-group {
         margin-bottom: 20px;
     }
@@ -107,11 +104,111 @@
         min-width: 200px;
     }
 
-    .validation-error {
+    .validation-error, .text-danger {
         color: var(--danger-color);
         font-size: 12px;
         margin-top: 4px;
         display: block;
+    }
+
+    /* --- UPLOAD FILE CSS --- */
+    .file-input-wrap {
+        border: 2px dashed var(--border-color);
+        padding: 20px;
+        text-align: center;
+        border-radius: 6px;
+        background: var(--bg-light);
+        transition: all 0.2s;
+        position: relative;
+    }
+
+        .file-input-wrap:hover {
+            border-color: var(--primary-color);
+        }
+
+    .img-preview {
+        max-width: 150px;
+        max-height: 200px;
+        border-radius: 6px;
+        margin-top: 15px;
+        display: none;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        object-fit: cover;
+    }
+
+    /* --- TAG PICKER CSS --- */
+    .tag-picker {
+        position: relative;
+    }
+
+    .tag-search-box input {
+        margin-bottom: 10px;
+    }
+
+    .tag-dropdown {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        width: 100%;
+        background: #fff;
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        max-height: 200px;
+        overflow-y: auto;
+        box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+        z-index: 9999; /* Đẩy lên cao nhất */
+        display: none;
+    }
+
+    .tag-dropdown-item {
+        padding: 10px 15px;
+        cursor: pointer;
+        font-size: 14px;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+        .tag-dropdown-item:hover {
+            background: #f8fafc;
+            color: var(--primary-color);
+        }
+
+    .tag-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        min-height: 38px;
+        padding: 10px;
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        background: #fff;
+    }
+
+    .tag-chip {
+        background: #eff6ff;
+        color: #1e40af;
+        border: 1px solid #bfdbfe;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 13px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+        .tag-chip i {
+            cursor: pointer;
+            color: #3b82f6;
+            transition: 0.2s;
+        }
+
+            .tag-chip i:hover {
+                color: #1e3a8a;
+            }
+
+    .tag-empty {
+        color: var(--text-muted);
+        font-size: 14px;
+        align-self: center;
     }
 
     /* Buttons */
@@ -132,6 +229,7 @@
         font-weight: 500;
         text-decoration: none;
         border: 1px solid transparent;
+        cursor: pointer;
         transition: all 0.2s;
     }
 
@@ -155,20 +253,18 @@
             background: #e2e8f0;
         }
 
-    /* Responsive */
     @@media (max-width: 768px) {
-        .page-container {
-            padding: 16px;
-        }
+        .form-actions
 
-        .form-actions {
-            flex-direction: column;
-        }
+    {
+        flex-direction: column;
+    }
 
-        .btn-custom {
-            width: 100%;
-            justify-content: center;
-        }
+    .btn-custom {
+        width: 100%;
+        justify-content: center;
+    }
+
     }
 </style>
 
@@ -183,23 +279,15 @@
         </div>
 
         <div class="form-body">
-            <form asp-action="Create" method="post">
+            <form asp-action="Create" method="post" enctype="multipart/form-data">
                 <div asp-validation-summary="ModelOnly" class="validation-error"></div>
 
                 <div class="form-group">
                     <label asp-for="Name" class="form-label">
                         Actor Name <span class="required-star">*</span>
                     </label>
-                    <input asp-for="Name" class="form-control"
-                           placeholder="e.g. Tom Cruise, Scarlett Johansson..." />
+                    <input asp-for="Name" class="form-control" placeholder="e.g. Tom Cruise, Scarlett Johansson..." />
                     <span asp-validation-for="Name" class="validation-error"></span>
-                </div>
-
-                <div class="form-group">
-                    <label asp-for="AvartUrl" class="form-label">Avatar URL</label>
-                    <input asp-for="AvartUrl" class="form-control"
-                           placeholder="https://example.com/avatar.jpg" />
-                    <span asp-validation-for="AvartUrl" class="validation-error"></span>
                 </div>
 
                 <div class="form-row">
@@ -212,11 +300,53 @@
                     </div>
                 </div>
 
+                <div class="form-card" style="box-shadow: none; margin-top: 10px; border-color: transparent;">
+                    <div class="form-card-header" style="background: transparent; padding-left: 0; border-bottom: none;"><i class="zmdi zmdi-image-o"></i> Media & Connections</div>
+                    <div class="form-card-body" style="padding: 16px 0;">
+                        <div class="form-grid">
+
+                            <div class="form-group">
+                                <label class="form-label">Avatar Image</label>
+                                <div class="file-input-wrap" id="posterFileWrap">
+                                    <input type="file" name="posterFile" id="posterFileInput"
+                                           accept=".jpg,.jpeg,.png,.webp"
+                                           onchange="onPosterFileChange(this)"
+                                           style="width: 100%; cursor: pointer;" />
+
+                                    <center>
+                                        <img id="avatarPreview" class="img-preview" src="#" alt="Preview" />
+                                    </center>
+
+                                    <span class="form-hint" style="margin-top: 8px; display: block; color: var(--text-muted); font-size: 13px;">Select image file (JPG, PNG, WEBP). Max 5MB.</span>
+                                </div>
+                                <span asp-validation-for="AvartUrl" class="text-danger"></span>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Participated Movies</label>
+
+                                <select asp-for="MovieIds" asp-items="ViewBag.Movies" multiple id="movieSelect" class="form-control" style="display:none;"></select>
+
+                                <div class="tag-picker" id="moviePicker">
+                                    <div class="tag-search-box">
+                                        <input type="text" id="movieSearch" class="form-control" placeholder="Search Movie..." autocomplete="off" />
+                                    </div>
+                                    <div class="tag-dropdown" id="movieDropdown"></div>
+                                    <div class="tag-chips" id="movieChips">
+                                        <span class="tag-empty">No Movie selected</span>
+                                    </div>
+                                </div>
+                                <span asp-validation-for="MovieIds" class="text-danger"></span>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
                 <div class="form-actions">
                     <button type="submit" class="btn-custom btn-primary">
                         <i class="zmdi zmdi-save"></i> Save
                     </button>
-
                     <a asp-action="Index" class="btn-custom btn-secondary">
                         <i class="zmdi zmdi-arrow-left"></i> Back to List
                     </a>
@@ -230,4 +360,101 @@
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
+
+    <script>
+        // 1. CHỨC NĂNG XEM TRƯỚC ẢNH UPLOAD (PREVIEW)
+        function onPosterFileChange(input) {
+            const preview = document.getElementById('avatarPreview');
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                }
+                reader.readAsDataURL(input.files[0]);
+            } else {
+                preview.style.display = 'none';
+            }
+        }
+
+        // 2. CHỨC NĂNG TAG PICKER (CHỌN PHIM NHIỀU NHÃN)
+        document.addEventListener('DOMContentLoaded', function() {
+            const select = document.getElementById('movieSelect');
+            const search = document.getElementById('movieSearch');
+            const dropdown = document.getElementById('movieDropdown');
+            const chips = document.getElementById('movieChips');
+
+            // Bảo vệ JS không bị văng lỗi nếu ViewBag.Movies rỗng
+            if (!select || !search) return;
+
+            // Render giao diện Chips từ thẻ <select> ẩn
+            function renderChips() {
+                chips.innerHTML = '';
+                let hasSelection = false;
+                Array.from(select.options).forEach(opt => {
+                    if (opt.selected) {
+                        hasSelection = true;
+                        const chip = document.createElement('span');
+                        chip.className = 'tag-chip';
+                        chip.innerHTML = `${opt.text} <i class="zmdi zmdi-close" onclick="removeTag('${opt.value}')"></i>`;
+                        chips.appendChild(chip);
+                    }
+                });
+
+                if (!hasSelection) {
+                    chips.innerHTML = '<span class="tag-empty">No Movie selected</span>';
+                }
+            }
+
+            // Hàm xóa tag khi bấm dấu X
+            window.removeTag = function(val) {
+                Array.from(select.options).forEach(opt => {
+                    if (opt.value === val) opt.selected = false;
+                });
+                renderChips();
+            };
+
+            // Sự kiện gõ tìm kiếm phim
+            search.addEventListener('input', function() {
+                const term = this.value.toLowerCase().trim();
+                dropdown.innerHTML = '';
+
+                if (!term) {
+                    dropdown.style.display = 'none';
+                    return;
+                }
+
+                let matches = 0;
+                Array.from(select.options).forEach(opt => {
+                    // Nếu option chưa được chọn và tên có chứa từ khóa
+                    if (!opt.selected && opt.text.toLowerCase().includes(term)) {
+                        matches++;
+                        const div = document.createElement('div');
+                        div.className = 'tag-dropdown-item';
+                        div.innerText = opt.text;
+                        div.onclick = function() {
+                            opt.selected = true; // Cập nhật thẻ Select ẩn
+                            search.value = ''; // Xóa ô search
+                            dropdown.style.display = 'none'; // Ẩn dropdown
+                            renderChips(); // Vẽ lại Chip
+                        };
+                        dropdown.appendChild(div);
+                    }
+                });
+
+                dropdown.style.display = matches > 0 ? 'block' : 'none';
+            });
+
+            // Đóng dropdown khi click ra ngoài
+            document.addEventListener('click', function(e) {
+                const picker = document.getElementById('moviePicker');
+                if (picker && !picker.contains(e.target)) {
+                    dropdown.style.display = 'none';
+                }
+            });
+
+            // Khởi tạo chạy lần đầu (Nếu Edit form có sẵn data)
+            renderChips();
+        });
+    </script>
 }

@@ -90,7 +90,7 @@ namespace FinalCuongFilm.Service.Services
 				_dbContext.Movies.Add(movie);
 				await _dbContext.SaveChangesAsync();
 
-				// C. import genre
+				// C. imprt genre
 				if (movieDetails.Genres != null)
 				{
 					foreach (var genreData in movieDetails.Genres)

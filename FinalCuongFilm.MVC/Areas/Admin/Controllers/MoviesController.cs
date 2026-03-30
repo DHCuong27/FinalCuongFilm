@@ -126,7 +126,7 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 				{
 					var innerException = dbEx.InnerException?.Message ?? dbEx.Message;
 					ModelState.AddModelError("", $"Error database: {innerException}");
-					_logger.LogError(dbEx, "Lỗi Database khi tạo phim"); 
+					_logger.LogError(dbEx, "Error Database when create film"); 
 				}
 				catch (Exception ex)
 				{

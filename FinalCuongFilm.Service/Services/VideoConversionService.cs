@@ -60,7 +60,7 @@ namespace FinalCuongFilm.Service.Services
 				}
 
 				// 2. Transcode bằng FFmpeg
-				_logger.LogInformation($"[FFMPEG] Bắt đầu chia nhỏ và nén Video đa phân giải...");
+				_logger.LogInformation($"[FFMPEG] Start splitting and compressing multi-resolution video....");
 				string ffmpegArgs =
 				$"-i \"{localInputPath}\" " +
 				"-map 0:v:0 -map 0:v:0 -map 0:v:0 -map 0:a:0 -map 0:a:0 -map 0:a:0 " +
@@ -79,7 +79,7 @@ namespace FinalCuongFilm.Service.Services
 				await conversion.Start();
 
 				// 3. Upload video lên Azure 
-				_logger.LogInformation($"[UPLOAD] Bắt đầu đẩy hàng loạt file .ts và .m3u8 lên Azure...");
+				_logger.LogInformation($"[UPLOAD]Start pushing .ts and .m3u8 files to Azure in bulk....");
 
 				string azureFolder = $"movies/{slug}/ep{episodeNumber}/hls";
 
@@ -87,7 +87,7 @@ namespace FinalCuongFilm.Service.Services
 
 				if (allFiles.Length == 0)
 				{
-					throw new Exception("Lỗi: FFmpeg chạy xong nhưng không sinh ra được file nào!");
+					throw new Exception("Error: FFmpeg finished running but failed to create any files!");
 				}
 
 				// Giới hạn chỉ cho upload tối đa 10 file cùng lúc
@@ -115,20 +115,19 @@ namespace FinalCuongFilm.Service.Services
 
 				if (string.IsNullOrEmpty(masterUrl))
 				{
-					throw new Exception("Lỗi: Không tìm thấy link file master.m3u8 sau khi upload.");
+					throw new Exception("Error:The master.m3u8 file link could not be found after uploading.");
 				}
 
-				_logger.LogInformation($"[SUCCESS] Hoàn tất xử lý HLS! Link Master: {masterUrl}");
+				_logger.LogInformation($"[SUCCESS] HLS processing complete! Link Master: {masterUrl}");
 				return masterUrl;
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError(ex, $"[ERROR] Lỗi ngầm trong quá trình ConvertToHlsAsync: {ex.Message}");
-				throw; // Ném lỗi ra ngoài để Admin biết
+				_logger.LogError(ex, $"[ERROR] Hidden error during ConvertToHlsAsync: {ex.Message}");
+				throw;
 			}
 			finally
 			{
-				// Dọn dẹp ổ đĩa cục bộ
 				if (File.Exists(localInputPath)) File.Delete(localInputPath);
 				if (Directory.Exists(localOutputDir)) Directory.Delete(localOutputDir, true);
 			}
@@ -163,12 +162,12 @@ namespace FinalCuongFilm.Service.Services
 					// Lưu bản Update này vào Database
 					await _mediaFileService.UpdateAsync(updateDto);
 
-					_logger.LogInformation($"[HANGFIRE] Đã cập nhật xong file HLS vào Database cho MediaId: {mediaFileId}");
+					_logger.LogInformation($"[HANGFIRE] The HLS file has been updated in the database for MediaId. {mediaFileId}");
 				}
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError(ex, $"[HANGFIRE] Lỗi khi xử lý ngầm video cho MediaId: {mediaFileId}");
+				_logger.LogError(ex, $"[HANGFIRE] Error when processing video in the background for MediaId: {mediaFileId}");
 				
 			}
 		}

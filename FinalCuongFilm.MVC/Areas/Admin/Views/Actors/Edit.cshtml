@@ -7,7 +7,7 @@
 <style>
     :root {
         --primary-color: #2563eb;
-        --primary-light: #dbeafe;
+        --secondary-color: #64748b;
         --text-dark: #1f2937;
         --text-gray: #6b7280;
         --border-color: #e5e7eb;
@@ -15,10 +15,8 @@
         --radius-md: 8px;
         --radius-lg: 12px;
         --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
-        --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.05);
         --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.1);
         --danger-red: #ef4444;
-        --success-green: #10b981;
     }
 
     body {
@@ -71,7 +69,8 @@
         padding: 40px;
         border: 1px solid var(--border-color);
         position: relative;
-        overflow: hidden;
+        /* Bắt buộc visible để Tag dropdown không bị cắt */
+        overflow: visible;
     }
 
         .edit-actor-card::before {
@@ -82,6 +81,8 @@
             right: 0;
             height: 4px;
             background: linear-gradient(90deg, var(--primary-color), #3b82f6);
+            border-top-left-radius: var(--radius-lg);
+            border-top-right-radius: var(--radius-lg);
         }
 
     .card-header {
@@ -101,12 +102,7 @@
             gap: 10px;
         }
 
-            .card-header h3 i {
-                color: var(--primary-color);
-                font-size: 20px;
-            }
-
-    /* Form Grid */
+    /* Form Styles */
     .form-grid {
         display: grid;
         grid-template-columns: 1fr;
@@ -129,8 +125,6 @@
         color: var(--text-dark);
         font-weight: 600;
         font-size: 14px;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
     }
 
     .required-star {
@@ -138,7 +132,6 @@
         margin-left: 4px;
     }
 
-    /* Form Controls */
     .form-control {
         width: 100%;
         height: 48px;
@@ -148,7 +141,6 @@
         background-color: white;
         color: var(--text-dark);
         font-size: 15px;
-        font-family: inherit;
         transition: all 0.3s ease;
     }
 
@@ -158,145 +150,7 @@
             box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
         }
 
-        .form-control:hover {
-            border-color: var(--primary-color);
-        }
-
-        .form-control::placeholder {
-            color: var(--text-gray);
-            opacity: 0.6;
-        }
-
-    select.form-control {
-        appearance: none;
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-        background-repeat: no-repeat;
-        background-position: right 16px center;
-        background-size: 16px;
-        padding-right: 40px;
-    }
-
-    /* Avatar Preview Section */
-    .avatar-section {
-        display: flex;
-        align-items: center;
-        gap: 24px;
-        margin-bottom: 24px;
-        padding: 20px;
-        background: var(--bg-light);
-        border-radius: var(--radius-md);
-        border: 1px solid var(--border-color);
-    }
-
-    .avatar-preview {
-        width: 100px;
-        height: 100px;
-        border-radius: 50%;
-        overflow: hidden;
-        border: 3px solid var(--border-color);
-        flex-shrink: 0;
-    }
-
-        .avatar-preview img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-    .avatar-placeholder {
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: var(--text-gray);
-    }
-
-    .avatar-info {
-        flex: 1;
-    }
-
-    .avatar-title {
-        font-size: 16px;
-        font-weight: 600;
-        color: var(--text-dark);
-        margin-bottom: 8px;
-    }
-
-    .avatar-description {
-        font-size: 14px;
-        color: var(--text-gray);
-        line-height: 1.5;
-    }
-
-    /* URL Input Group */
-    .url-input-group {
-        display: flex;
-        gap: 12px;
-        align-items: flex-start;
-    }
-
-        .url-input-group .form-control {
-            flex: 1;
-        }
-
-    .url-paste-btn {
-        padding: 12px 16px;
-        background: var(--primary-light);
-        color: var(--primary-color);
-        border: 2px solid var(--border-color);
-        border-radius: var(--radius-md);
-        font-size: 14px;
-        font-weight: 500;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        white-space: nowrap;
-    }
-
-        .url-paste-btn:hover {
-            background: var(--primary-color);
-            color: white;
-            border-color: var(--primary-color);
-        }
-
-    /* Date Input Styling */
-    input[type="date"].form-control {
-        font-family: inherit;
-        color-scheme: light;
-    }
-
-        input[type="date"].form-control::-webkit-calendar-picker-indicator {
-            cursor: pointer;
-            opacity: 0.6;
-            transition: opacity 0.3s ease;
-        }
-
-        input[type="date"].form-control:hover::-webkit-calendar-picker-indicator {
-            opacity: 1;
-        }
-
-    /* Validation */
-    .validation-summary {
-        background: rgba(239, 68, 68, 0.05);
-        border: 1px solid rgba(239, 68, 68, 0.3);
-        border-radius: var(--radius-md);
-        padding: 16px;
-        margin-bottom: 30px;
-    }
-
-        .validation-summary ul {
-            margin: 0;
-            padding-left: 20px;
-        }
-
-        .validation-summary li {
-            color: var(--danger-red);
-            font-size: 13px;
-            margin: 4px 0;
-        }
-
-    .field-validation-error {
+    .field-validation-error, .validation-error {
         display: block;
         margin-top: 6px;
         color: var(--danger-red);
@@ -304,13 +158,112 @@
         font-weight: 500;
     }
 
-    /* Help Text */
     .help-text {
         display: block;
         margin-top: 6px;
         font-size: 13px;
         color: var(--text-gray);
         font-style: italic;
+    }
+
+    /* --- UPLOAD FILE CSS --- */
+    .file-input-wrap {
+        border: 2px dashed var(--border-color);
+        padding: 20px;
+        text-align: center;
+        border-radius: var(--radius-md);
+        background: var(--bg-light);
+        transition: all 0.2s;
+        position: relative;
+    }
+
+        .file-input-wrap:hover {
+            border-color: var(--primary-color);
+        }
+
+    .img-preview {
+        max-width: 150px;
+        max-height: 200px;
+        border-radius: 6px;
+        margin-top: 15px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        object-fit: cover;
+    }
+
+    /* --- TAG PICKER CSS --- */
+    .tag-picker {
+        position: relative;
+    }
+
+    .tag-search-box input {
+        margin-bottom: 10px;
+        height: 40px;
+    }
+
+    .tag-dropdown {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        width: 100%;
+        background: #fff;
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        max-height: 200px;
+        overflow-y: auto;
+        box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+        z-index: 9999;
+        display: none;
+    }
+
+    .tag-dropdown-item {
+        padding: 10px 15px;
+        cursor: pointer;
+        font-size: 14px;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+        .tag-dropdown-item:hover {
+            background: #f8fafc;
+            color: var(--primary-color);
+        }
+
+    .tag-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        min-height: 48px;
+        padding: 10px;
+        border: 2px solid var(--border-color);
+        border-radius: var(--radius-md);
+        background: #fff;
+    }
+
+    .tag-chip {
+        background: #eff6ff;
+        color: #1e40af;
+        border: 1px solid #bfdbfe;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 13px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+        .tag-chip i {
+            cursor: pointer;
+            color: #3b82f6;
+            transition: 0.2s;
+        }
+
+            .tag-chip i:hover {
+                color: #1e3a8a;
+            }
+
+    .tag-empty {
+        color: var(--text-gray);
+        font-size: 14px;
+        align-self: center;
     }
 
     /* Form Actions */
@@ -330,7 +283,6 @@
         cursor: pointer;
         transition: all 0.3s ease;
         border: none;
-        font-family: inherit;
         display: inline-flex;
         align-items: center;
         justify-content: center;
@@ -377,101 +329,31 @@
             border-top-color: transparent;
             animation: spin 0.8s linear infinite;
         }
-
     @@keyframes spin {
-        to {
-            transform: rotate(360deg);
-        }
+        to
+
+    {
+        transform: rotate(360deg);
     }
 
-    /* Responsive */
+    }
+
     @@media (max-width: 768px) {
-        .edit-actor-container {
-            padding: 20px 16px;
-        }
+        .form-row
 
-        .edit-actor-card {
-            padding: 30px 24px;
-        }
-
-        .card-header {
-            margin: -30px -24px 20px -24px;
-            padding: 16px 24px;
-        }
-
-        .page-title {
-            font-size: 28px;
-        }
-
-        .form-row {
-            grid-template-columns: 1fr;
-            gap: 20px;
-        }
-
-        .avatar-section {
-            flex-direction: column;
-            text-align: center;
-            gap: 16px;
-        }
-
-        .avatar-preview {
-            width: 120px;
-            height: 120px;
-        }
-
-        .form-actions {
-            flex-direction: column;
-        }
-
-        .btn {
-            width: 100%;
-        }
+    {
+        grid-template-columns: 1fr;
+        gap: 20px;
     }
 
-    @@media (max-width: 480px) {
-        .edit-actor-card {
-            padding: 24px 20px;
-            border-radius: 12px;
-        }
-
-        .page-title {
-            font-size: 24px;
-        }
-
-        .card-header h3 {
-            font-size: 16px;
-        }
-
-        .form-control {
-            height: 44px;
-            font-size: 14px;
-        }
-
-        .url-input-group {
-            flex-direction: column;
-        }
-
-        .url-paste-btn {
-            width: 100%;
-            padding: 10px;
-        }
+    .form-actions {
+        flex-direction: column;
     }
 
-    /* Animation */
-    @@keyframes fadeIn {
-        from {
-            opacity: 0;
-            transform: translateY(20px);
-        }
-
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
+    .btn {
+        width: 100%;
     }
 
-    .edit-actor-card {
-        animation: fadeIn 0.4s ease-out;
     }
 </style>
 
@@ -484,8 +366,8 @@
     <div class="edit-actor-card">
         @if (!ViewData.ModelState.IsValid)
         {
-            <div class="validation-summary" role="alert">
-                <ul>
+            <div class="validation-summary" role="alert" style="background: rgba(239, 68, 68, 0.05); padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                <ul style="color: var(--danger-red); margin: 0; padding-left: 20px;">
                     @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
                     {
                         <li>@error.ErrorMessage</li>
@@ -496,87 +378,73 @@
 
         <div class="card-header">
             <h3>
-                <i>✏️</i>
-                Update Actor Information
+                <i>✏️</i> Update Actor Information
             </h3>
         </div>
 
-        <form asp-action="Edit" method="post" id="editForm">
+        <form asp-action="Edit" method="post" enctype="multipart/form-data" id="editForm">
             <input type="hidden" asp-for="Id" />
+            <input type="hidden" asp-for="AvartUrl" />
 
             <div class="form-grid">
-                <!-- Avatar Preview -->
-                <div class="avatar-section" id="avatarPreviewSection">
-                    <div class="avatar-preview">
-                        @if (!string.IsNullOrEmpty(Model.AvartUrl))
-                        {
-                            <img src="@Model.AvartUrl" alt="Current Avatar" id="avatarPreviewImage" />
-                        }
-                        else
-                        {
-                            <div class="avatar-placeholder" id="avatarPlaceholder">
-                                <div>👤</div>
-                            </div>
-                        }
-                    </div>
-                    <div class="avatar-info">
-                        <div class="avatar-title">Avatar Preview</div>
-                        <div class="avatar-description">
-                            Current avatar will be displayed here. Enter a new URL to update.
-                        </div>
-                    </div>
-                </div>
 
-                <!-- Name Input -->
                 <div class="form-group">
                     <label asp-for="Name" class="form-label">
                         Actor Name <span class="required-star">*</span>
                     </label>
-                    <input asp-for="Name" class="form-control"
-                           placeholder="Enter actor name" />
+                    <input asp-for="Name" class="form-control" placeholder="Enter actor name" />
                     <span asp-validation-for="Name" class="field-validation-error"></span>
-                    <small class="help-text">Full name of the actor</small>
                 </div>
 
-                <!-- Avatar URL Input -->
-                <div class="form-group">
-                    <label asp-for="AvartUrl" class="form-label">Avatar URL</label>
-                    <div class="url-input-group">
-                        <input asp-for="AvartUrl" class="form-control"
-                               placeholder="https://example.com/avatar.jpg"
-                               id="avatarUrlInput" />
-                        <button type="button" class="url-paste-btn" id="pasteUrlBtn">
-                            <i>📋</i> Paste URL
-                        </button>
-                    </div>
-                    <span asp-validation-for="AvartUrl" class="field-validation-error"></span>
-                    <small class="help-text">Direct image URL for the actor's avatar</small>
-                </div>
-
-                <!-- Date of Birth and Gender -->
                 <div class="form-row">
                     <div class="form-group">
                         <label asp-for="DateOfBirth" class="form-label">Date of Birth</label>
                         <input asp-for="DateOfBirth" class="form-control" type="date" />
                         <span asp-validation-for="DateOfBirth" class="field-validation-error"></span>
-                        <small class="help-text">Actor's birth date</small>
                     </div>
-
-                    @* <div class="form-group">
-                        <label asp-for="Gender" class="form-label">Gender</label>
-                        <select asp-for="Gender" class="form-control" 
-                                asp-items="Html.GetEnumSelectList<FinalCuongFilm.ApplicationCore.Entities.Enum.Gender>()">
-                        </select>
-                        <span asp-validation-for="Gender" class="field-validation-error"></span>
-                        <small class="help-text">Select gender</small>
-                    </div> *@
                 </div>
+
+                <div class="form-group">
+                    <label class="form-label">Avatar Image</label>
+                    <div class="file-input-wrap" id="posterFileWrap">
+                        <input type="file" name="posterFile" id="posterFileInput"
+                               accept=".jpg,.jpeg,.png,.webp"
+                               onchange="onPosterFileChange(this)"
+                               style="width: 100%; cursor: pointer;" />
+
+                        <center>
+                            <img id="avatarPreview" class="img-preview"
+                                 src="@(string.IsNullOrEmpty(Model.AvartUrl) ? "#" : Model.AvartUrl)"
+                                 style="display: @(string.IsNullOrEmpty(Model.AvartUrl) ? "none" : "block");"
+                                 alt="Preview" />
+                        </center>
+
+                        <span class="help-text" style="margin-top: 12px; display: block;">Select image file to update (JPG, PNG, WEBP). Max 5MB.<br /><strong>Leave empty to keep the current avatar.</strong></span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Participated Movies</label>
+
+                    <select asp-for="MovieIds" asp-items="ViewBag.Movies" multiple id="movieSelect" class="form-control" style="display:none;"></select>
+
+                    <div class="tag-picker" id="moviePicker">
+                        <div class="tag-search-box">
+                            <input type="text" id="movieSearch" class="form-control" placeholder="Search Movie to add..." autocomplete="off" />
+                        </div>
+                        <div class="tag-dropdown" id="movieDropdown"></div>
+                        <div class="tag-chips" id="movieChips">
+                            <span class="tag-empty">No Movie selected</span>
+                        </div>
+                    </div>
+                    <span asp-validation-for="MovieIds" class="field-validation-error"></span>
+                </div>
+
             </div>
 
-            <!-- Form Actions -->
             <div class="form-actions">
                 <button type="submit" class="btn btn-primary" id="submitBtn">
-                    <i>💾</i> Update Actor
+                    <i>💾</i> Save Changes
                 </button>
                 <a asp-action="Index" class="btn btn-secondary">
                     <i>←</i> Back to List
@@ -592,87 +460,115 @@
     }
 
     <script>
+        // 1. CHỨC NĂNG XEM TRƯỚC ẢNH UPLOAD (PREVIEW)
+        function onPosterFileChange(input) {
+            const preview = document.getElementById('avatarPreview');
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                }
+                reader.readAsDataURL(input.files[0]);
+            } else {
+                // Nếu người dùng hủy chọn file, khôi phục lại ảnh cũ
+                const oldUrl = document.querySelector('input[name="AvartUrl"]').value;
+                if (oldUrl) {
+                    preview.src = oldUrl;
+                    preview.style.display = 'block';
+                } else {
+                    preview.style.display = 'none';
+                }
+            }
+        }
+
+        // 2. CHỨC NĂNG TAG PICKER (CHỌN PHIM NHIỀU NHÃN)
         document.addEventListener('DOMContentLoaded', function() {
-            const avatarUrlInput = document.getElementById('avatarUrlInput');
-            const avatarPreviewImage = document.getElementById('avatarPreviewImage');
-            const avatarPlaceholder = document.getElementById('avatarPlaceholder');
-            const pasteUrlBtn = document.getElementById('pasteUrlBtn');
-            const submitBtn = document.getElementById('submitBtn');
+            const select = document.getElementById('movieSelect');
+            const search = document.getElementById('movieSearch');
+            const dropdown = document.getElementById('movieDropdown');
+            const chips = document.getElementById('movieChips');
             const editForm = document.getElementById('editForm');
+            const submitBtn = document.getElementById('submitBtn');
 
-            // Update avatar preview when URL changes
-            avatarUrlInput.addEventListener('input', function() {
-                const url = this.value.trim();
-                updateAvatarPreview(url);
-            });
+            // Nút Save quay quay
+            if (editForm) {
+                editForm.addEventListener('submit', function(e) {
+                    submitBtn.classList.add('btn-loading');
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = '';
+                });
+            }
 
-            // Paste URL from clipboard
-            pasteUrlBtn.addEventListener('click', async function() {
-                try {
-                    const text = await navigator.clipboard.readText();
-                    avatarUrlInput.value = text;
-                    updateAvatarPreview(text);
+            // Bảo vệ JS không bị văng lỗi nếu ViewBag.Movies rỗng
+            if (!select || !search) return;
 
-                    // Show success feedback
-                    const originalText = this.innerHTML;
-                    this.innerHTML = '<i>✓</i> URL Pasted!';
-                    this.style.background = '#10b981';
-                    this.style.color = 'white';
-                    this.style.borderColor = '#10b981';
-
-                    setTimeout(() => {
-                        this.innerHTML = originalText;
-                        this.style.background = '';
-                        this.style.color = '';
-                        this.style.borderColor = '';
-                    }, 2000);
-                } catch (err) {
-                    alert('Cannot read from clipboard. Please paste manually (Ctrl+V)');
-                }
-            });
-
-            // Update avatar preview function
-            function updateAvatarPreview(url) {
-                if (isValidImageUrl(url)) {
-                    if (avatarPreviewImage) {
-                        avatarPreviewImage.src = url;
-                        avatarPreviewImage.style.display = 'block';
-                        if (avatarPlaceholder) {
-                            avatarPlaceholder.style.display = 'none';
-                        }
+            function renderChips() {
+                chips.innerHTML = '';
+                let hasSelection = false;
+                Array.from(select.options).forEach(opt => {
+                    if (opt.selected) {
+                        hasSelection = true;
+                        const chip = document.createElement('span');
+                        chip.className = 'tag-chip';
+                        chip.innerHTML = `${opt.text} <i class="zmdi zmdi-close" onclick="removeTag('${opt.value}')"></i>`;
+                        chips.appendChild(chip);
                     }
-                } else if (!url) {
-                    if (avatarPreviewImage) {
-                        avatarPreviewImage.style.display = 'none';
-                    }
-                    if (avatarPlaceholder) {
-                        avatarPlaceholder.style.display = 'flex';
-                    }
+                });
+
+                if (!hasSelection) {
+                    chips.innerHTML = '<span class="tag-empty">No Movie selected</span>';
                 }
             }
 
-            // Validate image URL
-            function isValidImageUrl(url) {
-                if (!url) return false;
-                try {
-                    const parsedUrl = new URL(url);
-                    const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp'];
-                    const path = parsedUrl.pathname.toLowerCase();
-                    return imageExtensions.some(ext => path.endsWith(ext));
-                } catch (_) {
-                    return false;
-                }
-            }
+            // Xóa tag
+            window.removeTag = function(val) {
+                Array.from(select.options).forEach(opt => {
+                    if (opt.value === val) opt.selected = false;
+                });
+                renderChips();
+            };
 
-            // Form submission
-            editForm.addEventListener('submit', function(e) {
-                submitBtn.classList.add('btn-loading');
-                submitBtn.disabled = true;
-                submitBtn.innerHTML = '';
+            // Tìm kiếm dropdown
+            search.addEventListener('input', function() {
+                const term = this.value.toLowerCase().trim();
+                dropdown.innerHTML = '';
+
+                if (!term) {
+                    dropdown.style.display = 'none';
+                    return;
+                }
+
+                let matches = 0;
+                Array.from(select.options).forEach(opt => {
+                    if (!opt.selected && opt.text.toLowerCase().includes(term)) {
+                        matches++;
+                        const div = document.createElement('div');
+                        div.className = 'tag-dropdown-item';
+                        div.innerText = opt.text;
+                        div.onclick = function() {
+                            opt.selected = true;
+                            search.value = '';
+                            dropdown.style.display = 'none';
+                            renderChips();
+                        };
+                        dropdown.appendChild(div);
+                    }
+                });
+
+                dropdown.style.display = matches > 0 ? 'block' : 'none';
             });
 
-            // Initialize avatar preview on page load
-            updateAvatarPreview(avatarUrlInput.value);
+            // Ẩn dropdown khi click ngoài
+            document.addEventListener('click', function(e) {
+                const picker = document.getElementById('moviePicker');
+                if (picker && !picker.contains(e.target)) {
+                    dropdown.style.display = 'none';
+                }
+            });
+
+            // Khởi tạo chạy lần đầu (Nạp sẵn phim cũ của Actor lên Chips)
+            renderChips();
         });
     </script>
 }

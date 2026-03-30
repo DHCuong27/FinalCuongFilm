@@ -1,5 +1,6 @@
 ﻿@model FinalCuongFilm.Common.DTOs.PagedResult<FinalCuongFilm.Common.DTOs.MovieDto>
 
+
 @{
     ViewData["Title"] = "Movie Management";
 }
@@ -409,9 +410,6 @@
             margin-bottom: 16px;
         }
 
-    /* =========================================
-           FIX LỖI CSS RESPONSIVE Ở ĐÂY
-           ========================================= */
     @@media (max-width: 768px) {
         .page-header
 
@@ -490,7 +488,7 @@
                         <th width="80">Poster</th>
                         <th>Title</th>
                         <th width="120">Type</th>
-                        <th width="140">Country</th>
+                        @* <th width="140">Country</th> *@
                         <th width="80">Year</th>
                         <th width="120">Status</th>
                         <th width="140" style="text-align: center;">Actions</th>
@@ -523,9 +521,9 @@
                             <td>
                                 <span class="badge badge-type type-badge"><i class="zmdi zmdi-label"></i> @item.Type</span>
                             </td>
-                            <td>
+                            @* <td>
                                 <span class="country-text" style="color: var(--text-muted);"><i class="zmdi zmdi-globe"></i> @item.CountryName</span>
-                            </td>
+                            </td> *@
                             <td>
                                 <span style="font-weight: 500; color: var(--text-dark);">@item.ReleaseYear</span>
                             </td>
@@ -646,10 +644,9 @@
             const formData = new FormData();
             formData.append('title', title);
 
-            // =========================================
-            // FIX LỖI 400 BAD REQUEST Ở ĐÂY
+
             // Gắn token thẳng vào formData để ASP.NET Core tự động map
-            // =========================================
+
             formData.append('__RequestVerificationToken', token);
 
             try {

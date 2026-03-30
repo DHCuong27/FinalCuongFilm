@@ -20,7 +20,7 @@ namespace FinalCuongFilm.MVC.Controllers
 
 		// Bổ sung thêm _historyService nếu bạn có bảng lưu lịch sử xem phim
 
-		// CHỈ GIỮ LẠI ĐÚNG 1 CONSTRUCTOR NÀY
+
 		public UserController(CuongFilmDbContext context, UserManager<CuongFilmUser> userManager, IFavoriteService favoriteService)
 		{
 			_userManager = userManager;
@@ -51,21 +51,19 @@ namespace FinalCuongFilm.MVC.Controllers
 			if (userId == null)
 				return RedirectToPage("/Account/Login", new { area = "Identity" });
 
-			// 1. Lấy danh sách FavoriteDto từ Database
+
 			var favorites = await _favoriteService.GetUserFavoritesAsync(userId);
 
-			// 2. Chuyển đổi (Map) dữ liệu từ FavoriteDto sang MovieDto
 			var movies = favorites.Select(f => new MovieDto
 			{
-				Id = f.MovieId,               // Cực kỳ quan trọng: Để nút Remove tìm đúng ID phim để xóa
-				Title = f.MovieTitle,         // Lấy tên phim
-				Slug = f.MovieSlug,           // Lấy đường dẫn phim
-				PosterUrl = f.MoviePosterUrl  // Lấy ảnh bìa phim
+				Id = f.MovieId,              
+				Title = f.MovieTitle,        
+				Slug = f.MovieSlug,           
+				PosterUrl = f.MoviePosterUrl
 			}).ToList();
 
 			ViewData["Title"] = "My List";
 
-			// 3. Trả về View danh sách MovieDto chuẩn xịn
 			return View(movies);
 		}
 

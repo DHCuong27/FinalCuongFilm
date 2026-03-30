@@ -70,4 +70,15 @@ namespace FinalCuongFilm.Common.DTOs
 		public Guid? MovieId { get; set; }
 		public Guid? EpisodeId { get; set; }
 	}
+
+	public class VideoUploadDto
+	{
+		public Guid MovieId { get; set; }
+		public Guid? EpisodeId { get; set; }
+		public int? EpisodeNumber { get; set; }
+		public IFormFile? VideoFile { get; set; }
+		public string? ManualUrl { get; set; }
+		public string Quality { get; set; } = "1080p";
+		public string? Language { get; set; }
+	}
 }

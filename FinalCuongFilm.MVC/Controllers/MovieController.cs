@@ -231,19 +231,16 @@ namespace FinalCuongFilm.MVC.Controllers
 
 				var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-				// ==========================================
-				// FIX Ở ĐÂY: LƯU LỊCH SỬ XEM PHIM CÓ TRY CATCH
-				// ==========================================
+						
 				if (userId != null)
 				{
 					try
 					{
-						// LƯU Ý: Phải đảm bảo bạn đã Inject _favoriteService vào MovieController
+
 						await _favoriteService.SaveWatchHistoryAsync(userId, movie.Id);
 					}
 					catch (Exception ex)
 					{
-						// Nếu lỗi (ví dụ chưa có cột DB, sai ID,...) thì chỉ ghi log, KHÔNG văng lỗi chết trang xem phim
 						_logger.LogWarning(ex, "Không thể lưu lịch sử xem phim cho User {UserId}, Movie {MovieId}", userId, movie.Id);
 					}
 				}
