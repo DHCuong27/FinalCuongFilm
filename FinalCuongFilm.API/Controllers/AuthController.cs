@@ -109,7 +109,7 @@ namespace FinalCuongFilm.API.Controllers
 			));
 		}
 
-		// ─── Private ────────────────────────────────────────────────────────────
+		//  Private 
 		private string GenerateJwtToken(CuongFilmUser user, IList<string> roles)
 		{
 			var jwtSection = _config.GetSection("Jwt");

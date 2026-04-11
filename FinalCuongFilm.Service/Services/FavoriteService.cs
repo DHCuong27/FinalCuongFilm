@@ -38,6 +38,7 @@ namespace FinalCuongFilm.Service.Services
 				UserName = userName,
 				MovieId = f.MovieId,
 				MovieTitle = f.Movie.Title,
+				MovieSlug = f.Movie.Slug,
 				MoviePosterUrl = f.Movie.PosterUrl,
 				CreatedAt = f.CreatedAt
 			});

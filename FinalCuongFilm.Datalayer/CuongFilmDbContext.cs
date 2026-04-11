@@ -34,6 +34,13 @@ namespace FinalCuongFilm.DataLayer
 		public DbSet<Favorite> Favorites { get; set; }
 		public DbSet<WatchHistory> WatchHistories { get; set; }
 		public DbSet<SearchSuggestion> SearchSuggestions { get; set; }
+
+	
+		// Premium & Payment (MỚI THÊM)
+		
+		public DbSet<VipPackage> VipPackages { get; set; }
+		public DbSet<Transaction> Transactions { get; set; }
+		public DbSet<UserSubscription> UserSubscriptions { get; set; }
 		#endregion
 
 		protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -52,11 +59,14 @@ namespace FinalCuongFilm.DataLayer
 				entity.Property(x => x.PosterUrl).HasMaxLength(MaxLengths.IMAGE_URL);
 				entity.Property(x => x.TrailerUrl).HasMaxLength(MaxLengths.VIDEO_URL);
 
-			
 				entity.Property(x => x.TmdbId).IsRequired(false);
 
 				entity.Property(x => x.ViewCount).HasDefaultValue(0);
 				entity.Property(x => x.IsActive).HasDefaultValue(true);
+
+				// Thêm cờ đánh dấu Phim VIP
+				entity.Property(x => x.IsVipOnly).HasDefaultValue(false);
+
 				entity.Property(x => x.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
 
 				entity.HasOne(m => m.Country).WithMany().HasForeignKey(m => m.CountryId).OnDelete(DeleteBehavior.Restrict);
@@ -71,8 +81,6 @@ namespace FinalCuongFilm.DataLayer
 				entity.HasIndex(x => x.IsActive);
 				entity.HasIndex(x => x.CreatedAt);
 				entity.HasIndex(x => x.ViewCount);
-
-				
 				entity.HasIndex(x => x.TmdbId).IsUnique().HasFilter("[TmdbId] IS NOT NULL");
 			});
 
@@ -196,6 +204,65 @@ namespace FinalCuongFilm.DataLayer
 
 			// 6. USER INTERACTIONS & METADATA
 			ConfigureInteractionsAndMetadata(modelBuilder);
+
+			// 7. PREMIUM & PAYMENT CONFIGURATION
+			ConfigurePremiumAndPayment(modelBuilder);
+		}
+
+		private void ConfigurePremiumAndPayment(ModelBuilder modelBuilder)
+		{
+			// Cấu hình bảng VipPackage
+			modelBuilder.Entity<VipPackage>(entity =>
+			{
+				entity.ToTable("VipPackages");
+				entity.HasKey(x => x.Id);
+				entity.Property(x => x.Name).IsRequired().HasMaxLength(255);
+				entity.Property(x => x.Price).HasColumnType("decimal(18,2)").IsRequired();
+				entity.Property(x => x.Description).HasMaxLength(1000);
+				entity.Property(x => x.IsActive).HasDefaultValue(true);
+			});
+
+			// Cấu hình bảng Transaction
+			modelBuilder.Entity<Transaction>(entity =>
+			{
+				entity.ToTable("Transactions");
+				entity.HasKey(x => x.Id);
+				entity.Property(x => x.UserId).IsRequired().HasMaxLength(450); // Khớp với IdentityUser Id
+				entity.Property(x => x.Amount).HasColumnType("decimal(18,2)").IsRequired();
+				entity.Property(x => x.OrderInfo).HasMaxLength(500);
+				entity.Property(x => x.PaymentMethod).HasMaxLength(50).HasDefaultValue("VNPAY");
+
+				// Ép kiểu Enum TransactionStatus thành String lưu trong CSDL
+				entity.Property(x => x.Status)
+					  .HasConversion<string>()
+					  .HasMaxLength(50)
+					  .IsRequired();
+
+				entity.Property(x => x.TransactionDate).HasDefaultValueSql("GETUTCDATE()");
+
+				entity.HasIndex(x => x.UserId);
+				entity.HasIndex(x => x.TransactionDate);
+			});
+
+			// Cấu hình bảng UserSubscription
+			modelBuilder.Entity<UserSubscription>(entity =>
+			{
+				entity.ToTable("UserSubscriptions");
+				entity.HasKey(x => x.Id);
+				entity.Property(x => x.UserId).IsRequired().HasMaxLength(450);
+				entity.Property(x => x.StartDate).HasDefaultValueSql("GETUTCDATE()");
+				entity.Property(x => x.IsActive).HasDefaultValue(true);
+
+				// Liên kết Khóa ngoại với bảng VipPackage
+				entity.HasOne<VipPackage>()
+					  .WithMany()
+					  .HasForeignKey(x => x.PackageId)
+					  .OnDelete(DeleteBehavior.Restrict);
+
+				// Đánh Index để tối ưu tốc độ kiểm tra hạn VIP của User
+				entity.HasIndex(x => x.UserId);
+				entity.HasIndex(x => x.EndDate);
+			});
 		}
 
 		private void ConfigureInteractionsAndMetadata(ModelBuilder modelBuilder)

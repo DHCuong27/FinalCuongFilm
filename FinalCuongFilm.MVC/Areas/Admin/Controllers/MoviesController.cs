@@ -145,11 +145,10 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 		{
 			if (id == null) return NotFound();
 
-			// 1. BẮT BUỘC phải Include bảng trung gian để lấy danh sách Actor và Genre cũ
+			
 			var movie = await _context.Movies
 				.Include(m => m.MovieActors)
 				.Include(m => m.MovieGenres)
-				// Nếu có Country, Language thì không cần Include vì nó lưu thẳng ID ở bảng Movie
 				.FirstOrDefaultAsync(m => m.Id == id);
 
 			if (movie == null) return NotFound();

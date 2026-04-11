@@ -19,8 +19,9 @@ builder.WebHost.ConfigureKestrel(serverOptions =>
 
 builder.Services.Configure<FormOptions>(options =>
 {
-    options.MultipartBodyLengthLimit = 5_000_000_000; // Đổi lại thành 5GB cho đồng bộ
+    options.MultipartBodyLengthLimit = 5_000_000_000; 
 });
+
 //  DATABASE 
 builder.Services.AddDbContext<CuongFilmDbContext>(options =>
 	options.UseSqlServer(
@@ -75,18 +76,19 @@ builder.Services.AddScoped<IEpisodeService, EpisodeService>();
 builder.Services.AddScoped<IMediaFileService, MediaFileService>();
 builder.Services.AddScoped<IFavoriteService, FavoriteService>();
 builder.Services.AddScoped<IReviewService, ReviewService>();
-// Đăng ký HttpClient cho TmdbService
+
 builder.Services.AddHttpClient<ITmdbService, TmdbService>();
 builder.Services.AddScoped<IMovieImportService, MovieImportService>();
 
-// Service upload file lên Azure Blob Storage
+
 builder.Services.AddScoped<IAzureBlobService, AzureBlobService>();
 builder.Services.AddScoped<IVideoConversionService, VideoConversionService>();
+builder.Services.AddScoped<IVipService, VipService>();
 
 // Cấu hình upload file size
 builder.Services.Configure<FormOptions>(options =>
 {
-	options.MultipartBodyLengthLimit = 2147483648; // 2GB
+	options.MultipartBodyLengthLimit = 2147483648; 
 });
 
 // MVC 

@@ -24,7 +24,7 @@ namespace FinalCuongFilm.Common.DTOs
 
 		public string Name { get; set; } = string.Empty;
 
-
+		public bool IsVipOnly { get; set; }
 		// Navigation properties 
 
 		public string? CountryName { get; set; } 
@@ -56,7 +56,7 @@ namespace FinalCuongFilm.Common.DTOs
 		public bool IsActive { get; set; } = true;
 		public Guid LanguageId { get; set; }
 		public Guid CountryId { get; set; }
-
+		public bool IsVipOnly { get; set; } = false;
 		public List<Guid> ActorIds { get; set; } = new();
 		public List<Guid> GenreIds { get; set; } = new();
 	}
@@ -65,5 +65,6 @@ namespace FinalCuongFilm.Common.DTOs
 	{
 		public Guid Id { get; set; }
 		public DateTime CreatedAt { get; set; }
+		public bool IsVipOnly { get; set; }
 	}
 }

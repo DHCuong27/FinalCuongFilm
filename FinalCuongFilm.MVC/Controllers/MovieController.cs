@@ -1,5 +1,6 @@
 ﻿using FinalCuongFilm.MVC.Models.ViewModels;
 using FinalCuongFilm.Service.Interfaces;
+using FinalCuongFilm.Service.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -17,6 +18,7 @@ namespace FinalCuongFilm.MVC.Controllers
 		private readonly ICountryService _countryService;
 		private readonly IActorService _actorService;
 		private readonly IAzureBlobService _azureBlobService;
+		private readonly IVipService _vipService;
 		private readonly ILogger<MovieController> _logger;
 
 		public MovieController(
@@ -24,13 +26,13 @@ namespace FinalCuongFilm.MVC.Controllers
 			IReviewService reviewService, IEpisodeService episodeService,
 			IMediaFileService mediaFileService, IGenreService genreService,
 			ICountryService countryService, IActorService actorService,
-			IAzureBlobService azureBlobService, ILogger<MovieController> logger)
+			IVipService vipService,IAzureBlobService azureBlobService, ILogger<MovieController> logger)
 		{
 			_movieService = movieService; _favoriteService = favoriteService;
 			_reviewService = reviewService; _episodeService = episodeService;
 			_mediaFileService = mediaFileService; _genreService = genreService;
 			_countryService = countryService; _actorService = actorService;
-			_azureBlobService = azureBlobService; _logger = logger;
+			_vipService = vipService; _azureBlobService = azureBlobService; _logger = logger;
 		}
 
 		// GET: /Movie
@@ -153,6 +155,29 @@ namespace FinalCuongFilm.MVC.Controllers
 				var movie = allMovies.FirstOrDefault(m => string.Equals(m.Slug, slug, StringComparison.OrdinalIgnoreCase) && m.IsActive);
 				if (movie == null) return RedirectToAction("Index", "Home");
 
+				var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+				if (movie.IsVipOnly)
+				{
+					// Check 1: Chưa đăng nhập -> Đuổi ra trang Login
+					if (string.IsNullOrEmpty(userId))
+					{
+						TempData["Warning"] = "Đây là bộ phim Premium. Vui lòng đăng nhập để tiếp tục!";
+						return RedirectToAction("Login", "Auth", new { returnUrl = Request.Path });
+					}
+
+					// Check 2: Đã đăng nhập nhưng kiểm tra xem có VIP không?
+					// Lưu ý: Bạn cần Inject IVipService vào MovieController để dùng được hàm này
+					bool hasVip = await _vipService.HasActiveVipAsync(userId);
+
+					if (!hasVip)
+					{
+						TempData["Warning"] = "Phim này dành riêng cho tài khoản Premium. Vui lòng nâng cấp gói để xem!";
+						return RedirectToAction("Index", "Premium"); // Đuổi sang trang Mua VIP
+					}
+				}
+
+
 				// 2. Xử lý logic Tập phim & Lấy danh sách File Media
 				var allEpisodes = new List<FinalCuongFilm.Common.DTOs.EpisodeDto>();
 				FinalCuongFilm.Common.DTOs.EpisodeDto? currentEpisode = null;
@@ -228,9 +253,6 @@ namespace FinalCuongFilm.MVC.Controllers
 					var allActors = await _actorService.GetAllAsync();
 					actors = allActors.Where(a => movie.SelectedActorIds.Contains(a.Id)).ToList();
 				}
-
-				var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
 						
 				if (userId != null)
 				{

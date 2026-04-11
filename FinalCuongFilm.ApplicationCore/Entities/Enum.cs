@@ -35,5 +35,13 @@ namespace FinalCuongFilm.ApplicationCore.Entities
 			Q1080p,
 			Q2160p // 4K
 		}
+
+		public enum TransactionStatus
+		{
+			Pending = 0,   
+			Success = 1,    
+			Failed = 2,    
+			Canceled = 3   
+		}
 	}
 }

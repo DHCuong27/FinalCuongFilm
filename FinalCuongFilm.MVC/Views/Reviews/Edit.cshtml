@@ -1,0 +1,100 @@
+﻿@model FinalCuongFilm.Common.DTOs.ReviewUpdateDto
+@{
+    var movie = ViewBag.Movie as FinalCuongFilm.Common.DTOs.MovieDto;
+    ViewData["Title"] = "Edit Review - " + (movie?.Title ?? "");
+    Layout = "~/Views/Shared/_LayoutUser.cshtml";
+}
+
+<style>
+    .review-edit-container {
+        background-color: var(--bg-card, #1a1a1a);
+        border: 1px solid var(--border-color, #303030);
+        border-radius: 12px;
+        padding: 30px;
+        max-width: 600px;
+        margin: 50px auto;
+        color: var(--text-primary, #ffffff);
+    }
+
+    .rating-stars {
+        display: flex;
+        flex-direction: row-reverse;
+        justify-content: flex-end;
+        gap: 5px;
+    }
+
+        .rating-stars input {
+            display: none;
+        }
+
+        .rating-stars label {
+            font-size: 30px;
+            color: #444;
+            cursor: pointer;
+            transition: color 0.2s ease-in-out;
+        }
+
+            .rating-stars input:checked ~ label,
+            .rating-stars label:hover,
+            .rating-stars label:hover ~ label {
+                color: var(--accent-yellow, #f5c518);
+            }
+</style>
+
+<div class="container">
+    <div class="review-edit-container">
+        <h3 class="mb-4">Edit Review </h3>
+
+        @if (movie != null)
+        {
+            <div class="d-flex align-items-center mb-4 pb-3 border-bottom border-secondary">
+                <img src="@movie.PosterUrl" alt="@movie.Title" style="width: 60px; height: 90px; object-fit: cover; border-radius: 4px;" class="me-3" />
+                <div>
+                    <h5 class="mb-1">@movie.Title</h5>
+                    <span class="text-muted small">@movie.ReleaseYear</span>
+                </div>
+            </div>
+        }
+
+        <form asp-controller="Reviews" asp-action="Edit" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="Id" />
+
+            <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
+            <div class="mb-4">
+                <label class="form-label text-light fw-bold">Your rating point</label>
+                <div class="rating-stars">
+                    @for (int i = 5; i >= 1; i--)
+                    {
+                        <input type="radio" id="star_@i" name="Rating" value="@i" @(Model.Rating == i ? "checked" : "") />
+                        <label for="star_@i" title="@i sao">★</label>
+                    }
+                </div>
+                <span asp-validation-for="Rating" class="text-danger small"></span>
+            </div>
+
+            <div class="mb-4">
+                <label asp-for="Comment" class="form-label text-light fw-bold">Evaluation Content</label>
+                <textarea asp-for="Comment" class="form-control bg-dark text-light border-secondary" rows="5" placeholder="Chia sẻ cảm nghĩ của bạn về bộ phim này..."></textarea>
+                <span asp-validation-for="Comment" class="text-danger small"></span>
+            </div>
+
+            <div class="d-flex justify-content-end gap-2 mt-4">
+                @if (movie != null)
+                {
+                    <a asp-controller="Movie" asp-action="Detail" asp-route-slug="@movie.Slug" class="btn btn-outline-secondary">Hủy</a>
+                }
+                else
+                {
+                    <a asp-controller="Reviews" asp-action="MyReviews" class="btn btn-outline-secondary">Cancel</a>
+                }
+                <button type="submit" class="btn btn-danger" style="background-color: var(--netflix-red, #e50914); border-color: var(--netflix-red, #e50914);">Save Change</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

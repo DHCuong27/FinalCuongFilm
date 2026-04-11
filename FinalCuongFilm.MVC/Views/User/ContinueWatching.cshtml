@@ -166,9 +166,11 @@
                 <a asp-controller="User" asp-action="ContinueWatching" class="list-group-item active">
                     <i class="zmdi zmdi-time-restore"></i> Watch History
                 </a>
-                <a asp-controller="Auth" asp-action="Logout" class="list-group-item mt-4" style="color: var(--nf-red);">
-                    <i class="zmdi zmdi-sign-in"></i> Sign Out
-                </a>
+                <form asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })" method="post" class="w-100">
+                    <button type="submit" class="list-group-item mt-4 w-100 text-start" style="color: var(--nf-red); background: transparent; border: 1px solid var(--nf-border); cursor: pointer;">
+                        <i class="zmdi zmdi-sign-in"></i> Sign Out
+                    </button>
+                </form>
             </div>
         </div>
 

@@ -698,14 +698,16 @@
             </div>
         </div>
 
-        <div class="form-card">
-            <div class="form-card-header"><i class="zmdi zmdi-settings"></i> Publish Settings</div>
-            <div class="form-card-body" style="padding: 16px 24px;">
-                <div class="toggle-wrapper">
-                    <input asp-for="IsActive" type="checkbox" id="editActiveChk" />
-                    <label for="editActiveChk">Active — movie is visible to users</label>
-                </div>
+        <div class="form-group mb-4" style="background-color: #fffbeb; border-left: 4px solid #f59e0b; padding: 10px 15px; border-radius: 4px; margin-top: 15px;">
+            <div class="custom-control custom-switch">
+                <input asp-for="IsVipOnly" type="checkbox" class="custom-control-input" id="IsVipOnlyCheck" />
+                <label class="custom-control-label" for="IsVipOnlyCheck" style="color: #b45309; font-weight: bold; cursor: pointer;">
+                    <i class="zmdi zmdi-star"></i> Phim Premium (Chỉ tài khoản VIP mới được xem)
+                </label>
             </div>
+            <small style="color: #d97706; display: block; margin-top: 5px;">
+                Nếu bật, User thường khi bấm Play sẽ bị chặn và điều hướng sang trang mua gói cước.
+            </small>
         </div>
 
         <div class="action-bar">

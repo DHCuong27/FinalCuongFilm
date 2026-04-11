@@ -269,6 +269,16 @@
                         <li class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "User" ? "active" : "")">
                             <a asp-area="Admin" asp-controller="User" asp-action="Index"><i class="fas fa-users"></i> Manage Users</a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-area="Admin" asp-controller="VipManager" asp-action="Transactions">
+                                <i class="zmdi zmdi-money"></i> Lịch sử thanh toán
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-area="Admin" asp-controller="VipManager" asp-action="ActiveVips">
+                                <i class="zmdi zmdi-accounts-alt"></i> Tài khoản VIP
+                            </a>
+                        </li>
                         <li style="padding: 10px 0;">
                             <form asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="/" method="post" style="margin: 0;">
                                 @Html.AntiForgeryToken()
@@ -318,6 +328,16 @@
                         </li>
                         <li class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "User" ? "active" : "")">
                             <a asp-area="Admin" asp-controller="User" asp-action="Index"><i class="fas fa-users"></i>Manage User</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-area="Admin" asp-controller="VipManager" asp-action="Transactions">
+                                <i class="zmdi zmdi-money"></i> Lịch sử thanh toán
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-area="Admin" asp-controller="VipManager" asp-action="ActiveVips">
+                                <i class="zmdi zmdi-accounts-alt"></i> Tài khoản VIP
+                            </a>
                         </li>
                     </ul>
                 </nav>

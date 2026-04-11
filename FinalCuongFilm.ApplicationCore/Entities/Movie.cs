@@ -37,6 +37,8 @@ namespace FinalCuongFilm.ApplicationCore.Entities
 		public Guid? CountryId	{ get; set; }
 		public Country? Country { get; set; }
 
+		public bool IsVipOnly { get; set; } = false;
+
 		public long? TmdbId { get; set; }
 
 		public ICollection<Episode> Episodes { get; set; } = new List<Episode>();

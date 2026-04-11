@@ -1,0 +1,182 @@
+﻿@model IEnumerable<FinalCuongFilm.ApplicationCore.Entities.VipPackage>
+@{
+    Layout = "_LayoutUser";
+    ViewData["Title"] = "CuongFilm Premium";
+}
+
+<style>
+    .pricing-header {
+        text-align: center;
+        padding: 50px 0;
+        color: #fff;
+    }
+
+    .pricing-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 15px;
+    }
+
+    .pricing-subtitle {
+        color: #a3a3a3;
+        font-size: 1.1rem;
+    }
+
+    .vip-card {
+        background: #1f1f1f;
+        border: 1px solid #333;
+        border-radius: 12px;
+        padding: 30px;
+        text-align: center;
+        transition: transform 0.3s, border-color 0.3s;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+        .vip-card:hover {
+            transform: translateY(-10px);
+            border-color: #e50914;
+            box-shadow: 0 10px 20px rgba(229, 9, 20, 0.2);
+        }
+
+        .vip-card.popular {
+            border-color: #e50914;
+            position: relative;
+        }
+
+    .vip-badge {
+        position: absolute;
+        top: -12px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #e50914;
+        color: white;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: bold;
+        text-transform: uppercase;
+    }
+
+    .package-name {
+        color: #fff;
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 15px;
+    }
+
+    .package-price {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #fff;
+        margin-bottom: 5px;
+    }
+
+    .package-duration {
+        color: #8c8c8c;
+        margin-bottom: 25px;
+    }
+
+    .package-desc {
+        color: #ccc;
+        margin-bottom: 30px;
+        flex-grow: 1;
+    }
+
+    .btn-buy {
+        background: #e50914;
+        color: #fff;
+        border: none;
+        padding: 12px 0;
+        width: 100%;
+        border-radius: 4px;
+        font-weight: 600;
+        font-size: 1.1rem;
+        transition: background 0.2s;
+    }
+
+        .btn-buy:hover {
+            background: #b20710;
+            color: #fff;
+        }
+
+    .current-vip-alert {
+        background: rgba(46, 204, 113, 0.1);
+        border: 1px solid #2ecc71;
+        color: #2ecc71;
+        padding: 15px;
+        border-radius: 8px;
+        text-align: center;
+        margin-bottom: 30px;
+    }
+</style>
+
+<div class="container" style="margin-bottom: 80px;">
+    <div class="pricing-header">
+        <h1 class="pricing-title">Trải nghiệm điện ảnh đỉnh cao</h1>
+        <p class="pricing-subtitle">Mở khóa toàn bộ kho phim chiếu rạp. Không quảng cáo. Chuẩn 4K HDR.</p>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success text-center">@TempData["Success"]</div>
+    }
+
+    @if (ViewBag.CurrentVipEndDate != null)
+    {
+        <div class="current-vip-alert">
+            <i class="zmdi zmdi-star"></i> Bạn đang là thành viên Premium. Hạn sử dụng đến: <strong>@(((DateTime)ViewBag.CurrentVipEndDate).ToString("dd/MM/yyyy"))</strong>.
+            <br />(Nếu mua thêm, số ngày sẽ được cộng dồn).
+        </div>
+    }
+
+    <div class="row justify-content-center g-4">
+        @if (Model != null && Model.Any())
+        {
+            int count = 0;
+            foreach (var pkg in Model)
+            {
+                count++;
+                <div class="col-12 col-md-4">
+                    <div class="vip-card @(count == 2 ? "popular" : "")">
+                        @if (count == 2)
+                        {
+                            <div class="vip-badge">Phổ biến nhất</div>
+                        }
+
+                        <div class="package-name">@pkg.Name</div>
+                        <div class="package-price">@pkg.Price.ToString("N0")đ</div>
+                        <div class="package-duration">Sử dụng trong @pkg.DurationInDays ngày</div>
+
+                        <div class="package-desc">
+                            @if (!string.IsNullOrEmpty(pkg.Description))
+                            {
+                                @pkg.Description
+                            }
+                            else
+                            {
+                                <ul style="list-style: none; padding: 0; text-align: left;">
+                                    <li style="margin-bottom: 10px;"><i class="zmdi zmdi-check" style="color: #e50914; margin-right: 8px;"></i>Kho phim Premium độc quyền</li>
+                                    <li style="margin-bottom: 10px;"><i class="zmdi zmdi-check" style="color: #e50914; margin-right: 8px;"></i>Độ phân giải 4K siêu nét</li>
+                                    <li><i class="zmdi zmdi-check" style="color: #e50914; margin-right: 8px;"></i>Không quảng cáo làm phiền</li>
+                                </ul>
+                            }
+                        </div>
+
+                        <form asp-action="Checkout" method="post">
+                            <input type="hidden" name="packageId" value="@pkg.Id" />
+                            <button type="submit" class="btn-buy">MUA GÓI NÀY</button>
+                        </form>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="col-12 text-center" style="color: #8c8c8c;">
+                <h4>Hệ thống đang cập nhật các gói cước. Vui lòng quay lại sau!</h4>
+            </div>
+        }
+    </div>
+</div>
