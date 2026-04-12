@@ -329,16 +329,17 @@
                         <li class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "User" ? "active" : "")">
                             <a asp-area="Admin" asp-controller="User" asp-action="Index"><i class="fas fa-users"></i>Manage User</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="Admin" asp-controller="VipManager" asp-action="Transactions">
-                                <i class="zmdi zmdi-money"></i> Lịch sử thanh toán
-                            </a>
+                        <li class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "VipManager" ? "active" : "")">
+                            <a asp-area="Admin" asp-controller="VipManager" asp-action="Transactions"><i class="fas fa-users"></i>Manage History Payment</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="Admin" asp-controller="VipManager" asp-action="ActiveVips">
-                                <i class="zmdi zmdi-accounts-alt"></i> Tài khoản VIP
-                            </a>
+                        <li class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "VipManager" ? "active" : "")">
+                            <a asp-area="Admin" asp-controller="VipManager" asp-action="ActiveVips"><i class="fas fa-users"></i>Manage Active VIPs</a>
                         </li>
+
+                        <li class="@(ViewContext.RouteData.Values["Controller"]?.ToString() == "VipPackage" ? "active" : "")">
+                            <a asp-area="Admin" asp-controller="VipPackage" asp-action="Index"><i class="fas fa-users"></i>Manage Package VIPs</a>
+                        </li>
+
                     </ul>
                 </nav>
             </div>

@@ -254,6 +254,33 @@
             padding: 1rem !important;
         }
 
+
+        /* Huy hiệu dán lên ảnh bìa phim */
+        .badge-premium-poster {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
+            color: #fff;
+            padding: 5px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+            z-index: 10;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            border: 1px solid #ffeba5;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+            /* Hiệu ứng phát sáng nhẹ cho huy hiệu */
+            .badge-premium-poster i {
+                color: #fff;
+                text-shadow: 0 0 5px rgba(255, 255, 255, 0.8);
+            }
+
         /* Footer Styles */
         .netflix-footer {
             flex-shrink: 0;

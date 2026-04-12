@@ -1,0 +1,132 @@
+﻿@model FinalCuongFilm.ApplicationCore.Entities.VipPackage
+@{
+    Layout = "_LayoutUser";
+    ViewData["Title"] = "Thanh toán gói Premium";
+}
+
+<style>
+    .checkout-container {
+        max-width: 800px;
+        margin: 50px auto 100px;
+        background: #1f1f1f;
+        border-radius: 12px;
+        padding: 40px;
+        color: #fff;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+
+    .order-summary {
+        background: #141414;
+        border: 1px solid #333;
+        border-radius: 8px;
+        padding: 25px;
+        margin-bottom: 30px;
+    }
+
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 15px;
+        font-size: 1.1rem;
+    }
+
+        .summary-row.total {
+            border-top: 1px dashed #444;
+            padding-top: 15px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #e50914;
+        }
+
+    .payment-methods {
+        margin-bottom: 30px;
+    }
+
+    .payment-option {
+        display: flex;
+        align-items: center;
+        background: #2b2b2b;
+        border: 2px solid #e50914;
+        border-radius: 8px;
+        padding: 15px 20px;
+        cursor: pointer;
+    }
+
+        .payment-option img {
+            height: 30px;
+            margin-right: 15px;
+        }
+
+        .payment-option span {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+    .btn-pay {
+        background: #e50914;
+        color: #fff;
+        border: none;
+        padding: 15px;
+        width: 100%;
+        border-radius: 6px;
+        font-size: 1.3rem;
+        font-weight: bold;
+        transition: background 0.3s;
+    }
+
+        .btn-pay:hover {
+            background: #b20710;
+        }
+
+    .security-badge {
+        text-align: center;
+        margin-top: 15px;
+        color: #888;
+        font-size: 0.9rem;
+    }
+</style>
+
+<div class="container">
+    <div class="checkout-container">
+        <h2 class="mb-4 text-center">Xác nhận thanh toán</h2>
+
+        <div class="order-summary">
+            <h4 class="mb-3 text-white">Chi tiết đơn hàng</h4>
+            <div class="summary-row">
+                <span style="color: #ccc;">Sản phẩm:</span>
+                <span>@Model.Name</span>
+            </div>
+            <div class="summary-row">
+                <span style="color: #ccc;">Tài khoản nhận VIP:</span>
+                <span>@User.Identity?.Name</span>
+            </div>
+            <div class="summary-row">
+                <span style="color: #ccc;">Thời hạn:</span>
+                <span>@Model.DurationInDays ngày</span>
+            </div>
+            <div class="summary-row total">
+                <span>Tổng tiền:</span>
+                <span>@Model.Price.ToString("N0") VNĐ</span>
+            </div>
+        </div>
+
+        <div class="payment-methods">
+            <h4 class="mb-3 text-white">Phương thức thanh toán</h4>
+            <div class="payment-option">
+                <img src="https://vnpay.vn/wp-content/uploads/2020/07/Logo-VNPAYQR-update.png" alt="VNPay" />
+                <span>Thanh toán qua cổng VNPAY</span>
+            </div>
+        </div>
+
+        <form asp-action="ProcessPayment" method="post">
+            <input type="hidden" name="packageId" value="@Model.Id" />
+            <button type="submit" class="btn-pay">
+                <i class="zmdi zmdi-lock"></i> THANH TOÁN AN TOÀN
+            </button>
+        </form>
+
+        <div class="security-badge">
+            <i class="zmdi zmdi-shield-security"></i> Mọi giao dịch đều được mã hóa chuẩn SSL 256-bit.
+        </div>
+    </div>
+</div>

@@ -94,6 +94,7 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 		[ValidateAntiForgeryToken]
 		public async Task<IActionResult> Create(MovieCreateDto dto, IFormFile? posterFile)
 		{
+		
 			if (posterFile != null && posterFile.Length > 0)
 			{
 				var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".webp" };

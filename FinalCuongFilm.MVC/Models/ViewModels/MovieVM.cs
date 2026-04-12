@@ -51,6 +51,7 @@ namespace FinalCuongFilm.MVC.Models.ViewModels
 		public List<EpisodeDto> Episodes { get; set; } = new();
 		public List<MediaFileDto> MediaFiles { get; set; } = new();
 		public List<MovieDto> RelatedMovies { get; set; } = new();
+		public bool IsVipOnly { get; set; }
 
 		public IEnumerable<ActorDto> Actors { get; set; } 
 

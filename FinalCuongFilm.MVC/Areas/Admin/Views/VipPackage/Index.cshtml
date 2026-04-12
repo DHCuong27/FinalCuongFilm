@@ -1,0 +1,330 @@
+﻿@model IEnumerable<FinalCuongFilm.ApplicationCore.Entities.VipPackage>
+@{
+    ViewData["Title"] = "Premium Plans Management";
+    Layout = "~/Areas/Admin/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<style>
+    :root {
+        --primary-color: #2563eb;
+        --secondary-color: #64748b;
+        --success-color: #10b981;
+        --warning-color: #f59e0b;
+        --danger-color: #ef4444;
+        --text-dark: #1e293b;
+        --text-muted: #64748b;
+        --border-color: #e2e8f0;
+        --bg-light: #f8fafc;
+        --bg-white: #ffffff;
+        --radius-md: 8px;
+        --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+        --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1);
+    }
+
+    /* Container & Header */
+    .media-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 24px 20px;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+
+    .page-title {
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--text-dark);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .total-badge {
+        font-size: 13px;
+        background: var(--bg-light);
+        color: var(--primary-color);
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-weight: 600;
+        border: 1px solid var(--border-color);
+        margin-left: 8px;
+        vertical-align: middle;
+    }
+
+    /* Buttons */
+    .btn-custom {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 16px;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.2s;
+        border: 1px solid transparent;
+        cursor: pointer;
+    }
+
+    .btn-primary {
+        background: var(--primary-color);
+        color: white;
+    }
+
+        .btn-primary:hover {
+            background: #1d4ed8;
+            color: white;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+        }
+
+    .btn-warning {
+        background: var(--warning-color);
+        color: white;
+    }
+
+        .btn-warning:hover {
+            background: #d97706;
+            color: white;
+        }
+
+    .btn-success {
+        background: var(--success-color);
+        color: white;
+    }
+
+        .btn-success:hover {
+            background: #059669;
+            color: white;
+        }
+
+    .btn-secondary {
+        background: var(--secondary-color);
+        color: white;
+    }
+
+        .btn-secondary:hover {
+            background: #475569;
+            color: white;
+        }
+
+    /* Table Styling */
+    .table-container {
+        background: var(--bg-white);
+        border-radius: var(--radius-md);
+        box-shadow: var(--shadow-sm);
+        border: 1px solid var(--border-color);
+        overflow-x: auto;
+    }
+
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 700px;
+    }
+
+        .data-table thead {
+            background: var(--bg-light);
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .data-table th {
+            padding: 16px;
+            text-align: left;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
+
+        .data-table td {
+            padding: 16px;
+            border-bottom: 1px solid var(--border-color);
+            vertical-align: middle;
+            font-size: 14px;
+            color: var(--text-dark);
+        }
+
+        .data-table tbody tr:hover {
+            background: #f8fafc;
+        }
+
+        .data-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+    /* Badge Styles */
+    .badge-success {
+        background: #d1fae5;
+        color: #065f46;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        display: inline-block;
+    }
+
+    .badge-secondary {
+        background: #e2e8f0;
+        color: #475569;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        display: inline-block;
+    }
+
+    /* Text Styles */
+    .text-danger {
+        color: var(--danger-color);
+        font-weight: 700;
+    }
+
+    .font-weight-bold {
+        font-weight: 700;
+    }
+
+    /* Alert */
+    .alert-success {
+        background: #d1fae5;
+        color: #065f46;
+        padding: 12px 16px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        border-left: 4px solid var(--success-color);
+    }
+
+    /* Action Buttons */
+    .action-group {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+    }
+
+    .btn-sm {
+        padding: 6px 12px;
+        font-size: 13px;
+        border-radius: 6px;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 48px 20px;
+        background: var(--bg-white);
+        border-radius: var(--radius-md);
+        border: 1px solid var(--border-color);
+    }
+
+    /* Responsive */
+    @@media (max-width: 768px) {
+        .page-header
+
+    {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .btn-custom, .btn-primary, .btn-success {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .action-group {
+        flex-direction: column;
+    }
+
+    }
+</style>
+
+<div class="media-container">
+    <div class="page-header">
+        <div class="page-title">
+            🎁 Premium Plans Management
+            <span class="total-badge">@(Model?.Count() ?? 0) plans</span>
+        </div>
+        <a asp-action="Create" class="btn-custom btn-primary">
+            + Add New Plan
+        </a>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert-success">@TempData["Success"]</div>
+    }
+
+    <div class="table-container">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Plan Name</th>
+                    <th>Price (VND)</th>
+                    <th>Duration (Days)</th>
+                    <th>Status</th>
+                    <th width="150">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model != null && Model.Any())
+                {
+                    foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>
+                                <strong>@item.Name</strong>
+                            </td>
+                            <td>
+                                <span class="text-danger font-weight-bold">@item.Price.ToString("N0") VND</span>
+                            </td>
+                            <td>
+                                @item.DurationInDays days
+                            </td>
+                            <td>
+                                @if (item.IsActive)
+                                {
+                                    <span class="badge-success">✓ Active</span>
+                                }
+                                else
+                                {
+                                    <span class="badge-secondary">⊗ Hidden</span>
+                                }
+                            </td>
+                            <td>
+                                <div class="action-group">
+                                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn-sm btn-warning">
+                                        ✏️ Edit
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="5" class="empty-state">
+                            <div style="font-size: 40px; margin-bottom: 10px;">📦</div>
+                            <div style="margin-top: 8px; color: var(--text-muted); font-size: 15px;">
+                                No premium plans available. Please add a new plan!
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

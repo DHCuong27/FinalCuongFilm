@@ -14,7 +14,7 @@ namespace FinalCuongFilm.MVC.Controllers
 			_vipService = vipService;
 		}
 
-		// Trang hiển thị Bảng giá
+		// GET: /Premium/Index
 		public async Task<IActionResult> Index()
 		{
 			var packages = await _vipService.GetActivePackagesAsync();
@@ -29,34 +29,55 @@ namespace FinalCuongFilm.MVC.Controllers
 			return View(packages);
 		}
 
-		// Nút Mua ngay gọi vào đây
+		// GET: /Premium/Checkout
+		// Displays the confirmation/invoice page before paying
 		[Authorize]
-		[HttpPost]
+		[HttpGet]
 		public async Task<IActionResult> Checkout(Guid packageId)
 		{
-			var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-			if (userId == null) return RedirectToAction("Login", "Auth");
+			var packages = await _vipService.GetActivePackagesAsync();
+			var selectedPackage = packages.FirstOrDefault(p => p.Id == packageId);
 
-			// 1. Vẫn tạo giao dịch Pending bình thường
-			var transaction = await _vipService.CreateTransactionAsync(userId, packageId);
-
-			// ==========================================
-			// DEV HACK: GIẢ LẬP THANH TOÁN THÀNH CÔNG VÀ CHẠY LUÔN HÀM CỘNG VIP
-			// Bỏ qua bước gọi URL VNPay
-			// ==========================================
-
-			bool isSuccess = await _vipService.CompleteTransactionAsync(transaction.Id, "00");
-
-			if (isSuccess)
+			if (selectedPackage == null)
 			{
-				TempData["Success"] = "[TEST MODE] Đã giả lập thanh toán thành công và cộng ngày VIP!";
-			}
-			else
-			{
-				TempData["Error"] = "Lỗi khi giả lập thanh toán.";
+				TempData["Error"] = "This package does not exist.";
+				return RedirectToAction("Index");
 			}
 
-			return RedirectToAction("Index"); // Quay lại trang bảng giá để xem hạn VIP mới
+			return View(selectedPackage);
+		}
+
+		// POST: /Premium/ProcessPayment
+		// Processes the actual (mock) payment
+		[Authorize]
+		[HttpPost]
+		public async Task<IActionResult> ProcessPayment(Guid packageId)
+		{
+			try
+			{
+				var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+				if (userId == null) return RedirectToAction("Login", "Auth");
+
+				// 1. Create Pending transaction in DB
+				var transaction = await _vipService.CreateTransactionAsync(userId, packageId);
+
+				// =========================================================
+				// 🚨 DEV HACK: MOCK PAYMENT 
+				// =========================================================
+				bool isSuccess = await _vipService.CompleteTransactionAsync(transaction.Id, "00");
+
+				if (isSuccess)
+					TempData["Success"] = "[TEST MODE] Mock payment successful! VIP days have been added.";
+				else
+					TempData["Error"] = "Error during mock payment.";
+
+				return RedirectToAction("Index");
+			}
+			catch (Exception ex)
+			{
+				TempData["Error"] = "An error occurred: " + ex.Message;
+				return RedirectToAction("Index");
+			}
 		}
 	}
 }

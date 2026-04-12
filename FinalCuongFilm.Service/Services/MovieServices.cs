@@ -53,6 +53,7 @@ namespace FinalCuongFilm.Service.Services
 					CountryId = m.CountryId.HasValue ? m.CountryId.Value : Guid.Empty,
 					CountryName = m.Country != null ? m.Country.Name : null,
 					LanguageName = m.Language != null ? m.Language.Name : null,
+					IsVipOnly = m.IsVipOnly,
 					SelectedActorIds = m.MovieActors.Select(ma => ma.ActorId).ToList(),
 					SelectedGenreIds = m.MovieGenres.Select(mg => mg.GenreId).ToList()
 				})
@@ -130,12 +131,15 @@ namespace FinalCuongFilm.Service.Services
 				throw new Exception("Slug already exists");
 
 			var movie = _mapper.Map<Movie>(dto);
+			movie.IsVipOnly = dto.IsVipOnly;
 			movie.CreatedAt = DateTime.UtcNow;
 			movie.IsActive = true;
 			movie.ViewCount = 0;
 
 			_context.Movies.Add(movie);
 			await _context.SaveChangesAsync();
+
+
 
 			_logger.LogInformation($"Created movie: {movie.Title}");
 
@@ -152,6 +156,7 @@ namespace FinalCuongFilm.Service.Services
 				throw new Exception("Slug already exists");
 
 			_mapper.Map(dto, movie);
+			movie.IsVipOnly = dto.IsVipOnly;
 			movie.UpdatedAt = DateTime.UtcNow;
 
 			await _context.SaveChangesAsync();

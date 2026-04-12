@@ -84,6 +84,7 @@
         flex-grow: 1;
     }
 
+    /* Fixed btn-buy to work perfectly as an <a> tag */
     .btn-buy {
         background: #e50914;
         color: #fff;
@@ -94,11 +95,14 @@
         font-weight: 600;
         font-size: 1.1rem;
         transition: background 0.2s;
+        display: block;
+        text-decoration: none;
     }
 
         .btn-buy:hover {
             background: #b20710;
             color: #fff;
+            text-decoration: none;
         }
 
     .current-vip-alert {
@@ -114,8 +118,8 @@
 
 <div class="container" style="margin-bottom: 80px;">
     <div class="pricing-header">
-        <h1 class="pricing-title">Trải nghiệm điện ảnh đỉnh cao</h1>
-        <p class="pricing-subtitle">Mở khóa toàn bộ kho phim chiếu rạp. Không quảng cáo. Chuẩn 4K HDR.</p>
+        <h1 class="pricing-title">Ultimate Cinematic Experience</h1>
+        <p class="pricing-subtitle">Unlock the entire premium movie library. Ad-free. Ultra HD 4K Quality.</p>
     </div>
 
     @if (TempData["Success"] != null)
@@ -123,11 +127,16 @@
         <div class="alert alert-success text-center">@TempData["Success"]</div>
     }
 
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger text-center">@TempData["Error"]</div>
+    }
+
     @if (ViewBag.CurrentVipEndDate != null)
     {
         <div class="current-vip-alert">
-            <i class="zmdi zmdi-star"></i> Bạn đang là thành viên Premium. Hạn sử dụng đến: <strong>@(((DateTime)ViewBag.CurrentVipEndDate).ToString("dd/MM/yyyy"))</strong>.
-            <br />(Nếu mua thêm, số ngày sẽ được cộng dồn).
+            <i class="zmdi zmdi-star"></i> You are currently a Premium member. Valid until: <strong>@(((DateTime)ViewBag.CurrentVipEndDate).ToString("MM/dd/yyyy"))</strong>.
+            <br />(If you purchase a new plan, the days will be added to your current balance).
         </div>
     }
 
@@ -142,12 +151,12 @@
                     <div class="vip-card @(count == 2 ? "popular" : "")">
                         @if (count == 2)
                         {
-                            <div class="vip-badge">Phổ biến nhất</div>
+                            <div class="vip-badge">Most Popular</div>
                         }
 
                         <div class="package-name">@pkg.Name</div>
-                        <div class="package-price">@pkg.Price.ToString("N0")đ</div>
-                        <div class="package-duration">Sử dụng trong @pkg.DurationInDays ngày</div>
+                        <div class="package-price">@pkg.Price.ToString("N0") VNĐ</div>
+                        <div class="package-duration">Valid for @pkg.DurationInDays days</div>
 
                         <div class="package-desc">
                             @if (!string.IsNullOrEmpty(pkg.Description))
@@ -157,17 +166,16 @@
                             else
                             {
                                 <ul style="list-style: none; padding: 0; text-align: left;">
-                                    <li style="margin-bottom: 10px;"><i class="zmdi zmdi-check" style="color: #e50914; margin-right: 8px;"></i>Kho phim Premium độc quyền</li>
-                                    <li style="margin-bottom: 10px;"><i class="zmdi zmdi-check" style="color: #e50914; margin-right: 8px;"></i>Độ phân giải 4K siêu nét</li>
-                                    <li><i class="zmdi zmdi-check" style="color: #e50914; margin-right: 8px;"></i>Không quảng cáo làm phiền</li>
+                                    <li style="margin-bottom: 10px;"><i class="zmdi zmdi-check" style="color: #e50914; margin-right: 8px;"></i>Exclusive Premium Movies</li>
+                                    <li style="margin-bottom: 10px;"><i class="zmdi zmdi-check" style="color: #e50914; margin-right: 8px;"></i>Ultra HD 4K Resolution</li>
+                                    <li><i class="zmdi zmdi-check" style="color: #e50914; margin-right: 8px;"></i>No Annoying Ads</li>
                                 </ul>
                             }
                         </div>
 
-                        <form asp-action="Checkout" method="post">
-                            <input type="hidden" name="packageId" value="@pkg.Id" />
-                            <button type="submit" class="btn-buy">MUA GÓI NÀY</button>
-                        </form>
+                        <a asp-action="Checkout" asp-route-packageId="@pkg.Id" class="btn-buy">
+                            BUY THIS PLAN
+                        </a>
                     </div>
                 </div>
             }
@@ -175,7 +183,7 @@
         else
         {
             <div class="col-12 text-center" style="color: #8c8c8c;">
-                <h4>Hệ thống đang cập nhật các gói cước. Vui lòng quay lại sau!</h4>
+                <h4>The system is currently updating pricing plans. Please come back later!</h4>
             </div>
         }
     </div>

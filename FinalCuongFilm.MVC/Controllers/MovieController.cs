@@ -1,6 +1,7 @@
 ﻿using FinalCuongFilm.MVC.Models.ViewModels;
 using FinalCuongFilm.Service.Interfaces;
 using FinalCuongFilm.Service.Services;
+using Humanizer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -156,24 +157,26 @@ namespace FinalCuongFilm.MVC.Controllers
 				if (movie == null) return RedirectToAction("Index", "Home");
 
 				var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
+				Console.WriteLine($"====== PHIM NÀY CÓ VIP KHÔNG? KẾT QUẢ: {movie.IsVipOnly} ======");
 				if (movie.IsVipOnly)
 				{
-					// Check 1: Chưa đăng nhập -> Đuổi ra trang Login
+					// Check 1: Chưa đăng nhập -> Đuổi ra trang Login của Identity
 					if (string.IsNullOrEmpty(userId))
 					{
 						TempData["Warning"] = "Đây là bộ phim Premium. Vui lòng đăng nhập để tiếp tục!";
-						return RedirectToAction("Login", "Auth", new { returnUrl = Request.Path });
+
+						// ==== SỬA DÒNG NÀY ====
+						// Chuyển sang dùng RedirectToPage để trỏ đúng vào Identity của .NET
+						return RedirectToPage("/Account/Login", new { area = "Identity", returnUrl = Request.Path });
 					}
 
 					// Check 2: Đã đăng nhập nhưng kiểm tra xem có VIP không?
-					// Lưu ý: Bạn cần Inject IVipService vào MovieController để dùng được hàm này
 					bool hasVip = await _vipService.HasActiveVipAsync(userId);
 
 					if (!hasVip)
 					{
 						TempData["Warning"] = "Phim này dành riêng cho tài khoản Premium. Vui lòng nâng cấp gói để xem!";
-						return RedirectToAction("Index", "Premium"); // Đuổi sang trang Mua VIP
+						return RedirectToAction("Index", "Premium"); // Bảng giá VIP thì vẫn dùng Controller bình thường
 					}
 				}
 

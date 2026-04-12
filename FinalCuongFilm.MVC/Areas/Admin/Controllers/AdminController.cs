@@ -32,6 +32,8 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 			ViewBag.TotalEpisodes = await _context.Episodes.CountAsync();
 			ViewBag.TotalMediaFiles = await _context.MediaFiles.CountAsync();
 			ViewBag.TotalUsers = await _userManager.Users.CountAsync();
+			ViewBag.TotalVipPackages = await _context.VipPackages.CountAsync();
+			ViewBag.TotalUserSubscriptions = await _context.UserSubscriptions.CountAsync();
 
 			return View();
 		}

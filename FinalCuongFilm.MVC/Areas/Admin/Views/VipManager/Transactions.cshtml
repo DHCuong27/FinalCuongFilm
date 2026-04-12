@@ -1,0 +1,312 @@
+﻿<style>
+    :root {
+        --primary-color: #2563eb;
+        --secondary-color: #64748b;
+        --success-color: #10b981;
+        --warning-color: #f59e0b;
+        --danger-color: #ef4444;
+        --text-dark: #1e293b;
+        --text-muted: #64748b;
+        --border-color: #e2e8f0;
+        --bg-light: #f8fafc;
+        --bg-white: #ffffff;
+        --radius-md: 8px;
+        --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+        --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1);
+    }
+
+    /* Container & Header */
+    .media-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 24px 20px;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+
+    .page-title {
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--text-dark);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .total-badge {
+        font-size: 13px;
+        background: var(--bg-light);
+        color: var(--primary-color);
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-weight: 600;
+        border: 1px solid var(--border-color);
+        margin-left: 8px;
+        vertical-align: middle;
+    }
+
+    /* Table Styling */
+    .table-container {
+        background: var(--bg-white);
+        border-radius: var(--radius-md);
+        box-shadow: var(--shadow-sm);
+        border: 1px solid var(--border-color);
+        overflow-x: auto;
+    }
+
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 900px;
+    }
+
+        .data-table thead {
+            background: var(--bg-light);
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .data-table th {
+            padding: 16px;
+            text-align: left;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
+
+        .data-table td {
+            padding: 16px;
+            border-bottom: 1px solid var(--border-color);
+            vertical-align: middle;
+            font-size: 14px;
+            color: var(--text-dark);
+        }
+
+        .data-table tbody tr:hover {
+            background: #f8fafc;
+        }
+
+        .data-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+    /* Badge Styles */
+    .badge-success {
+        background: #d1fae5;
+        color: #065f46;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        display: inline-block;
+    }
+
+    .badge-warning {
+        background: #fef3c7;
+        color: #b45309;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        display: inline-block;
+    }
+
+    .badge-danger {
+        background: #fee2e2;
+        color: #991b1b;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        display: inline-block;
+    }
+
+    .badge-secondary {
+        background: #e2e8f0;
+        color: #475569;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        display: inline-block;
+    }
+
+    .badge-info {
+        background: #dbeafe;
+        color: #1e40af;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        display: inline-block;
+    }
+
+    /* Text Styles */
+    .text-danger {
+        color: var(--danger-color);
+        font-weight: 700;
+    }
+
+    .text-muted {
+        color: var(--text-muted);
+    }
+
+    .font-weight-bold {
+        font-weight: 700;
+    }
+
+    .text-dark {
+        color: var(--text-dark);
+    }
+
+    strong {
+        font-weight: 600;
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 48px 20px;
+        background: var(--bg-white);
+        border-radius: var(--radius-md);
+        border: 1px solid var(--border-color);
+    }
+
+    /* ISO Badge for IDs */
+    .iso-badge {
+        background: var(--bg-light);
+        padding: 4px 8px;
+        border-radius: 4px;
+        border: 1px solid var(--border-color);
+        font-family: monospace;
+        color: var(--secondary-color);
+        font-weight: 500;
+        font-size: 13px;
+        cursor: help;
+    }
+
+    /* Amount styling */
+    .amount {
+        font-weight: 700;
+        color: var(--danger-color);
+    }
+
+    /* Responsive */
+    @@media (max-width: 768px) {
+        .page-header
+
+    {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .data-table th,
+    .data-table td {
+        padding: 12px;
+    }
+
+    }
+</style>
+
+@model IEnumerable<FinalCuongFilm.ApplicationCore.Entities.Transaction>
+@{
+    ViewData["Title"] = "Transaction History";
+    Layout = "~/Areas/Admin/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<div class="media-container">
+    <div class="page-header">
+        <div class="page-title">
+            💰 VIP Payment History
+            <span class="total-badge">@(Model?.Count() ?? 0) transactions</span>
+        </div>
+    </div>
+
+    <div class="table-container">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Txn ID (Ref)</th>
+                    <th>User ID</th>
+                    <th>Order Info</th>
+                    <th>Amount (VND)</th>
+                    <th>Gateway</th>
+                    <th>Date & Time</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model != null && Model.Any())
+                {
+                    foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>
+                                <span class="iso-badge" title="@item.Id">
+                                    @(item.Id.ToString().Length > 12 ? item.Id.ToString().Substring(0, 12) + "..." : item.Id.ToString())
+                                </span>
+                            </td>
+                            <td>
+                                <span class="iso-badge" title="@item.UserId">
+                                    @(item.UserId.Length > 12 ? item.UserId.Substring(0, 12) + "..." : item.UserId)
+                                </span>
+                            </td>
+                            <td>
+                                <strong>@item.OrderInfo</strong>
+                            </td>
+                            <td>
+                                <span class="amount">@item.Amount.ToString("N0") VND</span>
+                            </td>
+                            <td>
+                                <span class="badge-info">@item.PaymentMethod</span>
+                            </td>
+                            <td>
+                                @item.TransactionDate.ToLocalTime().ToString("MMM dd, yyyy HH:mm")
+                            </td>
+                            <td>
+                                @if (item.Status.ToString() == "Success")
+                                {
+                                    <span class="badge-success">✓ Success</span>
+                                }
+                                else if (item.Status.ToString() == "Pending")
+                                {
+                                    <span class="badge-warning">⏳ Pending</span>
+                                }
+                                else if (item.Status.ToString() == "Failed")
+                                {
+                                    <span class="badge-danger">✗ Failed</span>
+                                }
+                                else
+                                {
+                                    <span class="badge-secondary">⊗ Canceled</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="7" class="empty-state">
+                            <div style="font-size: 40px; margin-bottom: 10px;">📭</div>
+                            <div style="color: var(--text-muted); font-size: 15px;">
+                                No transactions found in the system.
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

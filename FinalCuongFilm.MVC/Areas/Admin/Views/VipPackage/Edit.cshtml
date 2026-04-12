@@ -1,0 +1,318 @@
+﻿@model FinalCuongFilm.ApplicationCore.Entities.VipPackage
+@{
+    ViewData["Title"] = "Edit Premium Plan";
+    Layout = "~/Areas/Admin/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<style>
+    /* Form Styles */
+    .form-card {
+        background: var(--bg-white);
+        border-radius: var(--radius-md);
+        box-shadow: var(--shadow-sm);
+        border: 1px solid var(--border-color);
+        overflow: hidden;
+    }
+
+    .form-card-body {
+        padding: 24px;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-label {
+        display: block;
+        font-weight: 600;
+        color: var(--text-dark);
+        margin-bottom: 8px;
+        font-size: 14px;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        font-size: 14px;
+        transition: all 0.2s;
+        font-family: inherit;
+        background: var(--bg-white);
+    }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+    textarea.form-control {
+        resize: vertical;
+        min-height: 100px;
+    }
+
+    input[type="number"].form-control {
+        -moz-appearance: textfield;
+    }
+
+        input[type="number"].form-control::-webkit-inner-spin-button,
+        input[type="number"].form-control::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+    /* Switch Toggle */
+    .switch-container {
+        background: var(--bg-light);
+        padding: 16px;
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+    }
+
+    .custom-switch {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        cursor: pointer;
+    }
+
+        .custom-switch input {
+            width: 44px;
+            height: 24px;
+            appearance: none;
+            background: #cbd5e1;
+            border-radius: 24px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+            .custom-switch input:checked {
+                background: var(--success-color);
+            }
+
+            .custom-switch input::before {
+                content: '';
+                width: 20px;
+                height: 20px;
+                background: white;
+                border-radius: 50%;
+                position: absolute;
+                top: 2px;
+                left: 2px;
+                transition: all 0.2s;
+            }
+
+            .custom-switch input:checked::before {
+                left: 22px;
+            }
+
+    .switch-label {
+        font-weight: 600;
+        color: var(--success-color);
+        margin: 0;
+        font-size: 14px;
+    }
+
+    /* Buttons */
+    .btn-custom {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 20px;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.2s;
+        border: 1px solid transparent;
+        cursor: pointer;
+        font-family: inherit;
+    }
+
+    .btn-success {
+        background: var(--success-color);
+        color: white;
+    }
+
+        .btn-success:hover {
+            background: #059669;
+            color: white;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+        }
+
+    .btn-secondary {
+        background: var(--secondary-color);
+        color: white;
+    }
+
+        .btn-secondary:hover {
+            background: #475569;
+            color: white;
+            box-shadow: 0 4px 12px rgba(100, 116, 139, 0.2);
+        }
+
+    /* Form Actions */
+    .form-actions {
+        margin-top: 24px;
+        padding-top: 24px;
+        border-top: 1px solid var(--border-color);
+        display: flex;
+        gap: 12px;
+    }
+
+    /* Grid Layout */
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 24px;
+    }
+
+    .full-width {
+        grid-column: 1 / -1; /* Ép phần tử bung rộng hết chiều ngang */
+    }
+
+    /* Validation Styles */
+    .validation-summary-errors,
+    .field-validation-error {
+        color: var(--danger-color);
+        font-size: 12px;
+        margin-top: 6px;
+        display: block;
+    }
+
+    .input-validation-error {
+        border-color: var(--danger-color) !important;
+    }
+
+        .input-validation-error:focus {
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1) !important;
+        }
+
+    /* Required field indicator */
+    .form-label.required::after {
+        content: ' *';
+        color: var(--danger-color);
+    }
+
+    /* Responsive */
+    @@media (max-width: 768px) {
+        .media-container
+
+    {
+        padding: 16px;
+    }
+
+    .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .form-row {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    .form-actions {
+        flex-direction: column;
+    }
+
+        .form-actions .btn-custom {
+            width: 100%;
+            justify-content: center;
+        }
+
+    .form-card-body {
+        padding: 16px;
+    }
+
+    .switch-container {
+        padding: 12px;
+    }
+
+    }
+
+    /* Print Styles */
+    @@media print {
+        .form-actions
+
+    {
+        display: none;
+    }
+
+    .form-card {
+        box-shadow: none;
+        border: 1px solid #ddd;
+    }
+
+    }
+</style>
+
+<div class="media-container">
+    <div class="page-header">
+        <div class="page-title">
+            ✏️ Edit Premium Plan
+        </div>
+    </div>
+
+    <div class="form-card">
+        <div class="form-card-body">
+            <form asp-action="Edit" method="post">
+                <input type="hidden" asp-for="Id" />
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label required">Plan Name (e.g., 3-Month Plan)</label>
+                        <input asp-for="Name" class="form-control" placeholder="Enter plan name" required />
+                        <span asp-validation-for="Name" class="field-validation-error"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label required">Price (VND)</label>
+                        <input asp-for="Price" type="number" class="form-control" placeholder="Enter price" required />
+                        <span asp-validation-for="Price" class="field-validation-error"></span>
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label class="form-label required">Duration (Days)</label>
+                        <input asp-for="DurationInDays" type="number" class="form-control" placeholder="Enter duration in days" required />
+                        <span asp-validation-for="DurationInDays" class="field-validation-error"></span>
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label class="form-label">Benefits Description</label>
+                        <textarea asp-for="Description" class="form-control" rows="4" placeholder="List the exclusive benefits of this plan..."></textarea>
+                        <span asp-validation-for="Description" class="field-validation-error"></span>
+                    </div>
+
+                    <div class="form-group full-width">
+                        <div class="switch-container">
+                            <label class="custom-switch">
+                                <input type="checkbox" asp-for="IsActive" value="true" />
+                                <span class="switch-label">🎯 Publish and activate this plan immediately</span>
+                            </label>
+                            <small style="display: block; margin-top: 8px; color: var(--text-muted); font-size: 12px;">
+                                When activated, this package will be available for purchase by users.
+                            </small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn-custom btn-success">
+                        💾 Save Changes
+                    </button>
+                    <a asp-action="Index" class="btn-custom btn-secondary">
+                        ← Back to List
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

@@ -23,6 +23,30 @@
         margin: 0;
         padding: 0;
     }
+    /* Huy hiệu Premium VIP */
+    .badge-premium-poster {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); /* Màu vàng cam sang trọng */
+        color: #fff;
+        padding: 4px 10px;
+        border-radius: 4px;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        z-index: 20;
+        box-shadow: 0 2px 10px rgba(245, 158, 11, 0.4);
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+        .badge-premium-poster i {
+            font-size: 10px;
+            color: #fff;
+        }
 
     .hero-slider-section {
         position: relative;
@@ -1172,8 +1196,8 @@
                     <select name="sortBy" class="filter-select">
                         <option value="latest" selected="@(f.SortBy == "latest" ? "selected" : null)">Latest</option>
                         <option value="popular" selected="@(f.SortBy == "popular" ? "selected" : null)">Most Popular</option>
-                        <option value="year_desc" selected="@(f.SortBy == "year_desc" ? "selected" : null)">Year Descending</option>
-                        <option value="year_asc" selected="@(f.SortBy == "year_asc" ? "selected" : null)">Year Ascending</option>
+                        @* <option value="year_desc" selected="@(f.SortBy == "year_desc" ? "selected" : null)">Year Descending</option>
+                        <option value="year_asc" selected="@(f.SortBy == "year_asc" ? "selected" : null)">Year Ascending</option> *@
                         <option value="title" selected="@(f.SortBy == "title" ? "selected" : null)">Name A-Z</option>
                     </select>
                 </div>
@@ -1198,7 +1222,15 @@
                 @foreach (var movie in f.Movies)
                 {
                     <div class="grid-card">
-                        <div class="grid-card-poster">
+                        <div class="grid-card-poster" style="position: relative;">
+
+                            @if (movie.IsVipOnly)
+                            {
+                                <div class="badge-premium-poster" title="Phim độc quyền dành cho tài khoản VIP">
+                                    <i class="fas fa-crown"></i> VIP
+                                </div>
+                            }
+
                             <a asp-controller="Movie" asp-action="Detail" asp-route-slug="@movie.Slug">
                                 <img src="@(movie.PosterUrl ?? "https://via.placeholder.com/300x450/2d2d2d/fff?text=No+Poster")" alt="@movie.Title" loading="lazy" />
                             </a>
@@ -1231,6 +1263,8 @@
                     </div>
                 }
             </div>
+        }
+    </div>
 
             @if (f.TotalPages > 1)
             {
