@@ -15,7 +15,7 @@ namespace FinalCuongFilm.ApplicationCore.Entities
 
 		public string OrderInfo { get; set; } = string.Empty;
 
-		public string PaymentMethod { get; set; } = "VNPAY";
+		public string PaymentMethod { get; set; } = "ZALOPAY";
 		public Enum.TransactionStatus Status { get; set; } = Enum.TransactionStatus.Pending;
 
 		public DateTime TransactionDate { get; set; } = DateTime.UtcNow;

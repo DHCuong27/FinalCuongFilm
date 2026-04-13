@@ -1,82 +1,83 @@
 ﻿using FinalCuongFilm.ApplicationCore.Entities;
-using FinalCuongFilm.DataLayer;
+using FinalCuongFilm.Service.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 {
 	[Area("Admin")]
-	[Authorize(Roles = "Admin")] // Bắt buộc phải là Admin
+	[Authorize(Roles = "Admin")] // Bắt buộc phải là Admin mới vào được
 	public class VipPackageController : Controller
 	{
-		private readonly CuongFilmDbContext _context;
+		private readonly IVipService _vipService;
 
-		public VipPackageController(CuongFilmDbContext context)
+		public VipPackageController(IVipService vipService)
 		{
-			_context = context;
+			_vipService = vipService;
 		}
 
-		// 1. DANH SÁCH GÓI VIP
+		// 1. READ (Hiển thị danh sách)
 		public async Task<IActionResult> Index()
 		{
-			var packages = await _context.VipPackages.OrderBy(p => p.Price).ToListAsync();
+			var packages = await _vipService.GetAllPackagesAsync();
 			return View(packages);
 		}
 
-		// 2. THÊM GÓI (GET)
+		// 2. CREATE (GET)
+		[HttpGet]
 		public IActionResult Create()
 		{
-			return View(new VipPackage { IsActive = true }); // Mặc định tạo ra là được Active
+			return View(new VipPackage { IsActive = true });
 		}
 
-		// 3. THÊM GÓI (POST)
+		// 2. CREATE (POST)
 		[HttpPost]
 		[ValidateAntiForgeryToken]
 		public async Task<IActionResult> Create(VipPackage model)
 		{
 			if (ModelState.IsValid)
 			{
-				model.Id = Guid.NewGuid();
-				_context.VipPackages.Add(model);
-				await _context.SaveChangesAsync();
-				TempData["Success"] = "Thêm gói VIP thành công!";
+				await _vipService.CreatePackageAsync(model);
+				TempData["Success"] = "Tạo gói VIP thành công!";
 				return RedirectToAction(nameof(Index));
 			}
 			return View(model);
 		}
 
-		// 4. SỬA GÓI (GET)
+		// 3. UPDATE (GET)
+		[HttpGet]
 		public async Task<IActionResult> Edit(Guid id)
 		{
-			var package = await _context.VipPackages.FindAsync(id);
+			var package = await _vipService.GetPackageByIdAsync(id);
 			if (package == null) return NotFound();
+
 			return View(package);
 		}
 
-		// 5. SỬA GÓI (POST)
+		// 3. UPDATE (POST)
 		[HttpPost]
 		[ValidateAntiForgeryToken]
 		public async Task<IActionResult> Edit(Guid id, VipPackage model)
 		{
-			if (id != model.Id) return NotFound();
+			if (id != model.Id) return BadRequest();
 
 			if (ModelState.IsValid)
 			{
-				try
-				{
-					_context.Update(model);
-					await _context.SaveChangesAsync();
-					TempData["Success"] = "Cập nhật gói VIP thành công!";
-				}
-				catch (DbUpdateConcurrencyException)
-				{
-					if (!await _context.VipPackages.AnyAsync(e => e.Id == id)) return NotFound();
-					else throw;
-				}
+				await _vipService.UpdatePackageAsync(model);
+				TempData["Success"] = "Cập nhật gói VIP thành công!";
 				return RedirectToAction(nameof(Index));
 			}
 			return View(model);
+		}
+
+		// 4. DELETE (Soft Delete - POST từ một form hoặc nút bấm)
+		[HttpPost]
+		[ValidateAntiForgeryToken]
+		public async Task<IActionResult> Delete(Guid id)
+		{
+			await _vipService.DeactivatePackageAsync(id);
+			TempData["Success"] = "Đã vô hiệu hóa gói VIP thành công!";
+			return RedirectToAction(nameof(Index));
 		}
 	}
 }

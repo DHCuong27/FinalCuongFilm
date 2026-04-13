@@ -2,6 +2,9 @@
 using FinalCuongFilm.DataLayer;
 using FinalCuongFilm.Service.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace FinalCuongFilm.MVC.Controllers
 {
@@ -10,47 +13,60 @@ namespace FinalCuongFilm.MVC.Controllers
 	public class PaymentApiController : ControllerBase
 	{
 		private readonly IVipService _vipService;
+		private readonly IConfiguration _config;
 
-		public PaymentApiController(IVipService vipService)
+		public PaymentApiController(IVipService vipService, IConfiguration config)
 		{
 			_vipService = vipService;
+			_config = config;
 		}
 
-		// API này VNPay sẽ gọi ngầm vào (Webhook / IPN)
-		[HttpGet("vnpay-ipn")]
-		public async Task<IActionResult> VnpayIpn()
+
+		[HttpPost("zalopay-callback")]
+		public async Task<IActionResult> ZaloPayCallback([FromBody] dynamic cbdata)
 		{
+			var result = new Dictionary<string, object>();
 			try
 			{
-				// 1. Lấy dữ liệu VNPay gửi về
-				var vnp_TxnRef = Request.Query["vnp_TxnRef"].ToString();
-				var vnp_ResponseCode = Request.Query["vnp_ResponseCode"].ToString();
-				var vnp_SecureHash = Request.Query["vnp_SecureHash"].ToString();
+				var dataStr = Convert.ToString(cbdata["data"]);
+				var reqMac = Convert.ToString(cbdata["mac"]);
 
-				// TODO: Khi chạy thật, bạn sẽ dùng thư viện VNPay để check vnp_SecureHash tại đây
-				// bool isValidSignature = vnpay.ValidateSignature(vnp_SecureHash, "SECRET_KEY");
-				// if (!isValidSignature) return Ok(new { RspCode = "97", Message = "Invalid Signature" });
-
-				if (string.IsNullOrEmpty(vnp_TxnRef) || !Guid.TryParse(vnp_TxnRef, out Guid transactionId))
+				// 1. Validate Signature (Bảo mật P0) dùng Key2
+				var mac = HmacSHA256(dataStr, _config["ZaloPay:Key2"]);
+				if (!reqMac.Equals(mac))
 				{
-					return Ok(new { RspCode = "01", Message = "Order not found" });
+					result["return_code"] = -1;
+					result["return_message"] = "mac not equal";
+					return Ok(result); // Trả về Ok nhưng code -1 để ZaloPay biết lỗi
 				}
 
-				// 2. Gọi Service xử lý hoàn tất giao dịch
-				bool isProcessed = await _vipService.CompleteTransactionAsync(transactionId, vnp_ResponseCode);
+				// 2. Parse data
+				var dataJson = JsonConvert.DeserializeObject<Dictionary<string, object>>(dataStr);
+				var appTransId = Convert.ToString(dataJson["app_trans_id"]);
+				var transactionIdStr = appTransId.Split('_')[1];
+				var transactionId = Guid.Parse(transactionIdStr);
 
-				if (!isProcessed)
-				{
-					return Ok(new { RspCode = "02", Message = "Order already confirmed or Invalid" });
-				}
+				// 3. Cập nhật VIP an toàn (Gộp xử lý P1 Idempotency vào service)
+				await _vipService.CompleteTransactionAsync(transactionId, true);
 
-				// 3. Trả về mã 00 cho VNPay biết là đã nhận tin thành công
-				return Ok(new { RspCode = "00", Message = "Confirm Success" });
+				result["return_code"] = 1;
+				result["return_message"] = "success";
 			}
 			catch (Exception ex)
 			{
-				// Lưu log lỗi nếu cần
-				return Ok(new { RspCode = "99", Message = "Unknown error: " + ex.Message });
+				result["return_code"] = 0; // ZaloPay sẽ gửi lại sau
+				result["return_message"] = ex.Message;
+			}
+			return Ok(result);
+		}
+		private string HmacSHA256(string inputData, string key)
+		{
+			byte[] keyByte = Encoding.UTF8.GetBytes(key);
+			byte[] messageBytes = Encoding.UTF8.GetBytes(inputData);
+			using (var hmacsha256 = new HMACSHA256(keyByte))
+			{
+				byte[] hashmessage = hmacsha256.ComputeHash(messageBytes);
+				return BitConverter.ToString(hashmessage).Replace("-", "").ToLower();
 			}
 		}
 	}

@@ -23,6 +23,12 @@ namespace FinalCuongFilm.Service.Services
 				.ToListAsync();
 		}
 
+		// SỬA LỖI 2: Bổ sung implementation cho hàm này
+		public async Task<VipPackage?> GetPackageByIdAsync(Guid packageId)
+		{
+			return await _context.VipPackages.FindAsync(packageId);
+		}
+
 		public async Task<bool> HasActiveVipAsync(string userId)
 		{
 			return await _context.UserSubscriptions
@@ -46,7 +52,7 @@ namespace FinalCuongFilm.Service.Services
 				UserId = userId,
 				PackageId = packageId,
 				Amount = package.Price,
-				OrderInfo = $"Nang cap {package.Name}", // Tiếng Việt không dấu cho VNPay
+				OrderInfo = $"Nang cap {package.Name}", // Tiếng Việt không dấu cho VNPay/ZaloPay
 				Status = TransactionStatus.Pending,
 				TransactionDate = DateTime.UtcNow
 			};
@@ -56,44 +62,77 @@ namespace FinalCuongFilm.Service.Services
 			return transaction;
 		}
 
-		public async Task<bool> CompleteTransactionAsync(Guid transactionId, string vnpayResponseCode)
+		public async Task CompleteTransactionAsync(Guid transactionId, bool isSuccess)
 		{
 			var transaction = await _context.Transactions.FindAsync(transactionId);
-			if (transaction == null || transaction.Status != TransactionStatus.Pending) return false;
+			if (transaction == null || transaction.Status != TransactionStatus.Pending) return; // Idempotency check
 
-			if (vnpayResponseCode == "00") // 00 là mã thành công của VNPay
+			transaction.Status = isSuccess ? TransactionStatus.Success : TransactionStatus.Failed;
+
+			if (isSuccess)
 			{
-				transaction.Status = TransactionStatus.Success;
 				var package = await _context.VipPackages.FindAsync(transaction.PackageId);
 
-				// Cộng ngày VIP
-				var currentSub = await _context.UserSubscriptions.FirstOrDefaultAsync(s => s.UserId == transaction.UserId);
-				if (currentSub != null)
+				// FIX LỖI P0: Chỉ lấy sub ĐANG ACTIVE (hoặc null nếu chưa có/đã hết hạn)
+				var activeSub = await _context.UserSubscriptions
+					.FirstOrDefaultAsync(s => s.UserId == transaction.UserId && s.IsActive && s.EndDate > DateTime.UtcNow);
+
+				if (activeSub != null)
 				{
-					var baseDate = currentSub.EndDate > DateTime.UtcNow ? currentSub.EndDate : DateTime.UtcNow;
-					currentSub.EndDate = baseDate.AddDays(package!.DurationInDays);
-					currentSub.IsActive = true;
+					// Gia hạn và Cập nhật PackageId mới nếu user đổi gói (FIX P1)
+					activeSub.EndDate = activeSub.EndDate.AddDays(package.DurationInDays);
+					activeSub.PackageId = package.Id;
 				}
 				else
 				{
-					_context.UserSubscriptions.Add(new UserSubscription
+					// Tạo mới
+					var newSub = new UserSubscription
 					{
-						Id = Guid.NewGuid(),
 						UserId = transaction.UserId,
-						PackageId = package!.Id,
+						PackageId = package.Id,
 						StartDate = DateTime.UtcNow,
 						EndDate = DateTime.UtcNow.AddDays(package.DurationInDays),
 						IsActive = true
-					});
+					};
+					_context.UserSubscriptions.Add(newSub);
 				}
-			}
-			else
-			{
-				transaction.Status = TransactionStatus.Failed;
 			}
 
 			await _context.SaveChangesAsync();
-			return true;
+		}
+
+		// Lấy TẤT CẢ gói (cả Active lẫn Inactive) để Admin quản lý
+		public async Task<IEnumerable<VipPackage>> GetAllPackagesAsync()
+		{
+			return await _context.VipPackages
+				.OrderByDescending(p => p.IsActive)
+				.ThenBy(p => p.Price)
+				.ToListAsync();
+		}
+
+		public async Task CreatePackageAsync(VipPackage package)
+		{
+			package.Id = Guid.NewGuid();
+			_context.VipPackages.Add(package);
+			await _context.SaveChangesAsync();
+		}
+
+		public async Task UpdatePackageAsync(VipPackage package)
+		{
+			_context.VipPackages.Update(package);
+			await _context.SaveChangesAsync();
+		}
+
+		// Thay vì Delete hẳn, ta chỉ ẩn nó đi (Soft Delete)
+		public async Task DeactivatePackageAsync(Guid packageId)
+		{
+			var package = await _context.VipPackages.FindAsync(packageId);
+			if (package != null)
+			{
+				package.IsActive = false;
+				package.IsPopular = false; 
+				await _context.SaveChangesAsync();
+			}
 		}
 	}
 }

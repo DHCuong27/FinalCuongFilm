@@ -305,9 +305,11 @@
                             </td>
                             <td>
                                 <div class="action-group">
-                                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn-sm btn-warning">
-                                        ✏️ Edit
-                                    </a>
+                                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-warning btn-sm">Sửa</a>
+
+                                    <form asp-action="Delete" asp-route-id="@item.Id" method="post" style="display:inline;" onsubmit="return confirm('Bạn có chắc chắn muốn vô hiệu hóa gói VIP này không? Người đang dùng sẽ không bị ảnh hưởng.');">
+                                        <button type="submit" class="btn btn-danger btn-sm">Vô hiệu hóa</button>
+                                    </form>
                                 </div>
                             </td>
                         </tr>

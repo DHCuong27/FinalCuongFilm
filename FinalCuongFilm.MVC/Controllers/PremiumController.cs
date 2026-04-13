@@ -1,6 +1,9 @@
 ﻿using FinalCuongFilm.Service.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
+using System.Security.Cryptography;
+using System.Text;
 using System.Security.Claims;
 
 namespace FinalCuongFilm.MVC.Controllers
@@ -8,10 +11,12 @@ namespace FinalCuongFilm.MVC.Controllers
 	public class PremiumController : Controller
 	{
 		private readonly IVipService _vipService;
+		private readonly IConfiguration _config;
 
-		public PremiumController(IVipService vipService)
+		public PremiumController(IVipService vipService, IConfiguration config)
 		{
 			_vipService = vipService;
+			_config = config;
 		}
 
 		// GET: /Premium/Index
@@ -30,7 +35,6 @@ namespace FinalCuongFilm.MVC.Controllers
 		}
 
 		// GET: /Premium/Checkout
-		// Displays the confirmation/invoice page before paying
 		[Authorize]
 		[HttpGet]
 		public async Task<IActionResult> Checkout(Guid packageId)
@@ -47,36 +51,98 @@ namespace FinalCuongFilm.MVC.Controllers
 			return View(selectedPackage);
 		}
 
-		// POST: /Premium/ProcessPayment
-		// Processes the actual (mock) payment
-		[Authorize]
 		[HttpPost]
+		[ValidateAntiForgeryToken]
 		public async Task<IActionResult> ProcessPayment(Guid packageId)
 		{
-			try
+			// 1. Lấy userId hiện tại
+			var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+			if (string.IsNullOrEmpty(userId)) return Challenge();
+
+			// 2. Lấy thông tin gói Package (ĐÃ FIX: Gán vào biến package và check null)
+			var package = await _vipService.GetPackageByIdAsync(packageId);
+			if (package == null) return NotFound("Gói VIP không tồn tại");
+
+			// 3. Tạo Transaction
+			var transaction = await _vipService.CreateTransactionAsync(userId, packageId);
+
+			// 4. Tạo TimeStamp
+			var appTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds().ToString();
+
+			var embedData = new { redirecturl = "https://localhost:7237/Premium/PaymentSuccess" };
+			var embedDataString = JsonConvert.SerializeObject(embedData);
+
+			// 5. Build data gửi ZaloPay
+			var zalopayRequestData = new Dictionary<string, string>
+				{
+					{ "app_id", _config["ZaloPay:AppId"] },
+					{ "app_trans_id", $"{DateTime.Now:yyMMdd}_{transaction.Id.ToString("N")}" },
+					{ "app_time", appTime },
+					{ "app_user", userId },
+					{ "amount", ((long)package.Price).ToString() },
+					{ "description", $"VIP Payment CuongFilm - Package {package.Name}" },
+					{ "item", "[]" },
+					{ "embed_data", embedDataString },
+					{ "callback_url", _config["ZaloPay:CallbackUrl"] }
+				};
+
+			// 6. Tạo chữ ký (Mac)
+			var dataToMac = $"{zalopayRequestData["app_id"]}|{zalopayRequestData["app_trans_id"]}|{zalopayRequestData["app_user"]}|{zalopayRequestData["amount"]}|{zalopayRequestData["app_time"]}|{zalopayRequestData["embed_data"]}|{zalopayRequestData["item"]}";
+			zalopayRequestData["mac"] = HmacSHA256(dataToMac, _config["ZaloPay:Key1"]);
+
+			// 7. Gọi API thật tới ZaloPay
+			using (var client = new HttpClient())
 			{
-				var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-				if (userId == null) return RedirectToAction("Login", "Auth");
+				var content = new FormUrlEncodedContent(zalopayRequestData);
+				var responseMsg = await client.PostAsync(_config["ZaloPay:Endpoint"], content);
+				var responseString = await responseMsg.Content.ReadAsStringAsync();
 
-				// 1. Create Pending transaction in DB
-				var transaction = await _vipService.CreateTransactionAsync(userId, packageId);
+				var responseData = JsonConvert.DeserializeObject<dynamic>(responseString);
 
-				// =========================================================
-				// 🚨 DEV HACK: MOCK PAYMENT 
-				// =========================================================
-				bool isSuccess = await _vipService.CompleteTransactionAsync(transaction.Id, "00");
+				if (responseData.return_code == 1)
+				{
+					// Lấy order_url và chuyển hướng người dùng tới cổng thanh toán ZaloPay
+					return Redirect(responseData.order_url.ToString());
+				}
 
-				if (isSuccess)
-					TempData["Success"] = "[TEST MODE] Mock payment successful! VIP days have been added.";
-				else
-					TempData["Error"] = "Error during mock payment.";
-
-				return RedirectToAction("Index");
+				return BadRequest($"Chi tiết lỗi từ ZaloPay: {responseString}");
 			}
-			catch (Exception ex)
+		}
+		[HttpGet]
+		[Authorize] // Bắt buộc đăng nhập
+		public async Task<IActionResult> PaymentSuccess()
+		{
+			var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+			if (string.IsNullOrEmpty(userId)) return RedirectToAction("Index", "Home");
+
+			// Lấy thông tin VIP mới nhất của user
+			var currentSub = await _vipService.GetCurrentUserSubscriptionAsync(userId);
+
+			if (currentSub != null)
 			{
-				TempData["Error"] = "An error occurred: " + ex.Message;
-				return RedirectToAction("Index");
+				// Lấy tên gói VIP
+				var package = await _vipService.GetPackageByIdAsync(currentSub.PackageId);
+				ViewBag.PackageName = package?.Name ?? "Gói VIP Premium";
+				ViewBag.ExpiryDate = currentSub.EndDate.ToString("dd/MM/yyyy HH:mm");
+				ViewBag.IsPending = false;
+			}
+			else
+			{
+				// Xử lý độ trễ: Trường hợp web quay về đích nhanh hơn ZaloPay bắn Webhook (chưa kịp update DB)
+				ViewBag.IsPending = true;
+			}
+
+			ViewBag.Message = "Giao dịch thanh toán qua ZaloPay đã hoàn tất!";
+			return View();
+		}
+		private string HmacSHA256(string inputData, string key)
+		{
+			byte[] keyByte = Encoding.UTF8.GetBytes(key);
+			byte[] messageBytes = Encoding.UTF8.GetBytes(inputData);
+			using (var hmacsha256 = new HMACSHA256(keyByte))
+			{
+				byte[] hashmessage = hmacsha256.ComputeHash(messageBytes);
+				return BitConverter.ToString(hashmessage).Replace("-", "").ToLower();
 			}
 		}
 	}
