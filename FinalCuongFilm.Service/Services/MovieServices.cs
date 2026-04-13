@@ -94,6 +94,7 @@ namespace FinalCuongFilm.Service.Services
 			};
 		}
 
+
 		public async Task<MovieDto?> GetBySlugAsync(string slug)
 		{
 			var movie = await _context.Movies
@@ -309,5 +310,7 @@ namespace FinalCuongFilm.Service.Services
 		}
 
 		#endregion
+
+
 	}
 }

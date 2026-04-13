@@ -5,6 +5,20 @@
 }
 
 <style>
+
+    .premium-movie-badge {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        background: linear-gradient(45deg, #FFD700, #FFA500);
+        color: #000;
+        font-size: 0.75rem;
+        font-weight: bold;
+        padding: 3px 8px;
+        border-radius: 5px;
+        z-index: 10;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+    }
     /* NETFLIX THEME & CUSTOM FILTER STYLES */
     .netflix-theme {
         --nf-bg: #141414;
@@ -238,7 +252,7 @@
             <div class="custom-filter-panel">
                 <form asp-action="Browse" method="get">
                     <input type="hidden" name="type" value="@Model.Type" />
-
+               
                     <div class="row align-items-end g-4">
                         <div class="col-12 col-md-4 col-lg-3">
                             <label class="filter-label">Search</label>

@@ -5,6 +5,8 @@ using Humanizer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using Azure.Storage.Sas;
+using Azure.Storage.Blobs;
 
 namespace FinalCuongFilm.MVC.Controllers
 {
@@ -301,6 +303,46 @@ namespace FinalCuongFilm.MVC.Controllers
 			var movie = await _movieService.GetByIdAsync(id);
 			if (movie == null || !movie.IsActive) return NotFound();
 			return RedirectToAction("Watch", new { slug = movie.Slug });
+		}
+
+		[Authorize]
+		public async Task<IActionResult> Download(Guid id)
+		{
+			// 1. Lấy thông tin phim
+			var movie = await _movieService.GetByIdAsync(id);
+			if (movie == null)
+			{
+				return NotFound("Không tìm thấy bộ phim này.");
+			}
+
+			// 2. Kiểm tra quyền VIP
+			var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+			bool isVip = await _vipService.HasActiveVipAsync(userId);
+
+			if (movie.IsVipOnly && !isVip)
+			{
+				TempData["Error"] = "Tính năng tải xuống chỉ dành cho tài khoản Premium.";
+				return RedirectToAction("Index", "Premium");
+			}
+
+			// 3. Kiểm tra tính hợp lệ của File Video (Đã bỏ comment và dùng biến thật)
+			if (string.IsNullOrWhiteSpace(movie.VideoUrl))
+			{
+				TempData["Error"] = "Phim này hiện chưa có file để tải xuống.";
+				return RedirectToAction("Detail", new { id = movie.Id });
+			}
+
+			// 4. Tạo SAS Token để bảo mật link tải
+			string secureDownloadUrl = _azureBlobService.GetSecureDownloadLink(movie.VideoUrl, "videos");
+
+			if (string.IsNullOrEmpty(secureDownloadUrl) || secureDownloadUrl == movie.VideoUrl)
+			{
+				TempData["Error"] = "Hệ thống đang bận, không thể tạo link tải an toàn lúc này.";
+				return RedirectToAction("Detail", new { id = movie.Id });
+			}
+
+			// 5. Redirect để ép trình duyệt tải file
+			return Redirect(secureDownloadUrl);
 		}
 	}
 }

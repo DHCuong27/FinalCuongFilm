@@ -62,44 +62,44 @@ namespace FinalCuongFilm.Service.Services
 			return transaction;
 		}
 
-		public async Task CompleteTransactionAsync(Guid transactionId, bool isSuccess)
-		{
-			var transaction = await _context.Transactions.FindAsync(transactionId);
-			if (transaction == null || transaction.Status != TransactionStatus.Pending) return; // Idempotency check
+		//public async Task CompleteTransactionAsync(Guid transactionId, bool isSuccess)
+		//{
+		//	var transaction = await _context.Transactions.FindAsync(transactionId);
+		//	if (transaction == null || transaction.Status != TransactionStatus.Pending) return; // Idempotency check
 
-			transaction.Status = isSuccess ? TransactionStatus.Success : TransactionStatus.Failed;
+		//	transaction.Status = isSuccess ? TransactionStatus.Success : TransactionStatus.Failed;
 
-			if (isSuccess)
-			{
-				var package = await _context.VipPackages.FindAsync(transaction.PackageId);
+		//	if (isSuccess)
+		//	{
+		//		var package = await _context.VipPackages.FindAsync(transaction.PackageId);
 
-				// FIX LỖI P0: Chỉ lấy sub ĐANG ACTIVE (hoặc null nếu chưa có/đã hết hạn)
-				var activeSub = await _context.UserSubscriptions
-					.FirstOrDefaultAsync(s => s.UserId == transaction.UserId && s.IsActive && s.EndDate > DateTime.UtcNow);
+		//		// FIX LỖI P0: Chỉ lấy sub ĐANG ACTIVE (hoặc null nếu chưa có/đã hết hạn)
+		//		var activeSub = await _context.UserSubscriptions
+		//			.FirstOrDefaultAsync(s => s.UserId == transaction.UserId && s.IsActive && s.EndDate > DateTime.UtcNow);
 
-				if (activeSub != null)
-				{
-					// Gia hạn và Cập nhật PackageId mới nếu user đổi gói (FIX P1)
-					activeSub.EndDate = activeSub.EndDate.AddDays(package.DurationInDays);
-					activeSub.PackageId = package.Id;
-				}
-				else
-				{
-					// Tạo mới
-					var newSub = new UserSubscription
-					{
-						UserId = transaction.UserId,
-						PackageId = package.Id,
-						StartDate = DateTime.UtcNow,
-						EndDate = DateTime.UtcNow.AddDays(package.DurationInDays),
-						IsActive = true
-					};
-					_context.UserSubscriptions.Add(newSub);
-				}
-			}
+		//		if (activeSub != null)
+		//		{
+		//			// Gia hạn và Cập nhật PackageId mới nếu user đổi gói (FIX P1)
+		//			activeSub.EndDate = activeSub.EndDate.AddDays(package.DurationInDays);
+		//			activeSub.PackageId = package.Id;
+		//		}
+		//		else
+		//		{
+		//			// Tạo mới
+		//			var newSub = new UserSubscription
+		//			{
+		//				UserId = transaction.UserId,
+		//				PackageId = package.Id,
+		//				StartDate = DateTime.UtcNow,
+		//				EndDate = DateTime.UtcNow.AddDays(package.DurationInDays),
+		//				IsActive = true
+		//			};
+		//			_context.UserSubscriptions.Add(newSub);
+		//		}
+		//	}
 
-			await _context.SaveChangesAsync();
-		}
+		//	await _context.SaveChangesAsync();
+		//}
 
 		// Lấy TẤT CẢ gói (cả Active lẫn Inactive) để Admin quản lý
 		public async Task<IEnumerable<VipPackage>> GetAllPackagesAsync()
@@ -133,6 +133,54 @@ namespace FinalCuongFilm.Service.Services
 				package.IsPopular = false; 
 				await _context.SaveChangesAsync();
 			}
+		}
+		public async Task CompleteTransactionAsync(Guid transactionId, bool isSuccess)
+		{
+			var transaction = await _context.Transactions.FindAsync(transactionId);
+
+			// Nếu giao dịch đã xử lý rồi thì bỏ qua, tránh cộng dồn ngày nhiều lần
+			if (transaction == null || transaction.Status != FinalCuongFilm.ApplicationCore.Entities.Enum.TransactionStatus.Pending)
+				return;
+
+			if (isSuccess)
+			{
+				transaction.Status = FinalCuongFilm.ApplicationCore.Entities.Enum.TransactionStatus.Success;
+
+				// Lấy gói VIP
+				var package = await _context.VipPackages.FindAsync(transaction.PackageId);
+				if (package != null)
+				{
+					// Kiểm tra user đang có VIP chưa
+					var activeSub = await _context.UserSubscriptions
+						.FirstOrDefaultAsync(s => s.UserId == transaction.UserId && s.IsActive && s.EndDate > DateTime.UtcNow);
+
+					if (activeSub != null)
+					{
+						// Cập nhật gói mới và cộng dồn ngày
+						activeSub.PackageId = package.Id;
+						activeSub.EndDate = activeSub.EndDate.AddDays(package.DurationInDays);
+					}
+					else
+					{
+						// Tạo mới nếu chưa có
+						_context.UserSubscriptions.Add(new UserSubscription
+						{
+							Id = Guid.NewGuid(),
+							UserId = transaction.UserId,
+							PackageId = package.Id,
+							StartDate = DateTime.UtcNow,
+							EndDate = DateTime.UtcNow.AddDays(package.DurationInDays),
+							IsActive = true
+						});
+					}
+				}
+			}
+			else
+			{
+				transaction.Status = FinalCuongFilm.ApplicationCore.Entities.Enum.TransactionStatus.Failed;
+			}
+
+			await _context.SaveChangesAsync();
 		}
 	}
 }

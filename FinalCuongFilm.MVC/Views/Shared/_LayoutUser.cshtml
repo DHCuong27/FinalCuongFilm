@@ -1,6 +1,13 @@
 ﻿@using FinalCuongFilm.ApplicationCore.Entities.Identity
 @using Microsoft.AspNetCore.Identity
 @inject UserManager<CuongFilmUser> UserManager
+@using System.Security.Claims
+@inject FinalCuongFilm.Service.Interfaces.IVipService VipService
+@{
+    var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+    var currentVip = userId != null ? await VipService.GetCurrentUserSubscriptionAsync(userId) : null;
+    bool isVip = currentVip != null;
+}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -40,6 +47,19 @@
             width: 100%;
         }
 
+        .premium-movie-badge {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            color: #000;
+            font-size: 0.75rem;
+            font-weight: bold;
+            padding: 3px 8px;
+            border-radius: 5px;
+            z-index: 10;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+        }
         /* Netflix Style Navigation */
         .netflix-nav {
             background: linear-gradient(180deg, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.7) 100%);
@@ -459,6 +479,7 @@
                     width: 100%;
                 }
         }
+
     </style>
 
     @await RenderSectionAsync("Styles", required: false)
@@ -570,6 +591,12 @@
                                         <img src="@avatarUrl" alt="User Avatar" class="user-avatar me-2" style="width: 35px; height: 35px; border-radius: 50%; object-fit: cover; border: 1px solid rgba(255,255,255,0.2);" />
                                         <span class="d-none d-lg-inline text-white">@User.Identity.Name</span>
                                     </a>
+                                    @if (isVip)
+                                    {
+                                        <span class="badge bg-warning text-dark ms-2" style="border-radius: 12px;">
+                                            <i class="fa fa-crown"></i> PREMIUM
+                                        </span>
+                                    }
 
                                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown" style="background-color: var(--nf-card-bg, #1f1f1f); border: 1px solid var(--nf-border, #333);">
                                         <li>

@@ -7,6 +7,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="wwwroot\Layout_Admin\**" />
+    <Content Remove="wwwroot\Layout_Admin\**" />
+    <EmbeddedResource Remove="wwwroot\Layout_Admin\**" />
+    <None Remove="wwwroot\Layout_Admin\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="AutoMapper" Version="16.1.1" />
     <PackageReference Include="Azure.Storage.Blobs.Batch" Version="12.24.0" />
     <PackageReference Include="Hangfire.AspNetCore" Version="1.8.23" />
@@ -33,12 +40,6 @@
     <Folder Include="Areas\Admin\Models\" />
     <Folder Include="Areas\Identity\Data\" />
     <Folder Include="wwwroot\uploads\media\" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="wwwroot\Layout_Admin\vendor\.DS_Store" />
-    <None Include="wwwroot\Layout_Admin\vendor\fontawesome-6.7.2\.DS_Store" />
-    <None Include="wwwroot\Layout_Admin\vendor\mdi-font\.DS_Store" />
   </ItemGroup>
 
 </Project>

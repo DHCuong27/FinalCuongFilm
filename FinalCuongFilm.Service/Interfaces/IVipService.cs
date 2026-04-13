@@ -17,13 +17,14 @@ namespace FinalCuongFilm.Service.Interfaces
 		// 3. Xử lý Giao dịch (ZaloPay)
 		Task<Transaction> CreateTransactionAsync(string userId, Guid packageId);
 
-		// SỬA LỖI 1: Đã xóa hàm CompleteTransactionAsync chứa string vnpayResponseCode cũ
+
 		Task CompleteTransactionAsync(Guid transactionId, bool isSuccess);
 
-		// Dành cho Admin CRUD
+		//  Admin CRUD
 		Task<IEnumerable<VipPackage>> GetAllPackagesAsync(); // Lấy cả gói bị ẩn
 		Task CreatePackageAsync(VipPackage package);
 		Task UpdatePackageAsync(VipPackage package);
 		Task DeactivatePackageAsync(Guid packageId); // Soft Delete
+	
 	}
 }

@@ -1,6 +1,12 @@
 ﻿@using FinalCuongFilm.ApplicationCore.Entities
+@using System.Security.Claims
 @model FinalCuongFilm.MVC.Models.ViewModels.MovieDetailsViewModel
 @using static FinalCuongFilm.ApplicationCore.Entities.Enum
+@inject FinalCuongFilm.Service.Interfaces.IVipService VipService
+@{
+    var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+    bool isVip = userId != null && await VipService.HasActiveVipAsync(userId);
+}
 
 @{
     ViewData["Title"] = Model.Movie.Title;
@@ -971,7 +977,18 @@
                     <a href="/Movie/Watch/@Model.Movie.Slug" class="btn-hero btn-hero-primary">
                         <i class="fas fa-play"></i> Watch Now
                     </a>
-
+                    @if (Model.IsVipOnly && !isVip)
+                    {
+                        <a href="/Premium" class="btn btn-warning">
+                            <i class="fa fa-crown"></i> Nâng cấp VIP để Tải
+                        </a>
+                    }
+                    else
+                    {
+                        <a asp-controller="Movie" asp-action="Download" asp-route-id="@Model.Movie.Id" class="btn btn-secondary">
+                            <i class="fa fa-download"></i> Download
+                        </a>
+                    }
                     @if (!string.IsNullOrEmpty(Model.Movie.TrailerUrl))
                     {
                         <a href="@Model.Movie.TrailerUrl" target="_blank" class="btn-hero btn-hero-secondary">

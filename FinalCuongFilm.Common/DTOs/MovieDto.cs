@@ -25,6 +25,8 @@ namespace FinalCuongFilm.Common.DTOs
 		public string Name { get; set; } = string.Empty;
 
 		public bool IsVipOnly { get; set; }
+
+		public string? VideoUrl { get; set; }
 		// Navigation properties 
 
 		public string? CountryName { get; set; } 

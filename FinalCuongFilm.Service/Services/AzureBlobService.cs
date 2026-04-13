@@ -12,6 +12,7 @@ namespace FinalCuongFilm.Service.Services
 	{
 		private readonly BlobServiceClient _blobServiceClient;
 		private readonly ILogger<AzureBlobService> _logger;
+		private readonly IConfiguration _configuration;
 
 		private const string VIDEO_CONTAINER = "videos";
 		private const string POSTER_CONTAINER = "posters";
@@ -23,7 +24,10 @@ namespace FinalCuongFilm.Service.Services
 
 		public AzureBlobService(IConfiguration configuration, ILogger<AzureBlobService> logger)
 		{
-			var connectionString = configuration.GetConnectionString("AzureBlobStorage")
+			_configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+			_logger = logger ?? throw new ArgumentNullException(nameof(logger));
+
+			var connectionString = _configuration.GetConnectionString("AzureBlobStorage")
 				?? throw new ArgumentNullException("AzureBlobStorage connection string not found");
 
 			_blobServiceClient = new BlobServiceClient(connectionString);
@@ -309,6 +313,56 @@ namespace FinalCuongFilm.Service.Services
 				".ts" => "video/MP2T",              //  HLS segment
 				_ => "application/octet-stream"
 			};
+		}
+
+		// Lưu ý: Đổi "videos" thành tên container chứa phim của bạn
+		public string GetSecureDownloadLink(string fileUrl, string containerName = "videos")
+		{
+			try
+			{
+				// 1. Lấy tên file (blob name) từ đường link VideoUrl gốc
+				Uri uri = new Uri(fileUrl);
+				string blobName = uri.Segments.Last();
+
+				// 2. Khởi tạo BlobClient
+				var blobServiceClient = new BlobServiceClient(_configuration.GetConnectionString("AzureBlobStorage"));
+				var blobContainerClient = blobServiceClient.GetBlobContainerClient(containerName);
+				var blobClient = blobContainerClient.GetBlobClient(blobName);
+
+				// Kiểm tra xem có quyền tạo SAS không
+				if (blobClient.CanGenerateSasUri)
+				{
+					// 3. Cấu hình SAS Token
+					BlobSasBuilder sasBuilder = new BlobSasBuilder()
+					{
+						BlobContainerName = blobContainerClient.Name,
+						BlobName = blobClient.Name,
+						Resource = "b", // "b" nghĩa là quyền áp dụng cho một Blob (file) cụ thể
+						StartsOn = DateTimeOffset.UtcNow.AddMinutes(-5), // Tránh lỗi lệch múi giờ
+						ExpiresOn = DateTimeOffset.UtcNow.AddHours(2)    // Link chỉ sống trong 2 tiếng
+					};
+
+					// 4. Cấp quyền Đọc (Read) để tải về
+					sasBuilder.SetPermissions(BlobSasPermissions.Read);
+
+					// 5. TRICK QUAN TRỌNG: Ép trình duyệt Tải file thay vì mở video
+					// Giải mã URL (để xóa ký tự %20 nếu có) và gán vào tên file tải về
+					string fileNameToSave = Uri.UnescapeDataString(blobName);
+					sasBuilder.ContentDisposition = $"attachment; filename=\"{fileNameToSave}\"";
+
+					// 6. Tạo URI cuối cùng
+					Uri sasUri = blobClient.GenerateSasUri(sasBuilder);
+					return sasUri.ToString();
+				}
+
+				return fileUrl; // Nếu lỗi, trả về link gốc
+			}
+			catch (Exception ex)
+			{
+				// Xử lý log lỗi nếu cần
+				Console.WriteLine($"Lỗi tạo SAS Token: {ex.Message}");
+				return null;
+			}
 		}
 	}
 }

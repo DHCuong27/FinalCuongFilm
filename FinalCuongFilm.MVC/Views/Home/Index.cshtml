@@ -23,30 +23,20 @@
         margin: 0;
         padding: 0;
     }
-    /* Huy hiệu Premium VIP */
-    .badge-premium-poster {
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); /* Màu vàng cam sang trọng */
-        color: #fff;
-        padding: 4px 10px;
-        border-radius: 4px;
-        font-size: 11px;
-        font-weight: 700;
-        text-transform: uppercase;
-        z-index: 20;
-        box-shadow: 0 2px 10px rgba(245, 158, 11, 0.4);
-        display: flex;
-        align-items: center;
-        gap: 4px;
-        border: 1px solid rgba(255, 255, 255, 0.2);
-    }
 
-        .badge-premium-poster i {
-            font-size: 10px;
-            color: #fff;
-        }
+    .premium-movie-badge {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        background: linear-gradient(45deg, #FFD700, #FFA500);
+        color: #000;
+        font-size: 0.75rem;
+        font-weight: bold;
+        padding: 3px 8px;
+        border-radius: 5px;
+        z-index: 10;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+    }
 
     .hero-slider-section {
         position: relative;
@@ -1196,8 +1186,6 @@
                     <select name="sortBy" class="filter-select">
                         <option value="latest" selected="@(f.SortBy == "latest" ? "selected" : null)">Latest</option>
                         <option value="popular" selected="@(f.SortBy == "popular" ? "selected" : null)">Most Popular</option>
-                        @* <option value="year_desc" selected="@(f.SortBy == "year_desc" ? "selected" : null)">Year Descending</option>
-                        <option value="year_asc" selected="@(f.SortBy == "year_asc" ? "selected" : null)">Year Ascending</option> *@
                         <option value="title" selected="@(f.SortBy == "title" ? "selected" : null)">Name A-Z</option>
                     </select>
                 </div>
@@ -1226,8 +1214,8 @@
 
                             @if (movie.IsVipOnly)
                             {
-                                <div class="badge-premium-poster" title="Phim độc quyền dành cho tài khoản VIP">
-                                    <i class="fas fa-crown"></i> VIP
+                                <div class="premium-movie-badge">
+                                    <i class="fa fa-crown"></i> VIP
                                 </div>
                             }
 
@@ -1292,13 +1280,6 @@
                     </a>
                 </div>
             }
-    @*    <div class="netflix-alert">
-                <i class="fas fa-search"></i>
-                <h3>No movies found</h3>
-                <p>Try changing the filter or <a asp-action="Index" asp-controller="Home" style="color:var(--netflix-red);">view all movies</a></p>
-            </div>
-
-    </div> *@
 
 
 <div class="container" style="margin-top:2rem;">

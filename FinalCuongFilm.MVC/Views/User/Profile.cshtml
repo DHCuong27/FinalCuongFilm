@@ -6,6 +6,8 @@
 
     // Lấy Avatar từ Model, nếu null thì dùng ảnh mặc định
     var userAvatar = Model?.AvatarUrl ?? "/img/avatar.jpg";
+    var currentVip = ViewBag.CurrentVip;
+}
 }
 
 <style>
@@ -280,7 +282,43 @@
                     </span>
                 </div>
             </div>
+            <div class="card mt-3">
 
+                <div class="card-body">
+                    <h5 class="card-title">Your service package</h5>
+
+                    @if (currentVip != null)
+
+                    {
+
+                        var daysLeft = (currentVip.EndDate - DateTime.UtcNow).Days;
+
+                        <div class="alert alert-success">
+                            <i class="fa fa-crown"></i>Currently using Premium package
+
+                            <br />
+
+                            <strong>Expiration date:</strong> @currentVip.EndDate.ToString("dd/MM/yyyy") (Remaining @daysLeft days)
+
+                        </div>
+
+                        <a href="/Premium" class="btn btn-warning btn-sm">Extend further</a>
+
+                    }
+
+                    else
+                    {
+
+                        <div class="alert alert-secondary">
+                            You are using a Free account.
+
+                        </div>
+
+                        <a href="/Premium" class="btn btn-primary btn-sm">Upgrade to Premium</a>
+
+                    }
+                </div>
+            </div>
             <div class="profile-card">
                 <h3 class="profile-card-header">Personal Information</h3>
 
