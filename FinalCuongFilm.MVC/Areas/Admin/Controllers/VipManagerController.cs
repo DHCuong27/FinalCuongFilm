@@ -1,8 +1,10 @@
-﻿using FinalCuongFilm.DataLayer;
+﻿using FinalCuongFilm.ApplicationCore.Entities;
+using FinalCuongFilm.DataLayer;
 using FinalCuongFilm.Service.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using static FinalCuongFilm.ApplicationCore.Entities.Enum;
 
 namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 {
@@ -49,6 +51,7 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 		public async Task<IActionResult> ActiveVips()
 		{
 			var activeVips = await _context.UserSubscriptions
+				.Include(s=>s.User)
 				.Where(s => s.EndDate > DateTime.UtcNow && s.IsActive)
 				.OrderByDescending(s => s.EndDate)
 				.ToListAsync();
@@ -67,14 +70,14 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 				if (transaction == null) return NotFound();
 
 				// SAFEGUARD: Prevent confirming an already successful transaction
-				if (transaction.Status == FinalCuongFilm.ApplicationCore.Entities.Enum.TransactionStatus.Success)
+				if (transaction.Status == TransactionStatus.Success)
 				{
 					TempData["Error"] = "Warning: This transaction has already been marked as SUCCESS automatically. No need to confirm again!";
 					return RedirectToAction("Transactions");
 				}
 
 				// SAFEGUARD: Prevent confirming a cancelled transaction
-				if (transaction.Status == FinalCuongFilm.ApplicationCore.Entities.Enum.TransactionStatus.Failed)
+				if (transaction.Status == TransactionStatus.Failed)
 				{
 					TempData["Error"] = "Error: This transaction has been CANCELLED. You cannot revive a cancelled transaction. The customer must create a new order.";
 					return RedirectToAction("Transactions");
@@ -103,7 +106,7 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 				if (transaction == null) return NotFound();
 
 				// ULTIMATE SAFEGUARD: NEVER ALLOW CANCELLING A SUCCESSFUL TRANSACTION
-				if (transaction.Status == FinalCuongFilm.ApplicationCore.Entities.Enum.TransactionStatus.Success)
+				if (transaction.Status == TransactionStatus.Success)
 				{
 					TempData["Error"] = "⛔ STOP: The customer has successfully paid and received VIP. YOU ARE NOT ALLOWED TO CANCEL THIS TRANSACTION!";
 					return RedirectToAction("Transactions");
@@ -121,7 +124,7 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 				}
 
 				// 3. IF CONDITIONS MET, PROCEED WITH CANCELLATION
-				if (transaction.Status == FinalCuongFilm.ApplicationCore.Entities.Enum.TransactionStatus.Pending)
+				if (transaction.Status == TransactionStatus.Pending)
 				{
 					await _vipService.CompleteTransactionAsync(id, false);
 					TempData["Success"] = "Transaction has been safely cancelled and cleaned up.";

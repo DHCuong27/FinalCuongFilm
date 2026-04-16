@@ -21,7 +21,8 @@ namespace FinalCuongFilm.ApplicationCore.Entities
 		public int? DurationMinutes { get; set; }
 		public string? PosterUrl { get; set; }
 		public string? TrailerUrl { get; set; }
-		
+		public string? VideoUrl { get; set; }
+
 		public long ViewCount { get; set; }
 
 		public MovieType Type { get; set; }

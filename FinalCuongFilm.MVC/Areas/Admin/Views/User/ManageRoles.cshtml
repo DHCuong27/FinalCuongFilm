@@ -1,0 +1,131 @@
+﻿@model FinalCuongFilm.Common.DTOs.ManageUserRolesViewModel
+
+@{
+    ViewData["Title"] = "Manage User Roles";
+    Layout = "_LayoutAdmin";
+}
+
+<style>
+    .role-container {
+        max-width: 600px;
+        margin: 2rem auto;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    .role-card {
+        background: #fff;
+        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        overflow: hidden;
+    }
+
+    .role-header {
+        background: #f8fafc;
+        padding: 20px 24px;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .role-body {
+        padding: 24px;
+    }
+
+    .role-item {
+        display: flex;
+        align-items: center;
+        padding: 12px;
+        border-radius: 8px;
+        transition: background 0.2s;
+        cursor: pointer;
+        border: 1px solid transparent;
+    }
+
+        .role-item:hover {
+            background: #f1f5f9;
+        }
+
+        .role-item.active {
+            background: #eff6ff;
+            border-color: #bfdbfe;
+        }
+
+    .checkbox-custom {
+        width: 20px;
+        height: 20px;
+        margin-right: 15px;
+        accent-color: #2563eb;
+    }
+
+    .btn-group {
+        display: flex;
+        gap: 12px;
+        margin-top: 24px;
+        padding-top: 20px;
+        border-top: 1px solid #e2e8f0;
+    }
+
+    .btn-save {
+        background: #2563eb;
+        color: white;
+        border: none;
+        padding: 10px 24px;
+        border-radius: 6px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .btn-back {
+        background: #fff;
+        color: #64748b;
+        border: 1px solid #e2e8f0;
+        padding: 10px 24px;
+        border-radius: 6px;
+        text-decoration: none;
+        font-weight: 500;
+    }
+</style>
+
+<div class="role-container">
+    <div class="role-card">
+        <div class="role-header">
+            <h2 style="margin:0; font-size: 1.25rem;">Manage Roles</h2>
+            <p style="margin: 4px 0 0; color: #64748b; font-size: 0.9rem;">User: <strong>@Model.Email</strong></p>
+        </div>
+        <div class="role-body">
+            <form asp-action="ManageRoles" method="post">
+                <input type="hidden" asp-for="UserId" />
+                <input type="hidden" asp-for="Email" />
+
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                    @for (int i = 0; i < Model.Roles.Count; i++)
+                    {
+                        <label class="role-item @(Model.Roles[i].IsSelected ? "active" : "")">
+                            <input type="checkbox" asp-for="@Model.Roles[i].IsSelected" class="checkbox-custom" />
+                            <input type="hidden" asp-for="@Model.Roles[i].RoleName" />
+                            <span style="font-weight: 500; color: #1e293b;">@Model.Roles[i].RoleName</span>
+                        </label>
+                    }
+                </div>
+
+                <div class="btn-group">
+                    <button type="submit" class="btn-save">
+                        <i class="zmdi zmdi-save"></i> Update Permissions
+                    </button>
+                    <a asp-action="Index" class="btn-back">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Optional: Toggle active class visually when clicking checkboxes
+        document.querySelectorAll('.role-item').forEach(item => {
+            item.querySelector('input').addEventListener('change', (e) => {
+                if(e.target.checked) item.classList.add('active');
+                else item.classList.remove('active');
+            });
+        });
+    </script>
+}

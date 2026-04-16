@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using static FinalCuongFilm.ApplicationCore.Entities.Enum;
@@ -31,34 +30,26 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 		{
 			int pageSize = 10;
 
-			PagedResult<EpisodeDto> result;
+			// FIX: Pass movieId explicitly to filter by Series, rather than using it as a text search string
+			var result = await _episodeService.GetPagedAsync(movieId, page, pageSize);
 
 			if (movieId.HasValue)
 			{
-				
-				result = await _episodeService.GetPagedAsync(movieId.Value.ToString(), page, pageSize);
-
 				var movie = await _movieService.GetByIdAsync(movieId.Value);
 				ViewBag.MovieTitle = movie?.Title;
 				ViewBag.MovieId = movieId.Value;
 			}
-			else
-			{
-				result = await _episodeService.GetPagedAsync(null, page, pageSize);
-			}
 
-			return View(result); // 
+			return View(result);
 		}
 
 		// GET: Admin/Episodes/Details/5
 		public async Task<IActionResult> Details(Guid? id)
 		{
-			if (id == null)
-				return NotFound();
+			if (id == null) return NotFound();
 
 			var episode = await _episodeService.GetByIdAsync(id.Value);
-			if (episode == null)
-				return NotFound();
+			if (episode == null) return NotFound();
 
 			return View(episode);
 		}
@@ -68,7 +59,6 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 		{
 			if (movieId.HasValue)
 			{
-				// FIX: Check if the movie is actually a Series
 				var movie = await _movieService.GetByIdAsync(movieId.Value);
 				if (movie != null && movie.Type == MovieType.Movie)
 				{
@@ -93,7 +83,6 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 		[ValidateAntiForgeryToken]
 		public async Task<IActionResult> Create(EpisodeCreateDto dto)
 		{
-			// FIX: Double-check validation on POST to prevent bypass
 			var movie = await _movieService.GetByIdAsync(dto.MovieId);
 			if (movie != null && movie.Type == MovieType.Movie)
 			{
@@ -105,12 +94,12 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 				try
 				{
 					await _episodeService.CreateAsync(dto);
-					TempData["Success"] = "Tạo tập phim thành công!";
+					TempData["Success"] = "Episode created successfully!";
 					return RedirectToAction(nameof(Index), new { movieId = dto.MovieId });
 				}
 				catch (Exception ex)
 				{
-					ModelState.AddModelError("", $"Lỗi: {ex.Message}");
+					ModelState.AddModelError("", $"System Error: {ex.Message}");
 				}
 			}
 
@@ -121,12 +110,10 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 		// GET: Admin/Episodes/Edit/5
 		public async Task<IActionResult> Edit(Guid? id)
 		{
-			if (id == null)
-				return NotFound();
+			if (id == null) return NotFound();
 
 			var episode = await _episodeService.GetByIdAsync(id.Value);
-			if (episode == null)
-				return NotFound();
+			if (episode == null) return NotFound();
 
 			var updateDto = new EpisodeUpdateDto
 			{
@@ -149,23 +136,21 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 		[ValidateAntiForgeryToken]
 		public async Task<IActionResult> Edit(Guid id, EpisodeUpdateDto dto)
 		{
-			if (id != dto.Id)
-				return NotFound();
+			if (id != dto.Id) return NotFound();
 
 			if (ModelState.IsValid)
 			{
 				try
 				{
 					var result = await _episodeService.UpdateAsync(dto);
-					if (!result)
-						return NotFound();
+					if (!result) return NotFound();
 
-					TempData["Success"] = "Cập nhật tập phim thành công!";
+					TempData["Success"] = "Episode updated successfully!";
 					return RedirectToAction(nameof(Index), new { movieId = dto.MovieId });
 				}
 				catch (Exception ex)
 				{
-					ModelState.AddModelError("", $"Lỗi: {ex.Message}");
+					ModelState.AddModelError("", $"System Error: {ex.Message}");
 				}
 			}
 
@@ -176,12 +161,10 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 		// GET: Admin/Episodes/Delete/5
 		public async Task<IActionResult> Delete(Guid? id)
 		{
-			if (id == null)
-				return NotFound();
+			if (id == null) return NotFound();
 
 			var episode = await _episodeService.GetByIdAsync(id.Value);
-			if (episode == null)
-				return NotFound();
+			if (episode == null) return NotFound();
 
 			return View(episode);
 		}
@@ -197,12 +180,12 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 			try
 			{
 				await _episodeService.DeleteAsync(id);
-				TempData["Success"] = "Xóa tập phim thành công!";
+				TempData["Success"] = "Episode deleted successfully!";
 				return RedirectToAction(nameof(Index), new { movieId = episode.MovieId });
 			}
 			catch (Exception ex)
 			{
-				TempData["Error"] = $"Lỗi: {ex.Message}";
+				TempData["Error"] = $"Error: {ex.Message}";
 				return RedirectToAction(nameof(Delete), new { id });
 			}
 		}
@@ -210,9 +193,11 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 		private async Task PopulateMoviesDropdown(Guid? selectedId = null)
 		{
 			var allMovies = await _movieService.GetAllAsync();
-			var seriesOnly = allMovies.Where(m => m.Type == MovieType.Series);
 
-			// Đổi "MovieId" thành "Movies" để khớp với View
+			// STRICT BUSINESS LOGIC: Filter only movies that are defined as a Series
+			var seriesOnly = allMovies.Where(m => m.Type == MovieType.Series).ToList();
+
+			// FIXED: Must use ViewBag.Movies to match the asp-items in the HTML Views
 			ViewBag.Movies = new SelectList(seriesOnly, "Id", "Title", selectedId);
 		}
 	}

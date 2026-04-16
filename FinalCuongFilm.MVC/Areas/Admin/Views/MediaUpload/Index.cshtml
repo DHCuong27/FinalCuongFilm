@@ -25,6 +25,59 @@
         --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1);
     }
 
+    /* ==================== PAGINATION ==================== */
+    .pagination-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px 20px;
+        background: var(--bg-white);
+        border-top: 1px solid var(--border-color);
+        border-bottom-left-radius: var(--radius-md);
+        border-bottom-right-radius: var(--radius-md);
+    }
+
+    .pagination-info {
+        font-size: 14px;
+        color: var(--text-muted);
+    }
+
+    .pagination-list {
+        display: flex;
+        list-style: none;
+        gap: 6px;
+        padding: 0;
+        margin: 0;
+    }
+
+    .page-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 36px;
+        height: 36px;
+        padding: 0 12px;
+        border-radius: 6px;
+        background: var(--bg-white);
+        border: 1px solid var(--border-color);
+        color: var(--text-dark);
+        text-decoration: none;
+        font-weight: 500;
+        font-size: 14px;
+        transition: all 0.2s;
+    }
+
+        .page-btn:hover {
+            background: var(--bg-light);
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .page-btn.active {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+            color: white;
+        }
     /* Container & Header */
     .media-container {
         max-width: 1200px;
@@ -438,18 +491,52 @@
                         </tr>
                     }
                 </tbody>
-            </table>
-        </div>
-    }
-    else
-    {
-        <div class="empty-state">
-            <i class="zmdi zmdi-cloud-off"></i>
-            <h3 style="margin: 0 0 8px 0; color: var(--text-dark);">No Media Files Found</h3>
-            <p style="color: var(--text-muted); margin-bottom: 24px;">Start by uploading the first video or subtitle for this section.</p>
-            <a asp-action="Upload" asp-route-movieId="@movieId" asp-route-episodeId="@episodeId" class="btn-custom btn-upload">
-                <i class="zmdi zmdi-upload"></i> Upload File Now
-            </a>
+            </table> @if (ViewBag.TotalPages > 1)
+            {
+                <div class="pagination-container">
+                    <div class="pagination-info">
+                        Showing page <b>@ViewBag.CurrentPage</b> of <b>@ViewBag.TotalPages</b> (@ViewBag.TotalItems items)
+                    </div>
+
+                    <ul class="pagination-list">
+                        @if (ViewBag.CurrentPage > 1)
+                        {
+                            <li>
+                                <a asp-action="Index"
+                                   asp-route-movieId="@ViewBag.MovieId"
+                                   asp-route-episodeId="@ViewBag.EpisodeId"
+                                   asp-route-fileType="@ViewBag.FileType"
+                                   asp-route-page="@(ViewBag.CurrentPage - 1)"
+                                   class="page-btn"><i class="zmdi zmdi-chevron-left"></i> Prev</a>
+                            </li>
+                        }
+
+                        @for (int i = 1; i <= ViewBag.TotalPages; i++)
+                        {
+                            <li>
+                                <a asp-action="Index"
+                                   asp-route-movieId="@ViewBag.MovieId"
+                                   asp-route-episodeId="@ViewBag.EpisodeId"
+                                   asp-route-fileType="@ViewBag.FileType"
+                                   asp-route-page="@i"
+                                   class="page-btn @(i == ViewBag.CurrentPage ? "active" : "")">@i</a>
+                            </li>
+                        }
+
+                        @if (ViewBag.CurrentPage < ViewBag.TotalPages)
+                        {
+                            <li>
+                                <a asp-action="Index"
+                                   asp-route-movieId="@ViewBag.MovieId"
+                                   asp-route-episodeId="@ViewBag.EpisodeId"
+                                   asp-route-fileType="@ViewBag.FileType"
+                                   asp-route-page="@(ViewBag.CurrentPage + 1)"
+                                   class="page-btn">Next <i class="zmdi zmdi-chevron-right"></i></a>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            }
         </div>
     }
 </div>

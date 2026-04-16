@@ -74,7 +74,6 @@
         box-shadow: var(--shadow-sm);
         border: 1px solid var(--border-color);
         margin-bottom: 24px;
-        /* FIX QUAN TRỌNG: Cho phép Dropdown tràn ra ngoài Card */
         overflow: visible;
     }
 
@@ -320,7 +319,7 @@
             background: var(--border-color);
         }
 
-    /* FIX MẠNH TAY: Tag Picker CSS */
+    /* Tag Picker CSS */
     .tag-picker {
         position: relative;
     }
@@ -344,8 +343,8 @@
         border: 1px solid var(--border-color);
         border-radius: 6px;
         box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
-        z-index: 9999; /* Đẩy lên cao nhất */
-        display: none; /* Ẩn đi mặc định */
+        z-index: 9999;
+        display: none;
     }
 
     .tag-option {
@@ -419,32 +418,6 @@
         align-items: center;
     }
 
-    /* Toggle Switch */
-    .toggle-wrapper {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        padding: 16px;
-        background: var(--bg-light);
-        border: 1px solid var(--border-color);
-        border-radius: 6px;
-    }
-
-        .toggle-wrapper input[type="checkbox"] {
-            width: 18px;
-            height: 18px;
-            accent-color: var(--primary-color);
-            cursor: pointer;
-        }
-
-        .toggle-wrapper label {
-            color: var(--text-dark);
-            font-size: 14px;
-            font-weight: 500;
-            cursor: pointer;
-            margin: 0;
-        }
-
     /* Action Buttons */
     .action-bar {
         display: flex;
@@ -511,22 +484,25 @@
 
     /* Responsive */
     @@media (max-width: 768px) {
-        .form-grid {
-            grid-template-columns: 1fr;
-        }
+        .form-grid
 
-        .action-bar {
-            flex-direction: column;
-        }
+    {
+        grid-template-columns: 1fr;
+    }
 
-        .btn-custom {
-            width: 100%;
-            justify-content: center;
-        }
+    .action-bar {
+        flex-direction: column;
+    }
 
-        .url-group {
-            flex-direction: column;
-        }
+    .btn-custom {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .url-group {
+        flex-direction: column;
+    }
+
     }
 </style>
 
@@ -596,6 +572,7 @@
             <div class="form-card-header"><i class="zmdi zmdi-image-o"></i> Media Files</div>
             <div class="form-card-body">
                 <div class="form-grid">
+
                     <div class="form-group form-col-full">
                         <label class="form-label">Poster Image</label>
 
@@ -604,8 +581,7 @@
                             <span class="form-hint" style="margin-top: 8px;">Choose new file to change poster (JPG, PNG, WEBP). Max 5MB.</span>
                         </div>
 
-
-                        <div class="url-group">
+                        <div class="url-group mt-2">
                             <input asp-for="PosterUrl" class="form-control" id="editPosterUrl" placeholder="https://example.com/poster.jpg" />
                             <button type="button" class="btn-outline" onclick="editPreviewPoster()"><i class="zmdi zmdi-eye"></i> Preview</button>
                             <button type="button" class="btn-outline" onclick="editClearPoster()" style="color:var(--text-muted);"><i class="zmdi zmdi-close"></i> Clear</button>
@@ -618,6 +594,20 @@
                             <button type="button" class="preview-clear-btn" onclick="editClearPoster()"><i class="zmdi zmdi-close"></i></button>
                         </div>
                     </div>
+
+                    <div class="form-group form-col-full" style="margin-top: 16px; border-top: 1px solid var(--border-color); padding-top: 16px;">
+                        <label class="form-label">Trailer URL</label>
+                        <div class="url-group">
+                            <input asp-for="TrailerUrl" class="form-control" id="editTrailerUrl" placeholder="https://youtube.com/watch?v=..." />
+                            <button type="button" class="btn-outline" onclick="editPreviewTrailer()"><i class="zmdi zmdi-eye"></i> Preview</button>
+                            <button type="button" class="btn-outline" onclick="editClearTrailer()" style="color:var(--text-muted);"><i class="zmdi zmdi-close"></i> Clear</button>
+                        </div>
+                        <span class="form-hint">YouTube or Vimeo link.</span>
+                        <span asp-validation-for="TrailerUrl" class="text-danger"></span>
+
+                        <div class="embed-preview" id="editTrailerPreview"></div>
+                    </div>
+
                 </div>
             </div>
         </div>
@@ -698,11 +688,10 @@
             </div>
         </div>
 
-        <div class="form-group mb-4" style="background-color: #fffbeb; border-left: 4px solid #f59e0b; padding: 10px 15px;">
-            <input type="checkbox" asp-for="IsVipOnly" id="IsVipOnlyCheck" style="transform: scale(1.5); margin-right: 10px;" value="true" />
-
-            <label for="IsVipOnlyCheck" style="color: #b45309; font-weight: bold; cursor: pointer;">
-                <i class="zmdi zmdi-star"></i> Phim Premium (Chỉ tài khoản VIP mới được xem)
+        <div class="form-group mb-4" style="background-color: #fffbeb; border-left: 4px solid #f59e0b; padding: 12px 15px; border-radius: 6px; display: flex; align-items: center;">
+            <input type="checkbox" asp-for="IsVipOnly" id="IsVipOnlyCheck" style="transform: scale(1.5); margin-right: 15px; cursor: pointer;" />
+            <label for="IsVipOnlyCheck" style="color: #b45309; font-weight: bold; cursor: pointer; margin: 0;">
+                <i class="zmdi zmdi-star"></i> Premium Movie (VIP accounts only)
             </label>
         </div>
 
@@ -732,7 +721,7 @@
             titleEl.addEventListener('input', () => { if (!slugLocked) slugEl.value = toSlug(titleEl.value); });
             slugEl.addEventListener('input',  () => { slugLocked = slugEl.value.length > 0; });
 
-            /* TAG PICKER FACTORY (FIXED LOGIC) */
+            /* TAG PICKER FACTORY */
             function buildTagPicker(selectId, searchId, dropdownId, chipsId, pickerId) {
                 const sel      = document.getElementById(selectId);
                 const search   = document.getElementById(searchId);
@@ -792,14 +781,14 @@
                     dropdown.style.display = matches > 0 ? 'block' : 'none';
                 });
 
-                // Đóng dropdown khi click ra ngoài
+                // Close dropdown on outside click
                 document.addEventListener('click', function(e) {
                     if (picker && !picker.contains(e.target)) {
                         dropdown.style.display = 'none';
                     }
                 });
 
-                renderChips(); // Khởi tạo lần đầu
+                renderChips(); // Initialize existing data
             }
 
             buildTagPicker('actorSelect', 'actorSearch', 'actorDropdown', 'actorChips', 'actorPicker');
@@ -813,7 +802,7 @@
             });
 
             /* Show existing poster and trailer on page load */
-            const posterUrl = document.getElementById('editPosterUrl').value.trim();
+            const posterUrl = document.getElementById('editPosterUrl')?.value.trim();
             if (posterUrl) {
                 const wrap = document.getElementById('editPosterPreview');
                 const img  = document.getElementById('editPosterPreviewImg');
@@ -821,8 +810,8 @@
                 img.src = posterUrl;
             }
 
-            const trailerUrl = document.getElementById('editTrailerUrl').value.trim();
-            if (trailerUrl) {
+            const trailerElement = document.getElementById('editTrailerUrl');
+            if (trailerElement && trailerElement.value.trim()) {
                 editPreviewTrailer();
             }
         });
@@ -878,7 +867,10 @@
         }
 
         function editPreviewTrailer() {
-            const url  = document.getElementById('editTrailerUrl').value.trim();
+            const urlElement = document.getElementById('editTrailerUrl');
+            if (!urlElement) return;
+
+            const url = urlElement.value.trim();
             const wrap = document.getElementById('editTrailerPreview');
             if (!url) { alert('Please enter a trailer URL first.'); return; }
             const embed = getEmbedUrl(url);
@@ -888,10 +880,13 @@
         }
 
         function editClearTrailer() {
-            document.getElementById('editTrailerUrl').value = '';
+            const urlElement = document.getElementById('editTrailerUrl');
+            if (urlElement) urlElement.value = '';
             const wrap = document.getElementById('editTrailerPreview');
-            wrap.style.display = 'none';
-            wrap.innerHTML = '';
+            if (wrap) {
+                wrap.style.display = 'none';
+                wrap.innerHTML = '';
+            }
         }
     </script>
 }

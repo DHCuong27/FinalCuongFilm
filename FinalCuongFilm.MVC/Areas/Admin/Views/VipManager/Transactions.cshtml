@@ -3,7 +3,6 @@
     ViewData["Title"] = "Transaction History";
     Layout = "~/Areas/Admin/Views/Shared/_LayoutAdmin.cshtml";
 
-    // Setup basic pagination variables (These should be passed from your Controller)
     int currentPage = ViewBag.CurrentPage ?? 1;
     int totalPages = ViewBag.TotalPages ?? 1;
     int totalItems = ViewBag.TotalItems ?? Model?.Count() ?? 0;
@@ -12,7 +11,6 @@
 <style>
     :root {
         --primary-color: #4f46e5;
-        --primary-hover: #4338ca;
         --secondary-color: #64748b;
         --success-color: #10b981;
         --warning-color: #f59e0b;
@@ -33,7 +31,6 @@
         font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     }
 
-    /* Header Styling */
     .page-header {
         display: flex;
         justify-content: space-between;
@@ -65,7 +62,6 @@
         font-weight: 600;
     }
 
-    /* Table Styling */
     .table-container {
         background: var(--bg-white);
         border-radius: var(--radius-md);
@@ -101,14 +97,12 @@
             vertical-align: middle;
             font-size: 14px;
             color: var(--text-dark);
-            transition: background-color 0.2s ease;
         }
 
         .data-table tbody tr:hover td {
             background-color: #f8fafc;
         }
 
-    /* Badge Styles */
     .status-badge {
         padding: 6px 12px;
         border-radius: 20px;
@@ -140,49 +134,6 @@
         border: 1px solid #bfdbfe;
     }
 
-    /* Action Buttons */
-    .action-group {
-        display: flex;
-        gap: 8px;
-        align-items: center;
-    }
-
-    .btn-action {
-        padding: 6px 12px;
-        font-size: 13px;
-        font-weight: 600;
-        border-radius: 6px;
-        transition: all 0.2s ease;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        border: 1px solid transparent;
-        cursor: pointer;
-    }
-
-    .btn-confirm {
-        background-color: #ecfdf5;
-        color: var(--success-color);
-        border-color: #a7f3d0;
-    }
-
-        .btn-confirm:hover {
-            background-color: var(--success-color);
-            color: white;
-        }
-
-    .btn-cancel {
-        background-color: #fef2f2;
-        color: var(--danger-color);
-        border-color: #fecaca;
-    }
-
-        .btn-cancel:hover {
-            background-color: var(--danger-color);
-            color: white;
-        }
-
-    /* Utilities */
     .amount {
         font-weight: 700;
         color: var(--text-dark);
@@ -198,12 +149,26 @@
         font-size: 13px;
     }
 
+    .user-info {
+        display: flex;
+        flex-direction: column;
+    }
+
+        .user-info strong {
+            color: var(--text-dark);
+            font-size: 14px;
+        }
+
+        .user-info span {
+            color: var(--text-muted);
+            font-size: 12px;
+        }
+
     .empty-state {
         text-align: center;
         padding: 64px 20px;
     }
 
-    /* Pagination Styling */
     .pagination-wrapper {
         display: flex;
         justify-content: space-between;
@@ -268,13 +233,12 @@
             <thead>
                 <tr>
                     <th>Txn ID (Ref)</th>
-                    <th>User ID</th>
+                    <th>Customer</th>
                     <th>Order Info</th>
                     <th>Amount (VND)</th>
                     <th>Gateway</th>
                     <th>Date & Time</th>
                     <th>Status</th>
-                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -285,19 +249,19 @@
                         <tr>
                             <td>
                                 <span class="iso-badge" title="@item.Id">
-                                    @(item.Id.ToString().Length > 8 ? item.Id.ToString().Substring(0, 8) + "..." : item.Id.ToString())
+                                    @(item.Id.ToString().Substring(0, 8))...
                                 </span>
                             </td>
                             <td>
-                                <span class="iso-badge" title="@item.UserId">
-                                    @(item.UserId.Length > 8 ? item.UserId.Substring(0, 8) + "..." : item.UserId)
-                                </span>
+                                <div class="user-info">
+                                    <strong>@(item.User?.FullName ?? item.User?.UserName ?? "Unknown User")</strong>
+                                    <span>@(item.User?.Email ?? item.UserId.Substring(0, 8) + "...")</span>
+                                </div>
                             </td>
                             <td><strong>@item.OrderInfo</strong></td>
                             <td><span class="amount">@item.Amount.ToString("N0")</span></td>
                             <td><span class="status-badge badge-info">@item.PaymentMethod</span></td>
                             <td><span class="text-muted">@item.TransactionDate.ToLocalTime().ToString("MMM dd, yyyy HH:mm")</span></td>
-
                             <td>
                                 @if (item.Status == FinalCuongFilm.ApplicationCore.Entities.Enum.TransactionStatus.Success)
                                 {
@@ -312,39 +276,16 @@
                                     <span class="status-badge badge-danger"><i class="fa fa-times-circle"></i> Failed</span>
                                 }
                             </td>
-
-                            <td>
-                                @if (item.Status == FinalCuongFilm.ApplicationCore.Entities.Enum.TransactionStatus.Pending)
-                                {
-                                    <div class="action-group">
-                                        <form asp-action="ManualConfirm" asp-controller="VipManager" asp-area="Admin" asp-route-id="@item.Id" method="post" onsubmit="return confirm('CONFIRMATION:\nAre you sure you want to grant the VIP package to this user?');">
-                                            <button type="submit" class="btn-action btn-confirm" title="Confirm Success">
-                                                <i class="fa fa-check"></i>
-                                            </button>
-                                        </form>
-
-                                        <form asp-action="ManualCancel" asp-controller="VipManager" asp-area="Admin" asp-route-id="@item.Id" method="post" onsubmit="return confirm('CANCEL TRANSACTION:\nAre you sure you want to cancel this pending transaction?');">
-                                            <button type="submit" class="btn-action btn-cancel" title="Cancel Transaction">
-                                                <i class="fa fa-times"></i>
-                                            </button>
-                                        </form>
-                                    </div>
-                                }
-                                else
-                                {
-                                    <span class="text-muted small" style="font-style: italic;">No action</span>
-                                }
-                            </td>
                         </tr>
                     }
                 }
                 else
                 {
                     <tr>
-                        <td colspan="8" class="empty-state">
+                        <td colspan="7" class="empty-state">
                             <div style="font-size: 48px; margin-bottom: 16px; color: #cbd5e1;">📭</div>
                             <div style="color: var(--text-dark); font-weight: 600; font-size: 16px;">No transactions found</div>
-                            <div style="color: var(--text-muted); font-size: 14px; margin-top: 4px;">Payment records will appear here once users upgrade.</div>
+                            <div style="color: var(--text-muted); font-size: 14px; margin-top: 4px;">Payment records will appear here once users purchase VIP.</div>
                         </td>
                     </tr>
                 }

@@ -65,14 +65,13 @@ namespace FinalCuongFilm.Service.Services
 			_context.Episodes.Add(episode);
 			await _context.SaveChangesAsync();
 
-			return await GetByIdAsync(episode.Id) ?? throw new Exception("Failed to create episode");
+			return await GetByIdAsync(episode.Id) ?? throw new Exception("Failed to create episode.");
 		}
 
 		public async Task<bool> UpdateAsync(EpisodeUpdateDto dto)
 		{
 			var episode = await _context.Episodes.FindAsync(dto.Id);
-			if (episode == null)
-				return false;
+			if (episode == null) return false;
 
 			episode.EpisodeNumber = dto.EpisodeNumber;
 			episode.Title = dto.Title;
@@ -80,7 +79,10 @@ namespace FinalCuongFilm.Service.Services
 			episode.DurationMinutes = dto.DurationMinutes;
 			episode.AirDate = dto.AirDate;
 			episode.IsActive = dto.IsActive;
-			episode.MovieId = dto.MovieId;
+
+			// STRICT BUSINESS LOGIC: 
+			// We intentionally do NOT map `episode.MovieId = dto.MovieId`. 
+			// An episode's parent series is immutable to prevent data corruption.
 
 			await _context.SaveChangesAsync();
 			return true;
@@ -92,13 +94,11 @@ namespace FinalCuongFilm.Service.Services
 				.Include(e => e.MediaFiles)
 				.FirstOrDefaultAsync(e => e.Id == id);
 
-			if (episode == null)
-				return false;
+			if (episode == null) return false;
 
-		
 			if (episode.MediaFiles.Any())
 			{
-				throw new InvalidOperationException("Không thể xóa tập phim đã có media files. Vui lòng xóa tất cả media files trước.");
+				throw new InvalidOperationException("Cannot delete this episode because it has associated media files. Please delete all media files first.");
 			}
 
 			_context.Episodes.Remove(episode);
@@ -111,7 +111,8 @@ namespace FinalCuongFilm.Service.Services
 			return await _context.Episodes.AnyAsync(e => e.Id == id);
 		}
 
-		public async Task<PagedResult<EpisodeDto>> GetPagedAsync(string? searchString = null, int pageIndex = 1, int pageSize = 10)
+		// FIX: Replaced generic 'searchString' with 'movieId' to correctly filter episodes by their parent Series
+		public async Task<PagedResult<EpisodeDto>> GetPagedAsync(Guid? movieId = null, int pageIndex = 1, int pageSize = 10)
 		{
 			if (pageIndex < 1) pageIndex = 1;
 			if (pageSize < 1) pageSize = 10;
@@ -120,10 +121,9 @@ namespace FinalCuongFilm.Service.Services
 				.Include(e => e.Movie)
 				.AsQueryable();
 
-			if (!string.IsNullOrWhiteSpace(searchString))
+			if (movieId.HasValue)
 			{
-				query = query.Where(e => e.Title.Contains(searchString) ||
-										 e.Description.Contains(searchString));
+				query = query.Where(e => e.MovieId == movieId.Value);
 			}
 
 			int totalCount = await query.CountAsync();

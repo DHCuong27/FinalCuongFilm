@@ -74,7 +74,7 @@
         box-shadow: var(--shadow-sm);
         border: 1px solid var(--border-color);
         margin-bottom: 24px;
-        overflow: hidden;
+        overflow: visible; /* Fixed to allow dropdowns to show */
     }
 
     .form-card-header {
@@ -319,23 +319,32 @@
             background: var(--border-color);
         }
 
-    /* Tag Picker (Select2 Alternative) */
-    .tag-picker .form-control[multiple] {
-        display: none;
+    /* Tag Picker */
+    .tag-picker {
+        position: relative;
     }
+
+        .tag-picker .form-control[multiple] {
+            display: none;
+        }
 
     .tag-search-box {
         margin-bottom: 8px;
     }
 
     .tag-dropdown {
-        max-height: 180px;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        width: 100%;
+        max-height: 200px;
         overflow-y: auto;
-        background: var(--bg-white);
+        background: #fff;
         border: 1px solid var(--border-color);
         border-radius: 6px;
-        margin-bottom: 12px;
-        box-shadow: var(--shadow-sm);
+        box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+        z-index: 9999;
+        display: none;
     }
 
     .tag-option {
@@ -355,7 +364,8 @@
         }
 
         .tag-option:hover {
-            background: var(--bg-light);
+            background: #f8fafc;
+            color: var(--primary-color);
         }
 
         .tag-option.selected {
@@ -363,12 +373,6 @@
             font-weight: 600;
             background: #eff6ff;
         }
-
-            .tag-option.selected::before {
-                content: '\f26b'; /* zmdi-check */
-                font-family: 'Material-Design-Iconic-Font';
-                font-weight: bold;
-            }
 
     .tag-chips {
         display: flex;
@@ -419,32 +423,6 @@
         display: flex;
         align-items: center;
     }
-
-    /* Toggle Switch */
-    .toggle-wrapper {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        padding: 16px;
-        background: var(--bg-light);
-        border: 1px solid var(--border-color);
-        border-radius: 6px;
-    }
-
-        .toggle-wrapper input[type="checkbox"] {
-            width: 18px;
-            height: 18px;
-            accent-color: var(--primary-color);
-            cursor: pointer;
-        }
-
-        .toggle-wrapper label {
-            color: var(--text-dark);
-            font-size: 14px;
-            font-weight: 500;
-            cursor: pointer;
-            margin: 0;
-        }
 
     /* Action Buttons */
     .action-bar {
@@ -599,18 +577,42 @@
             <div class="form-card-header"><i class="zmdi zmdi-image-o"></i> Media Files</div>
             <div class="form-card-body">
                 <div class="form-grid">
+
                     <div class="form-group form-col-full">
                         <label class="form-label">Poster Image</label>
 
                         <div class="file-input-wrap" id="posterFileWrap">
-                            <input type="file" name="posterFile" id="posterFileInput"
-                                   accept=".jpg,.jpeg,.png,.webp"
-                                   onchange="onPosterFileChange(this)" />
+                            <input type="file" name="posterFile" id="posterFileInput" accept=".jpg,.jpeg,.png,.webp" onchange="onPosterFileChange(this)" />
                             <span class="form-hint" style="margin-top: 8px;">Select image file (JPG, PNG, WEBP). Max 5MB.</span>
                         </div>
 
-                     
+                        <div class="url-group mt-2">
+                            <input asp-for="PosterUrl" class="form-control" id="posterUrlInput" placeholder="https://example.com/poster.jpg" />
+                            <button type="button" class="btn-outline" onclick="previewPoster()"><i class="zmdi zmdi-eye"></i> Preview</button>
+                            <button type="button" class="btn-outline" onclick="clearPoster()" style="color:var(--text-muted);"><i class="zmdi zmdi-close"></i> Clear</button>
+                        </div>
+                        <span class="form-hint">Paste a direct image link. Click Preview to verify.</span>
+                        <span asp-validation-for="PosterUrl" class="text-danger"></span>
+
+                        <div class="img-preview-wrap" id="posterPreview">
+                            <img src="" alt="Poster preview" id="posterPreviewImg" />
+                            <button type="button" class="preview-clear-btn" onclick="clearPoster()"><i class="zmdi zmdi-close"></i></button>
+                        </div>
                     </div>
+
+                    <div class="form-group form-col-full" style="margin-top: 16px; border-top: 1px solid var(--border-color); padding-top: 16px;">
+                        <label class="form-label">Trailer URL</label>
+                        <div class="url-group">
+                            <input asp-for="TrailerUrl" class="form-control" id="trailerUrlInput" placeholder="https://youtube.com/watch?v=..." />
+                            <button type="button" class="btn-outline" onclick="previewTrailer()"><i class="zmdi zmdi-eye"></i> Preview</button>
+                            <button type="button" class="btn-outline" onclick="clearTrailer()" style="color:var(--text-muted);"><i class="zmdi zmdi-close"></i> Clear</button>
+                        </div>
+                        <span class="form-hint">YouTube or Vimeo link.</span>
+                        <span asp-validation-for="TrailerUrl" class="text-danger"></span>
+
+                        <div class="embed-preview" id="trailerPreview"></div>
+                    </div>
+
                 </div>
             </div>
         </div>
@@ -693,11 +695,10 @@
             </div>
         </div>
 
-        <div class="form-group mb-4" style="background-color: #fffbeb; border-left: 4px solid #f59e0b; padding: 10px 15px;">
-            <input type="checkbox" asp-for="IsVipOnly" id="IsVipOnlyCheck" style="transform: scale(1.5); margin-right: 10px;" value="true" />
-
-            <label for="IsVipOnlyCheck" style="color: #b45309; font-weight: bold; cursor: pointer;">
-                <i class="zmdi zmdi-star"></i> Phim Premium (Chỉ tài khoản VIP mới được xem)
+        <div class="form-group mb-4" style="background-color: #fffbeb; border-left: 4px solid #f59e0b; padding: 12px 15px; border-radius: 6px; display: flex; align-items: center;">
+            <input type="checkbox" asp-for="IsVipOnly" id="IsVipOnlyCheck" style="transform: scale(1.5); margin-right: 15px; cursor: pointer;" />
+            <label for="IsVipOnlyCheck" style="color: #b45309; font-weight: bold; cursor: pointer; margin: 0;">
+                <i class="zmdi zmdi-star"></i> Premium Movie (VIP accounts only)
             </label>
         </div>
 
@@ -720,7 +721,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', function () {
 
-            /* Slug  */
+            /* Slug */
             const titleEl = document.getElementById('titleInput');
             const slugEl  = document.getElementById('slugInput');
             let slugLocked = false;
@@ -728,67 +729,80 @@
             titleEl.addEventListener('input', () => { if (!slugLocked) slugEl.value = toSlug(titleEl.value); });
             slugEl.addEventListener('input',  () => { slugLocked = slugEl.value.length > 0; });
 
-            /* Tag Picker Factory  */
-            function buildTagPicker(selectId, searchId, dropdownId, chipsId) {
+            /* Tag Picker Factory */
+            function buildTagPicker(selectId, searchId, dropdownId, chipsId, pickerId) {
                 const sel      = document.getElementById(selectId);
                 const search   = document.getElementById(searchId);
                 const dropdown = document.getElementById(dropdownId);
                 const chips    = document.getElementById(chipsId);
+                const picker   = document.getElementById(pickerId);
 
-                const allOptions = Array.from(sel.options).map(o => ({ value: o.value, label: o.text }));
-                let selected = [];
-
-                function renderDropdown(filter = '') {
-                    dropdown.innerHTML = '';
-                    allOptions.forEach(opt => {
-                        if (filter && !opt.label.toLowerCase().includes(filter.toLowerCase())) return;
-                        const div = document.createElement('div');
-                        div.className = 'tag-option' + (selected.includes(opt.value) ? ' selected' : '');
-                        div.textContent = opt.label;
-                        div.dataset.value = opt.value;
-                        div.addEventListener('click', () => toggleItem(opt));
-                        dropdown.appendChild(div);
-                    });
-                    if (!dropdown.children.length) {
-                        dropdown.innerHTML = '<div style="padding:10px 14px; color:var(--text-muted); font-size:13px; font-style:italic;">No results found</div>';
-                    }
-                }
+                if (!sel || !search) return;
 
                 function renderChips() {
                     chips.innerHTML = '';
-                    if (!selected.length) { chips.innerHTML = '<span class="tag-empty">None selected</span>'; return; }
-                    selected.forEach(val => {
-                        const opt = allOptions.find(o => o.value === val);
-                        if (!opt) return;
-                        const chip = document.createElement('span');
-                        chip.className = 'tag-chip';
-                        chip.innerHTML = `${opt.label}<button type="button" title="Remove"><i class="zmdi zmdi-close"></i></button>`;
-                        chip.querySelector('button').addEventListener('click', () => toggleItem(opt));
-                        chips.appendChild(chip);
+                    let hasSelection = false;
+                    Array.from(sel.options).forEach(opt => {
+                        if (opt.selected) {
+                            hasSelection = true;
+                            const chip = document.createElement('span');
+                            chip.className = 'tag-chip';
+                            chip.innerHTML = `${opt.text} <button type="button" title="Remove"><i class="zmdi zmdi-close"></i></button>`;
+                            chip.querySelector('button').addEventListener('click', () => {
+                                opt.selected = false;
+                                renderChips();
+                            });
+                            chips.appendChild(chip);
+                        }
                     });
+                    if (!hasSelection) {
+                        chips.innerHTML = '<span class="tag-empty">None selected</span>';
+                    }
                 }
 
-                function syncSelect() {
-                    Array.from(sel.options).forEach(o => { o.selected = selected.includes(o.value); });
-                }
+                // Search Event
+                search.addEventListener('input', function() {
+                    const term = this.value.toLowerCase().trim();
+                    dropdown.innerHTML = '';
 
-                function toggleItem(opt) {
-                    const idx = selected.indexOf(opt.value);
-                    if (idx === -1) selected.push(opt.value); else selected.splice(idx, 1);
-                    syncSelect();
-                    renderDropdown(search.value);
-                    renderChips();
-                }
+                    if (!term) {
+                        dropdown.style.display = 'none';
+                        return;
+                    }
 
-                search.addEventListener('input', () => renderDropdown(search.value));
-                renderDropdown();
-                renderChips();
+                    let matches = 0;
+                    Array.from(sel.options).forEach(opt => {
+                        if (!opt.selected && opt.text.toLowerCase().includes(term)) {
+                            matches++;
+                            const div = document.createElement('div');
+                            div.className = 'tag-option';
+                            div.textContent = opt.text;
+                            div.addEventListener('click', () => {
+                                opt.selected = true;
+                                search.value = '';
+                                dropdown.style.display = 'none';
+                                renderChips();
+                            });
+                            dropdown.appendChild(div);
+                        }
+                    });
+                    dropdown.style.display = matches > 0 ? 'block' : 'none';
+                });
+
+                // Close dropdown on outside click
+                document.addEventListener('click', function(e) {
+                    if (picker && !picker.contains(e.target)) {
+                        dropdown.style.display = 'none';
+                    }
+                });
+
+                renderChips(); // Initialize empty state
             }
 
-            buildTagPicker('actorSelect', 'actorSearch', 'actorDropdown', 'actorChips');
-            buildTagPicker('genreSelect', 'genreSearch', 'genreDropdown', 'genreChips');
+            buildTagPicker('actorSelect', 'actorSearch', 'actorDropdown', 'actorChips', 'actorPicker');
+            buildTagPicker('genreSelect', 'genreSearch', 'genreDropdown', 'genreChips', 'genrePicker');
 
-            /* Submit feedback  */
+            /* Submit feedback */
             document.getElementById('createForm').addEventListener('submit', () => {
                 const btn = document.getElementById('submitBtn');
                 btn.innerHTML = '<i class="zmdi zmdi-spinner zmdi-hc-spin"></i> Saving…';
@@ -796,7 +810,7 @@
             });
         });
 
-        /* Poster File Upload Preview  */
+        /* Poster File Upload Preview */
         function onPosterFileChange(input) {
             const wrap = document.getElementById('posterPreview');
             const img  = document.getElementById('posterPreviewImg');
@@ -804,7 +818,6 @@
 
             if (input.files && input.files[0]) {
                 const file = input.files[0];
-                // validate size <= 5MB
                 if (file.size > 5 * 1024 * 1024) {
                     alert('File is too large. Please select an image under 5MB.');
                     input.value = '';
@@ -816,12 +829,11 @@
                     wrap.style.display = 'block';
                 };
                 reader.readAsDataURL(file);
-                // Clear URL input when a file is selected
                 urlInput.value = '';
             }
         }
 
-        /* Poster URL Preview  */
+        /* Poster URL Preview */
         function previewPoster() {
             const url  = document.getElementById('posterUrlInput').value.trim();
             const wrap = document.getElementById('posterPreview');
@@ -830,7 +842,6 @@
             img.onload  = () => { wrap.style.display = 'block'; };
             img.onerror = () => { alert('Could not load image. Check the URL.'); wrap.style.display = 'none'; };
             img.src = url;
-            // Clear File input when URL is tested
             document.getElementById('posterFileInput').value = '';
         }
 
@@ -842,9 +853,12 @@
             document.getElementById('posterPreviewImg').src = '';
         }
 
-        /* Trailer Preview  */
+        /* Trailer Preview */
         function previewTrailer() {
-            const url  = document.getElementById('trailerUrlInput').value.trim();
+            const urlElement = document.getElementById('trailerUrlInput');
+            if (!urlElement) return;
+
+            const url  = urlElement.value.trim();
             const wrap = document.getElementById('trailerPreview');
             if (!url) { alert('Please enter a trailer URL first.'); return; }
             const embed = getEmbedUrl(url);
@@ -854,10 +868,13 @@
         }
 
         function clearTrailer() {
-            document.getElementById('trailerUrlInput').value = '';
+            const urlElement = document.getElementById('trailerUrlInput');
+            if (urlElement) urlElement.value = '';
             const wrap = document.getElementById('trailerPreview');
-            wrap.style.display = 'none';
-            wrap.innerHTML = '';
+            if (wrap) {
+                wrap.style.display = 'none';
+                wrap.innerHTML = '';
+            }
         }
 
         function getEmbedUrl(url) {

@@ -1,12 +1,16 @@
-﻿using FinalCuongFilm.MVC.Models.ViewModels;
+﻿using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
+using Azure.Storage.Sas;
+using FinalCuongFilm.DataLayer;
+using FinalCuongFilm.MVC.Models.ViewModels;
 using FinalCuongFilm.Service.Interfaces;
+using Azure.Storage.Blobs.Models;
 using FinalCuongFilm.Service.Services;
 using Humanizer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
-using Azure.Storage.Sas;
-using Azure.Storage.Blobs;
 
 namespace FinalCuongFilm.MVC.Controllers
 {
@@ -23,19 +27,22 @@ namespace FinalCuongFilm.MVC.Controllers
 		private readonly IAzureBlobService _azureBlobService;
 		private readonly IVipService _vipService;
 		private readonly ILogger<MovieController> _logger;
+		private readonly CuongFilmDbContext _context;
+		private readonly IConfiguration _configuration;
+		private readonly IWebHostEnvironment _env;
 
 		public MovieController(
 			IMovieService movieService, IFavoriteService favoriteService,
 			IReviewService reviewService, IEpisodeService episodeService,
 			IMediaFileService mediaFileService, IGenreService genreService,
 			ICountryService countryService, IActorService actorService,
-			IVipService vipService,IAzureBlobService azureBlobService, ILogger<MovieController> logger)
+			IVipService vipService,IAzureBlobService azureBlobService, CuongFilmDbContext context, IConfiguration configuration, IWebHostEnvironment env, ILogger<MovieController> logger)
 		{
 			_movieService = movieService; _favoriteService = favoriteService;
 			_reviewService = reviewService; _episodeService = episodeService;
 			_mediaFileService = mediaFileService; _genreService = genreService;
 			_countryService = countryService; _actorService = actorService;
-			_vipService = vipService; _azureBlobService = azureBlobService; _logger = logger;
+			_vipService = vipService; _azureBlobService = azureBlobService; _context = context; _configuration = configuration; _env = env; _logger = logger;
 		}
 
 		// GET: /Movie
@@ -305,44 +312,125 @@ namespace FinalCuongFilm.MVC.Controllers
 			return RedirectToAction("Watch", new { slug = movie.Slug });
 		}
 
+
 		[Authorize]
 		public async Task<IActionResult> Download(Guid id)
 		{
-			// 1. Lấy thông tin phim
-			var movie = await _movieService.GetByIdAsync(id);
-			if (movie == null)
+			var movie = await _context.Movies.FindAsync(id);
+			if (movie == null) return NotFound();
+
+			// 1. Kiểm tra quyền Premium
+			if (movie.IsVipOnly)
 			{
-				return NotFound("Không tìm thấy bộ phim này.");
+				var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+				var currentVip = await _vipService.GetCurrentUserSubscriptionAsync(userId);
+
+				if (currentVip == null || currentVip.EndDate < DateTime.UtcNow)
+				{
+					TempData["Error"] = "Vui lòng nâng cấp gói Premium để tải phim này!";
+					return RedirectToAction("Index", "Premium");
+				}
 			}
 
-			// 2. Kiểm tra quyền VIP
-			var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-			bool isVip = await _vipService.HasActiveVipAsync(userId);
-
-			if (movie.IsVipOnly && !isVip)
+			try
 			{
-				TempData["Error"] = "Tính năng tải xuống chỉ dành cho tài khoản Premium.";
-				return RedirectToAction("Index", "Premium");
-			}
+				var blobServiceClient = new BlobServiceClient(_configuration.GetConnectionString("AzureBlobStorage"));
+				var containerClient = blobServiceClient.GetBlobContainerClient("videos");
 
-			// 3. Kiểm tra tính hợp lệ của File Video (Đã bỏ comment và dùng biến thật)
-			if (string.IsNullOrWhiteSpace(movie.VideoUrl))
+				// 2. DỰA VÀO ẢNH: Thư mục chứa file MP4 có tên chính là Slug của phim (VD: "test-download/")
+				string searchPrefix = $"{movie.Slug}/";
+				string targetBlobName = null;
+
+				// 3. QUÉT THƯ MỤC TRÊN AZURE ĐỂ TÌM FILE MP4
+				// Nó sẽ tìm thấy "test-download/movie-20260414154423.mp4"
+				await foreach (var blobItem in containerClient.GetBlobsAsync(BlobTraits.None, BlobStates.None, searchPrefix, CancellationToken.None))
+				{
+					if (blobItem.Name.EndsWith(".mp4", StringComparison.OrdinalIgnoreCase))
+					{
+						targetBlobName = blobItem.Name;
+						break;
+					}
+				}
+
+				// Nếu quét xong mà không có file mp4 nào
+				if (targetBlobName == null)
+				{
+					TempData["Error"] = $"Không tìm thấy file MP4 nào trong thư mục '{searchPrefix}'. Vui lòng kiểm tra lại Azure.";
+					return RedirectToAction("Detail", new { slug = movie.Slug });
+				}
+
+				// 4. TẠO SAS TOKEN VÀ ÉP TẢI VỀ
+				var blobClient = containerClient.GetBlobClient(targetBlobName);
+
+				if (blobClient.CanGenerateSasUri)
+				{
+					BlobSasBuilder sasBuilder = new BlobSasBuilder()
+					{
+						BlobContainerName = "videos",
+						BlobName = targetBlobName,
+						Resource = "b",
+						StartsOn = DateTimeOffset.UtcNow.AddMinutes(-5),
+						ExpiresOn = DateTimeOffset.UtcNow.AddHours(2)
+					};
+
+					sasBuilder.SetPermissions(BlobSasPermissions.Read);
+					// Đặt lại tên file sạch đẹp khi user tải về (VD: test-download.mp4)
+					sasBuilder.ContentDisposition = $"attachment; filename=\"{movie.Slug}.mp4\"";
+
+					return Redirect(blobClient.GenerateSasUri(sasBuilder).ToString());
+				}
+
+				TempData["Error"] = "Lỗi hệ thống: Không thể tạo mã xác thực tải phim.";
+				return RedirectToAction("Detail", new { slug = movie.Slug });
+			}
+			catch (Exception ex)
 			{
-				TempData["Error"] = "Phim này hiện chưa có file để tải xuống.";
-				return RedirectToAction("Detail", new { id = movie.Id });
+				TempData["Error"] = "Lỗi kết nối Azure: " + ex.Message;
+				return RedirectToAction("Detail", new { slug = movie.Slug });
 			}
+		}
 
-			// 4. Tạo SAS Token để bảo mật link tải
-			string secureDownloadUrl = _azureBlobService.GetSecureDownloadLink(movie.VideoUrl, "videos");
-
-			if (string.IsNullOrEmpty(secureDownloadUrl) || secureDownloadUrl == movie.VideoUrl)
+		private string GetSecureDownloadLink(string blobName, string containerName = "videos")
+		{
+			try
 			{
-				TempData["Error"] = "Hệ thống đang bận, không thể tạo link tải an toàn lúc này.";
-				return RedirectToAction("Detail", new { id = movie.Id });
-			}
+				// Khởi tạo Client kết nối Azure
+				var blobServiceClient = new BlobServiceClient(_configuration.GetConnectionString("AzureBlobStorage"));
+				var blobContainerClient = blobServiceClient.GetBlobContainerClient(containerName);
+				var blobClient = blobContainerClient.GetBlobClient(blobName);
 
-			// 5. Redirect để ép trình duyệt tải file
-			return Redirect(secureDownloadUrl);
+				// Kiểm tra xem file MP4 có thực sự tồn tại ở folder [slug]-[id] không
+				if (!blobClient.Exists())
+				{
+					return null;
+				}
+
+				if (blobClient.CanGenerateSasUri)
+				{
+					BlobSasBuilder sasBuilder = new BlobSasBuilder()
+					{
+						BlobContainerName = containerName,
+						BlobName = blobName,
+						Resource = "b",
+						StartsOn = DateTimeOffset.UtcNow.AddMinutes(-5),
+						ExpiresOn = DateTimeOffset.UtcNow.AddHours(2) // Link sống trong 2 giờ
+					};
+
+					sasBuilder.SetPermissions(BlobSasPermissions.Read);
+
+					// Lấy tên file ở cuối đường dẫn để đặt tên khi tải về
+					string fileName = Path.GetFileName(blobName);
+					sasBuilder.ContentDisposition = $"attachment; filename=\"{fileName}\"";
+
+					return blobClient.GenerateSasUri(sasBuilder).ToString();
+				}
+				return null;
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine($"SAS Error: {ex.Message}");
+				return null;
+			}
 		}
 	}
 }

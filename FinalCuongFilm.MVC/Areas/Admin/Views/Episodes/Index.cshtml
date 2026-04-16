@@ -177,21 +177,27 @@
     }
 
     /* ===== Action Icons ===== */
-    /* Làm cho các nút chỉ chứa Icon thành hình vuông chuẩn */
-    .action-group .btn-icon {
-        width: 32px;
-        height: 32px;
-        padding: 0;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 6px; /* Muốn nút tròn xoe thì đổi thành 50% nhé */
+    .action-group {
+        display: flex;
+        gap: 8px;
+        justify-content: center; /* FIX: Centers buttons under the header */
     }
 
-        .action-group .btn-icon i {
-            margin: 0;
-            font-size: 0.9rem;
+        /* Make icon-only buttons perfectly square */
+        .action-group .btn-icon {
+            width: 32px;
+            height: 32px;
+            padding: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
         }
+
+            .action-group .btn-icon i {
+                margin: 0;
+                font-size: 0.9rem;
+            }
 
     .action-btn {
         width: 32px;
@@ -251,7 +257,7 @@
             margin-bottom: 20px;
         }
 
-    /* ===== Pagination CSS Bổ sung ===== */
+    /* ===== Pagination CSS ===== */
     .pagination-container {
         padding: 16px;
         display: flex;
@@ -305,60 +311,63 @@
 
     /* ===== Responsive Mobile (Card View) ===== */
     @@media (max-width: 768px) {
-        .page-header {
-            flex-direction: column;
-            align-items: flex-start;
+        .page-header
+
+    {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .btn-custom {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .data-table thead {
+        display: none;
+    }
+
+    .data-table, .data-table tbody, .data-table tr, .data-table td {
+        display: block;
+        width: 100%;
+    }
+
+        .data-table tr {
+            margin-bottom: 16px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            background: var(--bg-white);
+            box-shadow: var(--shadow-sm);
         }
 
-        .btn-custom {
-            width: 100%;
-            justify-content: center;
+        .data-table td {
+            text-align: right;
+            padding-left: 40%;
+            position: relative;
+            border-bottom: 1px solid var(--bg-light);
         }
 
-        .data-table thead {
-            display: none;
-        }
-
-        .data-table, .data-table tbody, .data-table tr, .data-table td {
-            display: block;
-            width: 100%;
-        }
-
-            .data-table tr {
-                margin-bottom: 16px;
-                border: 1px solid var(--border-color);
-                border-radius: var(--radius-md);
-                background: var(--bg-white);
-                box-shadow: var(--shadow-sm);
+            .data-table td:last-child {
+                border-bottom: none;
             }
 
-            .data-table td {
-                text-align: right;
-                padding-left: 40%;
-                position: relative;
-                border-bottom: 1px solid var(--bg-light);
+            .data-table td::before {
+                content: attr(data-label);
+                position: absolute;
+                left: 16px;
+                width: 35%;
+                white-space: nowrap;
+                font-weight: 600;
+                text-align: left;
+                color: var(--text-muted);
+                font-size: 13px;
+                text-transform: uppercase;
             }
 
-                .data-table td:last-child {
-                    border-bottom: none;
-                }
+    .action-group {
+        justify-content: flex-end;
+    }
 
-                .data-table td::before {
-                    content: attr(data-label);
-                    position: absolute;
-                    left: 16px;
-                    width: 35%;
-                    white-space: nowrap;
-                    font-weight: 600;
-                    text-align: left;
-                    color: var(--text-muted);
-                    font-size: 13px;
-                    text-transform: uppercase;
-                }
-
-        .action-group {
-            justify-content: flex-end;
-        }
     }
 </style>
 
@@ -383,7 +392,7 @@
 @if (movieId.HasValue)
 {
     <div style="margin-bottom: 20px;">
-        <a asp-action="Index" class="btn-custom btn-back">
+        <a asp-action="Index" asp-route-movieId="" class="btn-custom btn-back">
             <i class="zmdi zmdi-arrow-left"></i> View All Episodes
         </a>
     </div>
@@ -439,7 +448,7 @@
                                 <span class="status-badge badge-inactive">Hidden</span>
                             }
                         </td>
-                        <td>
+                        <td data-label="Actions">
                             <div class="action-group">
 
                                 <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-icon btn-primary" title="View Details">
@@ -468,7 +477,9 @@
             <div class="pagination-container">
                 <ul class="pagination">
                     <li class="page-item @(Model.PageIndex <= 1 ? "disabled" : "")">
-                        <a class="page-link" asp-action="Index" asp-route-movieId="@movieId" asp-route-page="@(Model.PageIndex - 1)">Previous</a>
+                        <a class="page-link" asp-action="Index" asp-route-movieId="@movieId" asp-route-page="@(Model.PageIndex - 1)" style="gap: 6px;">
+                            <i class="zmdi zmdi-chevron-left"></i> Prev
+                        </a>
                     </li>
 
                     @for (int i = 1; i <= Model.TotalPages; i++)
@@ -479,7 +490,9 @@
                     }
 
                     <li class="page-item @(Model.PageIndex >= Model.TotalPages ? "disabled" : "")">
-                        <a class="page-link" asp-action="Index" asp-route-movieId="@movieId" asp-route-page="@(Model.PageIndex + 1)">Next</a>
+                        <a class="page-link" asp-action="Index" asp-route-movieId="@movieId" asp-route-page="@(Model.PageIndex + 1)" style="gap: 6px;">
+                            Next <i class="zmdi zmdi-chevron-right"></i>
+                        </a>
                     </li>
                 </ul>
             </div>

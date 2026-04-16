@@ -1,10 +1,9 @@
 ﻿@{
-    ViewData["Title"] = "Dashboard";
+    ViewData["Title"] = "Admin Dashboard";
     Layout = "~/Areas/Admin/Views/Shared/_LayoutAdmin.cshtml";
 }
 
 <style>
-    /* CSS Cốt lõi cho Dashboard - Cải tiến Responsive */
     :root {
         --bg-body: #f1f5f9;
         --card-bg: #ffffff;
@@ -14,112 +13,44 @@
         --radius: 12px;
         --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-        --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-        --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+        --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
     }
 
-    body {
-        background-color: var(--bg-body);
-        color: var(--text-main);
-        font-family: 'Segoe UI', system-ui, -apple-system, 'Inter', sans-serif;
-    }
-
-    /* Container chính với padding responsive */
     .dashboard-container {
-        padding: 1rem;
+        padding: 1.5rem;
         max-width: 1600px;
         margin: 0 auto;
+        font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
     }
 
-    /* Responsive padding cho mobile */
-    @@media (min-width: 640px) {
-        .dashboard-container
-
-    {
-        padding: 1.5rem;
-    }
-
-    }
-
-    @@media (min-width: 1024px) {
-        .dashboard-container
-
-    {
-        padding: 2rem;
-    }
-
-    }
-
-    /* Page Title - Responsive */
     .page-title {
-        font-size: clamp(1.5rem, 5vw, 1.75rem);
+        font-size: 1.75rem;
         font-weight: 700;
         color: var(--text-main);
-        margin-bottom: 1.5rem;
+        margin-bottom: 2rem;
         display: flex;
         align-items: center;
-        gap: 10px;
-        flex-wrap: wrap;
+        gap: 12px;
     }
 
-        .page-title i {
-            font-size: clamp(1.25rem, 4vw, 1.75rem);
-        }
-
-    /* CẢI TIẾN: Grid responsive với breakpoints chi tiết */
+    /* Grid System */
     .dashboard-grid {
         display: grid;
-        gap: 1.25rem;
-        margin: 1.5rem 0 2.5rem;
-        /* Mobile first: 1 cột */
-        grid-template-columns: 1fr;
-    }
-
-    /* Tablet nhỏ (>= 480px) */
-    @@media (min-width: 480px) {
-        .dashboard-grid
-
-    {
-        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
         gap: 1.5rem;
-    }
-
-    }
-
-    /* Tablet (>= 768px) */
-    @@media (min-width: 768px) {
-        .dashboard-grid
-
-    {
         grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-        gap: 1.75rem;
     }
 
-    }
-
-    /* Desktop (>= 1024px) */
-    @@media (min-width: 1024px) {
-        .dashboard-grid
-
-    {
-        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-        gap: 2rem;
-    }
-
-    }
-
-    /* Desktop lớn (>= 1280px) */
     @@media (min-width: 1280px) {
         .dashboard-grid
 
     {
         grid-template-columns: repeat(4, 1fr);
-        gap: 2rem;
     }
 
     }
 
-    /* Card Design - Cải tiến */
+    /* Card Design */
     .dashboard-card {
         background-color: var(--card-bg);
         border-radius: var(--radius);
@@ -129,146 +60,111 @@
         flex-direction: column;
         transition: var(--transition);
         overflow: hidden;
-        position: relative;
-        backdrop-filter: blur(0);
         height: 100%;
+        animation: fadeInUp 0.4s ease-out forwards;
     }
 
-        /* Hiệu ứng hover mượt mà hơn */
         .dashboard-card:hover {
-            transform: translateY(-4px);
+            transform: translateY(-5px);
             box-shadow: var(--shadow-lg);
             border-color: #cbd5e1;
         }
 
-        /* Hiệu ứng ripple khi click (optional) */
-        .dashboard-card:active {
-            transform: translateY(-2px);
-            transition: transform 0.1s ease;
-        }
-
-    /* Card content với responsive padding */
     .card-content {
-        padding: 1.25rem;
-        flex-grow: 1;
-    }
-
-    @@media (min-width: 768px) {
-        .card-content
-
-    {
         padding: 1.5rem;
-    }
-
-    }
-
-    /* Flex layout cho header */
-    .card-header-flex {
+        flex-grow: 1;
         display: flex;
         align-items: center;
-        gap: 1rem;
-        flex-wrap: wrap;
+        gap: 1.25rem;
     }
 
-    /* Icon với responsive kích thước */
     .card-icon {
-        width: clamp(48px, 8vw, 56px);
-        height: clamp(48px, 8vw, 56px);
+        width: 56px;
+        height: 56px;
         border-radius: 12px;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: clamp(1.25rem, 4vw, 1.75rem);
+        font-size: 1.5rem;
         flex-shrink: 0;
-        transition: var(--transition);
     }
 
-    .dashboard-card:hover .card-icon {
-        transform: scale(1.05);
-    }
-
-    /* Bộ Màu sắc Icon Tươi Tắn (giữ nguyên) */
+    /* Dynamic Colors */
     .icon-movie {
-        background-color: #e0f2fe;
+        background: #e0f2fe;
         color: #0284c7;
     }
 
     .icon-user {
-        background-color: #dcfce7;
+        background: #dcfce7;
         color: #166534;
     }
 
     .icon-actor {
-        background-color: #fef08a;
+        background: #fef08a;
         color: #ca8a04;
     }
 
     .icon-genre {
-        background-color: #f3e8ff;
+        background: #f3e8ff;
         color: #9333ea;
     }
 
     .icon-country {
-        background-color: #ffedd5;
+        background: #ffedd5;
         color: #ea580c;
     }
 
     .icon-language {
-        background-color: red;
-        color: red;
+        background: #e0e7ff;
+        color: #4338ca;
     }
 
     .icon-episode {
-        background-color: #ccfbf1;
+        background: #ccfbf1;
         color: #0d9488;
     }
 
     .icon-media {
-        background-color: #fee2e2;
+        background: #fee2e2;
         color: #dc2626;
     }
 
-    /* Typography - Responsive */
-    .card-text {
-        display: flex;
-        flex-direction: column;
-        flex: 1;
-        min-width: 0; /* Ngăn text overflow */
+    /* NEW: Premium Colors */
+    .icon-vip-acc {
+        background: #fef3c7;
+        color: #d97706;
     }
 
-        .card-text h2 {
-            font-size: clamp(1.5rem, 5vw, 2rem);
-            font-weight: 700;
-            margin: 0;
-            color: var(--text-main);
-            line-height: 1.2;
-            word-break: break-word;
-        }
+    .icon-vip-plan {
+        background: #fae8ff;
+        color: #a21caf;
+    }
 
-        .card-text span {
-            color: var(--text-muted);
-            font-size: clamp(0.75rem, 3vw, 0.95rem);
-            font-weight: 500;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-top: 4px;
-        }
+    .icon-payment {
+        background: #ecfdf5;
+        color: #059669;
+    }
 
-    /* Nút Manage - Cải tiến */
+    .card-text h2 {
+        font-size: 1.75rem;
+        font-weight: 700;
+        margin: 0;
+        color: var(--text-main);
+    }
+
+    .card-text span {
+        color: var(--text-muted);
+        font-size: 0.85rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
     .card-action {
         background-color: #f8fafc;
         border-top: 1px solid var(--border-color);
-        padding: 0.875rem 1.25rem;
-        transition: var(--transition);
-    }
-
-    @@media (min-width: 768px) {
-        .card-action
-
-    {
         padding: 0.875rem 1.5rem;
-    }
-
     }
 
     .btn-manage {
@@ -278,47 +174,28 @@
         color: #3b82f6;
         text-decoration: none;
         font-weight: 600;
-        font-size: clamp(0.875rem, 3vw, 0.95rem);
+        font-size: 0.9rem;
         transition: var(--transition);
-        position: relative;
-        padding: 0.25rem 0;
     }
 
         .btn-manage:hover {
             color: #1d4ed8;
-            text-decoration: none;
-            gap: 0.5rem;
         }
 
         .btn-manage i {
-            transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-            font-size: 0.875rem;
+            transition: transform 0.2s;
         }
 
         .btn-manage:hover i {
-            transform: translateX(6px);
+            transform: translateX(5px);
         }
 
-        /* Hiệu ứng focus cho accessibility */
-        .btn-manage:focus-visible {
-            outline: 2px solid #3b82f6;
-            outline-offset: 2px;
-            border-radius: 4px;
-        }
-
-    /* Loading skeleton (optional) */
-    .dashboard-card.loading {
-        opacity: 0.6;
-        pointer-events: none;
-    }
-
-    /* Animation khi load */
     @@keyframes fadeInUp {
         from
 
     {
         opacity: 0;
-        transform: translateY(20px);
+        transform: translateY(15px);
     }
 
     to {
@@ -327,292 +204,124 @@
     }
 
     }
-
-    .dashboard-card {
-        animation: fadeInUp 0.4s ease-out forwards;
-        opacity: 0;
-    }
-
-        /* Stagger animation cho các card */
-        .dashboard-card:nth-child(1) {
-            animation-delay: 0.05s;
-        }
-
-        .dashboard-card:nth-child(2) {
-            animation-delay: 0.1s;
-        }
-
-        .dashboard-card:nth-child(3) {
-            animation-delay: 0.15s;
-        }
-
-        .dashboard-card:nth-child(4) {
-            animation-delay: 0.2s;
-        }
-
-        .dashboard-card:nth-child(5) {
-            animation-delay: 0.25s;
-        }
-
-        .dashboard-card:nth-child(6) {
-            animation-delay: 0.3s;
-        }
-
-        .dashboard-card:nth-child(7) {
-            animation-delay: 0.35s;
-        }
-
-        .dashboard-card:nth-child(8) {
-            animation-delay: 0.4s;
-        }
-
-    /* Responsive cho màn hình siêu nhỏ */
-    @@media (max-width: 380px) {
-        .card-header-flex
-
-    {
-        flex-direction: column;
-        text-align: center;
-    }
-
-    .card-text {
-        align-items: center;
-    }
-
-    .btn-manage {
-        justify-content: center;
-        gap: 0.5rem;
-    }
-
-        .btn-manage i {
-            display: none;
-        }
-
-        .btn-manage:hover i {
-            display: inline-block;
-        }
-
-    }
-
-    /* Dark mode support (optional) */
-    @@media (prefers-color-scheme: dark) {
-        : root
-
-    {
-        --bg-body: #0f172a;
-        --card-bg: #1e293b;
-        --text-main: #f1f5f9;
-        --text-muted: #94a3b8;
-        --border-color: #334155;
-    }
-
-    .card-action {
-        background-color: #0f172a;
-    }
-
-    .btn-manage {
-        color: #60a5fa;
-    }
-
-        .btn-manage:hover {
-            color: #93c5fd;
-        }
-
-    }
-
-    /* Print styles */
-    @@media print {
-        .dashboard-card
-
-    {
-        break-inside: avoid;
-        box-shadow: none;
-        border: 1px solid #ccc;
-    }
-
-    .card-action {
-        display: none;
-    }
-
-    .dashboard-card:hover {
-        transform: none;
-    }
-
-    }
-
-    /* Smooth scrolling */
-    @@media (prefers-reduced-motion: reduce) {
-        *
-
-    {
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
-    }
-
-    }
 </style>
 
 <div class="dashboard-container">
-    <div>
-        <h1 class="page-title">
-            <i class="zmdi zmdi-view-dashboard"></i> Dashboard Overview
-        </h1>
-    </div>
+    <h1 class="page-title">
+        <i class="zmdi zmdi-view-dashboard"></i> Dashboard Overview
+    </h1>
 
     <div class="dashboard-grid">
-        <!-- Các card giữ nguyên -->
-        <div class="dashboard-card">
-            <div class="card-content">
-                <div class="card-header-flex">
-                    <div class="card-icon icon-movie">
-                        <i class="fas fa-film"></i>
-                    </div>
-                    <div class="card-text">
-                        <h2>@ViewBag.TotalMovies</h2>
-                        <span>Total Movies</span>
-                    </div>
-                </div>
-            </div>
-            <div class="card-action">
-                <a asp-area="Admin" asp-controller="Movies" asp-action="Index" class="btn-manage">
-                    Manage Movies <i class="fas fa-arrow-right"></i>
-                </a>
-            </div>
-        </div>
 
-        <!-- Các card khác giữ nguyên nội dung -->
         <div class="dashboard-card">
             <div class="card-content">
-                <div class="card-header-flex">
-                    <div class="card-icon icon-user">
-                        <i class="fas fa-users"></i>
-                    </div>
-                    <div class="card-text">
-                        <h2>@ViewBag.TotalUsers</h2>
-                        <span>Total Users</span>
-                    </div>
-                </div>
+                <div class="card-icon icon-movie"><i class="fas fa-film"></i></div>
+                <div class="card-text"><h2>@ViewBag.TotalMovies</h2><span>Total Movies</span></div>
             </div>
             <div class="card-action">
-                <a asp-area="Admin" asp-controller="User" asp-action="Index" class="btn-manage">
-                    Manage Users <i class="fas fa-arrow-right"></i>
-                </a>
+                <a asp-area="Admin" asp-controller="Movies" asp-action="Index" class="btn-manage">Manage Movies <i class="fas fa-arrow-right"></i></a>
             </div>
         </div>
 
         <div class="dashboard-card">
             <div class="card-content">
-                <div class="card-header-flex">
-                    <div class="card-icon icon-actor">
-                        <i class="fas fa-user-astronaut"></i>
-                    </div>
-                    <div class="card-text">
-                        <h2>@ViewBag.TotalActors</h2>
-                        <span>Actors</span>
-                    </div>
-                </div>
+                <div class="card-icon icon-episode"><i class="fas fa-tv"></i></div>
+                <div class="card-text"><h2>@ViewBag.TotalEpisodes</h2><span>Episodes</span></div>
             </div>
             <div class="card-action">
-                <a asp-area="Admin" asp-controller="Actors" asp-action="Index" class="btn-manage">
-                    Manage Actors <i class="fas fa-arrow-right"></i>
-                </a>
+                <a asp-area="Admin" asp-controller="Episodes" asp-action="Index" class="btn-manage">Manage Episodes <i class="fas fa-arrow-right"></i></a>
             </div>
         </div>
 
         <div class="dashboard-card">
             <div class="card-content">
-                <div class="card-header-flex">
-                    <div class="card-icon icon-genre">
-                        <i class="fas fa-tags"></i>
-                    </div>
-                    <div class="card-text">
-                        <h2>@ViewBag.TotalGenres</h2>
-                        <span>Genres</span>
-                    </div>
-                </div>
+                <div class="card-icon icon-media"><i class="fas fa-file-video"></i></div>
+                <div class="card-text"><h2>@ViewBag.TotalMediaFiles</h2><span>Media Files</span></div>
             </div>
             <div class="card-action">
-                <a asp-area="Admin" asp-controller="Genres" asp-action="Index" class="btn-manage">
-                    Manage Genres <i class="fas fa-arrow-right"></i>
-                </a>
+                <a asp-area="Admin" asp-controller="MediaUpload" asp-action="Index" class="btn-manage">Manage Media <i class="fas fa-arrow-right"></i></a>
             </div>
         </div>
 
         <div class="dashboard-card">
             <div class="card-content">
-                <div class="card-header-flex">
-                    <div class="card-icon icon-country">
-                        <i class="fas fa-globe-americas"></i>
-                    </div>
-                    <div class="card-text">
-                        <h2>@ViewBag.TotalCountries</h2>
-                        <span>Countries</span>
-                    </div>
-                </div>
+                <div class="card-icon icon-user"><i class="fas fa-users"></i></div>
+                <div class="card-text"><h2>@ViewBag.TotalUsers</h2><span>Total Users</span></div>
             </div>
             <div class="card-action">
-                <a asp-area="Admin" asp-controller="Countries" asp-action="Index" class="btn-manage">
-                    Manage Countries <i class="fas fa-arrow-right"></i>
-                </a>
+                <a asp-area="Admin" asp-controller="User" asp-action="Index" class="btn-manage">Manage Users <i class="fas fa-arrow-right"></i></a>
             </div>
         </div>
 
         <div class="dashboard-card">
             <div class="card-content">
-                <div class="card-header-flex">
-                    <div class="card-icon icon-language">
-                        <i class="fas fa-language"></i>
-                    </div>
-                    <div class="card-text">
-                        <h2>@ViewBag.TotalLanguages</h2>
-                        <span>Languages</span>
-                    </div>
-                </div>
+                <div class="card-icon icon-vip-acc"><i class="fas fa-crown"></i></div>
+                <div class="card-text"><h2>@ViewBag.TotalPremiumUsers</h2><span>VIP Accounts</span></div>
             </div>
             <div class="card-action">
-                <a asp-area="Admin" asp-controller="Languages" asp-action="Index" class="btn-manage">
-                    Manage Languages <i class="fas fa-arrow-right"></i>
-                </a>
+                <a asp-area="Admin" asp-controller="VipManager" asp-action="ActiveVips" class="btn-manage">Active VIPs <i class="fas fa-arrow-right"></i></a>
             </div>
         </div>
 
         <div class="dashboard-card">
             <div class="card-content">
-                <div class="card-header-flex">
-                    <div class="card-icon icon-episode">
-                        <i class="fas fa-tv"></i>
-                    </div>
-                    <div class="card-text">
-                        <h2>@ViewBag.TotalEpisodes</h2>
-                        <span>Episodes</span>
-                    </div>
-                </div>
+                <div class="card-icon icon-vip-plan"><i class="fas fa-gem"></i></div>
+                <div class="card-text"><h2>@ViewBag.TotalPremiumPlans</h2><span>Premium Plans</span></div>
             </div>
             <div class="card-action">
-                <a asp-area="Admin" asp-controller="Episodes" asp-action="Index" class="btn-manage">
-                    Manage Episodes <i class="fas fa-arrow-right"></i>
-                </a>
+                <a asp-area="Admin" asp-controller="VipPackage" asp-action="Index" class="btn-manage">Manage Plans <i class="fas fa-arrow-right"></i></a>
             </div>
         </div>
 
         <div class="dashboard-card">
             <div class="card-content">
-                <div class="card-header-flex">
-                    <div class="card-icon icon-media">
-                        <i class="fas fa-file-video"></i>
-                    </div>
-                    <div class="card-text">
-                        <h2>@ViewBag.TotalMediaFiles</h2>
-                        <span>Media Files</span>
-                    </div>
-                </div>
+                <div class="card-icon icon-payment"><i class="fas fa-receipt"></i></div>
+                <div class="card-text"><h2>@ViewBag.TotalTransactions</h2><span>Payment History</span></div>
             </div>
             <div class="card-action">
-                <a asp-area="Admin" asp-controller="MediaUpload" asp-action="Index" class="btn-manage">
-                    Manage Media <i class="fas fa-arrow-right"></i>
-                </a>
+                <a asp-area="Admin" asp-controller="VipManager" asp-action="Transactions" class="btn-manage">View History <i class="fas fa-arrow-right"></i></a>
             </div>
         </div>
+
+        <div class="dashboard-card">
+            <div class="card-content">
+                <div class="card-icon icon-actor"><i class="fas fa-user-astronaut"></i></div>
+                <div class="card-text"><h2>@ViewBag.TotalActors</h2><span>Actors</span></div>
+            </div>
+            <div class="card-action">
+                <a asp-area="Admin" asp-controller="Actors" asp-action="Index" class="btn-manage">Manage Actors <i class="fas fa-arrow-right"></i></a>
+            </div>
+        </div>
+
+        <div class="dashboard-card">
+            <div class="card-content">
+                <div class="card-icon icon-genre"><i class="fas fa-tags"></i></div>
+                <div class="card-text"><h2>@ViewBag.TotalGenres</h2><span>Genres</span></div>
+            </div>
+            <div class="card-action">
+                <a asp-area="Admin" asp-controller="Genres" asp-action="Index" class="btn-manage">Manage Genres <i class="fas fa-arrow-right"></i></a>
+            </div>
+        </div>
+
+        <div class="dashboard-card">
+            <div class="card-content">
+                <div class="card-icon icon-country"><i class="fas fa-globe-americas"></i></div>
+                <div class="card-text"><h2>@ViewBag.TotalCountries</h2><span>Countries</span></div>
+            </div>
+            <div class="card-action">
+                <a asp-area="Admin" asp-controller="Countries" asp-action="Index" class="btn-manage">Manage Countries <i class="fas fa-arrow-right"></i></a>
+            </div>
+        </div>
+
+        <div class="dashboard-card">
+            <div class="card-content">
+                <div class="card-icon icon-language"><i class="fas fa-language"></i></div>
+                <div class="card-text"><h2>@ViewBag.TotalLanguages</h2><span>Languages</span></div>
+            </div>
+            <div class="card-action">
+                <a asp-area="Admin" asp-controller="Languages" asp-action="Index" class="btn-manage">Manage Languages <i class="fas fa-arrow-right"></i></a>
+            </div>
+        </div>
+
     </div>
 </div>

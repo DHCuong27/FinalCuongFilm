@@ -358,8 +358,8 @@
         <div class="pagination-container">
             <ul class="pagination">
                 <li class="page-item @(!Model.HasPreviousPage ? "disabled" : "")">
-                    <a class="page-link" asp-action="Index" asp-route-page="@(Model.PageIndex - 1)">
-                        <i class="zmdi zmdi-chevron-left"></i>
+                    <a class="page-link" asp-action="Index" asp-route-page="@(Model.PageIndex - 1)" style="gap: 6px;">
+                        <i class="zmdi zmdi-chevron-left"></i> Prev
                     </a>
                 </li>
 
@@ -371,8 +371,8 @@
                 }
 
                 <li class="page-item @(!Model.HasNextPage ? "disabled" : "")">
-                    <a class="page-link" asp-action="Index" asp-route-page="@(Model.PageIndex + 1)">
-                        <i class="zmdi zmdi-chevron-right"></i>
+                    <a class="page-link" asp-action="Index" asp-route-page="@(Model.PageIndex + 1)" style="gap: 6px;">
+                        Next <i class="zmdi zmdi-chevron-right"></i>
                     </a>
                 </li>
             </ul>

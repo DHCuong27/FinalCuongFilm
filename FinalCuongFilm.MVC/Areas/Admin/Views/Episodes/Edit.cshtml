@@ -31,6 +31,8 @@
 
     .page-header {
         margin-bottom: 24px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid var(--border-color);
     }
 
     .page-title {
@@ -148,6 +150,19 @@
             color: #94a3b8;
         }
 
+        /* Readonly/Disabled State Styling */
+        .form-control:disabled, .form-control[readonly] {
+            background-color: #f1f5f9;
+            color: #64748b;
+            cursor: not-allowed;
+            border-color: #e2e8f0;
+        }
+
+    textarea.form-control {
+        min-height: 100px;
+        resize: vertical;
+    }
+
     .text-danger {
         color: var(--danger-color);
         font-size: 13px;
@@ -184,15 +199,15 @@
         font-family: inherit;
     }
 
-    .btn-primary {
-        background: var(--primary-color);
+    .btn-warning {
+        background: var(--warning-color);
         color: white;
     }
 
-        .btn-primary:hover {
-            background: #1d4ed8;
+        .btn-warning:hover {
+            background: #d97706;
             color: white;
-            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);
         }
 
     .btn-back {
@@ -231,11 +246,12 @@
         <h1 class="page-title">
             <i class="zmdi zmdi-edit"></i> Edit Episode
         </h1>
-        <p class="page-subtitle">Update metadata and link configuration for this episode</p>
+        <p class="page-subtitle">Update metadata and air details for this episode</p>
     </div>
 
     <form asp-action="Edit" method="post" id="editForm">
         <input type="hidden" asp-for="Id" />
+        <input type="hidden" asp-for="MovieId" />
 
         @if (!ViewData.ModelState.IsValid)
         {
@@ -252,7 +268,24 @@
 
         <div class="form-card">
             <div class="form-card-header">
-                <i class="zmdi zmdi-info-outline"></i> Basic Information
+                <i class="zmdi zmdi-movie"></i> Parent Series Context
+            </div>
+            <div class="form-card-body" style="padding-bottom: 12px;">
+                <div class="form-grid">
+                    <div class="form-group form-col-full">
+                        <label class="form-label">Associated Series</label>
+                        <select class="form-control" asp-items="ViewBag.MovieId" disabled>
+                            <option value="">-- Locked --</option>
+                        </select>
+                        <span class="form-hint"><i class="zmdi zmdi-lock"></i> For data integrity, moving an existing episode to a different series is not permitted.</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-card">
+            <div class="form-card-header">
+                <i class="zmdi zmdi-info-outline"></i> Episode Information
             </div>
             <div class="form-card-body">
                 <div class="form-grid">
@@ -264,13 +297,19 @@
 
                     <div class="form-group">
                         <label class="form-label">Title <span class="req">*</span></label>
-                        <input asp-for="Title" class="form-control" placeholder="e.g. Episode 1: The Beginning" />
+                        <input asp-for="Title" class="form-control" placeholder="e.g. Winter Is Coming" />
                         <span asp-validation-for="Title" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group form-col-full">
+                        <label class="form-label">Episode Synopsis</label>
+                        <textarea asp-for="Description" class="form-control" placeholder="Brief summary of what happens in this episode..."></textarea>
+                        <span asp-validation-for="Description" class="text-danger"></span>
                     </div>
 
                     <div class="form-group">
                         <label class="form-label">Duration (minutes)</label>
-                        <input asp-for="DurationMinutes" class="form-control" type="number" placeholder="e.g. 120" />
+                        <input asp-for="DurationMinutes" class="form-control" type="number" placeholder="e.g. 45" />
                         <span asp-validation-for="DurationMinutes" class="text-danger"></span>
                     </div>
 
@@ -283,29 +322,11 @@
             </div>
         </div>
 
-        <div class="form-card">
-            <div class="form-card-header">
-                <i class="zmdi zmdi-movie"></i> Movie Assignment
-            </div>
-            <div class="form-card-body">
-                <div class="form-grid">
-                    <div class="form-group form-col-full">
-                        <label class="form-label">Associated Movie <span class="req">*</span></label>
-                        <select asp-for="MovieId" class="form-control" asp-items="ViewBag.MovieId">
-                            <option value="">-- Select Movie --</option>
-                        </select>
-                        <span class="form-hint">Ensure this is linked to the correct 'Series' movie.</span>
-                        <span asp-validation-for="MovieId" class="text-danger"></span>
-                    </div>
-                </div>
-            </div>
-        </div>
-
         <div class="action-bar">
-            <button type="submit" class="btn-custom btn-primary" id="submitBtn">
-                <i class="zmdi zmdi-check"></i> Save Changes
+            <button type="submit" class="btn-custom btn-warning" id="submitBtn">
+                <i class="zmdi zmdi-edit"></i> Save Changes
             </button>
-            <a asp-action="Index" class="btn-custom btn-back">
+            <a asp-action="Index" asp-route-movieId="@Model.MovieId" class="btn-custom btn-back">
                 <i class="zmdi zmdi-arrow-left"></i> Cancel
             </a>
         </div>
@@ -316,4 +337,14 @@
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Prevent multiple submissions
+            document.getElementById('editForm').addEventListener('submit', () => {
+                const btn = document.getElementById('submitBtn');
+                btn.innerHTML = '<i class="zmdi zmdi-spinner zmdi-hc-spin"></i> Saving...';
+                btn.disabled = true;
+            });
+        });
+    </script>
 }

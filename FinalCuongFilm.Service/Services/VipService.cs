@@ -136,50 +136,61 @@ namespace FinalCuongFilm.Service.Services
 		}
 		public async Task CompleteTransactionAsync(Guid transactionId, bool isSuccess)
 		{
+			// 1. Lấy giao dịch
 			var transaction = await _context.Transactions.FindAsync(transactionId);
 
-			// Nếu giao dịch đã xử lý rồi thì bỏ qua, tránh cộng dồn ngày nhiều lần
+			// Idempotency check: Tránh xử lý đúp nếu ZaloPay gọi webhook nhiều lần
 			if (transaction == null || transaction.Status != FinalCuongFilm.ApplicationCore.Entities.Enum.TransactionStatus.Pending)
 				return;
 
 			if (isSuccess)
 			{
-				transaction.Status = FinalCuongFilm.ApplicationCore.Entities.Enum.TransactionStatus.Success;
-
-				// Lấy gói VIP
+				// 2. PHẢI TÌM ĐƯỢC GÓI VIP TRƯỚC KHI CẬP NHẬT TRẠNG THÁI GIAO DỊCH
 				var package = await _context.VipPackages.FindAsync(transaction.PackageId);
-				if (package != null)
-				{
-					// Kiểm tra user đang có VIP chưa
-					var activeSub = await _context.UserSubscriptions
-						.FirstOrDefaultAsync(s => s.UserId == transaction.UserId && s.IsActive && s.EndDate > DateTime.UtcNow);
 
-					if (activeSub != null)
-					{
-						// Cập nhật gói mới và cộng dồn ngày
-						activeSub.PackageId = package.Id;
-						activeSub.EndDate = activeSub.EndDate.AddDays(package.DurationInDays);
-					}
-					else
-					{
-						// Tạo mới nếu chưa có
-						_context.UserSubscriptions.Add(new UserSubscription
-						{
-							Id = Guid.NewGuid(),
-							UserId = transaction.UserId,
-							PackageId = package.Id,
-							StartDate = DateTime.UtcNow,
-							EndDate = DateTime.UtcNow.AddDays(package.DurationInDays),
-							IsActive = true
-						});
-					}
+				if (package == null)
+				{
+					// LỖI NGHIÊM TRỌNG: Đã nhận tiền nhưng gói VIP không tồn tại.
+					// Phải ghi nhận lại để Admin check tay, KHÔNG ĐƯỢC để Success.
+					transaction.Status = FinalCuongFilm.ApplicationCore.Entities.Enum.TransactionStatus.Failed;
+					transaction.OrderInfo += " [LỖI HỆ THỐNG: KHÔNG TÌM THẤY GÓI VIP ĐỂ CẤP CHO USER]";
+					await _context.SaveChangesAsync();
+					return;
 				}
+
+				// 3. Xử lý cấp VIP an toàn
+				var activeSub = await _context.UserSubscriptions
+					.FirstOrDefaultAsync(s => s.UserId == transaction.UserId && s.IsActive && s.EndDate > DateTime.UtcNow);
+
+				if (activeSub != null)
+				{
+					// Cập nhật gói mới và cộng dồn ngày
+					activeSub.PackageId = package.Id;
+					activeSub.EndDate = activeSub.EndDate.AddDays(package.DurationInDays);
+				}
+				else
+				{
+					// Tạo mới nếu chưa có hoặc gói cũ đã hết hạn
+					_context.UserSubscriptions.Add(new UserSubscription
+					{
+						Id = Guid.NewGuid(),
+						UserId = transaction.UserId,
+						PackageId = package.Id,
+						StartDate = DateTime.UtcNow,
+						EndDate = DateTime.UtcNow.AddDays(package.DurationInDays),
+						IsActive = true
+					});
+				}
+
+				// 4. MỌI THỨ ĐÃ AN TOÀN -> ĐÁNH DẤU SUCCESS
+				transaction.Status = FinalCuongFilm.ApplicationCore.Entities.Enum.TransactionStatus.Success;
 			}
 			else
 			{
 				transaction.Status = FinalCuongFilm.ApplicationCore.Entities.Enum.TransactionStatus.Failed;
 			}
 
+			// Lưu lại toàn bộ thay đổi (Transaction và Subscription) trong 1 lần commit
 			await _context.SaveChangesAsync();
 		}
 	}

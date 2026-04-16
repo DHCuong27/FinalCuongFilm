@@ -227,12 +227,12 @@ namespace FinalCuongFilm.DataLayer
 			{
 				entity.ToTable("Transactions");
 				entity.HasKey(x => x.Id);
-				entity.Property(x => x.UserId).IsRequired().HasMaxLength(450); // Khớp với IdentityUser Id
+
+				entity.Property(x => x.UserId).IsRequired().HasMaxLength(450);
 				entity.Property(x => x.Amount).HasColumnType("decimal(18,2)").IsRequired();
 				entity.Property(x => x.OrderInfo).HasMaxLength(500);
 				entity.Property(x => x.PaymentMethod).HasMaxLength(50).HasDefaultValue("ZALOPAY");
 
-				// Ép kiểu Enum TransactionStatus thành String lưu trong CSDL
 				entity.Property(x => x.Status)
 					  .HasConversion<string>()
 					  .HasMaxLength(50)
@@ -242,6 +242,13 @@ namespace FinalCuongFilm.DataLayer
 
 				entity.HasIndex(x => x.UserId);
 				entity.HasIndex(x => x.TransactionDate);
+
+				// THE CRITICAL FIX: Explicitly define the Foreign Key relationship
+				entity.HasOne(x => x.User)
+					  .WithMany()
+					  .HasForeignKey(x => x.UserId)
+					  .IsRequired()
+					  .OnDelete(DeleteBehavior.Cascade);
 			});
 
 			// Cấu hình bảng UserSubscription

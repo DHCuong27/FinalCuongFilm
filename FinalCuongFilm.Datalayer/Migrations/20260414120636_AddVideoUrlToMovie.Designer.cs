@@ -4,6 +4,7 @@ using FinalCuongFilm.DataLayer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FinalCuongFilm.Datalayer.Migrations
 {
     [DbContext(typeof(CuongFilmDbContext))]
-    partial class CuongFilmDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260414120636_AddVideoUrlToMovie")]
+    partial class AddVideoUrlToMovie
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -872,17 +875,6 @@ namespace FinalCuongFilm.Datalayer.Migrations
                     b.Navigation("Movie");
                 });
 
-            modelBuilder.Entity("FinalCuongFilm.ApplicationCore.Entities.Transaction", b =>
-                {
-                    b.HasOne("FinalCuongFilm.ApplicationCore.Entities.Identity.CuongFilmUser", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("FinalCuongFilm.ApplicationCore.Entities.UserSubscription", b =>
                 {
                     b.HasOne("FinalCuongFilm.ApplicationCore.Entities.VipPackage", null)
@@ -890,14 +882,6 @@ namespace FinalCuongFilm.Datalayer.Migrations
                         .HasForeignKey("PackageId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
-
-                    b.HasOne("FinalCuongFilm.ApplicationCore.Entities.Identity.CuongFilmUser", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("FinalCuongFilm.ApplicationCore.Entities.WatchHistory", b =>

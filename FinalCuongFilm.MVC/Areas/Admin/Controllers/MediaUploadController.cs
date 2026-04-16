@@ -34,8 +34,9 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 		}
 
 		// GET: Admin/MediaUpload/Index
-		public async Task<IActionResult> Index(Guid? movieId, Guid? episodeId, string fileType = null)
+		public async Task<IActionResult> Index(Guid? movieId, Guid? episodeId, string fileType = null, int page = 1)
 		{
+			int pageSize = 10; // Số lượng file hiển thị trên 1 trang
 			IEnumerable<MediaFileDto> mediaFiles;
 
 			if (episodeId.HasValue)
@@ -58,14 +59,34 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 				mediaFiles = await _mediaFileService.GetAllAsync();
 			}
 
-			// Filter by file type if specified
+			// Lọc theo file type nếu có
 			if (!string.IsNullOrEmpty(fileType))
 			{
 				mediaFiles = mediaFiles.Where(m => m.FileType == fileType);
 			}
+	
+			// XỬ LÝ PHÂN TRANG (PAGINATION LOGIC)
+		
+			int totalItems = mediaFiles.Count();
+			int totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
 
+			// Đảm bảo page không bị âm hoặc vượt quá tổng số trang
+			page = page < 1 ? 1 : page;
+			page = page > totalPages && totalPages > 0 ? totalPages : page;
+
+			// Cắt dữ liệu cho trang hiện tại
+			var pagedMediaFiles = mediaFiles
+				.Skip((page - 1) * pageSize)
+				.Take(pageSize)
+				.ToList();
+
+			ViewBag.CurrentPage = page;
+			ViewBag.TotalPages = totalPages;
+			ViewBag.TotalItems = totalItems;
 			ViewBag.FileType = fileType;
-			return View(mediaFiles);
+
+			// Trả về danh sách đã được cắt gọn (pagedMediaFiles)
+			return View(pagedMediaFiles);
 		}
 
 		// GET: Admin/MediaUpload/Details/{id}

@@ -15,7 +15,7 @@ namespace FinalCuongFilm.Service.Interfaces
 		Task<bool> ExistsAsync(string blobUrl);
 		Task<BlobMetadata> GetMetadataAsync(string blobUrl);
 		Task<string> UploadStreamAsync(Stream stream, string fileName, string folderPath);
-		string GetSecureDownloadLink(string fileUrl, string containerName = "videos");
+		//string GetSecureDownloadLink(string fileUrl, string containerName = "videos");
 	}
 
 

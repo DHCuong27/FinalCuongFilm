@@ -977,18 +977,26 @@
                     <a href="/Movie/Watch/@Model.Movie.Slug" class="btn-hero btn-hero-primary">
                         <i class="fas fa-play"></i> Watch Now
                     </a>
-                    @if (Model.IsVipOnly && !isVip)
+
+                    @if (Model.IsVipOnly)
                     {
-                        <a href="/Premium" class="btn btn-warning">
-                            <i class="fa fa-crown"></i> Nâng cấp VIP để Tải
+                        <a asp-controller="Movie" asp-action="Download" asp-route-id="@Model.Movie.Id" class="btn btn-warning text-dark">
+                            <i class="fa-solid fa-lock"></i> Premium Download
                         </a>
+                    }
+                    @if (TempData["Error"] != null)
+                    {
+                        <div style="background-color: #ff4d4f; color: white; padding: 15px; border-radius: 8px; margin-bottom: 20px; font-weight: bold; font-size: 16px;">
+                            <i class="fa-solid fa-triangle-exclamation"></i> LỖI TẢI PHIM: @TempData["Error"]
+                        </div>
                     }
                     else
                     {
-                        <a asp-controller="Movie" asp-action="Download" asp-route-id="@Model.Movie.Id" class="btn btn-secondary">
-                            <i class="fa fa-download"></i> Download
+                        <a asp-controller="Movie" asp-action="Download" asp-route-id="@Model.Movie.Id" class="btn btn-success">
+                            <i class="fa-solid fa-download"></i> Free Download
                         </a>
                     }
+                  
                     @if (!string.IsNullOrEmpty(Model.Movie.TrailerUrl))
                     {
                         <a href="@Model.Movie.TrailerUrl" target="_blank" class="btn-hero btn-hero-secondary">

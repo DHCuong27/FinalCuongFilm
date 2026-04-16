@@ -6,12 +6,110 @@
 }
 
 <style>
-    /* Kế thừa lại CSS bảng chuẩn của bạn */
+    :root {
+        --primary-color: #2563eb;
+        --secondary-color: #64748b;
+        --success-bg: #dcfce7;
+        --success-text: #166534;
+        --danger-bg: #fee2e2;
+        --danger-text: #991b1b;
+        --text-dark: #1e293b;
+        --text-muted: #64748b;
+        --border-color: #e2e8f0;
+        --bg-light: #f8fafc;
+        --bg-white: #ffffff;
+        --radius-md: 8px;
+        --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    /* ===== Container & Header ===== */
+    .media-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 24px 20px;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 16px;
+        margin-bottom: 24px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .page-title {
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--text-dark);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    /* ===== Search Bar ===== */
+    .search-bar {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+        align-items: center;
+    }
+
+    .search-input {
+        padding: 10px 15px;
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        width: 350px;
+        outline: none;
+        transition: border-color 0.2s;
+        font-size: 14px;
+    }
+
+        .search-input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+    .btn-search {
+        background: var(--primary-color);
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 14px;
+        transition: all 0.2s;
+    }
+
+        .btn-search:hover {
+            background: #1d4ed8;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+        }
+
+    .btn-clear {
+        padding: 10px 15px;
+        color: var(--text-muted);
+        text-decoration: none;
+        font-weight: 500;
+        font-size: 14px;
+        transition: color 0.2s;
+    }
+
+        .btn-clear:hover {
+            color: var(--danger-text);
+        }
+
+    /* ===== Table Styling ===== */
     .table-container {
-        background: #fff;
-        border-radius: 8px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        border: 1px solid #e2e8f0;
+        background: var(--bg-white);
+        border-radius: var(--radius-md);
+        box-shadow: var(--shadow-sm);
+        border: 1px solid var(--border-color);
         overflow: hidden;
     }
 
@@ -20,26 +118,34 @@
         border-collapse: collapse;
     }
 
+        .data-table thead {
+            background: var(--bg-light);
+            border-bottom: 2px solid var(--border-color);
+        }
+
         .data-table th {
             padding: 14px 16px;
             text-align: left;
             font-size: 13px;
             font-weight: 600;
-            color: #64748b;
-            background: #f8fafc;
-            border-bottom: 2px solid #e2e8f0;
+            color: var(--text-muted);
             text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .data-table td {
             padding: 16px;
-            border-bottom: 1px solid #e2e8f0;
+            border-bottom: 1px solid var(--border-color);
             vertical-align: middle;
             font-size: 14px;
-            color: #1e293b;
+            color: var(--text-dark);
         }
 
-    /* User Specific CSS */
+        .data-table tbody tr:hover {
+            background: #f8fafc;
+        }
+
+    /* ===== User Profile & Badges ===== */
     .user-profile {
         display: flex;
         align-items: center;
@@ -51,8 +157,8 @@
         height: 40px;
         border-radius: 50%;
         object-fit: cover;
-        background: #e2e8f0;
-        border: 2px solid #fff;
+        background: var(--bg-light);
+        border: 2px solid var(--bg-white);
         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
 
@@ -63,34 +169,34 @@
 
     .user-name {
         font-weight: 600;
-        color: #1e293b;
+        color: var(--text-dark);
     }
 
     .user-email {
         font-size: 13px;
-        color: #64748b;
+        color: var(--text-muted);
     }
 
     .role-badge {
-        background: #f1f5f9;
+        background: var(--bg-light);
         color: #475569;
         padding: 4px 8px;
         border-radius: 4px;
         font-size: 12px;
         font-weight: 500;
         margin-right: 4px;
-        border: 1px solid #e2e8f0;
+        border: 1px solid var(--border-color);
     }
 
     .role-admin {
-        background: #fef2f2;
-        color: #991b1b;
+        background: var(--danger-bg);
+        color: var(--danger-text);
         border-color: #fecaca;
     }
 
     .status-active {
-        color: #166534;
-        background: #dcfce7;
+        color: var(--success-text);
+        background: var(--success-bg);
         padding: 4px 10px;
         border-radius: 20px;
         font-size: 12px;
@@ -98,45 +204,73 @@
     }
 
     .status-locked {
-        color: #991b1b;
-        background: #fee2e2;
+        color: var(--danger-text);
+        background: var(--danger-bg);
         padding: 4px 10px;
         border-radius: 20px;
         font-size: 12px;
         font-weight: 600;
     }
 
-    /* Search Bar */
-    .search-bar {
+    /* ===== Action Buttons ===== */
+    .action-group {
         display: flex;
-        gap: 10px;
-        margin-bottom: 20px;
+        gap: 8px;
+        justify-content: center;
     }
 
-    .search-input {
-        padding: 10px 15px;
-        border: 1px solid #e2e8f0;
+    .action-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding: 6px 12px;
         border-radius: 6px;
-        width: 300px;
-        outline: none;
-        transition: border-color 0.2s;
+        font-size: 13px;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.2s;
+        border: 1px solid var(--border-color);
+        background: var(--bg-light);
+        color: var(--text-muted);
+        cursor: pointer;
     }
 
-        .search-input:focus {
-            border-color: #2563eb;
+        .action-btn:hover {
+            background: var(--bg-white);
         }
 
-    .btn-search {
-        background: #2563eb;
-        color: white;
-        border: none;
-        padding: 10px 20px;
-        border-radius: 6px;
-        cursor: pointer;
-        font-weight: 600;
+    .btn-lock:hover {
+        color: var(--danger-text);
+        border-color: var(--danger-text);
+        background: var(--danger-bg);
     }
 
-    /* BỔ SUNG: CSS cho thanh phân trang */
+    .btn-unlock {
+        background: var(--success-bg);
+        color: var(--success-text);
+        border-color: #bbf7d0;
+    }
+
+        .btn-unlock:hover {
+            background: #bbf7d0;
+            border-color: var(--success-text);
+        }
+
+    .btn-roles:hover {
+        color: var(--primary-color);
+        border-color: var(--primary-color);
+    }
+
+    /* ===== Pagination CSS ===== */
+    .pagination-container {
+        padding: 16px;
+        display: flex;
+        justify-content: center;
+        background: var(--bg-white);
+        border-top: 1px solid var(--border-color);
+    }
+
     .pagination {
         display: flex;
         list-style: none;
@@ -152,26 +286,26 @@
         min-width: 36px;
         height: 36px;
         padding: 0 12px;
-        border: 1px solid #e2e8f0;
+        border: 1px solid var(--border-color);
         border-radius: 6px;
-        color: #1e293b;
+        color: var(--text-dark);
         text-decoration: none;
         font-size: 14px;
         font-weight: 500;
         transition: all 0.2s;
-        background: #fff;
+        background: var(--bg-white);
     }
 
         .page-item .page-link:hover {
-            background: #f8fafc;
-            color: #2563eb;
-            border-color: #2563eb;
+            background: var(--bg-light);
+            color: var(--primary-color);
+            border-color: var(--primary-color);
         }
 
     .page-item.active .page-link {
-        background: #2563eb;
+        background: var(--primary-color);
         color: white;
-        border-color: #2563eb;
+        border-color: var(--primary-color);
     }
 
     .page-item.disabled .page-link {
@@ -181,117 +315,138 @@
     }
 </style>
 
-<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
-    <h1 style="font-size: 24px; font-weight: 700; margin: 0;"><i class="zmdi zmdi-accounts"></i> @ViewData["Title"]</h1>
-</div>
+<div class="media-container">
+    <div class="page-header">
+        <h1 class="page-title">
+            <i class="zmdi zmdi-accounts"></i> @ViewData["Title"]
+        </h1>
+    </div>
 
-<form asp-action="Index" method="get" class="search-bar">
-    <input type="text" name="searchString" value="@ViewBag.SearchString" class="search-input" placeholder="Search by name or email..." />
-    <button type="submit" class="btn-search"><i class="zmdi zmdi-search"></i> Search</button>
-    @if (!string.IsNullOrEmpty(ViewBag.SearchString))
-    {
-        <a asp-action="Index" style="padding: 10px 15px; color: #64748b; text-decoration: none;">Clear</a>
-    }
-</form>
+    <form asp-action="Index" method="get" class="search-bar">
+        <input type="text" name="searchString" value="@ViewBag.SearchString" class="search-input" placeholder="Search by name or email..." />
+        <button type="submit" class="btn-search"><i class="zmdi zmdi-search"></i> Search</button>
+        @if (!string.IsNullOrEmpty(ViewBag.SearchString))
+        {
+            <a asp-action="Index" class="btn-clear"><i class="zmdi zmdi-close"></i> Clear Filter</a>
+        }
+    </form>
 
-<div class="table-container">
-    <table class="data-table">
-        <thead>
-            <tr>
-                <th>User</th>
-                <th>Roles</th>
-                <th>Joined Date</th>
-                <th>Status</th>
-                <th style="text-align: center;">Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var user in Model.Items)
+    <div class="table-container">
+        @if (Model != null && Model.Items != null && Model.Items.Any())
+        {
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>User Information</th>
+                        <th>Assigned Roles</th>
+                        <th>Joined Date</th>
+                        <th>Account Status</th>
+                        <th style="text-align: center;">Administrative Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var user in Model.Items)
+                    {
+                        <tr>
+                            <td>
+                                <div class="user-profile">
+                                    <img src="@(string.IsNullOrEmpty(user.AvatarUrl) ? "/img/avatar.jpg" : user.AvatarUrl)" alt="Avatar" class="user-avatar" />
+                                    <div class="user-info">
+                                        <span class="user-name">@user.FullName</span>
+                                        <span class="user-email">@user.Email</span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                @if (user.Roles != null && user.Roles.Contains("Admin"))
+                                {
+                                    <span class="role-badge role-admin">
+                                        <i class="zmdi zmdi-star"></i> Admin
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="role-badge">
+                                        <i class="zmdi zmdi-account"></i> Member
+                                    </span>
+                                }
+                            </td>
+                            <td>
+                                <i class="zmdi zmdi-calendar" style="color: var(--text-muted);"></i>
+                                @(user.CreatedAt != DateTime.MinValue ? user.CreatedAt.ToString("dd/MM/yyyy") : "—")
+                            </td>
+                            <td>
+                                @if (user.IsActive)
+                                {
+                                    <span class="status-active"><i class="zmdi zmdi-check-circle"></i> Active</span>
+                                }
+                                else
+                                {
+                                    <span class="status-locked"><i class="zmdi zmdi-lock"></i> Locked</span>
+                                }
+                            </td>
+                            <td>
+                                <div class="action-group">
+                                    @if (user.IsActive)
+                                    {
+                                        <form asp-action="LockUser" asp-route-id="@user.Id" method="post" style="margin: 0;" onsubmit="return confirm('Are you sure you want to suspend this user account?');">
+                                            <button type="submit" class="action-btn btn-lock" title="Suspend Account">
+                                                <i class="zmdi zmdi-lock"></i> Suspend
+                                            </button>
+                                        </form>
+                                    }
+                                    else
+                                    {
+                                        <form asp-action="UnlockUser" asp-route-id="@user.Id" method="post" style="margin: 0;">
+                                            <button type="submit" class="action-btn btn-unlock" title="Restore Account">
+                                                <i class="zmdi zmdi-lock-open"></i> Restore
+                                            </button>
+                                        </form>
+                                    }
+
+                                    <a asp-action="ManageRoles" asp-route-userId="@user.Id" class="action-btn btn-roles" title="Manage Security Roles">
+                                        <i class="zmdi zmdi-shield-security"></i> Roles
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            @if (Model.TotalPages > 1)
             {
-                <tr>
-                    <td>
-                        <div class="user-profile">
-                            <img src="@(string.IsNullOrEmpty(user.AvatarUrl) ? "/img/avatar.jpg" : user.AvatarUrl)"
-                                 alt="@user.FullName" class="user-avatar" />
+                <div class="pagination-container">
+                    <ul class="pagination">
+                        <li class="page-item @(Model.PageIndex <= 1 ? "disabled" : "")">
+                            <a class="page-link" asp-action="Index" asp-route-searchString="@ViewBag.SearchString" asp-route-page="@(Model.PageIndex - 1)" style="gap: 6px;">
+                                <i class="zmdi zmdi-chevron-left"></i> Prev
+                            </a>
+                        </li>
 
-                            <div class="user-info">
-                                <span class="user-name">@user.FullName</span>
-                                <span class="user-email">@user.Email</span>
-                            </div>
-                        </div>
-                    </td>
-                    <td>
-                        @if (user.Roles.Any())
+                        @for (int i = 1; i <= Model.TotalPages; i++)
                         {
-                            foreach (var role in user.Roles)
-                            {
-                                <span class="role-badge @(role == "Admin" ? "role-admin" : "")">@role</span>
-                            }
-                        }
-                        else
-                        {
-                            <span class="role-badge">Member</span>
-                        }
-                    </td>
-                    <td>
-                        <i class="zmdi zmdi-calendar" style="color: #64748b;"></i> @user.CreatedAt.ToString("dd/MM/yyyy")
-                    </td>
-                    <td>
-                        @if (user.IsActive)
-                        {
-                            <span class="status-active"><i class="zmdi zmdi-check-circle"></i> Active</span>
-                        }
-                        else
-                        {
-                            <span class="status-locked"><i class="zmdi zmdi-lock"></i> Locked</span>
-                        }
-                    </td>
-                    <td style="text-align: center;">
-                        @if (user.IsActive)
-                        {
-                            <form asp-action="LockUser" asp-route-id="@user.Id" method="post" style="display:inline;" onsubmit="return confirm('Are you sure you want to lock this user?');">
-                                <button type="submit" class="role-badge role-admin" style="cursor: pointer;" title="Lock Account">
-                                    <i class="zmdi zmdi-lock"></i> Lock
-                                </button>
-                            </form>
-                        }
-                        else
-                        {
-                            <form asp-action="UnlockUser" asp-route-id="@user.Id" method="post" style="display:inline;">
-                                <button type="submit" class="role-badge" style="cursor: pointer; background: #dcfce7; color: #166534; border-color: #bbf7d0;" title="Unlock Account">
-                                    <i class="zmdi zmdi-lock-open"></i> Unlock
-                                </button>
-                            </form>
+                            <li class="page-item @(i == Model.PageIndex ? "active" : "")">
+                                <a class="page-link" asp-action="Index" asp-route-searchString="@ViewBag.SearchString" asp-route-page="@i">@i</a>
+                            </li>
                         }
 
-                        <a asp-action="ManageRoles" asp-route-userId="@user.Id" class="role-badge" style="cursor: pointer; text-decoration: none; display: inline-block;">
-                            <i class="zmdi zmdi-shield-security"></i> Roles
-                        </a>
-                    </td>
-                </tr>
+                        <li class="page-item @(Model.PageIndex >= Model.TotalPages ? "disabled" : "")">
+                            <a class="page-link" asp-action="Index" asp-route-searchString="@ViewBag.SearchString" asp-route-page="@(Model.PageIndex + 1)" style="gap: 6px;">
+                                Next <i class="zmdi zmdi-chevron-right"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
             }
-        </tbody>
-    </table>
-
-    @if (Model.TotalPages > 1)
-    {
-        <div style="padding: 16px; border-top: 1px solid #e2e8f0; display: flex; justify-content: center;">
-            <ul class="pagination">
-                <li class="page-item @(Model.PageIndex <= 1 ? "disabled" : "")">
-                    <a class="page-link" asp-action="Index" asp-route-searchString="@ViewBag.SearchString" asp-route-page="@(Model.PageIndex - 1)">Previous</a>
-                </li>
-
-                @for (int i = 1; i <= Model.TotalPages; i++)
-                {
-                    <li class="page-item @(i == Model.PageIndex ? "active" : "")">
-                        <a class="page-link" asp-action="Index" asp-route-searchString="@ViewBag.SearchString" asp-route-page="@i">@i</a>
-                    </li>
-                }
-
-                <li class="page-item @(Model.PageIndex >= Model.TotalPages ? "disabled" : "")">
-                    <a class="page-link" asp-action="Index" asp-route-searchString="@ViewBag.SearchString" asp-route-page="@(Model.PageIndex + 1)">Next</a>
-                </li>
-            </ul>
-        </div>
-    }
+        }
+        else
+        {
+            <div style="text-align: center; padding: 60px 20px; background: var(--bg-white); border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+                <i class="zmdi zmdi-accounts-alt" style="font-size: 64px; color: #cbd5e1; margin-bottom: 16px; display: block;"></i>
+                <h3 style="margin: 0 0 8px; color: var(--text-dark);">No Users Found</h3>
+                <p style="color: var(--text-muted); margin-bottom: 0;">Try adjusting your search filters to find the account.</p>
+            </div>
+        }
+    </div>
 </div>
