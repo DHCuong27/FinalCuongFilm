@@ -6,7 +6,7 @@
 
     // Lấy Avatar từ Model, nếu null thì dùng ảnh mặc định
     var userAvatar = Model?.AvatarUrl ?? "/img/avatar.jpg";
-    var currentVip = ViewBag.CurrentVip;
+    var currentVip = ViewBag.CurrentVip as FinalCuongFilm.ApplicationCore.Entities.UserSubscription;
 }
 }
 
@@ -282,40 +282,55 @@
                     </span>
                 </div>
             </div>
-            <div class="card mt-3">
 
-                <div class="card-body">
-                    <h5 class="card-title">Your service package</h5>
+            <div class="profile-card d-flex justify-content-between align-items-center flex-wrap gap-3">
+                <div>
+                    <h3 class="profile-card-header mb-2" style="border-bottom: none; padding-bottom: 0;">Subscription Plan</h3>
 
-                    @if (currentVip != null)
-
+                    @if (currentVip != null && currentVip.EndDate > DateTime.UtcNow)
                     {
-
+                        // USER IS VIP
                         var daysLeft = (currentVip.EndDate - DateTime.UtcNow).Days;
 
-                        <div class="alert alert-success">
-                            <i class="fa fa-crown"></i>Currently using Premium package
+                        <div class="d-flex align-items-center gap-3 mt-1">
+                            <span class="badge bg-warning text-dark rounded-pill px-3 py-2" style="font-size: 0.85rem; font-weight: 700; letter-spacing: 0.5px;">
+                                <i class="fa fa-crown me-1"></i> VIP PREMIUM
+                            </span>
+                            <span style="color: var(--nf-text-muted); font-size: 0.95rem;">
+                                Valid until <strong class="text-white">@currentVip.EndDate.ToString("MMM dd, yyyy")</strong>
 
-                            <br />
-
-                            <strong>Expiration date:</strong> @currentVip.EndDate.ToString("dd/MM/yyyy") (Remaining @daysLeft days)
-
+                                @if (daysLeft > 0)
+                                {
+                                    <span class="ms-1">(@daysLeft days remaining)</span>
+                                }
+                                else
+                                {
+                                    <span class="ms-1 text-danger">(Expires today)</span>
+                                }
+                            </span>
                         </div>
-
-                        <a href="/Premium" class="btn btn-warning btn-sm">Extend further</a>
-
                     }
-
                     else
                     {
-
-                        <div class="alert alert-secondary">
-                            You are using a Free account.
-
+                        // USER IS FREE
+                        <div class="d-flex align-items-center gap-3 mt-1">
+                            <span class="badge bg-secondary rounded-pill px-3 py-2" style="font-size: 0.85rem; font-weight: 600; letter-spacing: 0.5px;">
+                                FREE PLAN
+                            </span>
+                            <span style="color: var(--nf-text-muted); font-size: 0.95rem;">
+                                Upgrade to unlock exclusive movies and features.
+                            </span>
                         </div>
-
-                        <a href="/Premium" class="btn btn-primary btn-sm">Upgrade to Premium</a>
-
+                    }
+                </div>
+                <div>
+                    @if (currentVip != null && currentVip.EndDate > DateTime.UtcNow)
+                    {
+                        <a href="/Premium" class="btn-nf-secondary" style="border-color: #ffc107; color: #ffc107;">Extend Plan</a>
+                    }
+                    else
+                    {
+                        <a href="/Premium" class="btn-nf-primary">Upgrade to VIP</a>
                     }
                 </div>
             </div>

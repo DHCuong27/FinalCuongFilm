@@ -4,9 +4,6 @@ using Azure.Storage.Sas;
 using FinalCuongFilm.DataLayer;
 using FinalCuongFilm.MVC.Models.ViewModels;
 using FinalCuongFilm.Service.Interfaces;
-using Azure.Storage.Blobs.Models;
-using FinalCuongFilm.Service.Services;
-using Humanizer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -36,7 +33,7 @@ namespace FinalCuongFilm.MVC.Controllers
 			IReviewService reviewService, IEpisodeService episodeService,
 			IMediaFileService mediaFileService, IGenreService genreService,
 			ICountryService countryService, IActorService actorService,
-			IVipService vipService,IAzureBlobService azureBlobService, CuongFilmDbContext context, IConfiguration configuration, IWebHostEnvironment env, ILogger<MovieController> logger)
+			IVipService vipService, IAzureBlobService azureBlobService, CuongFilmDbContext context, IConfiguration configuration, IWebHostEnvironment env, ILogger<MovieController> logger)
 		{
 			_movieService = movieService; _favoriteService = favoriteService;
 			_reviewService = reviewService; _episodeService = episodeService;
@@ -265,7 +262,7 @@ namespace FinalCuongFilm.MVC.Controllers
 					var allActors = await _actorService.GetAllAsync();
 					actors = allActors.Where(a => movie.SelectedActorIds.Contains(a.Id)).ToList();
 				}
-						
+
 				if (userId != null)
 				{
 					try

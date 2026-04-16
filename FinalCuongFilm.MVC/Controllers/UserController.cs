@@ -2,6 +2,7 @@
 using FinalCuongFilm.Common.DTOs;
 using FinalCuongFilm.DataLayer;
 using FinalCuongFilm.Service.Interfaces;
+using FinalCuongFilm.Service.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -16,23 +17,26 @@ namespace FinalCuongFilm.MVC.Controllers
 		private readonly IFavoriteService _favoriteService;
 		private readonly UserManager<CuongFilmUser> _userManager;
 		private readonly CuongFilmDbContext _context;
+		private readonly IVipService _vipService;
 
 
 		// Bổ sung thêm _historyService nếu bạn có bảng lưu lịch sử xem phim
 
 
-		public UserController(CuongFilmDbContext context, UserManager<CuongFilmUser> userManager, IFavoriteService favoriteService)
+		public UserController(CuongFilmDbContext context, UserManager<CuongFilmUser> userManager, IVipService vipService, IFavoriteService favoriteService)
 		{
 			_userManager = userManager;
 			_favoriteService = favoriteService;
 			_context = context;
+			_vipService = vipService;
 		}
 
 		// GET: /User/Profile
 		// 1. HÀM GET PROFILE (Phải lấy user ném ra View)
+		[HttpGet]
 		public async Task<IActionResult> Profile()
 		{
-			// Lấy thông tin user ĐANG ĐĂNG NHẬP từ Database
+			// 1. Get the currently logged-in user from the Database
 			var user = await _userManager.GetUserAsync(User);
 
 			if (user == null)
@@ -40,7 +44,13 @@ namespace FinalCuongFilm.MVC.Controllers
 				return RedirectToPage("/Account/Login", new { area = "Identity" });
 			}
 
-			// Quăng nguyên cục user này ra View để View đọc được AvatarUrl
+			// 2. CRITICAL FIX: Fetch the active VIP subscription using the user's ID
+			var currentVip = await _vipService.GetCurrentUserSubscriptionAsync(user.Id);
+
+			// 3. Pass the VIP data to the View via ViewBag
+			ViewBag.CurrentVip = currentVip;
+
+			// 4. Return the View WITH the user model so AvatarUrl and FullName work perfectly
 			return View(user);
 		}
 

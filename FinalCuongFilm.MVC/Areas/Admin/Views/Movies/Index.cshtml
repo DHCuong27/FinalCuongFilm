@@ -572,26 +572,26 @@
             </table>
         </div>
 
-        @if (Model.TotalPages > 1)
+        @if (Model != null && Model.TotalPages > 1)
         {
             <div class="pagination-container">
                 <ul class="pagination">
                     <li class="page-item @(!Model.HasPreviousPage ? "disabled" : "")">
-                        <a class="page-link" href="@Url.Action("Index", new { page = Model.PageIndex - 1 })">
-                            <i class="zmdi zmdi-chevron-left"></i>
+                        <a class="page-link" asp-action="Index" asp-route-page="@(Model.PageIndex - 1)" style="gap: 6px;">
+                            <i class="zmdi zmdi-chevron-left"></i> Prev
                         </a>
                     </li>
 
                     @for (int i = 1; i <= Model.TotalPages; i++)
                     {
                         <li class="page-item @(i == Model.PageIndex ? "active" : "")">
-                            <a class="page-link" href="@Url.Action("Index", new { page = i })">@i</a>
+                            <a class="page-link" asp-action="Index" asp-route-page="@i">@i</a>
                         </li>
                     }
 
                     <li class="page-item @(!Model.HasNextPage ? "disabled" : "")">
-                        <a class="page-link" href="@Url.Action("Index", new { page = Model.PageIndex + 1 })">
-                            <i class="zmdi zmdi-chevron-right"></i>
+                        <a class="page-link" asp-action="Index" asp-route-page="@(Model.PageIndex + 1)" style="gap: 6px;">
+                            Next <i class="zmdi zmdi-chevron-right"></i>
                         </a>
                     </li>
                 </ul>

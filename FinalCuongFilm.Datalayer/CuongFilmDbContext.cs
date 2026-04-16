@@ -257,18 +257,7 @@ namespace FinalCuongFilm.DataLayer
 				entity.ToTable("UserSubscriptions");
 				entity.HasKey(x => x.Id);
 				entity.Property(x => x.UserId).IsRequired().HasMaxLength(450);
-				entity.Property(x => x.StartDate).HasDefaultValueSql("GETUTCDATE()");
-				entity.Property(x => x.IsActive).HasDefaultValue(true);
 
-				// Liên kết Khóa ngoại với bảng VipPackage
-				entity.HasOne<VipPackage>()
-					  .WithMany()
-					  .HasForeignKey(x => x.PackageId)
-					  .OnDelete(DeleteBehavior.Restrict);
-
-				// Đánh Index để tối ưu tốc độ kiểm tra hạn VIP của User
-				entity.HasIndex(x => x.UserId);
-				entity.HasIndex(x => x.EndDate);
 			});
 		}
 

@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
@@ -16,15 +17,13 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 	public class UserController : Controller
 	{
 		private readonly UserManager<CuongFilmUser> _userManager;
-		private readonly RoleManager<CuongFilmRole> _roleManager;
 
-		// Default avatar path relative to wwwroot
+		// XÓA BỎ RoleManager ở đây vì không cần dùng nữa
 		private const string DefaultAvatarUrl = "/img/avatar.jpg";
 
-		public UserController(UserManager<CuongFilmUser> userManager, RoleManager<CuongFilmRole> roleManager)
+		public UserController(UserManager<CuongFilmUser> userManager)
 		{
 			_userManager = userManager;
-			_roleManager = roleManager;
 		}
 
 		// GET: Admin/User
@@ -49,7 +48,6 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 			var userDtos = new List<UserDto>();
 			foreach (var user in users)
 			{
-				// If LockoutEnd is null or in the past, the user is active
 				bool isActive = user.LockoutEnd == null || user.LockoutEnd <= DateTimeOffset.UtcNow;
 
 				userDtos.Add(new UserDto
@@ -58,10 +56,11 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 					FullName = user.FullName ?? user.UserName,
 					Email = user.Email,
 					AvatarUrl = string.IsNullOrEmpty(user.AvatarUrl) ? DefaultAvatarUrl : user.AvatarUrl,
-					Roles = await _userManager.GetRolesAsync(user),
+					Roles = await _userManager.GetRolesAsync(user), // Vẫn giữ để hiển thị ra View cho biết ai là Admin
 					IsActive = isActive,
-					// If you have a created date on your user model, map it here. Otherwise, map a fallback.
-					// CreatedAt = user.CreatedAt 
+
+					// FIX LỖI JOINED DATE: Mở khóa dòng này để map dữ liệu
+					CreatedAt = user.CreatedAt
 				});
 			}
 
@@ -76,7 +75,6 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 			return View(pagedResult);
 		}
 
-		// POST: Admin/User/LockUser/5
 		[HttpPost]
 		[ValidateAntiForgeryToken]
 		public async Task<IActionResult> LockUser(string id)
@@ -86,22 +84,19 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 			var user = await _userManager.FindByIdAsync(id);
 			if (user == null) return NotFound();
 
-			// Prevent an admin from locking themselves out
 			var currentUser = await _userManager.GetUserAsync(User);
 			if (currentUser != null && currentUser.Id == user.Id)
 			{
-				TempData["Error"] = "Action Denied: You cannot lock your own account.";
+				TempData["Error"] = "Bạn không thể tự khóa tài khoản của chính mình.";
 				return RedirectToAction(nameof(Index));
 			}
 
-			// Lock the account for 100 years (effectively a permanent ban)
 			await _userManager.SetLockoutEndDateAsync(user, DateTimeOffset.UtcNow.AddYears(100));
-			TempData["Success"] = $"Account for {user.Email} has been locked successfully.";
+			TempData["Success"] = $"Đã khóa tài khoản {user.Email} thành công.";
 
 			return RedirectToAction(nameof(Index));
 		}
 
-		// POST: Admin/User/UnlockUser/5
 		[HttpPost]
 		[ValidateAntiForgeryToken]
 		public async Task<IActionResult> UnlockUser(string id)
@@ -111,65 +106,54 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 			var user = await _userManager.FindByIdAsync(id);
 			if (user == null) return NotFound();
 
-			// Clear the lockout end date
 			await _userManager.SetLockoutEndDateAsync(user, null);
-			TempData["Success"] = $"Account for {user.Email} has been unlocked and restored.";
+			TempData["Success"] = $"Đã mở khóa tài khoản {user.Email}.";
 
 			return RedirectToAction(nameof(Index));
 		}
 
-		// GET: Admin/User/ManageRoles?userId=...
-		public async Task<IActionResult> ManageRoles(string userId)
-		{
-			var user = await _userManager.FindByIdAsync(userId);
-			if (user == null) return NotFound();
-
-			var userRoles = await _userManager.GetRolesAsync(user);
-			var allRoles = await _roleManager.Roles.ToListAsync(); // Ensure you injected RoleManager<IdentityRole>
-
-			var model = new ManageUserRolesViewModel
-			{
-				UserId = userId,
-				Email = user.Email,
-				Roles = allRoles.Select(r => new RoleSelection
-				{
-					RoleName = r.Name,
-					IsSelected = userRoles.Contains(r.Name)
-				}).ToList()
-			};
-
-			return View(model);
-		}
-
-		// POST: Admin/User/ManageRoles
 		[HttpPost]
 		[ValidateAntiForgeryToken]
-		public async Task<IActionResult> ManageRoles(ManageUserRolesViewModel model)
+		public async Task<IActionResult> DeleteUser(string id)
 		{
-			var user = await _userManager.FindByIdAsync(model.UserId);
+			if (string.IsNullOrEmpty(id)) return NotFound();
+
+			// 1. Find the target user
+			var user = await _userManager.FindByIdAsync(id);
 			if (user == null) return NotFound();
 
+			// 2. SELF-DELETION PROTECTION
+			// Get the ID of the currently logged-in Admin
+			var currentAdminId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+			if (user.Id == currentAdminId)
+			{
+				TempData["Error"] = "Security Violation: You cannot delete your own administrative account.";
+				return RedirectToAction(nameof(Index));
+			}
+
+			// 3. ADMIN PROTECTION (Optional but recommended)
+			// If you want to prevent Admins from deleting other Admins
 			var roles = await _userManager.GetRolesAsync(user);
-
-			// Remove all current roles
-			var result = await _userManager.RemoveFromRolesAsync(user, roles);
-			if (!result.Succeeded)
+			if (roles.Contains("Admin"))
 			{
-				ModelState.AddModelError("", "Failed to remove existing roles");
-				return View(model);
+				// Special logic: Only allow deletion if there's another check or just block it
+				// TempData["Error"] = "Action Denied: Administrative accounts cannot be deleted via this panel.";
+				// return RedirectToAction(nameof(Index));
 			}
 
-			// Add newly selected roles
-			var selectedRoles = model.Roles.Where(x => x.IsSelected).Select(y => y.RoleName);
-			result = await _userManager.AddToRolesAsync(user, selectedRoles);
+			// 4. Execute Deletion
+			var result = await _userManager.DeleteAsync(user);
 
-			if (!result.Succeeded)
+			if (result.Succeeded)
 			{
-				ModelState.AddModelError("", "Failed to add new roles");
-				return View(model);
+				TempData["Success"] = $"The account {user.Email} has been permanently removed.";
+			}
+			else
+			{
+				TempData["Error"] = "Error: Could not delete user. They might have related data in other tables.";
 			}
 
-			TempData["Success"] = $"Roles updated successfully for {user.Email}";
 			return RedirectToAction(nameof(Index));
 		}
 	}

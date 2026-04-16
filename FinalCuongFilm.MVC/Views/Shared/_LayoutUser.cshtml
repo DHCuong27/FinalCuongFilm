@@ -589,14 +589,16 @@
                                 <div class="dropdown ms-3">
                                     <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" style="text-decoration: none;">
                                         <img src="@avatarUrl" alt="User Avatar" class="user-avatar me-2" style="width: 35px; height: 35px; border-radius: 50%; object-fit: cover; border: 1px solid rgba(255,255,255,0.2);" />
-                                        <span class="d-none d-lg-inline text-white">@User.Identity.Name</span>
+
+                                        <span class="d-none d-lg-inline text-white me-2">@User.Identity.Name</span>
+
+                                        @if (isVip)
+                                        {
+                                            <span class="badge bg-warning text-dark rounded-pill d-flex align-items-center" style="font-size: 0.65rem; padding: 0.35em 0.6em; letter-spacing: 0.5px;">
+                                                <i class="fa fa-crown me-1"></i> VIP
+                                            </span>
+                                        }
                                     </a>
-                                    @if (isVip)
-                                    {
-                                        <span class="badge bg-warning text-dark ms-2" style="border-radius: 12px;">
-                                            <i class="fa fa-crown"></i> PREMIUM
-                                        </span>
-                                    }
 
                                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown" style="background-color: var(--nf-card-bg, #1f1f1f); border: 1px solid var(--nf-border, #333);">
                                         <li>

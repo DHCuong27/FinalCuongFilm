@@ -1042,11 +1042,6 @@
                             <h1 class="featured-title">@movie.Title</h1>
                             <div class="featured-meta-badges">
                                 <span class="badge-outline">HD</span>
-                                @if (movie.ReleaseYear.HasValue)
-                                {
-                                    <span class="badge-outline">@movie.ReleaseYear</span>
-                                    <span class="badge-outline">@movie.GenreName</span>
-                                }
                                 <span class="badge-outline">@(movie.Type.ToString() == "Series" ? "Series" : "Movie")</span>
                             </div>
 

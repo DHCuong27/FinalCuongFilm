@@ -1,73 +1,107 @@
-﻿using FinalCuongFilm.ApplicationCore.Entities;
-using FinalCuongFilm.DataLayer;
-using FinalCuongFilm.Service.Interfaces;
+﻿using FinalCuongFilm.Service.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace FinalCuongFilm.MVC.Controllers
+namespace FinalCuongFilm.API.Controllers
 {
+	// DTO to ensure accurate data binding from ZaloPay's webhook
+	public class ZaloPayCallbackDto
+	{
+		public string data { get; set; } = string.Empty;
+		public string mac { get; set; } = string.Empty;
+		public int type { get; set; }
+	}
+
 	[Route("api/payment")]
 	[ApiController]
 	public class PaymentApiController : ControllerBase
 	{
 		private readonly IVipService _vipService;
 		private readonly IConfiguration _config;
+		private readonly ILogger<PaymentApiController> _logger;
 
-		public PaymentApiController(IVipService vipService, IConfiguration config)
+		public PaymentApiController(
+			IVipService vipService,
+			IConfiguration config,
+			ILogger<PaymentApiController> logger)
 		{
 			_vipService = vipService;
 			_config = config;
+			_logger = logger;
 		}
 
-
 		[HttpPost("zalopay-callback")]
-		public async Task<IActionResult> ZaloPayCallback([FromBody] dynamic cbdata)
+		public async Task<IActionResult> ZaloPayCallback([FromBody] ZaloPayCallbackDto cbdata)
 		{
 			var result = new Dictionary<string, object>();
+
 			try
 			{
-				var dataStr = Convert.ToString(cbdata["data"]);
-				var reqMac = Convert.ToString(cbdata["mac"]);
+				if (cbdata == null || string.IsNullOrWhiteSpace(cbdata.data) || string.IsNullOrWhiteSpace(cbdata.mac))
+				{
+					result["return_code"] = -1;
+					result["return_message"] = "invalid payload";
+					return Ok(result);
+				}
 
-				// 1. Validate Signature (Bảo mật P0) dùng Key2
-				var mac = HmacSHA256(dataStr, _config["ZaloPay:Key2"]);
-				if (!reqMac.Equals(mac))
+				string key2 = _config["ZaloPay:Key2"] ?? string.Empty;
+				string calcMac = ComputeHmacSha256(cbdata.data, key2);
+
+				if (!cbdata.mac.Equals(calcMac, StringComparison.OrdinalIgnoreCase))
 				{
 					result["return_code"] = -1;
 					result["return_message"] = "mac not equal";
-					return Ok(result); // Trả về Ok nhưng code -1 để ZaloPay biết lỗi
+					return Ok(result);
 				}
 
-				// 2. Parse data
-				var dataJson = JsonConvert.DeserializeObject<Dictionary<string, object>>(dataStr);
-				var appTransId = Convert.ToString(dataJson["app_trans_id"]);
-				var transactionIdStr = appTransId.Split('_')[1];
-				var transactionId = Guid.Parse(transactionIdStr);
+				var dataJson = JsonConvert.DeserializeObject<Dictionary<string, object>>(cbdata.data);
+				string appTransId = Convert.ToString(dataJson?["app_trans_id"]) ?? string.Empty;
 
-				// 3. Cập nhật VIP an toàn (Gộp xử lý P1 Idempotency vào service)
+				var parts = appTransId.Split('_', StringSplitOptions.RemoveEmptyEntries);
+				if (parts.Length < 2)
+				{
+					result["return_code"] = -1;
+					result["return_message"] = "invalid app_trans_id format";
+					return Ok(result);
+				}
+
+				string txnGuidStr = parts[1];
+
+				if (!Guid.TryParseExact(txnGuidStr, "N", out Guid transactionId))
+				{
+					if (!Guid.TryParse(txnGuidStr, out transactionId))
+					{
+						result["return_code"] = -1;
+						result["return_message"] = "cannot parse transaction id";
+						return Ok(result);
+					}
+				}
+
 				await _vipService.CompleteTransactionAsync(transactionId, true);
 
 				result["return_code"] = 1;
 				result["return_message"] = "success";
+				return Ok(result);
 			}
 			catch (Exception ex)
 			{
-				result["return_code"] = 0; // ZaloPay sẽ gửi lại sau
-				result["return_message"] = ex.Message;
+				_logger.LogError(ex, "ZaloPay callback failed");
+				result["return_code"] = 0;
+				result["return_message"] = "internal error";
+				return Ok(result);
 			}
-			return Ok(result);
 		}
-		private string HmacSHA256(string inputData, string key)
+
+		private static string ComputeHmacSha256(string data, string key)
 		{
-			byte[] keyByte = Encoding.UTF8.GetBytes(key);
-			byte[] messageBytes = Encoding.UTF8.GetBytes(inputData);
-			using (var hmacsha256 = new HMACSHA256(keyByte))
-			{
-				byte[] hashmessage = hmacsha256.ComputeHash(messageBytes);
-				return BitConverter.ToString(hashmessage).Replace("-", "").ToLower();
-			}
+			byte[] keyBytes = Encoding.UTF8.GetBytes(key);
+			byte[] dataBytes = Encoding.UTF8.GetBytes(data);
+
+			using var hmac = new HMACSHA256(keyBytes);
+			byte[] hash = hmac.ComputeHash(dataBytes);
+			return BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
 		}
 	}
 }

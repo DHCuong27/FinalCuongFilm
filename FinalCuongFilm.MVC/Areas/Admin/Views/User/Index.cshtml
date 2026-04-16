@@ -1,4 +1,5 @@
-﻿@model FinalCuongFilm.Common.DTOs.PagedResult<FinalCuongFilm.Common.DTOs.UserDto>
+﻿@using System.Security.Claims
+@model FinalCuongFilm.Common.DTOs.PagedResult<FinalCuongFilm.Common.DTOs.UserDto>
 
 @{
     ViewData["Title"] = "User Management";
@@ -389,7 +390,7 @@
                                 <div class="action-group">
                                     @if (user.IsActive)
                                     {
-                                        <form asp-action="LockUser" asp-route-id="@user.Id" method="post" style="margin: 0;" onsubmit="return confirm('Are you sure you want to suspend this user account?');">
+                                        <form asp-action="LockUser" asp-route-id="@user.Id" method="post" style="margin: 0;" onsubmit="return confirm('Bạn có chắc chắn muốn đình chỉ tài khoản này?');">
                                             <button type="submit" class="action-btn btn-lock" title="Suspend Account">
                                                 <i class="zmdi zmdi-lock"></i> Suspend
                                             </button>
@@ -404,9 +405,22 @@
                                         </form>
                                     }
 
-                                    <a asp-action="ManageRoles" asp-route-userId="@user.Id" class="action-btn btn-roles" title="Manage Security Roles">
-                                        <i class="zmdi zmdi-shield-security"></i> Roles
-                                    </a>
+                                    @* CHECK LOGIC: Nếu không phải là tài khoản Admin đang đăng nhập thì mới hiện nút Xóa *@
+                                    @if (user.Id != User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier))
+                                    {
+                                        <form asp-action="DeleteUser" asp-route-id="@user.Id" method="post" style="margin: 0;" onsubmit="return confirm('CẢNH BÁO: Bạn có chắc chắn muốn XÓA VĨNH VIỄN tài khoản này không? Hành động này không thể hoàn tác!');">
+                                            <button type="submit" class="action-btn" style="color: var(--danger-text); border-color: #fecaca;" title="Delete Account" onmouseover="this.style.background='var(--danger-bg)'" onmouseout="this.style.background='var(--bg-light)'">
+                                                <i class="zmdi zmdi-delete"></i> Delete
+                                            </button>
+                                        </form>
+                                    }
+                                    else
+                                    {
+                                        @* Thay thế bằng huy hiệu "You" cho chính mình *@
+                                        <span class="badge bg-light text-dark d-flex align-items-center justify-content-center" style="padding: 6px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-weight: 500; font-size: 13px;">
+                                            <i class="zmdi zmdi-account-circle" style="margin-right: 4px;"></i> You
+                                        </span>
+                                    }
                                 </div>
                             </td>
                         </tr>

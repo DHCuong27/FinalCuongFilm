@@ -224,6 +224,9 @@ namespace FinalCuongFilm.Datalayer.Migrations
                     b.Property<string>("ConcurrencyStamp")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Email")
                         .HasColumnType("nvarchar(max)");
 
@@ -659,17 +662,13 @@ namespace FinalCuongFilm.Datalayer.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<bool>("IsActive")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(true);
+                        .HasColumnType("bit");
 
                     b.Property<Guid>("PackageId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("StartDate")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("UserId")
                         .IsRequired()
@@ -677,10 +676,6 @@ namespace FinalCuongFilm.Datalayer.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("EndDate");
-
-                    b.HasIndex("PackageId");
 
                     b.HasIndex("UserId");
 
@@ -885,12 +880,6 @@ namespace FinalCuongFilm.Datalayer.Migrations
 
             modelBuilder.Entity("FinalCuongFilm.ApplicationCore.Entities.UserSubscription", b =>
                 {
-                    b.HasOne("FinalCuongFilm.ApplicationCore.Entities.VipPackage", null)
-                        .WithMany()
-                        .HasForeignKey("PackageId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.HasOne("FinalCuongFilm.ApplicationCore.Entities.Identity.CuongFilmUser", "User")
                         .WithMany()
                         .HasForeignKey("UserId")

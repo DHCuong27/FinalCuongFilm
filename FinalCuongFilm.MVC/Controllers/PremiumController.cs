@@ -2,9 +2,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
-using System.Security.Claims;
 
 namespace FinalCuongFilm.MVC.Controllers
 {
@@ -12,20 +12,25 @@ namespace FinalCuongFilm.MVC.Controllers
 	{
 		private readonly IVipService _vipService;
 		private readonly IConfiguration _config;
+		private readonly ILogger<PremiumController> _logger;
 
-		public PremiumController(IVipService vipService, IConfiguration config)
+		public PremiumController(
+			IVipService vipService,
+			IConfiguration config,
+			ILogger<PremiumController> logger)
 		{
 			_vipService = vipService;
 			_config = config;
+			_logger = logger;
 		}
 
-		// GET: /Premium/Index
+		[HttpGet]
 		public async Task<IActionResult> Index()
 		{
 			var packages = await _vipService.GetActivePackagesAsync();
 
 			var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-			if (userId != null)
+			if (!string.IsNullOrEmpty(userId))
 			{
 				var currentVip = await _vipService.GetCurrentUserSubscriptionAsync(userId);
 				ViewBag.CurrentVipEndDate = currentVip?.EndDate;
@@ -34,7 +39,6 @@ namespace FinalCuongFilm.MVC.Controllers
 			return View(packages);
 		}
 
-		// GET: /Premium/Checkout
 		[Authorize]
 		[HttpGet]
 		public async Task<IActionResult> Checkout(Guid packageId)
@@ -44,106 +48,194 @@ namespace FinalCuongFilm.MVC.Controllers
 
 			if (selectedPackage == null)
 			{
-				TempData["Error"] = "This package does not exist.";
-				return RedirectToAction("Index");
+				TempData["Error"] = "VIP package does not exist.";
+				return RedirectToAction(nameof(Index));
 			}
 
 			return View(selectedPackage);
 		}
 
+		[Authorize]
 		[HttpPost]
 		[ValidateAntiForgeryToken]
 		public async Task<IActionResult> ProcessPayment(Guid packageId)
 		{
-			// 1. Lấy userId hiện tại
 			var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-			if (string.IsNullOrEmpty(userId)) return Challenge();
+			if (string.IsNullOrWhiteSpace(userId)) return Challenge();
 
-			// 2. Lấy thông tin gói Package (ĐÃ FIX: Gán vào biến package và check null)
 			var package = await _vipService.GetPackageByIdAsync(packageId);
-			if (package == null) return NotFound("Gói VIP không tồn tại");
+			if (package == null)
+			{
+				TempData["Error"] = "VIP package does not exist.";
+				return RedirectToAction("Index");
+			}
 
-			// 3. Tạo Transaction
+			var appId = _config["ZaloPay:AppId"] ?? "";
+			var key1 = _config["ZaloPay:Key1"] ?? "";
+			var endpoint = _config["ZaloPay:Endpoint"] ?? "https://sb-openapi.zalopay.vn/v2/create";
+			var callbackUrl = _config["ZaloPay:CallbackUrl"] ?? "";
+			var redirectUrl = _config["ZaloPay:RedirectUrl"] ?? $"{Request.Scheme}://{Request.Host}/Premium/PaymentSuccess";
+
+			var appUser = $"u_{userId.Replace("-", "")}".ToLowerInvariant();
+			if (appUser.Length > 30) appUser = appUser[..30];
+
+			var amount = (int)Math.Round(package.Price, MidpointRounding.AwayFromZero);
 			var transaction = await _vipService.CreateTransactionAsync(userId, packageId);
 
-			// 4. Tạo TimeStamp
+			var appTransId = $"{DateTime.Now:yyMMdd}_{transaction.Id:N}";
 			var appTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds().ToString();
 
-			var embedData = new { redirecturl = "https://localhost:7237/Premium/PaymentSuccess" };
-			var embedDataString = JsonConvert.SerializeObject(embedData);
+			// KEY CHANGE: Pass both txnId and appTransId back to the Success page via URL parameters
+			var redirectUrlWithParams = $"{redirectUrl}?txnId={transaction.Id}&appTransId={appTransId}";
+			var embedData = JsonConvert.SerializeObject(new { redirecturl = redirectUrlWithParams });
+			var item = "[]";
 
-			// 5. Build data gửi ZaloPay
-			var zalopayRequestData = new Dictionary<string, string>
-				{
-					{ "app_id", _config["ZaloPay:AppId"] },
-					{ "app_trans_id", $"{DateTime.Now:yyMMdd}_{transaction.Id.ToString("N")}" },
-					{ "app_time", appTime },
-					{ "app_user", userId },
-					{ "amount", ((long)package.Price).ToString() },
-					{ "description", $"VIP Payment CuongFilm - Package {package.Name}" },
-					{ "item", "[]" },
-					{ "embed_data", embedDataString },
-					{ "callback_url", _config["ZaloPay:CallbackUrl"] }
-				};
-
-			// 6. Tạo chữ ký (Mac)
-			var dataToMac = $"{zalopayRequestData["app_id"]}|{zalopayRequestData["app_trans_id"]}|{zalopayRequestData["app_user"]}|{zalopayRequestData["amount"]}|{zalopayRequestData["app_time"]}|{zalopayRequestData["embed_data"]}|{zalopayRequestData["item"]}";
-			zalopayRequestData["mac"] = HmacSHA256(dataToMac, _config["ZaloPay:Key1"]);
-
-			// 7. Gọi API thật tới ZaloPay
-			using (var client = new HttpClient())
+			var reqData = new Dictionary<string, string>
 			{
-				var content = new FormUrlEncodedContent(zalopayRequestData);
-				var responseMsg = await client.PostAsync(_config["ZaloPay:Endpoint"], content);
-				var responseString = await responseMsg.Content.ReadAsStringAsync();
+				{ "app_id", appId },
+				{ "app_trans_id", appTransId },
+				{ "app_user", appUser },
+				{ "app_time", appTime },
+				{ "amount", amount.ToString() },
+				{ "item", item },
+				{ "embed_data", embedData },
+				{ "description", $"CuongFilm VIP {package.Name}" },
+				{ "callback_url", callbackUrl }
+			};
 
-				var responseData = JsonConvert.DeserializeObject<dynamic>(responseString);
+			var dataToSign = $"{reqData["app_id"]}|{reqData["app_trans_id"]}|{reqData["app_user"]}|{reqData["amount"]}|{reqData["app_time"]}|{reqData["embed_data"]}|{reqData["item"]}";
+			reqData["mac"] = ComputeHmacSha256(dataToSign, key1);
 
-				if (responseData.return_code == 1)
-				{
-					// Lấy order_url và chuyển hướng người dùng tới cổng thanh toán ZaloPay
-					return Redirect(responseData.order_url.ToString());
-				}
+			try
+			{
+				using var http = new HttpClient();
+				var response = await http.PostAsync(endpoint, new FormUrlEncodedContent(reqData));
+				var raw = await response.Content.ReadAsStringAsync();
 
-				return BadRequest($"Chi tiết lỗi từ ZaloPay: {responseString}");
+				dynamic res = JsonConvert.DeserializeObject(raw)!;
+				int returnCode = res?.return_code != null ? (int)res.return_code : -999;
+				string orderUrl = res?.order_url != null ? (string)res.order_url : "";
+
+				if (returnCode == 1 && !string.IsNullOrWhiteSpace(orderUrl))
+					return Redirect(orderUrl);
+
+				TempData["Error"] = "Failed to create ZaloPay transaction.";
+				return RedirectToAction("Index");
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "ProcessPayment exception");
+				TempData["Error"] = "ZaloPay connection error.";
+				return RedirectToAction("Index");
 			}
 		}
+
+		[Authorize]
 		[HttpGet]
-		[Authorize] // Bắt buộc đăng nhập
-		public async Task<IActionResult> PaymentSuccess()
+		public async Task<IActionResult> PaymentSuccess(
+			[FromQuery] Guid? txnId,
+			[FromQuery] string? appTransId,
+			[FromQuery] int? status)
 		{
 			var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-			if (string.IsNullOrEmpty(userId)) return RedirectToAction("Index", "Home");
+			if (string.IsNullOrWhiteSpace(userId)) return Challenge();
 
-			// Lấy thông tin VIP mới nhất của user
-			var currentSub = await _vipService.GetCurrentUserSubscriptionAsync(userId);
+			_logger.LogInformation("[PAYMENT SUCCESS] Redirected back. txnId: {TxnId}, appTransId: {AppTransId}, status: {Status}", txnId, appTransId, status);
 
-			if (currentSub != null)
+			if (txnId.HasValue && !string.IsNullOrWhiteSpace(appTransId))
 			{
-				// Lấy tên gói VIP
-				var package = await _vipService.GetPackageByIdAsync(currentSub.PackageId);
-				ViewBag.PackageName = package?.Name ?? "Gói VIP Premium";
-				ViewBag.ExpiryDate = currentSub.EndDate.ToString("dd/MM/yyyy HH:mm");
-				ViewBag.IsPending = false;
+				// Execute active query with retry mechanism (Polling)
+				await CheckZaloPayOrderStatusWithRetryAsync(appTransId, txnId.Value);
 			}
 			else
 			{
-				// Xử lý độ trễ: Trường hợp web quay về đích nhanh hơn ZaloPay bắn Webhook (chưa kịp update DB)
-				ViewBag.IsPending = true;
+				_logger.LogWarning("[PAYMENT SUCCESS] Missing parameters. Cannot perform active query.");
 			}
 
-			ViewBag.Message = "Giao dịch thanh toán qua ZaloPay đã hoàn tất!";
+			var sub = await _vipService.GetCurrentUserSubscriptionAsync(userId);
+
+			if (sub == null || sub.EndDate <= DateTime.UtcNow)
+			{
+				_logger.LogWarning("[PAYMENT SUCCESS] Verification finished but VIP is not active yet.");
+				ViewBag.IsPending = true;
+				return View();
+			}
+
+			_logger.LogInformation("[PAYMENT SUCCESS] VIP is ACTIVE!");
+			ViewBag.IsPending = false;
+			ViewBag.ExpiryDate = sub.EndDate.ToString("dd/MM/yyyy");
 			return View();
 		}
-		private string HmacSHA256(string inputData, string key)
+
+		private async Task CheckZaloPayOrderStatusWithRetryAsync(string appTransId, Guid txnId)
 		{
-			byte[] keyByte = Encoding.UTF8.GetBytes(key);
-			byte[] messageBytes = Encoding.UTF8.GetBytes(inputData);
-			using (var hmacsha256 = new HMACSHA256(keyByte))
+			var appId = _config["ZaloPay:AppId"] ?? "";
+			var key1 = _config["ZaloPay:Key1"] ?? "";
+			var queryEndpoint = "https://sb-openapi.zalopay.vn/v2/query";
+
+			var dataToSign = $"{appId}|{appTransId}|{key1}";
+			var mac = ComputeHmacSha256(dataToSign, key1);
+
+			var reqData = new Dictionary<string, string>
 			{
-				byte[] hashmessage = hmacsha256.ComputeHash(messageBytes);
-				return BitConverter.ToString(hashmessage).Replace("-", "").ToLower();
+				{ "app_id", appId },
+				{ "app_trans_id", appTransId },
+				{ "mac", mac }
+			};
+
+			int maxRetries = 3;
+			int delayMilliseconds = 2000; // 2 seconds between retries
+
+			for (int i = 1; i <= maxRetries; i++)
+			{
+				try
+				{
+					_logger.LogInformation("[ACTIVE QUERY] Attempt {Attempt}/{MaxRetries} for appTransId: {AppTransId}", i, maxRetries, appTransId);
+
+					// Delay before querying to give ZaloPay Sandbox time to process
+					await Task.Delay(delayMilliseconds);
+
+					using var http = new HttpClient();
+					var response = await http.PostAsync(queryEndpoint, new FormUrlEncodedContent(reqData));
+					var raw = await response.Content.ReadAsStringAsync();
+
+					_logger.LogInformation("[ACTIVE QUERY] ZaloPay Response: {Raw}", raw);
+
+					dynamic res = JsonConvert.DeserializeObject(raw)!;
+					int returnCode = res?.return_code != null ? (int)res.return_code : -999;
+
+					if (returnCode == 1)
+					{
+						_logger.LogInformation("[ACTIVE QUERY] Status SUCCESS. Updating database...");
+						await _vipService.CompleteTransactionAsync(txnId, true);
+						return; // Exit loop, job is done
+					}
+
+					if (returnCode == 2)
+					{
+						_logger.LogInformation("[ACTIVE QUERY] Status FAILED. Transaction was rejected.");
+						await _vipService.CompleteTransactionAsync(txnId, false);
+						return; // Exit loop, failure confirmed
+					}
+
+					_logger.LogWarning("[ACTIVE QUERY] Status PENDING or UNKNOWN (Code: {Code}). Retrying...", returnCode);
+				}
+				catch (Exception ex)
+				{
+					_logger.LogError(ex, "[ACTIVE QUERY] Exception on attempt {Attempt}", i);
+				}
 			}
+
+			_logger.LogError("[ACTIVE QUERY] All retries exhausted. Transaction {TxnId} remains PENDING.", txnId);
+		}
+
+		private static string ComputeHmacSha256(string data, string key)
+		{
+			var keyBytes = Encoding.UTF8.GetBytes(key);
+			var dataBytes = Encoding.UTF8.GetBytes(data);
+			using var hmac = new HMACSHA256(keyBytes);
+			var hash = hmac.ComputeHash(dataBytes);
+			return BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
 		}
 	}
 }

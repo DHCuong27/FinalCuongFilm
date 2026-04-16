@@ -7,5 +7,6 @@ namespace FinalCuongFilm.ApplicationCore.Entities.Identity
 		public string? FullName { get; set; }
 		public string? AvatarUrl { get; set; }
 		public string? Gender { get; set; }
+		public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 	}
 }
