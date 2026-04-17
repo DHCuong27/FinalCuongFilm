@@ -28,24 +28,16 @@
     /* ==================== PAGINATION ==================== */
     .pagination-container {
         display: flex;
-        justify-content: space-between;
+        justify-content: center; /* căn giữa ngang */
         align-items: center;
-        padding: 16px 20px;
-        background: var(--bg-white);
-        border-top: 1px solid var(--border-color);
-        border-bottom-left-radius: var(--radius-md);
-        border-bottom-right-radius: var(--radius-md);
-    }
-
-    .pagination-info {
-        font-size: 14px;
-        color: var(--text-muted);
+        margin: 30px 0;
     }
 
     .pagination-list {
         display: flex;
+        align-items: center;
+        gap: 8px;
         list-style: none;
-        gap: 6px;
         padding: 0;
         margin: 0;
     }
@@ -374,7 +366,7 @@
             }
         </div>
         <div>
-            <a asp-action="UploadVideo" asp-route-movieId="@movieId" class="btn-custom btn-upload">
+            <a asp-controller="MediaUpload" asp-action="UploadVideo" asp-route-id="@movieId" class="btn-custom btn-upload">
                 <i class="zmdi zmdi-cloud-upload"></i> Upload New Video
             </a>
         </div>
@@ -491,49 +483,113 @@
                         </tr>
                     }
                 </tbody>
-            </table> @if (ViewBag.TotalPages > 1)
+            </table>
+            @if (ViewBag.TotalPages > 1)
             {
                 <div class="pagination-container">
-                    <div class="pagination-info">
-                        Showing page <b>@ViewBag.CurrentPage</b> of <b>@ViewBag.TotalPages</b> (@ViewBag.TotalItems items)
-                    </div>
-
                     <ul class="pagination-list">
-                        @if (ViewBag.CurrentPage > 1)
+
+                        @{
+                            int currentPage = ViewBag.CurrentPage;
+                            int totalPages = ViewBag.TotalPages;
+
+                            int startPage = Math.Max(1, currentPage - 1);
+                            int endPage = Math.Min(totalPages, currentPage + 1);
+                        }
+
+                        <!-- Prev -->
+                        <li>
+                            @if (currentPage == 1)
+                            {
+                                <span class="page-btn disabled">Prev</span>
+                            }
+                            else
+                            {
+                                <a asp-action="Index"
+                                   asp-route-movieId="@ViewBag.MovieId"
+                                   asp-route-episodeId="@ViewBag.EpisodeId"
+                                   asp-route-fileType="@ViewBag.FileType"
+                                   asp-route-page="@(currentPage - 1)"
+                                   class="page-btn">
+                                    Prev
+                                </a>
+                            }
+                        </li>
+
+                        <!-- First Page -->
+                        <li>
+                            <a asp-action="Index"
+                               asp-route-movieId="@ViewBag.MovieId"
+                               asp-route-episodeId="@ViewBag.EpisodeId"
+                               asp-route-fileType="@ViewBag.FileType"
+                               asp-route-page="1"
+                               class="page-btn @(currentPage == 1 ? "active" : "")">
+                                1
+                            </a>
+                        </li>
+
+                        <!-- Middle Pages -->
+                        @if (startPage > 2)
                         {
+                            <li><span class="page-btn dots">...</span></li>
+                        }
+
+                        @for (int i = startPage; i <= endPage; i++)
+                        {
+                            if (i != 1 && i != totalPages)
+                            {
+                                <li>
+                                    <a asp-action="Index"
+                                       asp-route-movieId="@ViewBag.MovieId"
+                                       asp-route-episodeId="@ViewBag.EpisodeId"
+                                       asp-route-fileType="@ViewBag.FileType"
+                                       asp-route-page="@i"
+                                       class="page-btn @(i == currentPage ? "active" : "")">
+                                        @i
+                                    </a>
+                                </li>
+                            }
+                        }
+
+                        <!-- Last Page -->
+                        @if (totalPages > 1)
+                        {
+                            @if (endPage < totalPages - 1)
+                            {
+                                <li><span class="page-btn dots">...</span></li>
+                            }
+
                             <li>
                                 <a asp-action="Index"
                                    asp-route-movieId="@ViewBag.MovieId"
                                    asp-route-episodeId="@ViewBag.EpisodeId"
                                    asp-route-fileType="@ViewBag.FileType"
-                                   asp-route-page="@(ViewBag.CurrentPage - 1)"
-                                   class="page-btn"><i class="zmdi zmdi-chevron-left"></i> Prev</a>
+                                   asp-route-page="@totalPages"
+                                   class="page-btn @(currentPage == totalPages ? "active" : "")">
+                                    @totalPages
+                                </a>
                             </li>
                         }
 
-                        @for (int i = 1; i <= ViewBag.TotalPages; i++)
+                        <!-- Next -->
+                      <li>
+                       @if (currentPage == totalPages)
                         {
-                            <li>
-                                <a asp-action="Index"
-                                   asp-route-movieId="@ViewBag.MovieId"
-                                   asp-route-episodeId="@ViewBag.EpisodeId"
-                                   asp-route-fileType="@ViewBag.FileType"
-                                   asp-route-page="@i"
-                                   class="page-btn @(i == ViewBag.CurrentPage ? "active" : "")">@i</a>
-                            </li>
+                            <span class="page-btn disabled">Next</span>
                         }
+                        else
+                        {
+                            <a asp-action="Index"
+                               asp-route-movieId="@ViewBag.MovieId"
+                               asp-route-episodeId="@ViewBag.EpisodeId"
+                               asp-route-fileType="@ViewBag.FileType"
+                               asp-route-page="@(currentPage + 1)"
+                               class="page-btn">
+                                Next
+                            </a>
+                        }
+</li>
 
-                        @if (ViewBag.CurrentPage < ViewBag.TotalPages)
-                        {
-                            <li>
-                                <a asp-action="Index"
-                                   asp-route-movieId="@ViewBag.MovieId"
-                                   asp-route-episodeId="@ViewBag.EpisodeId"
-                                   asp-route-fileType="@ViewBag.FileType"
-                                   asp-route-page="@(ViewBag.CurrentPage + 1)"
-                                   class="page-btn">Next <i class="zmdi zmdi-chevron-right"></i></a>
-                            </li>
-                        }
                     </ul>
                 </div>
             }

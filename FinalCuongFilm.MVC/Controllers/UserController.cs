@@ -170,19 +170,32 @@ namespace FinalCuongFilm.MVC.Controllers
 		}
 
 		[HttpPost]
-		public async Task<IActionResult> UpdateProfile(string FullName, string Bio, string FavoriteGenreId)
+		[ValidateAntiForgeryToken]
+		public async Task<IActionResult> UpdateProfile(string FullName)
 		{
 			var user = await _userManager.GetUserAsync(User);
 			if (user == null) return NotFound();
 
-			// Cập nhật thông tin (Giả sử ApplicationUser của bạn đã mở rộng các cột này)
-			user.FullName = FullName;
-			//user.Bio = Bio;
-			//user.FavoriteGenreId = FavoriteGenreId; // Ghi nhận thể loại yêu thích
+			// Check if the input is not empty or just spaces
+			if (!string.IsNullOrWhiteSpace(FullName))
+			{
+				user.FullName = FullName.Trim();
+				var result = await _userManager.UpdateAsync(user);
 
-			await _userManager.UpdateAsync(user);
+				if (result.Succeeded)
+				{
+					TempData["ProfileSuccess"] = "Your profile has been updated successfully!";
+				}
+				else
+				{
+					TempData["PasswordError"] = "Failed to update profile. Please try again.";
+				}
+			}
+			else
+			{
+				TempData["PasswordError"] = "Full name cannot be empty.";
+			}
 
-			TempData["ProfileSuccess"] = "Your profile has been updated!";
 			return RedirectToAction("Profile");
 		}
 	}

@@ -52,7 +52,7 @@ namespace FinalCuongFilm.Service.Services
 				UserId = userId,
 				PackageId = packageId,
 				Amount = package.Price,
-				OrderInfo = $"Nang cap {package.Name}", // Tiếng Việt không dấu cho VNPay/ZaloPay
+				OrderInfo = $"Upgrade {package.Name}", // Tiếng Việt không dấu cho ZaloPay
 				Status = TransactionStatus.Pending,
 				TransactionDate = DateTime.UtcNow
 			};
@@ -72,28 +72,45 @@ namespace FinalCuongFilm.Service.Services
 				var package = await _context.VipPackages.FindAsync(transaction.PackageId);
 				if (package == null) return;
 
-				// Update Transaction status
+				// 1. Update Transaction status
 				transaction.Status = TransactionStatus.Success;
 
-				// Grant VIP - We only save the UserId string, no need to join tables
-				var newSub = new UserSubscription
-				{
-					Id = Guid.NewGuid(),
-					UserId = transaction.UserId, // String ID from Identity DB
-					PackageId = package.Id,
-					StartDate = DateTime.UtcNow,
-					EndDate = DateTime.UtcNow.AddDays(package.DurationInDays),
-					IsActive = true
-				};
+				// 2. CRITICAL LOGIC FIX: Check if the user already has an ACTIVE subscription
+				var existingSub = await _context.UserSubscriptions
+					.Where(s => s.UserId == transaction.UserId && s.IsActive && s.EndDate > DateTime.UtcNow)
+					.OrderByDescending(s => s.EndDate)
+					.FirstOrDefaultAsync();
 
-				_context.UserSubscriptions.Add(newSub);
+				if (existingSub != null)
+				{
+					// SCENARIO A: Extend the existing subscription (Cộng dồn ngày)
+					existingSub.EndDate = existingSub.EndDate.AddDays(package.DurationInDays);
+
+					// Optional: Update PackageId in case they bought a higher tier
+					existingSub.PackageId = package.Id;
+
+					_context.UserSubscriptions.Update(existingSub);
+				}
+				else
+				{
+					// SCENARIO B: Create a brand new subscription (Tạo mới)
+					var newSub = new UserSubscription
+					{
+						Id = Guid.NewGuid(),
+						UserId = transaction.UserId,
+						PackageId = package.Id,
+						StartDate = DateTime.UtcNow,
+						EndDate = DateTime.UtcNow.AddDays(package.DurationInDays),
+						IsActive = true
+					};
+					_context.UserSubscriptions.Add(newSub);
+				}
 			}
 			else
 			{
 				transaction.Status = TransactionStatus.Failed;
 			}
 
-			// This will now succeed because the physical Foreign Key constraint is GONE
 			await _context.SaveChangesAsync();
 		}
 

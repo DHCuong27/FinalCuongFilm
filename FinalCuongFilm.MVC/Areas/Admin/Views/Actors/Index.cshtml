@@ -458,14 +458,17 @@
             <div class="pagination-container">
                 <ul class="pagination">
 
+                    <!-- Prev -->
                     <li class="page-item @(!Model.HasPreviousPage ? "disabled" : "")">
-                        <a class="page-link" asp-action="Index" asp-route-page="@(Model.PageIndex - 1)" asp-route-searchString="@ViewBag.CurrentSearch">
-                            <i class="zmdi zmdi-chevron-left"></i>
+                        <a class="page-link"
+                           asp-action="Index"
+                           asp-route-page="@(Model.PageIndex - 1)"
+                           asp-route-searchString="@ViewBag.CurrentSearch">
+                            <i class="zmdi zmdi-chevron-left"></i> Prev
                         </a>
                     </li>
 
                     @{
-                        // Thuật toán làm gọn phân trang (Hiển thị tối đa 5 nút ở giữa)
                         int currentPage = Model.PageIndex;
                         int totalPages = Model.TotalPages;
                         int startPage = Math.Max(1, currentPage - 2);
@@ -475,35 +478,54 @@
                     @if (startPage > 1)
                     {
                         <li class="page-item">
-                            <a class="page-link" asp-action="Index" asp-route-page="1" asp-route-searchString="@ViewBag.CurrentSearch">1</a>
+                            <a class="page-link"
+                               asp-action="Index"
+                               asp-route-page="1"
+                               asp-route-searchString="@ViewBag.CurrentSearch">1</a>
                         </li>
-                        if (startPage > 2)
+
+                        @if (startPage > 2)
                         {
-                            <li class="page-item disabled"><span class="page-link border-0">...</span></li>
+                            <li class="page-item disabled">
+                                <span class="page-link border-0">...</span>
+                            </li>
                         }
                     }
 
                     @for (int i = startPage; i <= endPage; i++)
                     {
                         <li class="page-item @(i == currentPage ? "active" : "")">
-                            <a class="page-link" asp-action="Index" asp-route-page="@i" asp-route-searchString="@ViewBag.CurrentSearch">@i</a>
+                            <a class="page-link"
+                               asp-action="Index"
+                               asp-route-page="@i"
+                               asp-route-searchString="@ViewBag.CurrentSearch">@i</a>
                         </li>
                     }
 
                     @if (endPage < totalPages)
                     {
-                        if (endPage < totalPages - 1)
+                        @if (endPage < totalPages - 1)
                         {
-                            <li class="page-item disabled"><span class="page-link border-0">...</span></li>
+                            <li class="page-item disabled">
+                                <span class="page-link border-0">...</span>
+                            </li>
                         }
+
                         <li class="page-item">
-                            <a class="page-link" asp-action="Index" asp-route-page="@totalPages" asp-route-searchString="@ViewBag.CurrentSearch">@totalPages</a>
+                            <a class="page-link"
+                               asp-action="Index"
+                               asp-route-page="@totalPages"
+                               asp-route-searchString="@ViewBag.CurrentSearch">@totalPages</a>
                         </li>
                     }
 
+                    <!-- Next -->
                     <li class="page-item @(!Model.HasNextPage ? "disabled" : "")">
-                        <a class="page-link" asp-action="Index" asp-route-page="@(Model.PageIndex + 1)" asp-route-searchString="@ViewBag.CurrentSearch">
-                            <i class="zmdi zmdi-chevron-right"></i>
+                        <a class="page-link"
+                           asp-action="Index"
+                           asp-route-page="@(Model.PageIndex + 1)"
+                           asp-route-searchString="@ViewBag.CurrentSearch">
+                            Next <i class="zmdi zmdi-chevron-right"></i>
                         </a>
                     </li>
 

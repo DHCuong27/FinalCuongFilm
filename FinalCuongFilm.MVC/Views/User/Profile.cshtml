@@ -4,10 +4,9 @@
     ViewData["Title"] = "My Profile";
     Layout = "_LayoutUser";
 
-    // Lấy Avatar từ Model, nếu null thì dùng ảnh mặc định
+    // Fallback to default avatar if null
     var userAvatar = Model?.AvatarUrl ?? "/img/avatar.jpg";
     var currentVip = ViewBag.CurrentVip as FinalCuongFilm.ApplicationCore.Entities.UserSubscription;
-}
 }
 
 <style>
@@ -28,7 +27,6 @@
         color: var(--nf-text);
     }
 
-    /* Bố cục trang */
     .profile-container {
         padding-top: 3rem;
         padding-bottom: 5rem;
@@ -36,7 +34,6 @@
         max-width: 1200px;
     }
 
-    /* Sidebar Navigation */
     .nf-sidebar {
         background-color: transparent;
         border-radius: 0;
@@ -72,7 +69,6 @@
             margin-right: 10px;
         }
 
-    /* Cấu trúc Card chung */
     .profile-card {
         background-color: var(--nf-card-bg);
         border: 1px solid var(--nf-border);
@@ -90,7 +86,6 @@
         padding-bottom: 15px;
     }
 
-    /* Form & Input */
     .nf-form-label {
         color: var(--nf-text-muted);
         font-size: 0.9rem;
@@ -112,7 +107,6 @@
             box-shadow: none;
         }
 
-    /* Avatar Box */
     .avatar-wrapper {
         position: relative;
         width: 120px;
@@ -150,7 +144,6 @@
             background-color: var(--nf-red-hover);
         }
 
-    /* Nút bấm */
     .btn-nf-primary {
         background-color: var(--nf-red);
         color: #fff;
@@ -181,7 +174,6 @@
             background-color: rgba(255,255,255,0.1);
         }
 
-    /* Avatar Grid (Trong Modal) */
     .avatar-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
@@ -203,7 +195,6 @@
             transform: scale(1.05);
         }
 
-    /* Dark Modal */
     .modal-content {
         background-color: var(--nf-card-bg);
         border: 1px solid var(--nf-border);
@@ -230,11 +221,9 @@
                 <a asp-controller="User" asp-action="Profile" class="list-group-item active">
                     <i class="zmdi zmdi-account-circle"></i> Edit Profile
                 </a>
-
                 <a asp-controller="User" asp-action="MyList" class="list-group-item">
                     <i class="zmdi zmdi-bookmark"></i> My List
                 </a>
-
                 <a asp-controller="User" asp-action="ContinueWatching" class="list-group-item">
                     <i class="zmdi zmdi-time-restore"></i> Watch History
                 </a>
@@ -275,8 +264,8 @@
                     </div>
                 </div>
                 <div>
-                    <h4 style="color: #fff; margin-bottom: 5px;">@User.Identity?.Name</h4>
-                    <p style="color: var(--nf-text-muted); margin-bottom: 10px;">Member since Jan 2024</p>
+                    <h4 style="color: #fff; margin-bottom: 5px;">@(Model?.FullName ?? User.Identity?.Name)</h4>
+                    <p style="color: var(--nf-text-muted); margin-bottom: 10px;">Member since @(Model?.CreatedAt.ToString("MMM yyyy") ?? "Jan 2024")</p>
                     <span class="badge" style="background: rgba(255,255,255,0.1); font-size: 0.9rem; padding: 6px 12px;">
                         <i class="zmdi zmdi-movie"></i> 42 Movies Watched
                     </span>
@@ -289,16 +278,13 @@
 
                     @if (currentVip != null && currentVip.EndDate > DateTime.UtcNow)
                     {
-                        // USER IS VIP
                         var daysLeft = (currentVip.EndDate - DateTime.UtcNow).Days;
-
                         <div class="d-flex align-items-center gap-3 mt-1">
                             <span class="badge bg-warning text-dark rounded-pill px-3 py-2" style="font-size: 0.85rem; font-weight: 700; letter-spacing: 0.5px;">
                                 <i class="fa fa-crown me-1"></i> VIP PREMIUM
                             </span>
                             <span style="color: var(--nf-text-muted); font-size: 0.95rem;">
                                 Valid until <strong class="text-white">@currentVip.EndDate.ToString("MMM dd, yyyy")</strong>
-
                                 @if (daysLeft > 0)
                                 {
                                     <span class="ms-1">(@daysLeft days remaining)</span>
@@ -312,7 +298,6 @@
                     }
                     else
                     {
-                        // USER IS FREE
                         <div class="d-flex align-items-center gap-3 mt-1">
                             <span class="badge bg-secondary rounded-pill px-3 py-2" style="font-size: 0.85rem; font-weight: 600; letter-spacing: 0.5px;">
                                 FREE PLAN
@@ -334,13 +319,14 @@
                     }
                 </div>
             </div>
+
             <div class="profile-card">
                 <h3 class="profile-card-header">Personal Information</h3>
 
                 <form asp-action="UpdateProfile" method="post" class="d-flex align-items-end gap-3 flex-wrap">
                     <div class="flex-grow-1" style="max-width: 400px;">
                         <label class="nf-form-label">Full Name</label>
-                        <input type="text" name="FullName" class="form-control nf-input" value="@User.Identity?.Name" placeholder="Enter your full name">
+                        <input type="text" name="FullName" class="form-control nf-input" value="@Model?.FullName" placeholder="Enter your full name" required>
                     </div>
                     <button type="submit" class="btn-nf-primary mb-1">Save Name</button>
                 </form>
@@ -369,7 +355,6 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-
                     <p class="nf-form-label mb-2">Choose from library</p>
                     <div class="avatar-grid mb-4">
                         <img src="~/img/flag/CubaFlag.jpg" class="avatar-option" onclick="selectLibraryAvatar(this)" />
@@ -377,7 +362,6 @@
                         <img src="~/img/flag/RussiaFlag.png" class="avatar-option" onclick="selectLibraryAvatar(this)" />
                         <img src="~/img/flag/Vnflag.png" class="avatar-option" onclick="selectLibraryAvatar(this)" />
                     </div>
-
                     <input type="hidden" name="SelectedAvatarUrl" id="selectedLibraryAvatar" />
 
                     <div class="text-center my-3" style="color: var(--nf-text-muted);">OR</div>
@@ -385,7 +369,6 @@
                     <p class="nf-form-label mb-2">Upload from device</p>
                     <input type="file" name="AvatarFile" id="uploadAvatarInput" class="form-control nf-input" accept="image/*" onchange="previewUploadedAvatar(this)">
                     <small class="text-muted d-block mt-2">Max file size: 2MB. Format: JPG, PNG.</small>
-
                 </div>
                 <div class="modal-footer border-top-0">
                     <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
@@ -428,33 +411,23 @@
 </div>
 
 <script>
-    // Hàm 1: Xử lý khi bấm vào ảnh có sẵn trong Modal Avatar
     function selectLibraryAvatar(element) {
         let options = document.querySelectorAll('.avatar-option');
         options.forEach(opt => opt.classList.remove('selected'));
-
         element.classList.add('selected');
-
         let imgSrc = element.getAttribute('src');
         document.getElementById('selectedLibraryAvatar').value = imgSrc;
-
-        // Preview ảnh mượt mà
         document.getElementById('current-avatar').src = imgSrc;
         document.getElementById('uploadAvatarInput').value = '';
     }
 
-    // Hàm 2: Xử lý Live Preview khi người dùng Upload ảnh từ máy
     function previewUploadedAvatar(input) {
         if (input.files && input.files[0]) {
             var reader = new FileReader();
-
             reader.onload = function (e) {
                 document.getElementById('current-avatar').src = e.target.result;
             }
-
             reader.readAsDataURL(input.files[0]);
-
-            // Xóa lựa chọn thư viện ảnh cũ nếu có
             let options = document.querySelectorAll('.avatar-option');
             options.forEach(opt => opt.classList.remove('selected'));
             document.getElementById('selectedLibraryAvatar').value = '';

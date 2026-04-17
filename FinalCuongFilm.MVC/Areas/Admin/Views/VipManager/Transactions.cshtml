@@ -6,6 +6,9 @@
     int currentPage = ViewBag.CurrentPage ?? 1;
     int totalPages = ViewBag.TotalPages ?? 1;
     int totalItems = ViewBag.TotalItems ?? Model?.Count() ?? 0;
+
+    // Cast the ViewBag dictionary for safe and easy access
+    var userDict = ViewBag.UserDictionary as Dictionary<string, FinalCuongFilm.ApplicationCore.Entities.Identity.CuongFilmUser>;
 }
 
 <style>
@@ -254,8 +257,16 @@
                             </td>
                             <td>
                                 <div class="user-info">
-                                    <strong>@(item.User?.FullName ?? item.User?.UserName ?? "Unknown User")</strong>
-                                    <span>@(item.User?.Email ?? item.UserId.Substring(0, 8) + "...")</span>
+                                    @{
+                                        // Look up the user from the dictionary
+                                        var hasUser = userDict != null && userDict.ContainsKey(item.UserId);
+                                        var matchedUser = hasUser ? userDict[item.UserId] : null;
+
+                                        var displayName = matchedUser != null ? (matchedUser.FullName ?? matchedUser.UserName) : "Unknown User";
+                                        var displayEmail = matchedUser != null ? matchedUser.Email : (item.UserId.Substring(0, 8) + "...");
+                                    }
+                                    <strong>@displayName</strong>
+                                    <span>@displayEmail</span>
                                 </div>
                             </td>
                             <td><strong>@item.OrderInfo</strong></td>

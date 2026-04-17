@@ -1,8 +1,11 @@
-﻿@model FinalCuongFilm.Common.DTOs.MediaFileDto
+﻿@model FinalCuongFilm.Common.DTOs.MovieDto
 
 @{
-    ViewData["Title"] = "Upload Video";
+    ViewData["Title"] = "Upload Video - " + Model.Title;
     Layout = "~/Areas/Admin/Views/Shared/_LayoutAdmin.cshtml";
+
+    var mediaFiles = ViewBag.MediaFiles as IEnumerable<FinalCuongFilm.Common.DTOs.MediaFileDto>;
+    bool isSeries = (int)Model.Type == 2;
 }
 
 <style>
@@ -26,12 +29,6 @@
     body {
         background-color: #f1f5f9;
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    }
-
-    .upload-container {
-        max-width: 800px;
-        margin: 0 auto;
-        padding: 24px 20px;
     }
 
     /* Card Styling */
@@ -106,15 +103,6 @@
             border-color: var(--primary-color);
             box-shadow: 0 0 0 3px var(--input-focus-ring);
         }
-
-    select.form-control {
-        cursor: pointer;
-        appearance: none;
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-        background-repeat: no-repeat;
-        background-position: right 14px center;
-        padding-right: 40px;
-    }
 
     /* Custom File Input (Dropzone Style) */
     .file-drop-area {
@@ -278,28 +266,6 @@
             box-shadow: none;
         }
 
-    .btn-secondary {
-        background: white;
-        color: var(--text-dark);
-        border: 1px solid var(--border-color);
-    }
-
-        .btn-secondary:hover {
-            background: var(--bg-light);
-            border-color: var(--text-muted);
-        }
-
-    .btn-info {
-        background: #0ea5e9;
-        color: white;
-        font-size: 13px;
-        padding: 6px 12px;
-    }
-
-        .btn-info:hover {
-            background: #0284c7;
-        }
-
     .action-group {
         display: flex;
         gap: 12px;
@@ -307,122 +273,166 @@
         padding-top: 24px;
         border-top: 1px solid var(--border-color);
     }
-
-    /* Alerts */
-    .alert {
-        padding: 16px;
-        border-radius: var(--radius-md);
-        margin-top: 16px;
-        font-size: 14px;
-        display: flex;
-        gap: 10px;
-        align-items: center;
-    }
-
-    .alert-success {
-        background: #ecfdf5;
-        color: #166534;
-        border: 1px solid #a7f3d0;
-    }
-
-    .alert-danger {
-        background: #fef2f2;
-        color: #991b1b;
-        border: 1px solid #fecaca;
-    }
-
-    @@media (max-width: 640px) {
-        .action-group {
-            flex-direction: column;
-        }
-
-        .btn {
-            width: 100%;
-        }
-
-        .card-header {
-            flex-direction: column;
-            align-items: flex-start;
-        }
-    }
 </style>
 
-<div class="upload-container">
-    <div class="card">
-        <div class="card-header">
-            <h3 class="card-title">
-                <i class="zmdi zmdi-cloud-upload"></i> Upload Video
-            </h3>
-            @* <button type="button" class="btn btn-info" onclick="testConnection()">
-                <i class="zmdi zmdi-check-circle"></i> Test Connection
-            </button> *@
+<div class="container-fluid py-4">
+    <div class="d-flex align-items-center mb-4">
+        <a asp-controller="Movies" asp-action="Index" class="btn btn-secondary me-3 shadow-sm" style="background: white; color: var(--text-dark); border: 1px solid var(--border-color);">
+            <i class="fa-solid fa-arrow-left me-1"></i> Back to Movies
+        </a>
+        <h2 class="mb-0 text-dark">Media Library: <span class="text-primary fw-bold">@Model.Title</span></h2>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success shadow-sm mb-4" style="background: #ecfdf5; color: #166534; border: 1px solid #a7f3d0; padding: 16px; border-radius: var(--radius-md);">
+            <i class="fa fa-check-circle me-1"></i> @TempData["Success"]
         </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger shadow-sm mb-4" style="background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; padding: 16px; border-radius: var(--radius-md);">
+            <i class="fa fa-exclamation-triangle me-1"></i> @TempData["Error"]
+        </div>
+    }
 
-        <div class="card-body">
-            <form id="uploadForm" enctype="multipart/form-data">
-                @Html.AntiForgeryToken()
+    <div class="row">
+        <div class="col-lg-4 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="zmdi zmdi-cloud-upload"></i> Upload Video
+                    </h3>
+                </div>
 
-                <div class="form-group">
-                    <label class="form-label">Select Movie <span class="required-star">*</span></label>
-                    <select id="movieSelect" class="form-control" required>
-                        <option value="">-- Choose a movie --</option>
-                        @if (ViewBag.Movies != null)
+                <div class="card-body">
+                    <form id="uploadForm" enctype="multipart/form-data">
+                        @Html.AntiForgeryToken()
+
+                        <input type="hidden" id="movieId" name="MovieId" value="@Model.Id" />
+
+                        @if (isSeries)
                         {
-                            foreach (var movie in ViewBag.Movies)
-                            {
-                                <option value="@movie.Id" data-type="@movie.Type">
-                                    @movie.Title (@movie.Type)
-                                </option>
-                            }
+                            <div class="form-group">
+                                <label class="form-label">Episode Number <span class="required-star">*</span></label>
+                                <input type="number" id="episodeNumber" name="EpisodeNumber" class="form-control" min="1" required placeholder="Ex: 1, 2, 3...">
+                            </div>
                         }
-                    </select>
-                </div>
 
-                <div class="form-group" id="episodeSection" style="display: none;">
-                    <label class="form-label">Episode Number <span class="required-star">*</span></label>
-                    <input type="number" id="episodeNumber" class="form-control" min="1" placeholder="Ex: 1, 2, 3...">
-                </div>
+                        <div class="form-group">
+                            <label class="form-label">Select Video File <span class="required-star">*</span></label>
 
-                <div class="form-group">
-                    <label class="form-label">Select Video File <span class="required-star">*</span></label>
+                            <div class="file-drop-area">
+                                <i class="zmdi zmdi-collection-video file-drop-icon"></i>
+                                <span class="custom-file-label-text">Click to browse or drag file here</span>
+                                <span class="custom-file-hint">Format: MP4. Max size: 5GB. (Auto HLS Compression)</span>
+                                <input type="file" id="videoFile" name="VideoFile" class="custom-file-input" accept="video/mp4,video/*" required>
+                            </div>
 
-                    <div class="file-drop-area">
-                        <i class="zmdi zmdi-collection-video file-drop-icon"></i>
-                        <span class="custom-file-label-text">Click to browse or drag file here</span>
-                        <span class="custom-file-hint">Format: MP4, MKV, AVI, WebM. Max size: 5GB.</span>
-                        <input type="file" id="videoFile" class="custom-file-input" accept="video/*,.mp4,.mkv,.avi,.webm" required>
-                    </div>
+                            <div id="fileInfo" class="file-info-box" style="display: none;">
+                                <i class="zmdi zmdi-check-circle file-info-icon"></i>
+                                <div class="file-details">
+                                    <div id="fileName" class="file-name-txt"></div>
+                                    <div id="fileSize" class="file-size-txt"></div>
+                                </div>
+                            </div>
+                        </div>
 
-                    <div id="fileInfo" class="file-info-box" style="display: none;">
-                        <i class="zmdi zmdi-check-circle file-info-icon"></i>
-                        <div class="file-details">
-                            <div id="fileName" class="file-name-txt"></div>
-                            <div id="fileSize" class="file-size-txt"></div>
+                        <div class="action-group">
+                            <button type="submit" class="btn btn-primary w-100" id="uploadBtn">
+                                <i class="zmdi zmdi-cloud-upload"></i> Start Upload
+                            </button>
+                        </div>
+                    </form>
+
+                    <div id="uploadProgress" class="progress-container" style="display: none;">
+                        <div class="progress">
+                            <div id="progressBar" class="progress-bar" role="progressbar"></div>
+                        </div>
+                        <div class="progress-status">
+                            <span id="uploadStatusText">Uploading...</span>
+                            <span id="uploadPercentage">0%</span>
                         </div>
                     </div>
-                </div>
 
-                <div class="action-group">
-                    <button type="submit" class="btn btn-primary" id="uploadBtn">
-                        <i class="zmdi zmdi-cloud-upload"></i> Start Upload
-                    </button>
-                    <a href="@Url.Action("Index", "Movies")" class="btn btn-secondary">
-                        <i class="zmdi zmdi-close"></i> Cancel
-                    </a>
-                </div>
-            </form>
-
-            <div id="uploadProgress" class="progress-container" style="display: none;">
-                <div class="progress">
-                    <div id="progressBar" class="progress-bar" role="progressbar"></div>
-                </div>
-                <div class="progress-status">
-                    <span id="uploadStatusText">Uploading...</span>
-                    <span id="uploadPercentage">0%</span>
+                    <div id="uploadResult" class="mt-3"></div>
                 </div>
             </div>
+        </div>
 
-            <div id="uploadResult"></div>
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0 rounded-3">
+                <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center rounded-top-3">
+                    <h5 class="mb-0 text-dark" style="font-size: 18px; font-weight: 700;">
+                        <i class="fa-solid fa-server text-secondary me-2"></i> Uploaded Media
+                    </h5>
+                    <span class="badge bg-primary rounded-pill px-3 py-2">@(mediaFiles?.Count() ?? 0) Files</span>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light" style="background: var(--bg-light);">
+                                <tr>
+                                    @if (isSeries)
+                                    {
+                                        <th class="ps-4" style="color: var(--text-dark);">Episode</th>
+                                    }
+                                    <th class="@(!isSeries ? "ps-4" : "")" style="color: var(--text-dark);">File Name / Type</th>
+                                    <th style="color: var(--text-dark);">Status</th>
+                                    <th class="text-center pe-4" style="color: var(--text-dark);">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (mediaFiles != null && mediaFiles.Any())
+                                {
+                                    var sortedVideos = isSeries ? mediaFiles.OrderBy(v => v.EpisodeId) : mediaFiles.OrderByDescending(v => v.FileName);
+                                    foreach (var video in sortedVideos)
+                                    {
+                                        <tr>
+                                            @if (isSeries)
+                                            {
+                                                <td class="ps-4"><span class="badge bg-dark px-2 py-1">Ep @video.EpisodeId</span></td>
+                                            }
+                                            <td class="@(!isSeries ? "ps-4" : "")">
+                                                <div class="fw-bold text-truncate text-dark" style="max-width: 250px;" title="@video.FileName">
+                                                    @video.FileName
+                                                </div>
+                                                <span class="badge bg-light text-secondary border mt-1">@video.FileType?.ToUpper()</span>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2 py-1">
+                                                    <i class="fa-solid fa-bolt me-1"></i> Auto HLS
+                                                </span>
+                                            </td>
+                                            <td class="text-center pe-4">
+                                                <form asp-action="DeleteVideo" method="post" class="m-0" onsubmit="return confirm('Are you sure you want to permanently delete this media file?');">
+                                                    <input type="hidden" name="mediaId" value="@video.Id" />
+                                                    <input type="hidden" name="movieId" value="@Model.Id" />
+                                                    <button type="submit" class="btn btn-sm" style="color: var(--danger-color); background: transparent; border: 1px solid var(--danger-color);" title="Delete Media">
+                                                        <i class="fa-solid fa-trash"></i>
+                                                    </button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="4" class="text-center py-5">
+                                            <div class="text-muted">
+                                                <i class="fa-solid fa-photo-film fa-3x mb-3 text-secondary opacity-50"></i>
+                                                <h6 class="fw-bold text-dark mb-1">No media found</h6>
+                                                <p class="mb-0 small">No video files have been uploaded for this movie yet.</p>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -432,21 +442,6 @@
 
     <script>
         $(document).ready(function() {
-            // Test Connection button
-            window.testConnection = function() {
-                fetch('/Admin/MediaUpload/TestConnection')
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            alert('✅ ' + data.message + '\n\nTest URL: ' + data.testUrl);
-                        } else {
-                            alert('❌ ' + data.message + '\n\nDetails: ' + (data.details || 'None'));
-                        }
-                    })
-                    .catch(error => {
-                        alert('❌ Connection Error: ' + error.message);
-                    });
-            };
 
             // Update file label when file selected
             $('#videoFile').on('change', function() {
@@ -462,6 +457,7 @@
                     $('.custom-file-label-text').text('File selected! Click to change.');
                     $('#fileInfo').fadeIn();
 
+                    // Validation: Max 5GB
                     if (file.size > 5 * 1024 * 1024 * 1024) {
                         alert('File exceeds the 5GB limit!');
                         $(this).val('');
@@ -472,48 +468,19 @@
                 }
             });
 
-            // Show/hide episode section based on movie type
-            $('#movieSelect').on('change', function() {
-                const selectedOption = $(this).find(':selected');
-                const movieType = selectedOption.data('type');
-
-                if (movieType === 'Series') {
-                    $('#episodeSection').fadeIn();
-                    $('#episodeNumber').prop('required', true);
-                } else {
-                    $('#episodeSection').hide();
-                    $('#episodeNumber').prop('required', false);
-                }
-            });
-
             // Handle form submission
             $('#uploadForm').on('submit', function(e) {
                 e.preventDefault();
 
-                const movieId = $('#movieSelect').val();
-                const episodeNumber = $('#episodeNumber').val();
                 const videoFile = $('#videoFile')[0].files[0];
-
-                if (!movieId) {
-                    alert('Please select a movie.');
-                    return;
-                }
 
                 if (!videoFile) {
                     alert('Please select a video file.');
                     return;
                 }
 
-                const formData = new FormData();
-                formData.append('MovieId', movieId);
-                formData.append('__RequestVerificationToken', $('input[name="__RequestVerificationToken"]').val());
-
-                if (episodeNumber) {
-                    formData.append('EpisodeNumber', episodeNumber);
-                }
-
-                formData.append('VideoFile', videoFile);
-
+                // FormData automatically captures all inputs inside the form, including the AntiForgeryToken
+                const formData = new FormData(this);
                 uploadVideo(formData);
             });
         });
@@ -521,12 +488,12 @@
         function uploadVideo(formData) {
             const xhr = new XMLHttpRequest();
 
-            // Disable form
+            // Disable form and show progress
             $('#uploadBtn').prop('disabled', true).html('<i class="zmdi zmdi-spinner zmdi-hc-spin"></i> Uploading...');
             $('#uploadProgress').fadeIn();
             $('#uploadResult').empty();
 
-            // Upload progress
+            // Upload progress event
             xhr.upload.addEventListener('progress', function(e) {
                 if (e.lengthComputable) {
                     const percentComplete = (e.loaded / e.total) * 100;
@@ -539,7 +506,7 @@
                 }
             });
 
-            // Upload complete
+            // Upload complete event
             xhr.addEventListener('load', function() {
                 if (xhr.status === 200) {
                     try {
@@ -547,59 +514,58 @@
 
                         if (response.success) {
                             $('#uploadResult').html(`
-                                <div class="alert alert-success">
-                                    <i class="zmdi zmdi-check-circle"></i>
+                                <div class="alert alert-success shadow-sm" style="background: #ecfdf5; color: #166534; border: 1px solid #a7f3d0; padding: 16px; border-radius: var(--radius-md);">
+                                    <i class="zmdi zmdi-check-circle" style="font-size: 20px; margin-right: 8px;"></i>
                                     <div>
-                                        <strong>Success!</strong> ${response.message}<br>
-                                        <small style="font-family: monospace;">URL: ${response.videoUrl}</small>
+                                        <strong>Success!</strong> ${response.message}
                                     </div>
                                 </div>
                             `);
 
-                            // Reset form
+                            // Reset form UI
                             $('#uploadForm')[0].reset();
                             $('#fileInfo').hide();
                             $('.file-drop-area').css('border-color', '#cbd5e1');
                             $('.custom-file-label-text').text('Click to browse or drag file here');
 
                             setTimeout(() => {
-                                window.location.href = '/Admin/MediaUpload';
+                                window.location.reload();
                             }, 2000);
                         } else {
                             $('#uploadResult').html(`
-                                <div class="alert alert-danger">
-                                    <i class="zmdi zmdi-alert-triangle"></i>
+                                <div class="alert alert-danger shadow-sm" style="background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; padding: 16px; border-radius: var(--radius-md);">
+                                    <i class="zmdi zmdi-alert-triangle" style="font-size: 20px; margin-right: 8px;"></i>
                                     <div><strong>Error!</strong> ${response.message}</div>
                                 </div>
                             `);
                         }
                     } catch (e) {
                         $('#uploadResult').html(`
-                            <div class="alert alert-danger">
-                                <i class="zmdi zmdi-alert-triangle"></i>
+                            <div class="alert alert-danger shadow-sm" style="background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; padding: 16px; border-radius: var(--radius-md);">
+                                <i class="zmdi zmdi-alert-triangle" style="font-size: 20px; margin-right: 8px;"></i>
                                 <div><strong>Error!</strong> Failed to parse server response.</div>
                             </div>
                         `);
                     }
                 } else {
                     $('#uploadResult').html(`
-                        <div class="alert alert-danger">
-                            <i class="zmdi zmdi-alert-triangle"></i>
+                        <div class="alert alert-danger shadow-sm" style="background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; padding: 16px; border-radius: var(--radius-md);">
+                            <i class="zmdi zmdi-alert-triangle" style="font-size: 20px; margin-right: 8px;"></i>
                             <div><strong>Upload Failed!</strong> Server returned status code: ${xhr.status}</div>
                         </div>
                     `);
                 }
 
-                // Re-enable form
+                // Re-enable form after completion
                 $('#uploadBtn').prop('disabled', false).html('<i class="zmdi zmdi-cloud-upload"></i> Start Upload');
-                setTimeout(() => { $('#uploadProgress').fadeOut(); }, 1000);
+                setTimeout(() => { $('#uploadProgress').fadeOut(); }, 2000);
             });
 
-            // Upload error
+            // Upload error event
             xhr.addEventListener('error', function() {
                 $('#uploadResult').html(`
-                    <div class="alert alert-danger">
-                        <i class="zmdi zmdi-alert-polygon"></i>
+                    <div class="alert alert-danger shadow-sm" style="background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; padding: 16px; border-radius: var(--radius-md);">
+                        <i class="zmdi zmdi-alert-polygon" style="font-size: 20px; margin-right: 8px;"></i>
                         <div><strong>Connection Error!</strong> Failed to connect to the server during upload.</div>
                     </div>
                 `);
@@ -607,7 +573,7 @@
                 $('#uploadProgress').hide();
             });
 
-            // Send request
+            // Send AJAX Request
             xhr.open('POST', '@Url.Action("UploadVideo", "MediaUpload", new { area = "Admin" })');
             xhr.send(formData);
         }

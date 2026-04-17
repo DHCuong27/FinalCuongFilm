@@ -571,14 +571,23 @@
                         </div>
 
                         @{
-                            // Xử lý lấy Avatar của User đang đăng nhập
-                            string avatarUrl = "/img/avatar.jpg"; // Đường dẫn mặc định nếu user chưa có ảnh
+                            // TỔNG HỢP LOGIC: Xử lý lấy Avatar và FullName mới nhất trực tiếp từ Database
+                            string avatarUrl = "/img/avatar.jpg";
+                            string displayNavbarName = User.Identity?.Name ?? "Unknown";
+
                             if (User.Identity?.IsAuthenticated == true)
                             {
                                 var currentUser = await UserManager.GetUserAsync(User);
-                                if (currentUser != null && !string.IsNullOrEmpty(currentUser.AvatarUrl))
+                                if (currentUser != null)
                                 {
-                                    avatarUrl = currentUser.AvatarUrl;
+                                    // Cập nhật Avatar nếu có
+                                    if (!string.IsNullOrEmpty(currentUser.AvatarUrl))
+                                    {
+                                        avatarUrl = currentUser.AvatarUrl;
+                                    }
+
+                                    // CRITICAL FIX: Ưu tiên hiển thị FullName, nếu FullName bị rỗng thì xài UserName
+                                    displayNavbarName = !string.IsNullOrEmpty(currentUser.FullName) ? currentUser.FullName : currentUser.UserName;
                                 }
                             }
                         }
@@ -590,7 +599,7 @@
                                     <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" style="text-decoration: none;">
                                         <img src="@avatarUrl" alt="User Avatar" class="user-avatar me-2" style="width: 35px; height: 35px; border-radius: 50%; object-fit: cover; border: 1px solid rgba(255,255,255,0.2);" />
 
-                                        <span class="d-none d-lg-inline text-white me-2">@User.Identity.Name</span>
+                                        <span class="d-none d-lg-inline text-white me-2">@displayNavbarName</span>
 
                                         @if (isVip)
                                         {

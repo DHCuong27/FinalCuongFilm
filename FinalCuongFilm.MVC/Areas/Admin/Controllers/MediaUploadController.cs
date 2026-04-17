@@ -3,6 +3,7 @@ using FinalCuongFilm.Service.Interfaces;
 using Hangfire;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 {
@@ -33,17 +34,19 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 			_logger = logger;
 		}
 
+		#region 1. GLOBAL MEDIA MANAGEMENT (Quản lý toàn bộ danh sách file)
+
 		// GET: Admin/MediaUpload/Index
 		public async Task<IActionResult> Index(Guid? movieId, Guid? episodeId, string fileType = null, int page = 1)
 		{
-			int pageSize = 10; // Số lượng file hiển thị trên 1 trang
+			int pageSize = 10;
 			IEnumerable<MediaFileDto> mediaFiles;
 
 			if (episodeId.HasValue)
 			{
 				mediaFiles = await _mediaFileService.GetByEpisodeIdAsync(episodeId.Value);
 				var episode = await _episodeService.GetByIdAsync(episodeId.Value);
-				ViewBag.EpisodeTitle = $"Tập {episode?.EpisodeNumber}: {episode?.Title}";
+				ViewBag.EpisodeTitle = $"Episode {episode?.EpisodeNumber}: {episode?.Title}";
 				ViewBag.EpisodeId = episodeId.Value;
 				ViewBag.MovieId = episode?.MovieId;
 			}
@@ -59,22 +62,18 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 				mediaFiles = await _mediaFileService.GetAllAsync();
 			}
 
-			// Lọc theo file type nếu có
 			if (!string.IsNullOrEmpty(fileType))
 			{
 				mediaFiles = mediaFiles.Where(m => m.FileType == fileType);
 			}
-	
-			// XỬ LÝ PHÂN TRANG (PAGINATION LOGIC)
-		
+
+			// Xử lý phân trang
 			int totalItems = mediaFiles.Count();
 			int totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
 
-			// Đảm bảo page không bị âm hoặc vượt quá tổng số trang
 			page = page < 1 ? 1 : page;
 			page = page > totalPages && totalPages > 0 ? totalPages : page;
 
-			// Cắt dữ liệu cho trang hiện tại
 			var pagedMediaFiles = mediaFiles
 				.Skip((page - 1) * pageSize)
 				.Take(pageSize)
@@ -85,7 +84,6 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 			ViewBag.TotalItems = totalItems;
 			ViewBag.FileType = fileType;
 
-			// Trả về danh sách đã được cắt gọn (pagedMediaFiles)
 			return View(pagedMediaFiles);
 		}
 
@@ -93,10 +91,7 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 		public async Task<IActionResult> Details(Guid id)
 		{
 			var mediaFile = await _mediaFileService.GetByIdAsync(id);
-			if (mediaFile == null)
-			{
-				return NotFound();
-			}
+			if (mediaFile == null) return NotFound();
 
 			return View(mediaFile);
 		}
@@ -105,10 +100,7 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 		public async Task<IActionResult> Edit(Guid id)
 		{
 			var mediaFile = await _mediaFileService.GetByIdAsync(id);
-			if (mediaFile == null)
-			{
-				return NotFound();
-			}
+			if (mediaFile == null) return NotFound();
 
 			var dto = new MediaFileUpdateDto
 			{
@@ -133,24 +125,20 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 		[ValidateAntiForgeryToken]
 		public async Task<IActionResult> Edit(Guid id, MediaFileUpdateDto dto)
 		{
-			if (id != dto.Id)
-			{
-				return NotFound();
-			}
+			if (id != dto.Id) return NotFound();
 
 			if (ModelState.IsValid)
 			{
 				try
 				{
 					await _mediaFileService.UpdateAsync(dto);
-					TempData["Success"] = "Cập nhật file thành công!";
-
+					TempData["Success"] = "Media file updated successfully!";
 					return RedirectToAction(nameof(Index), new { movieId = dto.MovieId });
 				}
 				catch (Exception ex)
 				{
 					_logger.LogError(ex, "Error updating media file {Id}", id);
-					ModelState.AddModelError("", $"Lỗi: {ex.Message}");
+					ModelState.AddModelError("", $"Error: {ex.Message}");
 				}
 			}
 
@@ -162,10 +150,7 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 		public async Task<IActionResult> Delete(Guid id)
 		{
 			var mediaFile = await _mediaFileService.GetByIdAsync(id);
-			if (mediaFile == null)
-			{
-				return NotFound();
-			}
+			if (mediaFile == null) return NotFound();
 
 			return View(mediaFile);
 		}
@@ -178,12 +163,9 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 			try
 			{
 				var mediaFile = await _mediaFileService.GetByIdAsync(id);
-				if (mediaFile == null)
-				{
-					return NotFound();
-				}
+				if (mediaFile == null) return NotFound();
 
-				// Delete from Azure Blob Storage
+				// Xóa file vật lý trên Azure
 				if (!string.IsNullOrEmpty(mediaFile.FileUrl))
 				{
 					try
@@ -194,161 +176,140 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 					catch (Exception ex)
 					{
 						_logger.LogWarning(ex, "Failed to delete file from Azure: {FileUrl}", mediaFile.FileUrl);
-						// Continue to delete from DB even if Azure deletion fails
 					}
 				}
 
-				// Delete from database
+				// Xóa record trong DB
 				await _mediaFileService.DeleteAsync(id);
-
-				TempData["Success"] = "Xóa file thành công!";
+				TempData["Success"] = "Media file deleted successfully!";
 
 				return RedirectToAction(nameof(Index), new { movieId = mediaFile.MovieId });
 			}
 			catch (Exception ex)
 			{
 				_logger.LogError(ex, "Error deleting media file {Id}", id);
-				TempData["Error"] = $"Lỗi khi xóa file: {ex.Message}";
+				TempData["Error"] = $"Error deleting file: {ex.Message}";
 				return RedirectToAction(nameof(Delete), new { id });
 			}
 		}
 
-		private async Task PopulateDropdowns(Guid? movieId, Guid? episodeId)
-		{
-			var movies = await _movieService.GetAllAsync();
-			ViewBag.MovieId = new Microsoft.AspNetCore.Mvc.Rendering.SelectList(movies, "Id", "Title", movieId);
+		#endregion
 
-			if (movieId.HasValue)
+		#region 2. MOVIE-SPECIFIC UPLOAD (Luồng giao diện Upload chuẩn Netflix)
+
+		[HttpGet]
+		public async Task<IActionResult> UploadVideo(Guid? id)
+		{
+			// Bảo vệ UX: Tránh văng lỗi 404 nếu Admin truy cập URL không có ID
+			if (id == null)
 			{
-				var episodes = await _episodeService.GetByMovieIdAsync(movieId.Value);
-				ViewBag.EpisodeId = new Microsoft.AspNetCore.Mvc.Rendering.SelectList(
-				episodes.Select(e => new {
-					e.Id,
-					Display = $"Tập {e.EpisodeNumber}: {e.Title}"
-				}),
-				"Id",
-				"Display",
-				episodeId
-				);
+				TempData["Error"] = "Please select a movie from the list to manage videos.";
+				return RedirectToAction("Index", "Movies", new { area = "Admin" });
 			}
-			else
-			{
-				ViewBag.EpisodeId = new Microsoft.AspNetCore.Mvc.Rendering.SelectList(System.Linq.Enumerable.Empty<object>(), "Id", "Display");
-			}
+
+			var movie = await _movieService.GetByIdAsync(id.Value);
+			if (movie == null) return NotFound();
+
+			var mediaFiles = await _mediaFileService.GetByMovieIdAsync(id.Value);
+			ViewBag.MediaFiles = mediaFiles;
+
+			return View(movie);
 		}
 
-
-		private string NormalizeAzureUrl(string url)
-		{
-			if (string.IsNullOrEmpty(url)) return url;
-			if (!url.StartsWith("http", StringComparison.OrdinalIgnoreCase))
-			{
-				url = "https://" + url;
-			}
-			return url.Trim();
-		}
-
-		// GET: Admin/MediaUpload/UploadVideo
-		public async Task<IActionResult> UploadVideo(Guid? movieId = null)
-		{
-			var movies = await _movieService.GetAllAsync();
-			ViewBag.Movies = movies;
-			ViewBag.SelectedMovieId = movieId;
-
-			return View();
-		}
-
-
-		// POST: Admin/MediaUpload/UploadVideo
 		[HttpPost]
-		[RequestSizeLimit(5_000_000_000)] 
+		[RequestSizeLimit(5_000_000_000)]
 		[RequestFormLimits(MultipartBodyLengthLimit = 5_000_000_000)]
 		public async Task<IActionResult> UploadVideo([FromForm] VideoUploadDto dto)
 		{
-			if (!ModelState.IsValid) return Json(new { success = false, message = "Invalid data" });
+			if (!ModelState.IsValid) return Json(new { success = false, message = "Invalid data." });
 
 			try
 			{
 				var movie = await _movieService.GetByIdAsync(dto.MovieId);
-				if (movie == null) return Json(new { success = false, message = "Movie not found" });
+				if (movie == null) return Json(new { success = false, message = "Movie not found." });
 
-				// Tự động tìm EpisodeId nếu là phim Series
+				// Tự động map EpisodeId nếu là phim bộ
 				if (movie.Type == ApplicationCore.Entities.Enum.MovieType.Series && dto.EpisodeNumber.HasValue)
 				{
 					if (dto.EpisodeId == null)
 					{
 						var episodes = await _episodeService.GetByMovieIdAsync(movie.Id);
 						var targetEp = episodes.FirstOrDefault(e => e.EpisodeNumber == dto.EpisodeNumber.Value);
+
 						if (targetEp != null) dto.EpisodeId = targetEp.Id;
-						else return Json(new { success = false, message = $"Episode {dto.EpisodeNumber} not created yet." });
+						else return Json(new { success = false, message = $"Episode {dto.EpisodeNumber} has not been created yet." });
 					}
 				}
 
-				//  Nhập link thủ công (Manual URL)
-				if (!string.IsNullOrEmpty(dto.ManualUrl))
+				// Xử lý upload file MP4 từ Local
+				if (dto.VideoFile != null && dto.VideoFile.Length > 0)
 				{
-					string hlsUrl = NormalizeAzureUrl(dto.ManualUrl);
-					_logger.LogInformation("Using manual URL: {Url}", hlsUrl);
-
-					var manualMediaDto = new MediaFileCreateDto
-					{
-						FileName = "Manual URL",
-						FileUrl = hlsUrl,
-						FileType = "hls", // Mặc định coi link ngoài là luồng HLS
-						Quality = dto.Quality ?? "Auto",
-						Language = dto.Language ?? "vi",
-						FileSizeBytes = 0,
-						MovieId = dto.MovieId,
-						EpisodeId = dto.EpisodeId
-					};
-					await _mediaFileService.CreateAsync(manualMediaDto);
-
-					return Json(new { success = true, message = "Lưu URL thủ công thành công!" });
-				}
-
-				// Upload file Video từ máy tính
-				else if (dto.VideoFile != null && dto.VideoFile.Length > 0)
-				{
-					// 1. Chỉ upload MP4 gốc lên Azure 
 					string originalUrl = await _azureBlobService.UploadVideoAsync(dto.VideoFile, movie.Slug, dto.EpisodeNumber);
 					long fileSize = dto.VideoFile.Length;
 
-					// 2. Lưu Database NGAY LẬP TỨC với thông tin của MP4 gốc trước
 					var mediaFileDto = new MediaFileCreateDto
 					{
 						FileName = dto.VideoFile.FileName,
 						FileUrl = originalUrl,
-						FileType = "video", 
-						Quality = "Processing...", 
+						FileType = "video",
+						Quality = "Auto HLS",
 						Language = dto.Language ?? "vi",
 						FileSizeBytes = fileSize,
 						MovieId = dto.MovieId,
 						EpisodeId = dto.EpisodeId
 					};
+
 					var createdMedia = await _mediaFileService.CreateAsync(mediaFileDto);
 
-					// 3. ĐẨY JOB VÀO HANGFIRE
+					// Bắn Job nén HLS ngầm vào Hangfire
 					BackgroundJob.Enqueue<IVideoConversionService>(service =>
 						service.ProcessVideoBackgroundJobAsync(createdMedia.Id, originalUrl, movie.Slug, dto.EpisodeNumber ?? 1));
 
-					// 4. Trả về kết quả ngay cho giao diện
-					return Json(new { success = true, message = "Video has been uploaded! The system is compressing HLS in the background; you can close this notification." });
+					return Json(new { success = true, message = "Upload complete! The system is automatically compressing HLS in the background." });
 				}
-
-				
 				else
 				{
-					return Json(new { success = false, message = "Please select the video file." });
+					return Json(new { success = false, message = "Please select a valid video file." });
 				}
-			} 
+			}
 			catch (Exception ex)
 			{
 				_logger.LogError(ex, "Error processing video");
-				return Json(new { success = false, message = "Error: " + ex.Message });
+				return Json(new { success = false, message = "Processing error: " + ex.Message });
 			}
 		}
 
-		// POST: Admin/MediaUpload/UploadPoster
+		// Hàm xóa Video dùng riêng cho giao diện UploadVideo
+		[HttpPost]
+		[ValidateAntiForgeryToken]
+		public async Task<IActionResult> DeleteVideo(Guid mediaId, Guid movieId)
+		{
+			try
+			{
+				var mediaFile = await _mediaFileService.GetByIdAsync(mediaId);
+				if (mediaFile != null)
+				{
+					if (!string.IsNullOrEmpty(mediaFile.FileUrl))
+					{
+						await _azureBlobService.DeleteFileAsync(mediaFile.FileUrl);
+					}
+					await _mediaFileService.DeleteAsync(mediaId);
+					TempData["Success"] = "Media file deleted successfully!";
+				}
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error deleting media {Id}", mediaId);
+				TempData["Error"] = "Error deleting file: " + ex.Message;
+			}
+
+			return RedirectToAction(nameof(UploadVideo), new { id = movieId });
+		}
+
+		#endregion
+
+		#region 3. HELPERS & OTHER ACTIONS
+
 		[HttpPost]
 		public async Task<IActionResult> UploadPoster(IFormFile posterFile, Guid movieId)
 		{
@@ -357,12 +318,11 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 				var movie = await _movieService.GetByIdAsync(movieId);
 				if (movie == null)
 				{
-					return Json(new { success = false, message = "Film not found." });
+					return Json(new { success = false, message = "Movie not found." });
 				}
 
 				var posterUrl = await _azureBlobService.UploadPosterAsync(posterFile, movie.Slug);
 
-				// Update movie poster URL
 				var updateDto = new MovieUpdateDto
 				{
 					Id = movie.Id,
@@ -385,7 +345,7 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 				return Json(new
 				{
 					success = true,
-					message = "Upload poster thành công!",
+					message = "Poster uploaded successfully!",
 					posterUrl = posterUrl
 				});
 			}
@@ -396,12 +356,10 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 			}
 		}
 
-		// GET: Admin/MediaUpload/TestConnection
 		public async Task<IActionResult> TestConnection()
 		{
 			try
 			{
-				// Create a test text file
 				var testContent = "Azure Blob Storage connection test - " + DateTime.Now;
 				var bytes = System.Text.Encoding.UTF8.GetBytes(testContent);
 
@@ -417,7 +375,7 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 				return Json(new
 				{
 					success = true,
-					message = "Kết nối Azure Blob Storage thành công!",
+					message = "Azure Blob Storage connection successful!",
 					testUrl = testUrl
 				});
 			}
@@ -427,10 +385,36 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 				return Json(new
 				{
 					success = false,
-					message = "Error Connect: " + ex.Message,
+					message = "Connection Error: " + ex.Message,
 					details = ex.InnerException?.Message
 				});
 			}
 		}
+
+		private async Task PopulateDropdowns(Guid? movieId, Guid? episodeId)
+		{
+			var movies = await _movieService.GetAllAsync();
+			ViewBag.MovieId = new SelectList(movies, "Id", "Title", movieId);
+
+			if (movieId.HasValue)
+			{
+				var episodes = await _episodeService.GetByMovieIdAsync(movieId.Value);
+				ViewBag.EpisodeId = new SelectList(
+					episodes.Select(e => new {
+						e.Id,
+						Display = $"Episode {e.EpisodeNumber}: {e.Title}"
+					}),
+					"Id",
+					"Display",
+					episodeId
+				);
+			}
+			else
+			{
+				ViewBag.EpisodeId = new SelectList(System.Linq.Enumerable.Empty<object>(), "Id", "Display");
+			}
+		}
+
+		#endregion
 	}
 }

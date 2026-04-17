@@ -1,4 +1,5 @@
-﻿using FinalCuongFilm.Common.DTOs;
+﻿using FinalCuongFilm.ApplicationCore.Entities;
+using FinalCuongFilm.Common.DTOs;
 
 namespace FinalCuongFilm.MVC.Models.ViewModels
 {
@@ -55,8 +56,25 @@ namespace FinalCuongFilm.MVC.Models.ViewModels
 
 		public IEnumerable<ActorDto> Actors { get; set; } 
 
+	}
+	public class ManageVideosViewModel
+	{
+		// 1. Movie Information (Display only)
+		public Guid MovieId { get; set; } // Mapped to your Guid Id
+		public string MovieTitle { get; set; }
+		public string? PosterUrl { get; set; }
+		public bool IsSeries { get; set; }
 
+		// 2. Existing Data
+		public List<MediaFile> ExistingVideos { get; set; } = new List<MediaFile>();
 
+		// 3. Upload Form Fields
+		public IFormFile? VideoFile { get; set; }
+
+		// Only required if IsSeries is true
+		public int? EpisodeNumber { get; set; }
+
+		public string Quality { get; set; } = "1080p";
 	}
 
 	public class MovieWatchViewModel
