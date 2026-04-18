@@ -56,10 +56,8 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 					FullName = user.FullName ?? user.UserName,
 					Email = user.Email,
 					AvatarUrl = string.IsNullOrEmpty(user.AvatarUrl) ? DefaultAvatarUrl : user.AvatarUrl,
-					Roles = await _userManager.GetRolesAsync(user), // Vẫn giữ để hiển thị ra View cho biết ai là Admin
+					Roles = await _userManager.GetRolesAsync(user), 
 					IsActive = isActive,
-
-					// FIX LỖI JOINED DATE: Mở khóa dòng này để map dữ liệu
 					CreatedAt = user.CreatedAt
 				});
 			}

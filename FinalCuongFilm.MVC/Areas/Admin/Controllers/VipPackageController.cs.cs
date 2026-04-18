@@ -38,7 +38,7 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 			if (ModelState.IsValid)
 			{
 				await _vipService.CreatePackageAsync(model);
-				TempData["Success"] = "Tạo gói VIP thành công!";
+				TempData["Success"] = "VIP package created successfully!";
 				return RedirectToAction(nameof(Index));
 			}
 			return View(model);
@@ -64,7 +64,7 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 			if (ModelState.IsValid)
 			{
 				await _vipService.UpdatePackageAsync(model);
-				TempData["Success"] = "Cập nhật gói VIP thành công!";
+				TempData["Success"] = "VIP package updated successfully!";
 				return RedirectToAction(nameof(Index));
 			}
 			return View(model);
@@ -76,7 +76,7 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 		public async Task<IActionResult> Delete(Guid id)
 		{
 			await _vipService.DeactivatePackageAsync(id);
-			TempData["Success"] = "Đã vô hiệu hóa gói VIP thành công!";
+			TempData["Success"] = "VIP package deactivated successfully!";
 			return RedirectToAction(nameof(Index));
 		}
 	}

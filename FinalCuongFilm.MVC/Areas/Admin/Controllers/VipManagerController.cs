@@ -11,7 +11,7 @@ using static FinalCuongFilm.ApplicationCore.Entities.Enum;
 namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 {
 	[Area("Admin")]
-	[Authorize(Roles = "Admin")] 
+	[Authorize(Roles = "Admin")]
 	public class VipManagerController : Controller
 	{
 		private readonly CuongFilmDbContext _context;
@@ -29,28 +29,19 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 		public async Task<IActionResult> Transactions(int page = 1)
 		{
 			int pageSize = 10;
-
-			// 1. Get total count of records first
 			var totalItems = await _context.Transactions.CountAsync();
-
-			// 2. Calculate pagination math
 			var totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
 
-			// 3. Fetch ONLY the records for the current page
 			var transactions = await _context.Transactions
 				.OrderByDescending(t => t.TransactionDate)
 				.Skip((page - 1) * pageSize)
 				.Take(pageSize)
 				.ToListAsync();
 
-			// 4. FIX "UNKNOWN USER": Extract UserIds and fetch data from Identity DB
 			var userIds = transactions.Select(t => t.UserId).Distinct().ToList();
 			var users = await _userManager.Users.Where(u => userIds.Contains(u.Id)).ToListAsync();
 
-			// Create a Dictionary mapping UserId -> CuongFilmUser object
 			ViewBag.UserDictionary = users.ToDictionary(u => u.Id, u => u);
-
-			// 5. Pass pagination metadata to the View
 			ViewBag.CurrentPage = page;
 			ViewBag.TotalPages = totalPages;
 			ViewBag.TotalItems = totalItems;
@@ -58,22 +49,22 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 			return View(transactions);
 		}
 
-		// 2. Manage Active VIP Subscriptions
-
 		public async Task<IActionResult> ActiveVips()
 		{
-			var activeVips = await _context.UserSubscriptions
-				.Where(s => s.EndDate > DateTime.UtcNow && s.IsActive)
-				.OrderByDescending(s => s.EndDate)
+			// ĐÃ FIX: Bỏ điều kiện "&& s.IsActive" để lấy cả những gói đang bị Khóa tạm thời
+			var rawActiveVips = await _context.UserSubscriptions
+				.Include(s => s.Package)
+				.Where(s => s.EndDate > DateTime.UtcNow) // Chỉ lọc những gói chưa hết hạn
 				.ToListAsync();
 
-			// FIX UNKNOWN USER: Extract all unique UserIds from the subscriptions
-			var userIds = activeVips.Select(v => v.UserId).Distinct().ToList();
+			var activeVips = rawActiveVips
+				.GroupBy(s => s.UserId)
+				.Select(group => group.OrderByDescending(s => s.EndDate).First())
+				.ToList();
 
-			// Fetch user details from the Identity database
+			var userIds = activeVips.Select(v => v.UserId).Distinct().ToList();
 			var users = await _userManager.Users.Where(u => userIds.Contains(u.Id)).ToListAsync();
 
-			// Create a Dictionary mapping UserId -> FullName (or Email as fallback)
 			ViewBag.UserDictionary = users.ToDictionary(
 				u => u.Id,
 				u => !string.IsNullOrEmpty(u.FullName) ? u.FullName : u.Email
@@ -82,6 +73,72 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 			return View(activeVips);
 		}
 
+		// 3. Hàm Xử lý Nút Revoke (Thu hồi quyền VIP)
+		[HttpPost, ActionName("Revoke")]
+		[ValidateAntiForgeryToken]
+		public async Task<IActionResult> RevokeConfirmed(Guid id)
+		{
+			var subscription = await _context.UserSubscriptions.FindAsync(id);
+			if (subscription == null) return NotFound();
 
+			// Tước quyền: Sửa ngày hết hạn về hiện tại và tắt cờ Active (Giữ lại lịch sử trong DB)
+			subscription.EndDate = DateTime.UtcNow;
+			subscription.IsActive = false;
+
+			_context.Update(subscription);
+			await _context.SaveChangesAsync();
+
+			TempData["Success"] = "VIP access has been successfully revoked.";
+			return RedirectToAction(nameof(ActiveVips));
+		}
+
+		[HttpPost]
+		[ValidateAntiForgeryToken]
+		public async Task<IActionResult> ToggleStatus(Guid id)
+		{
+			var subscription = await _context.UserSubscriptions.FindAsync(id);
+			if (subscription == null) return NotFound();
+
+			// CHỈ ĐẢO NGƯỢC CỜ IsActive (Tắt thành Mở, Mở thành Tắt). Giữ nguyên EndDate!
+			subscription.IsActive = !subscription.IsActive;
+
+			_context.Update(subscription);
+			await _context.SaveChangesAsync();
+
+			TempData["Success"] = subscription.IsActive
+				? "VIP access has been successfully reactivated."
+				: "VIP access has been temporarily suspended.";
+
+			return RedirectToAction(nameof(ActiveVips));
+		}
+
+		// 4. Hàm Xử lý Nút Details (Xem chi tiết Gói)
+		[HttpGet]
+		public async Task<IActionResult> Details(Guid? id)
+		{
+			if (id == null)
+			{
+				TempData["Error"] = "Invalid request: Missing ID.";
+				return RedirectToAction(nameof(ActiveVips));
+			}
+
+			// Gọi chi tiết từ DB
+			var vipDetails = await _context.UserSubscriptions
+				.Include(s => s.Package)
+				.FirstOrDefaultAsync(s => s.Id == id.Value);
+
+			if (vipDetails == null)
+			{
+				TempData["Error"] = "This VIP record does not exist or has been deleted.";
+				return RedirectToAction(nameof(ActiveVips));
+			}
+
+			// Truyền thông tin User sang View
+			var user = await _userManager.FindByIdAsync(vipDetails.UserId);
+			ViewBag.UserName = user != null ? (!string.IsNullOrEmpty(user.FullName) ? user.FullName : user.Email) : "Unknown User";
+			ViewBag.UserEmail = user?.Email ?? "N/A";
+
+			return View(vipDetails);
+		}
 	}
 }

@@ -169,25 +169,31 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 			return View(episode);
 		}
 
-		// POST: Admin/Episodes/Delete/5
 		[HttpPost, ActionName("Delete")]
 		[ValidateAntiForgeryToken]
 		public async Task<IActionResult> DeleteConfirmed(Guid id)
 		{
+			// 1. Tìm tập phim chuẩn bị xóa
 			var episode = await _episodeService.GetByIdAsync(id);
 			if (episode == null) return NotFound();
 
+			// 2. [QUAN TRỌNG NHẤT]: Lưu lại ID của bộ phim TRƯỚC KHI xóa tập phim đó đi
+			Guid currentMovieId = episode.MovieId;
+
 			try
 			{
+				// 3. Tiến hành xóa tập phim
 				await _episodeService.DeleteAsync(id);
-				TempData["Success"] = "Episode deleted successfully!";
-				return RedirectToAction(nameof(Index), new { movieId = episode.MovieId });
+				TempData["Success"] = "Deleted episode successfully!";
 			}
 			catch (Exception ex)
 			{
-				TempData["Error"] = $"Error: {ex.Message}";
-				return RedirectToAction(nameof(Delete), new { id });
+				TempData["Error"] = "Error deleting episode: " + ex.Message;
+				return RedirectToAction(nameof(Delete), new { id = id });
 			}
+
+			// 4. [FIX LỖI]: Điều hướng về trang Index VÀ bắt buộc truyền kèm tham số movieId
+			return RedirectToAction(nameof(Index), new { movieId = currentMovieId });
 		}
 
 		private async Task PopulateMoviesDropdown(Guid? selectedId = null)

@@ -109,8 +109,15 @@
             box-shadow: 0 0 0 3px var(--input-focus-ring);
         }
 
+        /* Style cho các ô bị khóa (Read-only) */
+        .form-control:disabled {
+            background-color: #f1f5f9;
+            color: #94a3b8;
+            cursor: not-allowed;
+            border-style: dashed;
+        }
+
     select.form-control {
-        cursor: pointer;
         appearance: none;
         background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
         background-repeat: no-repeat;
@@ -228,22 +235,19 @@
     }
 
     @@media (max-width: 640px) {
-        .form-row
+        .form-row {
+            grid-template-columns: 1fr;
+            gap: 0;
+        }
 
-    {
-        grid-template-columns: 1fr;
-        gap: 0;
-    }
+        .action-bar {
+            flex-direction: column;
+        }
 
-    .action-bar {
-        flex-direction: column;
-    }
-
-    .btn-custom {
-        width: 100%;
-        justify-content: center;
-    }
-
+        .btn-custom {
+            width: 100%;
+            justify-content: center;
+        }
     }
 </style>
 
@@ -260,9 +264,11 @@
 
         <input type="hidden" asp-for="Id" />
         <input type="hidden" asp-for="FileUrl" />
-
         <input type="hidden" asp-for="FileType" />
         <input type="hidden" asp-for="Quality" />
+
+        <input type="hidden" asp-for="MovieId" />
+        <input type="hidden" asp-for="EpisodeId" />
 
         <div class="current-file-badge">
             <i class="zmdi zmdi-cloud-box"></i>
@@ -288,31 +294,29 @@
 
         <div class="card">
             <div class="card-header">
-                <i class="zmdi zmdi-device-hub"></i> Linkage Configuration
+                <i class="zmdi zmdi-device-hub"></i> Associated Content (Read-Only)
             </div>
             <div class="card-body">
                 <div class="form-row">
                     <div class="form-group">
-                        <label class="form-label">Assign to Movie (Standalone)</label>
-                        <select asp-for="MovieId" class="form-control" asp-items="ViewBag.MovieId">
-                            <option value="">-- No Movie Assignment --</option>
+                        <label class="form-label">Assigned Movie</label>
+                        <select class="form-control" asp-items="ViewBag.MovieId" disabled>
+                            <option value="">-- N/A --</option>
                         </select>
-                        <span asp-validation-for="MovieId" class="text-danger"></span>
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">Assign to Episode (Series)</label>
-                        <select asp-for="EpisodeId" class="form-control" asp-items="ViewBag.EpisodeId">
-                            <option value="">-- No Episode Assignment --</option>
+                        <label class="form-label">Assigned Episode</label>
+                        <select class="form-control" asp-items="ViewBag.EpisodeId" disabled>
+                            <option value="">-- N/A --</option>
                         </select>
-                        <span asp-validation-for="EpisodeId" class="text-danger"></span>
                     </div>
                 </div>
 
                 <div class="alert-warning">
-                    <i class="zmdi zmdi-alert-triangle"></i>
+                    <i class="zmdi zmdi-alert-triangle" style="font-size: 20px;"></i>
                     <div>
-                        <strong>Routing Rules:</strong> A media file must be assigned to either a Movie OR an Episode. If the physical video content is incorrect or corrupted, do not edit this record. Delete it and upload a new file.
+                        <strong>Routing Rules:</strong> A media file is permanently bound to its initial Movie/Episode. If the physical video content is incorrect, do not attempt to re-assign it. Please delete this record and upload a new file.
                     </div>
                 </div>
             </div>
@@ -322,7 +326,8 @@
             <button type="submit" class="btn-custom btn-warning" id="submitBtn">
                 <i class="zmdi zmdi-edit"></i> Save Configuration
             </button>
-            <a asp-action="Index" class="btn-custom btn-outline">
+
+            <a href="/Admin/MediaUpload/UploadVideo?id=@Model.MovieId" class="btn-custom btn-outline">
                 <i class="zmdi zmdi-close"></i> Cancel
             </a>
         </div>

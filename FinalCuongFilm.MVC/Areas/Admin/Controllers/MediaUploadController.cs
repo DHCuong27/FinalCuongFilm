@@ -37,7 +37,9 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 		#region 1. GLOBAL MEDIA MANAGEMENT (Quản lý toàn bộ danh sách file)
 
 		// GET: Admin/MediaUpload/Index
-		public async Task<IActionResult> Index(Guid? movieId, Guid? episodeId, string fileType = null, int page = 1)
+
+		// Đã thêm tham số searchTerm
+		public async Task<IActionResult> Index(Guid? movieId, Guid? episodeId, string fileType = null, string searchTerm = null, int page = 1)
 		{
 			int pageSize = 10;
 			IEnumerable<MediaFileDto> mediaFiles;
@@ -62,9 +64,22 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 				mediaFiles = await _mediaFileService.GetAllAsync();
 			}
 
+			// 1. Lọc theo FileType (Nếu có)
 			if (!string.IsNullOrEmpty(fileType))
 			{
 				mediaFiles = mediaFiles.Where(m => m.FileType == fileType);
+			}
+
+			// 2. LỌC THEO TỪ KHÓA TÌM KIẾM (MỚI THÊM)
+		
+			if (!string.IsNullOrWhiteSpace(searchTerm))
+			{
+				// Tìm kiếm mở rộng: Khớp tên File HOẶC tên Phim HOẶC tên Tập
+				mediaFiles = mediaFiles.Where(m =>
+					(m.FileName != null && m.FileName.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)) ||
+					(m.MovieTitle != null && m.MovieTitle.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)) ||
+					(m.EpisodeTitle != null && m.EpisodeTitle.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
+				);
 			}
 
 			// Xử lý phân trang
@@ -83,6 +98,9 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 			ViewBag.TotalPages = totalPages;
 			ViewBag.TotalItems = totalItems;
 			ViewBag.FileType = fileType;
+
+			// Ném searchTerm sang View để ô input giữ lại được chữ người dùng vừa gõ
+			ViewBag.SearchTerm = searchTerm;
 
 			return View(pagedMediaFiles);
 		}

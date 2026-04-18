@@ -1,10 +1,5 @@
 ﻿using FinalCuongFilm.ApplicationCore.Entities.Identity;
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FinalCuongFilm.ApplicationCore.Entities
 {
@@ -20,6 +15,8 @@ namespace FinalCuongFilm.ApplicationCore.Entities
 
 		[ForeignKey("UserId")]
 		public virtual CuongFilmUser User { get; set; }
-
+		
+		[ForeignKey("PackageId")]
+		public virtual VipPackage Package { get; set; }
 	}
 }

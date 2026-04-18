@@ -66,7 +66,7 @@
         gap: 24px;
     }
 
-    /* Ở màn hình lớn, chia 2 cột: Cột Video to hơn, Cột Info nhỏ hơn */
+    /* Ở màn hình lớn, chia 2 cột */
     @@media (min-width: 992px) {
         .main-grid {
             grid-template-columns: 1.2fr 0.8fr;
@@ -131,7 +131,7 @@
         font-size: 15px;
         color: var(--text-dark);
         font-weight: 500;
-        word-break: break-all; /* Chống vỡ khung với link dài */
+        word-break: break-all;
     }
 
     .info-link {
@@ -163,33 +163,18 @@
         outline: none;
     }
 
-    /* Badges */
-    .badge {
-        padding: 4px 10px;
-        border-radius: 20px;
-        font-size: 12px;
-        font-weight: 600;
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-    }
-
-    .badge-video {
-        background: #dcfce7;
-        color: #166534;
-        border: 1px solid #bbf7d0;
-    }
-
-    .badge-subtitle {
-        background: #fef3c7;
-        color: #92400e;
-        border: 1px solid #fde68a;
-    }
-
-    .badge-other {
+    /* Badge Format Profile */
+    .badge-format {
         background: #f1f5f9;
         color: #475569;
         border: 1px solid #e2e8f0;
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-size: 13px;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
     }
 
     /* Action Buttons */
@@ -247,7 +232,7 @@
 <div class="detail-container">
     <div class="page-header">
         <h1 class="page-title">
-            <i class="zmdi zmdi-file-text"></i> @ViewData["Title"]
+            <i class="fa-solid fa-circle-info"></i> @ViewData["Title"]
         </h1>
         <div class="page-subtitle">Review file information and preview content</div>
     </div>
@@ -256,10 +241,10 @@
 
         <div class="card">
             <div class="card-header">
-                <i class="zmdi zmdi-desktop-mac"></i> Content Preview
+                <i class="fa-solid fa-display"></i> Content Preview
             </div>
             <div class="card-body" style="padding: 16px;">
-                @if (Model.FileType == "Video")
+                @if (Model.FileType?.ToLower() == "video" || Model.FileType?.ToLower() == "hls")
                 {
                     <div class="video-wrapper">
                         <video controls controlsList="nodownload">
@@ -272,11 +257,11 @@
                 {
                     <div class="video-wrapper" style="background: var(--bg-light); border: 2px dashed var(--border-color);">
                         <div style="text-align: center; color: var(--text-muted);">
-                            <i class="zmdi zmdi-file-text" style="font-size: 64px; color: #cbd5e1; margin-bottom: 16px; display: block;"></i>
+                            <i class="fa-solid fa-photo-film" style="font-size: 64px; color: #cbd5e1; margin-bottom: 16px; display: block;"></i>
                             <h3 style="margin: 0; font-weight: 600;">No Preview Available</h3>
-                            <p style="margin-top: 8px; font-size: 14px;">Preview is only supported for video files.</p>
+                            <p style="margin-top: 8px; font-size: 14px;">Preview is only supported for video streams.</p>
                             <a href="@Model.FileUrl" target="_blank" class="btn btn-secondary" style="margin-top: 16px;">
-                                <i class="zmdi zmdi-download"></i> Download File
+                                <i class="fa-solid fa-download"></i> Download File
                             </a>
                         </div>
                     </div>
@@ -286,75 +271,58 @@
 
         <div class="card">
             <div class="card-header">
-                <i class="zmdi zmdi-info-outline"></i> File Information
+                <i class="fa-solid fa-list"></i> File Details
             </div>
             <div class="card-body">
                 <div class="info-list">
 
                     <div class="info-item">
-                        <span class="info-label">File Name</span>
+                        <span class="info-label">Display Name</span>
                         <span class="info-value">@Model.FileName</span>
                     </div>
 
                     <div class="info-item" style="flex-direction: row; justify-content: space-between; align-items: center;">
-                        <span class="info-label">File Type</span>
-                        <span class="info-value">
-                            @if (Model.FileType == "Video")
-                            {
-                                <span class="badge badge-video"><i class="zmdi zmdi-videocam"></i> Video</span>
-                            }
-                            else if (Model.FileType == "Subtitle")
-                            {
-                                <span class="badge badge-subtitle"><i class="zmdi zmdi-subtitles"></i> Subtitle</span>
-                            }
-                            else
-                            {
-                                <span class="badge badge-other">@Model.FileType</span>
-                            }
+                        <span class="info-label">Format Profile</span>
+                        <span class="badge-format">
+                            <i class="fa-solid fa-bolt text-success"></i>
+                            @Model.FileType?.ToUpper() - @(string.IsNullOrEmpty(Model.Quality) ? "AUTO" : Model.Quality)
                         </span>
                     </div>
 
                     <div class="info-item" style="flex-direction: row; justify-content: space-between; align-items: center;">
-                        <span class="info-label">Quality</span>
-                        <span class="info-value" style="font-family: monospace; background: var(--bg-light); padding: 2px 8px; border-radius: 4px; border: 1px solid var(--border-color);">
-                            @(string.IsNullOrEmpty(Model.Quality) ? "N/A" : Model.Quality)
-                        </span>
-                    </div>
-
-                    <div class="info-item" style="flex-direction: row; justify-content: space-between; align-items: center;">
-                        <span class="info-label">File Size</span>
-                        <span class="info-value" style="color: var(--primary-color);">@Model.FileSizeFormatted</span>
+                        <span class="info-label">Physical Size</span>
+                        <span class="info-value" style="color: var(--primary-color); font-family: monospace;">@Model.FileSizeFormatted</span>
                     </div>
 
                     <div class="info-item">
-                        <span class="info-label">Belongs To</span>
+                        <span class="info-label">Associated Content</span>
                         <span class="info-value">
                             @if (Model.EpisodeId.HasValue)
                             {
                                 <a asp-controller="Episodes" asp-action="Details" asp-route-id="@Model.EpisodeId" class="info-link">
-                                    <i class="zmdi zmdi-movie-alt"></i> Episode @Model.EpisodeNumber: @Model.EpisodeTitle
+                                    <i class="fa-solid fa-tv"></i> Episode @Model.EpisodeNumber: @Model.EpisodeTitle
                                 </a>
                             }
                             else if (Model.MovieId.HasValue)
                             {
                                 <a asp-controller="Movies" asp-action="Details" asp-route-id="@Model.MovieId" class="info-link">
-                                    <i class="zmdi zmdi-movie"></i> @Model.MovieTitle
+                                    <i class="fa-solid fa-film"></i> @Model.MovieTitle
                                 </a>
                             }
                             else
                             {
-                                <span style="font-style: italic; color: var(--text-muted);">Standalone File</span>
+                                <span style="font-style: italic; color: var(--text-muted);">Standalone File (Unassigned)</span>
                             }
                         </span>
                     </div>
 
                     <div class="info-item">
-                        <span class="info-label">Uploaded At</span>
-                        <span class="info-value">@Model.UploadedAt.ToString("MMMM dd, yyyy - HH:mm")</span>
+                        <span class="info-label">Timestamp</span>
+                        <span class="info-value">@Model.UploadedAt.ToString("MMM dd, yyyy - HH:mm")</span>
                     </div>
 
                     <div class="info-item">
-                        <span class="info-label">Direct URL</span>
+                        <span class="info-label">Azure Blob URL</span>
                         <a href="@Model.FileUrl" target="_blank" class="info-value info-link" style="font-family: monospace; font-size: 13px; background: #f8fafc; padding: 8px; border-radius: 4px; border: 1px solid var(--border-color);">
                             @Model.FileUrl
                         </a>
@@ -363,11 +331,21 @@
 
                 <div class="action-group">
                     <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">
-                        <i class="zmdi zmdi-edit"></i> Edit Details
+                        <i class="fa-solid fa-pen-to-square"></i> Edit Config
                     </a>
-                    <a asp-action="Index" class="btn btn-secondary">
-                        <i class="zmdi zmdi-arrow-left"></i> Back to List
-                    </a>
+
+                    @if (Model.MovieId.HasValue)
+                    {
+                        <a href="/Admin/MediaUpload/UploadVideo?id=@Model.MovieId" class="btn btn-secondary">
+                            <i class="fa-solid fa-arrow-left"></i> Back to Library
+                        </a>
+                    }
+                    else
+                    {
+                        <a asp-action="Index" class="btn btn-secondary">
+                            <i class="fa-solid fa-arrow-left"></i> Back to Library
+                        </a>
+                    }
                 </div>
             </div>
         </div>

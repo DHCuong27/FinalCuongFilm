@@ -20,7 +20,6 @@
         --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
     }
 
-    /* Container & Header */
     .vip-media-container {
         max-width: 1200px;
         margin: 0 auto;
@@ -49,17 +48,15 @@
 
     .vip-total-badge {
         font-size: 13px;
-        background: #fef3c7;
-        color: #d97706;
-        padding: 4px 10px;
+        background: #e0e7ff;
+        color: #1d4ed8;
+        padding: 4px 12px;
         border-radius: 20px;
         font-weight: 600;
-        border: 1px solid #fde68a;
+        border: 1px solid #bfdbfe;
         margin-left: 8px;
-        vertical-align: middle;
     }
 
-    /* Table Styling */
     .vip-table-container {
         background: var(--bg-white);
         border-radius: var(--radius-md);
@@ -87,7 +84,6 @@
             color: var(--text-muted);
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            white-space: nowrap;
         }
 
         .vip-data-table td {
@@ -102,27 +98,6 @@
             background: #f8fafc;
         }
 
-        .vip-data-table tbody tr:last-child td {
-            border-bottom: none;
-        }
-
-    /* User Profile UI - SCOPED TO AVOID LAYOUT CONFLICTS */
-    .vip-profile {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-    }
-
-    .vip-avatar {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        object-fit: cover;
-        background: var(--bg-light);
-        border: 2px solid var(--bg-white);
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-
     .vip-info {
         display: flex;
         flex-direction: column;
@@ -131,105 +106,98 @@
     .vip-name {
         font-weight: 600;
         color: var(--text-dark);
+        font-size: 15px;
     }
 
     .vip-email {
-        font-size: 13px;
-        color: var(--text-muted);
-    }
-
-    /* Badges */
-    .vip-iso-badge {
-        background: var(--bg-light);
-        padding: 4px 8px;
-        border-radius: 4px;
-        border: 1px solid var(--border-color);
-        font-family: monospace;
-        color: var(--primary-color);
-        font-weight: 600;
         font-size: 12px;
+        color: var(--text-muted);
+        font-family: monospace;
     }
 
-    .vip-badge-success {
-        background: #dcfce7;
-        color: #166534;
+    .vip-tier-badge {
+        background: #e0e7ff;
+        color: #1d4ed8;
+        padding: 4px 10px;
+        border-radius: 4px;
+        border: 1px solid #bfdbfe;
+        font-weight: 700;
+        font-size: 12px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .vip-badge-status {
         padding: 4px 12px;
         border-radius: 20px;
         font-size: 12px;
         font-weight: 600;
         display: inline-block;
+    }
+
+    .status-active {
+        background: #dcfce7;
+        color: #166534;
         border: 1px solid #bbf7d0;
     }
 
-    .vip-badge-warning {
+    .status-warning {
         background: #fef3c7;
         color: #b45309;
-        padding: 4px 12px;
-        border-radius: 20px;
-        font-size: 12px;
-        font-weight: 600;
-        display: inline-block;
         border: 1px solid #fde68a;
     }
 
-    .vip-badge-danger {
+    .status-suspended {
         background: #fee2e2;
         color: #991b1b;
-        padding: 4px 12px;
-        border-radius: 20px;
-        font-size: 12px;
-        font-weight: 600;
-        display: inline-block;
         border: 1px solid #fecaca;
     }
 
-    .text-danger {
-        color: var(--danger-color) !important;
-        font-weight: 600;
-    }
-
-    .text-muted {
-        color: var(--text-muted) !important;
-    }
-
-    /* Action Buttons */
     .vip-action-group {
         display: flex;
         gap: 8px;
         justify-content: center;
+    }
+
+    .btn-action {
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-size: 13px;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
         align-items: center;
-    }
-
-    /* Empty State */
-    .vip-empty-state {
-        text-align: center;
-        padding: 60px 20px;
-    }
-
-    @@media (max-width: 768px) {
-        .vip-page-header {
-            flex-direction: column;
-            align-items: flex-start;
-        }
+        gap: 6px;
+        transition: 0.2s;
+        border: none;
+        cursor: pointer;
     }
 </style>
 
 <div class="vip-media-container">
     <div class="vip-page-header">
         <h1 class="vip-page-title">
-            <i class="fas fa-crown" style="color: #d97706;"></i> VIP Subscribers
-            <span class="vip-total-badge">@(Model?.Count() ?? 0) Active</span>
+            <i class="fa-solid fa-crown" style="color: #d97706;"></i> VIP Subscribers
+            <span class="vip-total-badge">@Model.Count() Accumulated Accounts</span>
         </h1>
     </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success shadow-sm mb-4" style="background: #ecfdf5; color: #166534; border: 1px solid #a7f3d0; padding: 16px; border-radius: 8px;">
+            <i class="fa-solid fa-check-circle me-1"></i> @TempData["Success"]
+        </div>
+    }
 
     <div class="vip-table-container">
         <table class="vip-data-table">
             <thead>
                 <tr>
                     <th>Subscriber</th>
-                    <th>Subscribed Plan</th>
-                    <th>Activation Date</th>
-                    <th>Expiration Date</th>
+                    <th>Membership Details</th>
+                    <th>Original Start</th>
+                    <th>Accumulated Expiry</th>
                     <th>Status</th>
                     <th style="text-align: center;">Actions</th>
                 </tr>
@@ -243,71 +211,73 @@
 
                         <tr>
                             <td>
-                                <div class="vip-profile">
-                                    <img src="/img/avatar.jpg" alt="Avatar" class="vip-avatar" />
-                                    <div class="vip-info">
-                                        <span class="vip-name">
-                                            @(ViewBag.UserDictionary != null && ViewBag.UserDictionary.ContainsKey(item.UserId) ? ViewBag.UserDictionary[item.UserId] : "Unknown User")
-                                        </span>
-                                        <span class="vip-email">ID: @item.UserId.Substring(0, 8)...</span>
-                                    </div>
+                                <div class="vip-info">
+                                    <span class="vip-name">
+                                        @(ViewBag.UserDictionary != null && ViewBag.UserDictionary.ContainsKey(item.UserId) ? ViewBag.UserDictionary[item.UserId] : "Unknown User")
+                                    </span>
+                                    <span class="vip-email">UID: @item.UserId.Substring(0, 12)...</span>
                                 </div>
                             </td>
 
                             <td>
-                                <span class="vip-iso-badge">@item.PackageId</span>
+                                <div class="vip-tier-badge">
+                                    <i class="fa-solid fa-gem"></i> VIP PREMIUM
+                                </div>
+                                <div style="font-size: 11px; color: var(--text-muted); margin-top: 6px;">
+                                    <i class="fa-solid fa-file-invoice"></i> Last Billed: <strong>@(item.Package?.Name ?? "N/A")</strong>
+                                </div>
                             </td>
 
                             <td>
-                                <i class="zmdi zmdi-calendar text-muted"></i> @item.StartDate.ToLocalTime().ToString("MMM dd, yyyy")
+                                <span class="text-muted"><i class="fa-regular fa-calendar me-1"></i> @item.StartDate.ToLocalTime().ToString("MMM dd, yyyy")</span>
                             </td>
 
                             <td>
-                                <span class="@(daysLeft <= 3 && daysLeft > 0 ? "text-danger" : "")">
-                                    <i class="zmdi zmdi-calendar-check text-muted"></i> @item.EndDate.ToLocalTime().ToString("MMM dd, yyyy")
+                                <span class="@(daysLeft <= 3 && item.IsActive ? "text-danger fw-bold" : "text-dark")">
+                                    <i class="fa-regular fa-calendar-check me-1"></i> @item.EndDate.ToLocalTime().ToString("MMM dd, yyyy")
                                 </span>
                             </td>
 
                             <td>
-                                @if (daysLeft > 3)
+                                @if (!item.IsActive)
                                 {
-                                    <span class="vip-badge-success"><i class="zmdi zmdi-check-circle"></i> @daysLeft days left</span>
+                                    <span class="vip-badge-status status-suspended"><i class="fa-solid fa-lock me-1"></i> Suspended</span>
                                 }
-                                else if (daysLeft > 0 && daysLeft <= 3)
+                                else if (daysLeft > 3)
                                 {
-                                    <span class="vip-badge-warning"><i class="zmdi zmdi-time-countdown"></i> Expiring (@daysLeft days)</span>
+                                    <span class="vip-badge-status status-active"><i class="fa-solid fa-circle-check me-1"></i> Active (@daysLeft days)</span>
                                 }
                                 else
                                 {
-                                    <span class="vip-badge-danger"><i class="zmdi zmdi-close-circle"></i> Expired</span>
+                                    <span class="vip-badge-status status-warning"><i class="fa-solid fa-clock-rotate-left me-1"></i> Expiring (@daysLeft d)</span>
                                 }
                             </td>
 
                             <td>
                                 <div class="vip-action-group">
-                                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-primary" title="View Transaction Details" style="padding: 6px 12px; font-weight: 500;">
-                                        <i class="fa-solid fa-circle-info me-1"></i> Details
+                                    <a asp-action="Details" asp-route-id="@item.Id" class="btn-action" style="background: var(--primary-color); color: white;">
+                                        <i class="fa-solid fa-circle-info"></i> Details
                                     </a>
 
-                                    <form asp-action="Delete" asp-route-id="@item.Id" method="post" style="margin: 0; display: inline;">
-                                        <button type="submit" class="btn btn-sm btn-danger" title="Revoke & Delete Subscription" style="padding: 6px 12px; font-weight: 500;" onclick="return confirm('CẢNH BÁO: Việc xóa dòng này sẽ tước quyền VIP của khách hàng ngay lập tức. Bạn có chắc chắn?');">
-                                            <i class="fa-solid fa-ban me-1"></i> Revoke
-                                        </button>
+                                    <form asp-action="ToggleStatus" asp-route-id="@item.Id" method="post" style="margin: 0;">
+                                        @Html.AntiForgeryToken()
+                                        @if (item.IsActive)
+                                        {
+                                            <button type="submit" class="btn-action" style="background: var(--danger-color); color: white;" onclick="return confirm('Suspend VIP access for this user? Remaining time will be preserved.');">
+                                                <i class="fa-solid fa-user-slash"></i> Suspend
+                                            </button>
+                                        }
+                                        else
+                                        {
+                                            <button type="submit" class="btn-action" style="background: var(--success-color); color: white;" onclick="return confirm('Reactivate VIP access for this user?');">
+                                                <i class="fa-solid fa-user-check"></i> Reactivate
+                                            </button>
+                                        }
                                     </form>
                                 </div>
                             </td>
                         </tr>
                     }
-                }
-                else
-                {
-                    <tr>
-                        <td colspan="6" class="vip-empty-state">
-                            <i class="fas fa-crown" style="font-size: 48px; color: #cbd5e1; margin-bottom: 16px; display: block;"></i>
-                            <h3 style="margin: 0 0 8px; color: var(--text-dark);">No VIP Subscribers Found</h3>
-                            <p style="color: var(--text-muted); margin: 0;">The system currently has no active premium subscriptions.</p>
-                        </td>
-                    </tr>
                 }
             </tbody>
         </table>
