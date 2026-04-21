@@ -1,7 +1,7 @@
 ﻿@model FinalCuongFilm.Common.DTOs.ActorDto
 
 @{
-    ViewData["Title"] = "Hồ sơ diễn viên: " + Model.Name;
+    ViewData["Title"] = "Actor information: " + Model.Name;
     Layout = "_LayoutUser";
 }
 
@@ -58,7 +58,7 @@
                  alt="@Model.Name" class="actor-avatar mb-4" />
         </div>
 
-        <!-- Thông tin cá nhân -->
+        <!-- Personal Information -->
         <div class="col-md-9">
             <h1 class="fw-bold mb-3">@Model.Name</h1>
             <p class="fs-5 text-secondary">
@@ -67,9 +67,9 @@
         </div>
     </div>
 
-    <!-- Danh sách phim đã đóng -->
+    <!-- Participated Movies -->
     <div class="row mt-5">
-        <h3 class="mb-4 fw-bold border-start border-danger border-4 ps-3">Phim đã tham gia (@Model.ParticipatedMovies.Count)</h3>
+        <h3 class="mb-4 fw-bold border-start border-danger border-4 ps-3">Participated Movies (@Model.ParticipatedMovies.Count)</h3>
 
         @if (Model.ParticipatedMovies.Any())
         {

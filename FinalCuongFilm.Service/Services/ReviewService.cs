@@ -113,26 +113,20 @@ namespace FinalCuongFilm.Service.Services
 		public async Task<ReviewDto> CreateReviewAsync(string userId, ReviewCreateDto dto)
 		{
 			// Check if user already reviewed this movie
-			var existing = await _context.Reviews
-				.FirstOrDefaultAsync(r => r.UserId == userId && r.MovieId == dto.MovieId);
-
-			if (existing != null)
-			{
-				throw new InvalidOperationException("Bạn đã đánh giá phim này rồi! Vui lòng cập nhật đánh giá cũ.");
-			}
+			
 
 			// Check movie exists
 			var movie = await _context.Movies.FindAsync(dto.MovieId);
 			if (movie == null)
 			{
-				throw new KeyNotFoundException("Không tìm thấy phim!");
+				throw new KeyNotFoundException("Film Not found");
 			}
 
 			// Check user exists
 			var user = await _userManager.FindByIdAsync(userId);
 			if (user == null)
 			{
-				throw new InvalidOperationException("User không tồn tại!");
+				throw new InvalidOperationException("User invalid!");
 			}
 
 			var review = new Review
@@ -226,7 +220,7 @@ namespace FinalCuongFilm.Service.Services
 
 			if (movie == null)
 			{
-				throw new KeyNotFoundException("Không tìm thấy phim!");
+				throw new KeyNotFoundException("Film not found");
 			}
 
 			var approvedReviews = movie.Reviews.Where(r => r.IsApproved).ToList();

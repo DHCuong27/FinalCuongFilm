@@ -14,6 +14,7 @@ namespace FinalCuongFilm.Common.DTOs
 		public bool IsApproved { get; set; }
 		public DateTime CreatedAt { get; set; }
 		public DateTime? UpdatedAt { get; set; }
+		public Guid? ParentId { get; set; }
 	}
 
 	public class ReviewCreateDto
@@ -27,6 +28,7 @@ namespace FinalCuongFilm.Common.DTOs
 
 		[MaxLength(1000, ErrorMessage = "Content length:Max 1000 characters")]
 		public string? Comment { get; set; }
+		public Guid? ParentId { get; set; }
 	}
 
 	public class ReviewUpdateDto

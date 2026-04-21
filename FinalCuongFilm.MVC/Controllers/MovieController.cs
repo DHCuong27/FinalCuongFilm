@@ -143,11 +143,12 @@ namespace FinalCuongFilm.MVC.Controllers
 				RelatedMovies = relatedMovies,
 				Actors = actors
 			};
-
+			ViewBag.Reviews = await _reviewService.GetMovieReviewsAsync(movie.Id, approvedOnly: false);
 			return View(viewModel);
 		}
 
 
+		// Watch: /Movie/Watch/{slug}?ep=1
 		// Watch: /Movie/Watch/{slug}?ep=1
 		[AllowAnonymous]
 		[Route("Movie/Watch/{slug}")]
@@ -170,9 +171,6 @@ namespace FinalCuongFilm.MVC.Controllers
 					if (string.IsNullOrEmpty(userId))
 					{
 						TempData["Warning"] = "Đây là bộ phim Premium. Vui lòng đăng nhập để tiếp tục!";
-
-						// ==== SỬA DÒNG NÀY ====
-						// Chuyển sang dùng RedirectToPage để trỏ đúng vào Identity của .NET
 						return RedirectToPage("/Account/Login", new { area = "Identity", returnUrl = Request.Path });
 					}
 
@@ -182,10 +180,9 @@ namespace FinalCuongFilm.MVC.Controllers
 					if (!hasVip)
 					{
 						TempData["Warning"] = "Phim này dành riêng cho tài khoản Premium. Vui lòng nâng cấp gói để xem!";
-						return RedirectToAction("Index", "Premium"); // Bảng giá VIP thì vẫn dùng Controller bình thường
+						return RedirectToAction("Index", "Premium");
 					}
 				}
-
 
 				// 2. Xử lý logic Tập phim & Lấy danh sách File Media
 				var allEpisodes = new List<FinalCuongFilm.Common.DTOs.EpisodeDto>();
@@ -221,13 +218,10 @@ namespace FinalCuongFilm.MVC.Controllers
 				}
 				else
 				{
-					// Dự phòng: Lấy các file MP4 thường
 					var videoFiles = mediaFiles.Where(m => m.FileType?.ToLower() == "video").OrderByDescending(m => m.Quality).ToList();
 					if (videoFiles.Any())
 					{
 						ViewBag.MediaType = "mp4";
-
-						// TỐI ƯU: Xin SAS Token từ Azure ĐỒNG THỜI cho tất cả các độ phân giải
 						var sasTasks = videoFiles.Select(async qf =>
 						{
 							var qUrl = await _azureBlobService.GetStreamingUrlAsync(qf.FileUrl, expiryHours: 4);
@@ -236,8 +230,6 @@ namespace FinalCuongFilm.MVC.Controllers
 
 						var resolvedSources = await Task.WhenAll(sasTasks);
 						qualitySources.AddRange(resolvedSources);
-
-						// Lấy link có chất lượng cao nhất làm mặc định
 						streamingUrl = resolvedSources.First().url;
 					}
 				}
@@ -265,15 +257,8 @@ namespace FinalCuongFilm.MVC.Controllers
 
 				if (userId != null)
 				{
-					try
-					{
-
-						await _favoriteService.SaveWatchHistoryAsync(userId, movie.Id);
-					}
-					catch (Exception ex)
-					{
-						_logger.LogWarning(ex, "Không thể lưu lịch sử xem phim cho User {UserId}, Movie {MovieId}", userId, movie.Id);
-					}
+					try { await _favoriteService.SaveWatchHistoryAsync(userId, movie.Id); }
+					catch (Exception ex) { _logger.LogWarning(ex, "Không thể lưu lịch sử xem phim cho User {UserId}, Movie {MovieId}", userId, movie.Id); }
 				}
 
 				// Đổ dữ liệu đồng loạt ra ViewBag để tối ưu thời gian chờ
@@ -284,6 +269,11 @@ namespace FinalCuongFilm.MVC.Controllers
 				ViewBag.QualitySources = qualitySources;
 				ViewBag.SubtitleFiles = subtitleFiles;
 				ViewBag.Actors = actors;
+
+				// ======= BẢN FIX NẰM Ở ĐÂY =======
+				// Phải bốc Reviews từ CSDL lên nhét vào ViewBag thì bên màn hình Watch mới có cái mà in ra được!
+				ViewBag.Reviews = await _reviewService.GetMovieReviewsAsync(movie.Id, approvedOnly: false);
+				// =================================
 
 				var viewModel = new MovieWatchViewModel
 				{
