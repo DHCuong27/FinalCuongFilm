@@ -1,7 +1,9 @@
 ﻿using FinalCuongFilm.ApplicationCore.Entities;
+using FinalCuongFilm.DataLayer;
 using FinalCuongFilm.Service.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 {
@@ -10,10 +12,12 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 	public class VipPackageController : Controller
 	{
 		private readonly IVipService _vipService;
+		private readonly CuongFilmDbContext _context;
 
-		public VipPackageController(IVipService vipService)
+		public VipPackageController(IVipService vipService, CuongFilmDbContext context)
 		{
 			_vipService = vipService;
+			_context = context;
 		}
 
 		// 1. READ (Hiển thị danh sách)
@@ -77,6 +81,31 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 		{
 			await _vipService.DeactivatePackageAsync(id);
 			TempData["Success"] = "VIP package deactivated successfully!";
+			return RedirectToAction(nameof(Index));
+		}
+
+		// 2. BẮT BUỘC PHẢI CÓ HÀM NÀY VÀ GẮN [HttpPost]
+		[HttpPost]
+		[ValidateAntiForgeryToken]
+		public async Task<IActionResult> ToggleStatus(Guid id)
+		{
+			var package = await _context.VipPackages.FindAsync(id);
+			if (package == null)
+			{
+				TempData["Error"] = "Package not found!";
+				return RedirectToAction(nameof(Index));
+			}
+
+			// Lật ngược trạng thái: Nếu đang True (Bán) -> Thành False (Ẩn), và ngược lại
+			package.IsActive = !package.IsActive;
+
+			_context.Update(package);
+			await _context.SaveChangesAsync();
+
+			TempData["Success"] = package.IsActive
+				? $"Package is back on sale: {package.Name}"
+				: $"Package is no longer on sale: {package.Name}";
+
 			return RedirectToAction(nameof(Index));
 		}
 	}

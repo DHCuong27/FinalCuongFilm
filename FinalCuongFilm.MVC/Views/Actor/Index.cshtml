@@ -1,0 +1,94 @@
+﻿@model FinalCuongFilm.Common.DTOs.ActorDto
+
+@{
+    ViewData["Title"] = "Hồ sơ diễn viên: " + Model.Name;
+    Layout = "_LayoutUser";
+}
+
+<style>
+    .actor-dashboard {
+        padding: 50px 5%;
+        color: white;
+        background-color: var(--netflix-black, #141414);
+        min-height: 100vh;
+    }
+
+    .actor-avatar {
+        width: 100%;
+        max-width: 300px;
+        border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        object-fit: cover;
+    }
+
+    .movie-card {
+        transition: transform 0.3s ease;
+    }
+
+        .movie-card:hover {
+            transform: scale(1.05);
+        }
+
+    .movie-poster {
+        width: 100%;
+        border-radius: 6px;
+        aspect-ratio: 2/3;
+        object-fit: cover;
+    }
+
+    .movie-title {
+        color: #fff;
+        margin-top: 10px;
+        font-size: 15px;
+        font-weight: 600;
+        text-decoration: none;
+    }
+
+    a:hover {
+        text-decoration: none;
+        color: var(--netflix-red, #e50914);
+    }
+</style>
+
+<div class="actor-dashboard mt-5">
+    <div class="row">
+        <!-- Avatar -->
+        <div class="col-md-3 text-center text-md-start">
+            <img src="@(string.IsNullOrEmpty(Model.AvartUrl) ? "/images/default-avatar.png" : Model.AvartUrl)"
+                 alt="@Model.Name" class="actor-avatar mb-4" />
+        </div>
+
+        <!-- Thông tin cá nhân -->
+        <div class="col-md-9">
+            <h1 class="fw-bold mb-3">@Model.Name</h1>
+            <p class="fs-5 text-secondary">
+                <strong>Gender:</strong> @(string.IsNullOrEmpty(Model.Gender) ? "Updating" : Model.Gender)
+            </p>
+        </div>
+    </div>
+
+    <!-- Danh sách phim đã đóng -->
+    <div class="row mt-5">
+        <h3 class="mb-4 fw-bold border-start border-danger border-4 ps-3">Phim đã tham gia (@Model.ParticipatedMovies.Count)</h3>
+
+        @if (Model.ParticipatedMovies.Any())
+        {
+            @foreach (var movie in Model.ParticipatedMovies)
+            {
+                <div class="col-6 col-sm-4 col-md-3 col-lg-2 mb-4">
+                    <a href="/Movie/Detail/@movie.Slug" class="movie-card d-block">
+                        <img src="@(string.IsNullOrEmpty(movie.PosterUrl) ? "/images/no-poster.jpg" : movie.PosterUrl)"
+                             alt="@movie.Title" class="movie-poster" />
+                        <h6 class="movie-title text-truncate" title="@movie.Title">@movie.Title</h6>
+                    </a>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="col-12">
+                <p class="text-secondary fs-5">This actor currently has no movies in the system.</p>
+            </div>
+        }
+    </div>
+</div>

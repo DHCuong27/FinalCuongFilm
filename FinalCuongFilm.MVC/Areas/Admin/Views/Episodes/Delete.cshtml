@@ -1,74 +1,75 @@
 ﻿@model FinalCuongFilm.Common.DTOs.EpisodeDto
 
 @{
-    ViewData["Title"] = "Xóa Episode";
+    ViewData["Title"] = "Delete Episode";
+    Layout = "~/Areas/Admin/Views/Shared/_LayoutAdmin.cshtml";
 }
 
-<div class="row">
-    <div class="col-md-12">
-        <h2 class="title-1 text-danger">
-            <i class="fas fa-trash"></i> Xác nhận xóa Episode
+<div class="row mb-4">
+    <div class="col-12">
+        <h2 class="text-danger fw-bold">
+            <i class="fa-solid fa-trash"></i> Confirm Episode Deletion
         </h2>
     </div>
 </div>
 
-<div class="row m-t-30">
-    <div class="col-md-8">
-        <div class="alert alert-danger">
-            <h4><i class="fas fa-exclamation-triangle"></i> Cảnh báo!</h4>
-            <p>Bạn có chắc chắn muốn xóa episode này? Hành động này không thể hoàn tác!</p>
+<div class="row">
+    <div class="col-md-8 mb-4">
+        <div class="alert alert-danger shadow-sm">
+            <h4 class="alert-heading"><i class="fa-solid fa-triangle-exclamation"></i> Warning!</h4>
+            <p class="mb-0">Are you sure you want to delete this episode? This action cannot be undone!</p>
         </div>
 
-        <div class="card">
-            <div class="card-header">
-                <strong>Thông tin Episode sẽ bị xóa</strong>
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white border-bottom">
+                <strong class="text-dark">Episode Information</strong>
             </div>
             <div class="card-body">
-                <dl class="row">
-                    <dt class="col-sm-4">Số tập:</dt>
-                    <dd class="col-sm-8"><strong>Tập @Model.EpisodeNumber</strong></dd>
+                <dl class="row mb-0">
+                    <dt class="col-sm-4 text-muted">Episode Number:</dt>
+                    <dd class="col-sm-8 fw-semibold">Episode @Model.EpisodeNumber</dd>
 
-                    <dt class="col-sm-4">Tiêu đề:</dt>
+                    <dt class="col-sm-4 text-muted">Title:</dt>
                     <dd class="col-sm-8">@Model.Title</dd>
 
-                    <dt class="col-sm-4">Mô tả:</dt>
-                    <dd class="col-sm-8">@(Model.Description ?? "Chưa có mô tả")</dd>
+                    <dt class="col-sm-4 text-muted">Description:</dt>
+                    <dd class="col-sm-8">@(string.IsNullOrWhiteSpace(Model.Description) ? "No description available" : Model.Description)</dd>
 
-                    <dt class="col-sm-4">Thời lượng:</dt>
-                    <dd class="col-sm-8">@Model.DurationMinutes phút</dd>
+                    <dt class="col-sm-4 text-muted">Duration:</dt>
+                    <dd class="col-sm-8">@Model.DurationMinutes minutes</dd>
 
                     @if (Model.AirDate.HasValue)
                     {
-                        <dt class="col-sm-4">Ngày phát sóng:</dt>
-                        <dd class="col-sm-8">@Model.AirDate.Value.ToString("dd/MM/yyyy")</dd>
+                        <dt class="col-sm-4 text-muted">Air Date:</dt>
+                        <dd class="col-sm-8">@Model.AirDate.Value.ToString("MM/dd/yyyy")</dd>
                     }
 
-                    <dt class="col-sm-4">Trạng thái:</dt>
+                    <dt class="col-sm-4 text-muted">Status:</dt>
                     <dd class="col-sm-8">
                         @if (Model.IsActive)
                         {
-                            <span class="badge badge-success">Active</span>
+                            <span class="badge bg-success">Active</span>
                         }
                         else
                         {
-                            <span class="badge badge-secondary">Inactive</span>
+                            <span class="badge bg-secondary">Inactive</span>
                         }
                     </dd>
-
-                    <dt class="col-sm-4">Lượt xem:</dt>
-                    <dd class="col-sm-8">@Model.ViewCount.ToString("N0")</dd>
                 </dl>
 
-                <hr />
+                <hr class="my-4" />
 
                 <form asp-action="Delete" method="post">
                     <input type="hidden" asp-for="Id" />
-                    <div class="form-actions">
+                    <input type="hidden" asp-for="MovieId" />
+
+                    <div class="d-flex gap-2">
                         <button type="submit" class="btn btn-danger">
-                            <i class="fas fa-trash"></i> Xác nhận xóa
+                            <i class="fa-solid fa-trash"></i> Confirm Delete
                         </button>
-                        <a asp-action="Index" class="btn btn-secondary">
-                            <i class="fas fa-times"></i> Hủy bỏ
+
+                        <a asp-action="Index" asp-route-movieId="@Model.MovieId" class="btn btn-secondary">
+                            <i class="fa-solid fa-xmark"></i> Cancel
                         </a>
                     </div>
                 </form>
@@ -77,16 +78,16 @@
     </div>
 
     <div class="col-md-4">
-        <div class="card">
+        <div class="card shadow-sm border-0">
             <div class="card-header bg-info text-white">
-                <i class="fas fa-info-circle"></i> Lưu ý
+                <i class="fa-solid fa-circle-info"></i> System Note
             </div>
-            <div class="card-body">
-                <p><strong>Khi xóa episode này:</strong></p>
-                <ul>
-                    <li>Tất cả media files liên quan sẽ bị xóa</li>
-                    <li>Dữ liệu không thể khôi phục</li>
-                    <li>Người dùng sẽ không xem được tập này</li>
+            <div class="card-body bg-light">
+                <p class="fw-semibold text-danger">Upon deletion:</p>
+                <ul class="mb-0 text-muted ps-3">
+                    <li>All associated Media Files on <strong>Azure Blob Storage</strong> will be permanently removed.</li>
+                    <li>Relational data in the SQL Server database cannot be recovered.</li>
+                    <li>Users will immediately lose access to this episode.</li>
                 </ul>
             </div>
         </div>

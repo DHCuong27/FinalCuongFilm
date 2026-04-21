@@ -304,6 +304,31 @@
         border: 1px solid #e2e8f0;
     }
 
+    /* 1. Ép chiều cao cố định cho tất cả các nút nhỏ (btn-sm) */
+    td .btn-sm {
+        height: 32px; /* Chiều cao vàng chuẩn UI */
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        box-sizing: border-box; /* Ép padding không làm phình to nút */
+        line-height: 1;
+        border: none; /* Xóa viền mặc định của button */
+        margin: 0;
+        vertical-align: middle;
+    }
+
+    /* 2. Ép các nút CHỈ CÓ ICON thành hình vuông hoàn hảo */
+    td .btn-icon {
+        width: 32px; /* Rộng = Cao = 32px */
+        padding: 0 !important; /* Xóa padding thừa */
+    }
+
+    /* 3. Bắt buộc thẻ form phải hiển thị dạng Flex để không bị lẹm chiều cao */
+    td form.m-0 {
+        display: inline-flex;
+        height: 32px;
+    }
+
     /* Làm cho các nút chỉ chứa Icon thành hình vuông chuẩn */
     .action-group .btn-icon {
         width: 32px;
@@ -549,7 +574,8 @@
                             </td>
                             <td>
                                 <div class="d-flex align-items-center justify-content-center gap-2">
-                                    <a asp-controller="MediaUpload" asp-action="UploadVideo" asp-route-id="@item.Id" class="btn btn-sm btn-success px-2" title="Upload & Manage Videos">
+
+                                    <a asp-controller="MediaUpload" asp-action="UploadVideo" asp-route-id="@item.Id" class="btn btn-sm btn-success px-3" title="Upload & Manage Videos">
                                         <i class="fa-solid fa-film me-1"></i> Videos
                                     </a>
 
@@ -566,6 +592,7 @@
                                             <i class="fa-solid fa-trash"></i>
                                         </button>
                                     </form>
+
                                 </div>
                             </td>
                         </tr>

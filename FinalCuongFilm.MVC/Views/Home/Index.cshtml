@@ -1054,19 +1054,7 @@
                                     <i class="fas fa-play"></i>
                                 </a>
 
-                                @if (User.Identity?.IsAuthenticated == true)
-                                {
-                                    <button class="btn-icon-round favorite-icon-btn" data-movie-id="@movie.Id" title="Favaroites" style="position: static; opacity: 1; width: 45px; height: 45px;">
-                                        <i class="far fa-heart"></i>
-                                    </button>
-                                }
-                                else
-                                {
-                                    <button class="btn-icon-round" title="Yêu thích">
-                                        <i class="far fa-heart"></i>
-                                    </button>
-                                }
-
+                               
                                 <a asp-controller="Movie" asp-action="Detail" asp-route-slug="@movie.Slug" class="btn-icon-round" title="More Info">
                                     <i class="fas fa-info"></i>
                                 </a>

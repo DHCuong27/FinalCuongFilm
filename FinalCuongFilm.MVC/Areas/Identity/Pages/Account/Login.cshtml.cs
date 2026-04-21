@@ -97,6 +97,11 @@ namespace FinalCuongFilm.MVC.Areas.Identity.Pages.Account
 				ModelState.AddModelError(string.Empty, ErrorMessage);
 			}
 
+			if (!string.IsNullOrEmpty(returnUrl) && returnUrl.Contains("Logout", StringComparison.OrdinalIgnoreCase))
+			{
+				returnUrl = "~/";
+			}
+
 			returnUrl ??= Url.Content("~/");
 
 			// Clear the existing external cookie to ensure a clean login process
@@ -109,6 +114,11 @@ namespace FinalCuongFilm.MVC.Areas.Identity.Pages.Account
 
 		public async Task<IActionResult> OnPostAsync(string returnUrl = null)
 		{
+			// THÊM ĐOẠN NÀY ĐỂ FIX LỖI VÒNG LẶP LOGOUT
+			if (!string.IsNullOrEmpty(returnUrl) && returnUrl.Contains("Logout", StringComparison.OrdinalIgnoreCase))
+			{
+				returnUrl = "~/";
+			}
 			returnUrl ??= Url.Content("~/");
 
 			ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
@@ -155,7 +165,7 @@ namespace FinalCuongFilm.MVC.Areas.Identity.Pages.Account
 				}
 				else
 				{
-					ModelState.AddModelError(string.Empty, "Invalid login attempt.");
+					ModelState.AddModelError(string.Empty, "ncorrect email or password. Please check again!");
 					return Page();
 				}
 			}

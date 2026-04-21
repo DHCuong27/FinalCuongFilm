@@ -39,7 +39,7 @@ namespace FinalCuongFilm.Service.Services
 		{
 			var actor = await _context.Actors
 				.Include(a => a.MovieActors)
-					.ThenInclude(ma => ma.Movie) // <-- BẮC CẦU SANG BẢNG MOVIE ĐỂ LẤY TÊN PHIM
+					.ThenInclude(ma => ma.Movie) // BẮC CẦU LẤY THÔNG TIN PHIM
 				.FirstOrDefaultAsync(a => a.Id == id);
 
 			if (actor == null)
@@ -56,11 +56,22 @@ namespace FinalCuongFilm.Service.Services
 
 				SelectedMovieIds = actor.MovieActors.Select(ma => ma.MovieId).ToList(),
 
-				// MỚI: Lấy danh sách tên phim đẩy ra View
 				ParticipatedMovieTitles = actor.MovieActors
 											   .Where(ma => ma.Movie != null)
 											   .Select(ma => ma.Movie.Title)
-											   .ToList()
+											   .ToList(),
+
+				// THÊM ĐOẠN NÀY: Map list phim hiển thị ra Dashboard
+				ParticipatedMovies = actor.MovieActors
+									   .Where(ma => ma.Movie != null && ma.Movie.IsActive) // Chỉ lấy phim đang active
+									   .Select(ma => new ActorMovieDto
+									   {
+										   Id = ma.Movie.Id,
+										   Title = ma.Movie.Title,
+										   Slug = ma.Movie.Slug,
+										   PosterUrl = ma.Movie.PosterUrl
+									   })
+									   .ToList()
 			};
 		}
 
@@ -126,9 +137,9 @@ namespace FinalCuongFilm.Service.Services
 			actor.DateOfBirth = dto.DateOfBirth;
 			actor.Gender = dto.Gender;
 
-			// ========================================================
+		
 			// LOGIC CẬP NHẬT NHIỀU - NHIỀU (PARTICIPATED MOVIES)
-			// ========================================================
+		
 			if (dto.MovieIds != null)
 			{
 				var existingMovieIds = actor.MovieActors.Select(ma => ma.MovieId).ToList();

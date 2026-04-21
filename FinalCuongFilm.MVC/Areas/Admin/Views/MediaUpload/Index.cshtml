@@ -598,6 +598,11 @@
             </div>
             <button type="submit" class="btn-search">Search</button>
         </form>
+        <div>
+            <a asp-controller="MediaUpload" asp-action="UploadVideo" class="btn btn-success fw-semibold shadow-sm">
+                <i class="fa-solid fa-cloud-arrow-up me-2"></i> Upload Media
+            </a>
+        </div>
     </div>
 
     @if (TempData["Success"] != null)

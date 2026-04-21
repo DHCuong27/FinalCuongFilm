@@ -1,4 +1,17 @@
-﻿<!DOCTYPE html>
+﻿@{
+    // Helper function to keep the HTML markup clean and readable
+    string IsActive(string controller, string action = null)
+    {
+        var currentController = ViewContext.RouteData.Values["Controller"]?.ToString();
+        var currentAction = ViewContext.RouteData.Values["Action"]?.ToString();
+
+        bool matchController = string.Equals(currentController, controller, StringComparison.OrdinalIgnoreCase);
+        bool matchAction = action == null || string.Equals(currentAction, action, StringComparison.OrdinalIgnoreCase);
+
+        return matchController && matchAction ? "active" : "";
+    }
+}
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -10,12 +23,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
 
-    <link href="~/_LayoutAdmin/css/LayoutAdmin.css" rel="stylesheet">   
+    <link href="~/_LayoutAdmin/css/LayoutAdmin.css" rel="stylesheet">
 </head>
-
 <body>
 
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
@@ -24,70 +35,70 @@
         <a asp-area="Admin" asp-controller="Admin" asp-action="Index" class="sidebar-brand">
             <i class="fa-solid fa-play"></i> CuongFilm
         </a>
-        <ul class="sidebar-nav">
 
+        <ul class="sidebar-nav">
             <li class="sidebar-heading">Core</li>
             <li class="nav-item">
-                <a class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Admin" ? "active" : "")" asp-area="Admin" asp-controller="Admin" asp-action="Index">
+                <a class="nav-link @IsActive("Admin", "Index")" asp-area="Admin" asp-controller="Admin" asp-action="Index">
                     <i class="fa-solid fa-chart-line"></i> Dashboard
                 </a>
             </li>
 
             <li class="sidebar-heading">Content Management</li>
             <li class="nav-item">
-                <a class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Movies" ? "active" : "")" asp-area="Admin" asp-controller="Movies" asp-action="Index">
+                <a class="nav-link @IsActive("Movies")" asp-area="Admin" asp-controller="Movies" asp-action="Index">
                     <i class="fa-solid fa-film"></i> Movies
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Episodes" ? "active" : "")" asp-area="Admin" asp-controller="Episodes" asp-action="Index">
+                <a class="nav-link @IsActive("Episodes")" asp-area="Admin" asp-controller="Episodes" asp-action="Index">
                     <i class="fa-solid fa-list-ol"></i> Episodes
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "MediaUpload" ? "active" : "")" asp-area="Admin" asp-controller="MediaUpload" asp-action="Index">
+                <a class="nav-link @IsActive("MediaUpload")" asp-area="Admin" asp-controller="MediaUpload" asp-action="Index">
                     <i class="fa-solid fa-cloud-arrow-up"></i> Media Files
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Actors" ? "active" : "")" asp-area="Admin" asp-controller="Actors" asp-action="Index">
+                <a class="nav-link @IsActive("Actors")" asp-area="Admin" asp-controller="Actors" asp-action="Index">
                     <i class="fa-solid fa-masks-theater"></i> Actors
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Genres" ? "active" : "")" asp-area="Admin" asp-controller="Genres" asp-action="Index">
+                <a class="nav-link @IsActive("Genres")" asp-area="Admin" asp-controller="Genres" asp-action="Index">
                     <i class="fa-solid fa-tags"></i> Genres
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Countries" ? "active" : "")" asp-area="Admin" asp-controller="Countries" asp-action="Index">
+                <a class="nav-link @IsActive("Countries")" asp-area="Admin" asp-controller="Countries" asp-action="Index">
                     <i class="fa-solid fa-earth-americas"></i> Countries
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Languages" ? "active" : "")" asp-area="Admin" asp-controller="Languages" asp-action="Index">
+                <a class="nav-link @IsActive("Languages")" asp-area="Admin" asp-controller="Languages" asp-action="Index">
                     <i class="fa-solid fa-language"></i> Languages
                 </a>
             </li>
 
             <li class="sidebar-heading">Users & Premium</li>
             <li class="nav-item">
-                <a class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "User" ? "active" : "")" asp-area="Admin" asp-controller="User" asp-action="Index">
+                <a class="nav-link @IsActive("User")" asp-area="Admin" asp-controller="User" asp-action="Index">
                     <i class="fa-solid fa-users"></i> Accounts
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "VipManager" && ViewContext.RouteData.Values["Action"]?.ToString() == "Transactions" ? "active" : "")" asp-area="Admin" asp-controller="VipManager" asp-action="Transactions">
+                <a class="nav-link @IsActive("VipManager", "Transactions")" asp-area="Admin" asp-controller="VipManager" asp-action="Transactions">
                     <i class="fa-solid fa-file-invoice-dollar"></i> Payment History
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "VipManager" && ViewContext.RouteData.Values["Action"]?.ToString() == "ActiveVips" ? "active" : "")" asp-area="Admin" asp-controller="VipManager" asp-action="ActiveVips">
+                <a class="nav-link @IsActive("VipManager", "ActiveVips")" asp-area="Admin" asp-controller="VipManager" asp-action="ActiveVips">
                     <i class="fa-solid fa-user-shield"></i> Active VIPs
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "VipPackage" ? "active" : "")" asp-area="Admin" asp-controller="VipPackage" asp-action="Index">
+                <a class="nav-link @IsActive("VipPackage")" asp-area="Admin" asp-controller="VipPackage" asp-action="Index">
                     <i class="fa-solid fa-box-open"></i> VIP Packages
                 </a>
             </li>
@@ -95,16 +106,15 @@
     </aside>
 
     <main class="main-wrapper">
-
         <header class="top-header">
             <div class="header-left">
-                <button class="sidebar-toggle d-lg-none" id="sidebarToggle">
+                <button class="sidebar-toggle d-lg-none" id="sidebarToggle" aria-label="Toggle Navigation">
                     <i class="fa-solid fa-bars"></i>
                 </button>
             </div>
 
             <div class="header-right dropdown">
-                <div class="user-profile" data-bs-toggle="dropdown" aria-expanded="false">
+                <div class="user-profile" data-bs-toggle="dropdown" aria-expanded="false" role="button" tabindex="0">
                     <div class="user-avatar">
                         <i class="fa-solid fa-user"></i>
                     </div>
@@ -120,7 +130,6 @@
                     <li><hr class="dropdown-divider"></li>
                     <li>
                         <form asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="/" method="post" class="m-0 p-0">
-                            @Html.AntiForgeryToken()
                             <button type="submit" class="dropdown-item text-danger">
                                 <i class="fa-solid fa-arrow-right-from-bracket"></i> Sign Out
                             </button>
@@ -133,28 +142,22 @@
         <div class="content-area">
             @RenderBody()
         </div>
-
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-
     <script>
-        document.addEventListener("DOMContentLoaded", function() {
+        document.addEventListener("DOMContentLoaded", () => {
             const sidebar = document.getElementById('sidebar');
             const sidebarToggle = document.getElementById('sidebarToggle');
             const sidebarOverlay = document.getElementById('sidebarOverlay');
 
-            function toggleSidebar() {
+            const toggleSidebar = () => {
                 sidebar.classList.toggle('show');
                 document.body.classList.toggle('sidebar-open');
-            }
+            };
 
-            if(sidebarToggle) {
-                sidebarToggle.addEventListener('click', toggleSidebar);
-            }
-            if(sidebarOverlay) {
-                sidebarOverlay.addEventListener('click', toggleSidebar);
-            }
+            if (sidebarToggle) sidebarToggle.addEventListener('click', toggleSidebar);
+            if (sidebarOverlay) sidebarOverlay.addEventListener('click', toggleSidebar);
         });
     </script>
 

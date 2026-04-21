@@ -1,4 +1,4 @@
-﻿@model FinalCuongFilm.Common.DTOs.ReviewUpdateDto
+﻿@* @model FinalCuongFilm.Common.DTOs.ReviewUpdateDto
 @{
     var movie = ViewBag.Movie as FinalCuongFilm.Common.DTOs.MovieDto;
     ViewData["Title"] = "Edit Review - " + (movie?.Title ?? "");
@@ -97,4 +97,4 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
-}
+} *@
