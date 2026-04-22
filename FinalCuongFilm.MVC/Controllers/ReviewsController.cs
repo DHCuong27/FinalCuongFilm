@@ -60,7 +60,69 @@ namespace FinalCuongFilm.MVC.Controllers
 			return View(reviews);
 		}
 
-		// POST: /Reviews/Create - AJAX endpoint (Đã fix hỗ trợ nhiều Comment & Reply đa tầng)
+		// =================================================================================
+		// API 1: RATE MOVIE - DÀNH RIÊNG CHO VIỆC CLICK ĐÁNH GIÁ SAO (1 User / 1 Lần / 1 Phim)
+		// =================================================================================
+		[HttpPost]
+		[Authorize]
+		[ValidateAntiForgeryToken]
+		public async Task<IActionResult> RateMovie(Guid movieId, int rating)
+		{
+			try
+			{
+				var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+				if (string.IsNullOrEmpty(userId))
+				{
+					return Json(new { success = false, message = "Please log in to rate." });
+				}
+
+				if (rating < 1 || rating > 5)
+				{
+					return Json(new { success = false, message = "Invalid rating value." });
+				}
+
+				// Kiểm tra xem User này đã từng vote sao cho phim này chưa
+				var userReviews = await _reviewService.GetUserReviewsAsync(userId);
+				var existingRating = userReviews.FirstOrDefault(r => r.MovieId == movieId && r.Rating > 0);
+
+				if (existingRating != null)
+				{
+					// Nếu đã vote rồi -> Update lại số điểm mới (Giữ nguyên comment cũ nếu có)
+					var updateDto = new ReviewUpdateDto
+					{
+						Id = existingRating.Id,
+						Rating = rating,
+						Comment = existingRating.Comment
+					};
+					await _reviewService.UpdateReviewAsync(userId, updateDto);
+
+					return Json(new { success = true, message = "Your rating has been updated!" });
+				}
+				else
+				{
+					// Nếu chưa vote -> Tạo mới một bản ghi chỉ chứa Rating (Comment = null)
+					var createDto = new ReviewCreateDto
+					{
+						MovieId = movieId,
+						Rating = rating,
+						Comment = null
+					};
+					var review = await _reviewService.CreateReviewAsync(userId, createDto);
+					await _reviewService.ApproveReviewAsync(review.Id);
+
+					return Json(new { success = true, message = "Thanks for rating this movie!" });
+				}
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error rating movie {MovieId}", movieId);
+				return Json(new { success = false, message = "An error occurred while rating." });
+			}
+		}
+
+		// =================================================================================
+		// API 2: CREATE COMMENT - DÀNH RIÊNG CHO BÌNH LUẬN TEXT (Nhiều Comment / 1 User)
+		// =================================================================================
 		[HttpPost]
 		[Authorize]
 		[ValidateAntiForgeryToken]
@@ -80,22 +142,16 @@ namespace FinalCuongFilm.MVC.Controllers
 					return Json(new { success = false, message = string.Join(", ", errors) });
 				}
 
-				// Nếu là Comment gốc (không có ParentId), kiểm tra Rating.
-				// Nếu là Reply (có ParentId), có thể bỏ qua check Rating hoặc set mặc định là 5 ở Frontend.
-				if (!dto.ParentId.HasValue && (dto.Rating < 1 || dto.Rating > 5))
-				{
-					return Json(new { success = false, message = "Rating must be between 1 and 5 stars." });
-				}
+				// QUAN TRỌNG: Ép Rating = 0 cho tất cả các bình luận dạng Text.
+				// Việc này đảm bảo các comment không làm sai lệch thuật toán tính trung bình cộng (Average) của số sao.
+				dto.Rating = 0;
 
-				// LƯU Ý CHO CƯỜNG: 
-				// Em phải vào file ReviewService.cs, tìm hàm CreateReviewAsync, XÓA BỎ đoạn code ném lỗi 
-				// "Bạn đã đánh giá phim này rồi" để hệ thống cho phép 1 user post nhiều comment nhé!
 				var review = await _reviewService.CreateReviewAsync(userId, dto);
 
-				// Auto approve ngay lập tức
+				// Auto approve bình luận ngay lập tức
 				await _reviewService.ApproveReviewAsync(review.Id);
 
-				// Lấy tên thật (Ưu tiên FullName nếu hệ thống lưu, nếu không có xài Name mặc định)
+				// Lấy tên người dùng chuẩn xác nhất (Ưu tiên FullName)
 				var userName = User.FindFirst("FullName")?.Value
 							?? User.FindFirst("Name")?.Value
 							?? User.Identity?.Name
@@ -104,11 +160,11 @@ namespace FinalCuongFilm.MVC.Controllers
 				return Json(new
 				{
 					success = true,
-					message = dto.ParentId.HasValue ? "Reply posted successfully!" : "Comment posted successfully!",
+					message = "Comment posted successfully!",
 					review = new
 					{
 						id = review.Id,
-						userName = userName, // Đã lấy đúng tên thật
+						userName = userName,
 						rating = dto.Rating,
 						comment = dto.Comment ?? string.Empty,
 						createdAt = DateTime.Now.ToString("MMM dd, yyyy")
@@ -117,17 +173,14 @@ namespace FinalCuongFilm.MVC.Controllers
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError(ex, "Error creating review/comment.");
-				// Tạm thời hứng lỗi cũ của em nếu em chưa kịp sửa file Service
-				if (ex.Message.Contains("đánh giá") || ex.Message.Contains("review"))
-				{
-					return Json(new { success = false, message = "Please update your old review instead of creating a new one (Or ask Admin to allow multiple comments)." });
-				}
-				return Json(new { success = false, message = "An error occurred while posting." });
+				_logger.LogError(ex, "Error creating comment.");
+				return Json(new { success = false, message = "An error occurred while posting your comment." });
 			}
 		}
 
-		// POST: /Reviews/Edit/{id} - AJAX endpoint (Đã fix thành trả về JSON cho Frontend In-place Update)
+		// =================================================================================
+		// API 3: EDIT COMMENT - CẬP NHẬT BÌNH LUẬN
+		// =================================================================================
 		[HttpPost]
 		[Authorize]
 		[ValidateAntiForgeryToken]
@@ -146,7 +199,6 @@ namespace FinalCuongFilm.MVC.Controllers
 					return Json(new { success = false, message = "Invalid data." });
 				}
 
-				// Lấy review ra để check quyền sở hữu
 				var reviews = await _reviewService.GetUserReviewsAsync(userId);
 				var review = reviews.FirstOrDefault(r => r.Id == dto.Id);
 
@@ -155,10 +207,12 @@ namespace FinalCuongFilm.MVC.Controllers
 					return Json(new { success = false, message = "Comment not found or access denied." });
 				}
 
+				// Đảm bảo không bị thay đổi Rating khi sửa bình luận
+				dto.Rating = review.Rating;
+
 				var result = await _reviewService.UpdateReviewAsync(userId, dto);
 				if (result)
 				{
-					// Auto approve lại sau khi update
 					await _reviewService.ApproveReviewAsync(dto.Id);
 					return Json(new { success = true, message = "Comment updated successfully!" });
 				}
@@ -172,7 +226,9 @@ namespace FinalCuongFilm.MVC.Controllers
 			}
 		}
 
-		// POST: /Reviews/Delete/{id} - AJAX endpoint
+		// =================================================================================
+		// API 4: DELETE COMMENT - XÓA BÌNH LUẬN
+		// =================================================================================
 		[HttpPost]
 		[Authorize]
 		[ValidateAntiForgeryToken]

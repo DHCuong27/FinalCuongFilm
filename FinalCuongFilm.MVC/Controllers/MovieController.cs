@@ -149,7 +149,7 @@ namespace FinalCuongFilm.MVC.Controllers
 
 
 		// Watch: /Movie/Watch/{slug}?ep=1
-		// Watch: /Movie/Watch/{slug}?ep=1
+		
 		[AllowAnonymous]
 		[Route("Movie/Watch/{slug}")]
 		public async Task<IActionResult> Watch(string slug, int? ep = null)
@@ -306,30 +306,30 @@ namespace FinalCuongFilm.MVC.Controllers
 			var movie = await _context.Movies.FindAsync(id);
 			if (movie == null) return NotFound();
 
-			// 1. Kiểm tra quyền Premium
-			if (movie.IsVipOnly)
-			{
-				var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-				var currentVip = await _vipService.GetCurrentUserSubscriptionAsync(userId);
+			
+			// BUSINESS LOGIC: DOWNLOAD FEATURE IS EXCLUSIVE TO VIP ACCOUNTS
+			
+			var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+			bool hasVip = await _vipService.HasActiveVipAsync(userId);
 
-				if (currentVip == null || currentVip.EndDate < DateTime.UtcNow)
-				{
-					TempData["Error"] = "Vui lòng nâng cấp gói Premium để tải phim này!";
-					return RedirectToAction("Index", "Premium");
-				}
+			if (!hasVip)
+			{
+				// If not a VIP -> Redirect to the Premium upgrade page immediately
+				TempData["Error"] = "The download feature is exclusive to Premium members. Please upgrade your account!";
+				return RedirectToAction("Index", "Premium");
 			}
+			
 
 			try
 			{
 				var blobServiceClient = new BlobServiceClient(_configuration.GetConnectionString("AzureBlobStorage"));
 				var containerClient = blobServiceClient.GetBlobContainerClient("videos");
 
-				// 2. DỰA VÀO ẢNH: Thư mục chứa file MP4 có tên chính là Slug của phim (VD: "test-download/")
+				// The folder containing the MP4 file is named exactly as the movie's Slug (e.g., "test-download/")
 				string searchPrefix = $"{movie.Slug}/";
 				string targetBlobName = null;
 
-				// 3. QUÉT THƯ MỤC TRÊN AZURE ĐỂ TÌM FILE MP4
-				// Nó sẽ tìm thấy "test-download/movie-20260414154423.mp4"
+				// SCAN THE FOLDER ON AZURE TO FIND THE MP4 FILE
 				await foreach (var blobItem in containerClient.GetBlobsAsync(BlobTraits.None, BlobStates.None, searchPrefix, CancellationToken.None))
 				{
 					if (blobItem.Name.EndsWith(".mp4", StringComparison.OrdinalIgnoreCase))
@@ -339,14 +339,14 @@ namespace FinalCuongFilm.MVC.Controllers
 					}
 				}
 
-				// Nếu quét xong mà không có file mp4 nào
+				// If the scan completes and no MP4 file is found
 				if (targetBlobName == null)
 				{
-					TempData["Error"] = $"Không tìm thấy file MP4 nào trong thư mục '{searchPrefix}'. Vui lòng kiểm tra lại Azure.";
+					TempData["Error"] = $"No MP4 file found in the '{searchPrefix}' directory. Please check Azure storage.";
 					return RedirectToAction("Detail", new { slug = movie.Slug });
 				}
 
-				// 4. TẠO SAS TOKEN VÀ ÉP TẢI VỀ
+				// CREATE SAS TOKEN AND FORCE DOWNLOAD
 				var blobClient = containerClient.GetBlobClient(targetBlobName);
 
 				if (blobClient.CanGenerateSasUri)
@@ -361,18 +361,20 @@ namespace FinalCuongFilm.MVC.Controllers
 					};
 
 					sasBuilder.SetPermissions(BlobSasPermissions.Read);
-					// Đặt lại tên file sạch đẹp khi user tải về (VD: test-download.mp4)
+
+					// Set a clean filename for the user to download
 					sasBuilder.ContentDisposition = $"attachment; filename=\"{movie.Slug}.mp4\"";
 
 					return Redirect(blobClient.GenerateSasUri(sasBuilder).ToString());
 				}
 
-				TempData["Error"] = "Lỗi hệ thống: Không thể tạo mã xác thực tải phim.";
+				TempData["Error"] = "System error: Unable to generate the download authentication token.";
 				return RedirectToAction("Detail", new { slug = movie.Slug });
 			}
 			catch (Exception ex)
 			{
-				TempData["Error"] = "Lỗi kết nối Azure: " + ex.Message;
+				_logger.LogError(ex, "Error processing download for movie {MovieId}", id);
+				TempData["Error"] = "Azure connection error: " + ex.Message;
 				return RedirectToAction("Detail", new { slug = movie.Slug });
 			}
 		}

@@ -15,6 +15,8 @@ namespace FinalCuongFilm.Common.DTOs
 		public DateTime CreatedAt { get; set; }
 		public DateTime? UpdatedAt { get; set; }
 		public Guid? ParentId { get; set; }
+		public string? FullName { get; set; }  // THÊM DÒNG NÀY
+		public string? AvatarUrl { get; set; }
 	}
 
 	public class ReviewCreateDto

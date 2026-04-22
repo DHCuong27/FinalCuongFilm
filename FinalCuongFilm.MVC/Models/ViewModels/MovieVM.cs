@@ -83,6 +83,8 @@ namespace FinalCuongFilm.MVC.Models.ViewModels
 		public List<EpisodeDto> Episodes { get; set; } = new();
 		public EpisodeDto? CurrentEpisode { get; set; }
 		public List<MediaFileDto> MediaFiles { get; set; } = new();
+
+		public bool IsVipOnly { get; set; }
 	}
 
 	

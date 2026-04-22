@@ -1,7 +1,7 @@
 ﻿@using FinalCuongFilm.ApplicationCore.Entities
-@using System.Security.Claims
 @using FinalCuongFilm.ApplicationCore.Entities.Identity
 @using Microsoft.AspNetCore.Identity
+@using System.Security.Claims
 @model FinalCuongFilm.MVC.Models.ViewModels.MovieWatchViewModel
 @using static FinalCuongFilm.ApplicationCore.Entities.Enum
 @inject FinalCuongFilm.Service.Interfaces.IVipService VipService
@@ -14,34 +14,30 @@
     var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
     bool isVip = userId != null && await VipService.HasActiveVipAsync(userId);
 
-    // ĐỒNG BỘ LOGIC AVATAR/NAME TỪ LAYOUT USER
     string currentUserName = User.Identity?.Name ?? "Unknown";
-    string currentUserAvatar = "/img/avatar.jpg";
+    string currentUserAvatar = "";
 
     if (User.Identity?.IsAuthenticated == true)
     {
         var currentUser = await UserManager.GetUserAsync(User);
         if (currentUser != null)
         {
-            if (!string.IsNullOrEmpty(currentUser.AvatarUrl))
-            {
-                currentUserAvatar = currentUser.AvatarUrl;
-            }
-            currentUserName = !string.IsNullOrEmpty(currentUser.FullName) ? currentUser.FullName : currentUser.UserName;
+            string rawName = !string.IsNullOrEmpty(currentUser.FullName) ? currentUser.FullName : currentUser.UserName;
+            currentUserName = rawName.Contains("@") ? rawName.Split('@')[0] : rawName;
+            currentUserAvatar = currentUser.AvatarUrl ?? "";
         }
     }
 
     var currentEpisode = Model.CurrentEpisode;
     var episodes = Model.Episodes ?? new List<FinalCuongFilm.Common.DTOs.EpisodeDto>();
     var mediaFile = Model.MediaFiles?.FirstOrDefault();
-
     var isFavorited = ViewBag.IsFavorited != null ? (bool)ViewBag.IsFavorited : false;
     var actors = ViewBag.Actors as IEnumerable<FinalCuongFilm.Common.DTOs.ActorDto> ?? new List<FinalCuongFilm.Common.DTOs.ActorDto>();
     var streamingUrl = ViewBag.StreamingUrl as string ?? "";
     var subtitles = ViewBag.SubtitleFiles as IEnumerable<dynamic>;
 
-    // Khai báo biến cho phần Review
     var reviews = ViewBag.Reviews as IEnumerable<FinalCuongFilm.Common.DTOs.ReviewDto> ?? new List<FinalCuongFilm.Common.DTOs.ReviewDto>();
+    var textReviews = reviews.Where(r => !string.IsNullOrWhiteSpace(r.Comment)).ToList();
 
     var currentUrl = Url.Action("Watch", "Movie", new { slug = Model.Movie?.Slug, ep = currentEpisode?.EpisodeNumber });
     var isVideoAvailable = Model.Movie != null && mediaFile != null && !string.IsNullOrEmpty(streamingUrl);
@@ -66,7 +62,14 @@
         --transition: all 0.2s ease;
     }
 
-    /* ---------------- PLAYER & INFO ---------------- */
+    body {
+        background-color: var(--netflix-black);
+        color: var(--netflix-text);
+        font-family: 'Netflix Sans', Arial, sans-serif;
+        line-height: 1.5;
+    }
+
+    /* Cinema Section */
     .cinema-section {
         position: relative;
         width: 100%;
@@ -79,6 +82,7 @@
         width: 100%;
         max-width: 1400px;
         margin: 0 auto;
+        transition: all 0.3s ease;
     }
 
     .cinema-screen {
@@ -87,6 +91,37 @@
         background: #000;
         overflow: hidden;
     }
+
+    /* Expanded (Cinema) Mode */
+    .cinema-section.expanded {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 10000;
+        background: #000;
+        overflow: hidden;
+    }
+
+        .cinema-section.expanded .cinema-screen-wrapper {
+            max-width: 100%;
+            height: 100vh;
+        }
+
+        .cinema-section.expanded .cinema-screen, .cinema-section.expanded .plyr {
+            height: 100%;
+        }
+
+            .cinema-section.expanded .plyr video {
+                max-height: 100vh;
+                height: 100%;
+                object-fit: contain;
+            }
+
+        .cinema-section.expanded .info-section {
+            display: none;
+        }
 
     .plyr {
         width: 100%;
@@ -102,6 +137,7 @@
             width: 100%;
             max-height: 80vh;
             object-fit: contain;
+            background: #000;
         }
 
     .cinema-top-bar {
@@ -114,6 +150,7 @@
         z-index: 20;
         display: flex;
         align-items: center;
+        justify-content: space-between;
         opacity: 0;
         transition: opacity 0.3s;
         pointer-events: none;
@@ -131,16 +168,52 @@
         width: 40px;
         height: 40px;
         border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         cursor: pointer;
-        margin-right: 20px;
         transition: var(--transition);
     }
+
+        .cinema-back-btn:hover {
+            background: rgba(255,255,255,0.1);
+            transform: scale(1.05);
+        }
 
     .cinema-title h2 {
         font-size: 1.3rem;
         font-weight: 500;
+        margin: 0;
     }
 
+    .cinema-title span {
+        font-size: 0.9rem;
+        opacity: 0.8;
+        margin-left: 8px;
+    }
+
+    /* Expand Button placed next to Title */
+    .expand-toggle-btn {
+        background: rgba(255,255,255,0.15);
+        border: 1px solid rgba(255,255,255,0.3);
+        color: white;
+        padding: 5px 12px;
+        border-radius: 4px;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: var(--transition);
+        backdrop-filter: blur(4px);
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+        .expand-toggle-btn:hover {
+            background: var(--netflix-red);
+            border-color: var(--netflix-red);
+        }
+
+    /* Info Section */
     .info-section {
         max-width: 1400px;
         margin: 0 auto;
@@ -152,18 +225,26 @@
         font-weight: 700;
         margin-bottom: 10px;
         display: flex;
+        flex-wrap: wrap;
         gap: 15px;
+        align-items: baseline;
     }
+
+        .movie-title span {
+            font-size: 1.5rem;
+            color: var(--netflix-text-secondary);
+        }
 
     .movie-meta {
         display: flex;
+        flex-wrap: wrap;
         gap: 12px;
         margin-bottom: 20px;
     }
 
     .meta-badge {
         background: rgba(255,255,255,0.1);
-        padding: 4px 10px;
+        padding: 4px 12px;
         border-radius: 4px;
         font-size: 0.85rem;
         border: 1px solid #333;
@@ -173,6 +254,7 @@
         display: flex;
         gap: 15px;
         margin-bottom: 30px;
+        flex-wrap: wrap;
     }
 
     .btn-action {
@@ -181,6 +263,7 @@
         padding: 10px 24px;
         border-radius: 6px;
         font-weight: 600;
+        font-size: 1rem;
         border: none;
         display: inline-flex;
         align-items: center;
@@ -193,6 +276,7 @@
         .btn-action:hover {
             background: rgba(255,255,255,0.2);
             transform: translateY(-2px);
+            color: white;
         }
 
         .btn-action.active {
@@ -205,15 +289,8 @@
         color: #b3b3b3;
         max-width: 900px;
         margin-bottom: 40px;
-    }
-
-    /* ---------------- GIAO DIỆN BÌNH LUẬN CHỈ TEXT ---------------- */
-    .review-box {
-        background: var(--bg-card);
-        border: 1px solid var(--border-color);
-        border-radius: 12px;
-        padding: 2rem;
-        margin-bottom: 2rem;
+        line-height: 1.6;
+        font-size: 1rem;
     }
 
     .section-title {
@@ -223,6 +300,119 @@
         display: flex;
         align-items: center;
         gap: 10px;
+    }
+
+    /* Cast & Episodes */
+    .cast-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 40px;
+    }
+
+    .cast-card {
+        text-align: center;
+        transition: transform var(--transition-speed);
+        background: var(--bg-card);
+        border-radius: 12px;
+        padding: 15px 10px;
+        cursor: pointer;
+        border: 1px solid var(--border-color);
+        /* Thêm 3 dòng này để thẻ cố định khung */
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        overflow: hidden;
+    }
+
+        .cast-card:hover {
+            transform: translateY(-5px);
+            background: var(--bg-hover);
+        }
+
+    .cast-avatar {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--netflix-red), #ff4b4b);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 0.8rem;
+        overflow: hidden;
+    }
+
+        .cast-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .cast-avatar i {
+            font-size: 2rem;
+            color: white;
+        }
+
+    .cast-name {
+        font-size: 0.95rem;
+        font-weight: 600;
+        margin-bottom: 0.3rem;
+        color: var(--text-primary);
+        /* Thêm 4 dòng này để cắt chữ có dấu 3 chấm (...) khi quá dài */
+        width: 100%;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .episodes-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        margin-bottom: 40px;
+    }
+
+    .episode-item {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        background: var(--netflix-dark);
+        border-radius: 8px;
+        overflow: hidden;
+        padding: 15px 20px;
+        text-decoration: none;
+        color: inherit;
+        transition: var(--transition);
+        border: 1px solid transparent;
+    }
+
+        .episode-item:hover {
+            background: var(--bg-hover);
+        }
+
+        .episode-item.active {
+            border-color: var(--netflix-red);
+            background: rgba(229,9,20,0.1);
+        }
+
+    .episode-number {
+        font-weight: 700;
+        color: var(--netflix-red);
+        min-width: 60px;
+    }
+
+    .episode-title {
+        flex: 1;
+        font-weight: 500;
+    }
+
+    /* Comments Area */
+    .review-box {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 2rem;
+        margin-bottom: 2rem;
     }
 
     .review-textarea {
@@ -241,7 +431,6 @@
         .review-textarea:focus {
             outline: none;
             border-color: var(--netflix-red);
-            background: rgba(255,255,255,0.06);
         }
 
     .btn-submit-review {
@@ -256,12 +445,11 @@
         display: inline-flex;
         align-items: center;
         gap: 0.5rem;
-        z-index: 10;
-        position: relative;
     }
 
         .btn-submit-review:hover {
-            background: #f40612;
+            opacity: 0.9;
+            transform: translateY(-1px);
         }
 
     .reviews-list {
@@ -283,7 +471,7 @@
         display: flex;
         justify-content: space-between;
         align-items: flex-start;
-        margin-bottom: 1rem;
+        margin-bottom: 0.8rem;
     }
 
     .review-author {
@@ -292,12 +480,10 @@
         gap: 1rem;
     }
 
-    /* Chỉnh sửa hiển thị Avatar ảnh/text */
     .author-avatar {
         width: 45px;
         height: 45px;
         border-radius: 50%;
-        background: linear-gradient(135deg, var(--netflix-red), #ff4b4b);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -323,7 +509,7 @@
     }
 
     .review-date {
-        font-size: 0.9rem;
+        font-size: 0.85rem;
         color: var(--netflix-text-secondary);
     }
 
@@ -349,14 +535,14 @@
         font-size: 0.9rem;
         font-weight: 500;
         cursor: pointer;
-        transition: all 0.2s;
         display: inline-flex;
         align-items: center;
         gap: 0.3rem;
+        transition: all 0.2s;
     }
 
         .review-action-btn:hover {
-            color: var(--text-primary);
+            color: var(--netflix-text);
         }
 
     .login-prompt {
@@ -372,7 +558,7 @@
         position: fixed;
         top: 90px;
         right: 20px;
-        background: var(--netflix-dark);
+        background: var(--bg-card);
         padding: 1rem 1.5rem;
         border-radius: 6px;
         box-shadow: 0 10px 30px rgba(0,0,0,0.5);
@@ -396,18 +582,6 @@
         }
     }
 
-    @@keyframes fadeIn {
-        from {
-            opacity: 0;
-            transform: translateY(-20px);
-        }
-
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
     @@media (max-width: 768px) {
         .info-section {
             padding: 20px;
@@ -418,6 +592,16 @@
             flex-direction: column;
             gap: 5px;
         }
+
+        .cinema-top-bar {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .expand-toggle-btn {
+            align-self: flex-end;
+        }
     }
 </style>
 
@@ -427,229 +611,290 @@
         <i class="fas fa-video-slash" style="font-size: 4rem; color: var(--netflix-red); margin-bottom: 20px;"></i>
         <h2>Video Unavailable</h2>
         <p style="color: #888; margin: 15px 0 25px;">The video file is currently processing or cannot be found.</p>
-        <a href="@Url.Action("Detail", "Movie", new { slug = Model.Movie?.Slug ?? "unknown" })" class="btn-action">Return to Details</a>
+        <a href="@Url.Action("Detail", "Movie", new { slug = Model.Movie?.Slug })" class="btn-action">Return to Details</a>
     </div>
 }
 else
 {
-    <div class="cinema-section">
+    <div class="cinema-section" id="cinemaSection">
         <div class="cinema-screen-wrapper">
             <div class="cinema-screen">
                 <div class="cinema-top-bar">
-                    <button class="cinema-back-btn" onclick="window.location.href='@Url.Action("Detail", "Movie", new { slug = Model.Movie?.Slug })'">
-                        <i class="fas fa-arrow-left"></i>
-                    </button>
-                    <div class="cinema-title">
-                        <h2>@Model.Movie.Title</h2>
-                        @if (currentEpisode != null)
-                        {
-                            <span>E @currentEpisode.EpisodeNumber</span>
+                    <div class="d-flex align-items-center gap-3">
+                        <button class="cinema-back-btn" onclick="window.location.href='@Url.Action("Detail", "Movie", new { slug = Model.Movie?.Slug })'">
+                            <i class="fas fa-arrow-left"></i>
+                        </button>
+                        <div class="cinema-title">
+                            <h2>@Model.Movie.Title @if (currentEpisode != null) {
+                            <span>Episode @currentEpisode.EpisodeNumber</span>
                         }
+</h2>
                     </div>
                 </div>
-
-                <video id="player" playsinline controls crossorigin poster="@(Model.Movie.PosterUrl ?? "")">
-                    @if (isHlsStream)
-                    {
-                        <source src="@streamingUrl" type="application/x-mpegURL" />
-                    }
-                    else
-                    {
-                        <source src="@streamingUrl" type="video/mp4" />
-                    }
-
-                    @if (subtitles != null)
-                    {
-                        foreach (var sub in subtitles)
-                        {
-                            <track kind="captions" label="@sub.label" srclang="@sub.language" src="@sub.url" />
-                        }
-                    }
-                </video>
-            </div>
-        </div>
-    </div>
-
-    <div class="info-section">
-
-        <div class="movie-title">
-            @Model.Movie.Title
-            @if (currentEpisode != null)
-            {
-                <span>Episode @currentEpisode.EpisodeNumber</span>
-            }
-        </div>
-
-        <div class="movie-meta">
-            <span class="meta-badge">@Model.Movie.ReleaseYear</span>
-            <span class="meta-badge">@Model.Movie.Type</span>
-            @if (mediaFile?.Quality != null)
-            {
-                <span class="meta-badge">@mediaFile.Quality</span>
-            }
-        </div>
-
-        <div class="action-buttons">
-            <a href="@Url.Action("Detail", "Movie", new { slug = Model.Movie.Slug })" class="btn-action">
-                <i class="fas fa-info-circle"></i> View Details
-            </a>
-
-            @if (User.Identity?.IsAuthenticated == true)
-            {
-                <button type="button" class="btn-action favorite-toggle-btn @(isFavorited ? "active" : "")" data-movie-id="@Model.Movie.Id">
-                    <i class="@(isFavorited ? "fas fa-check" : "fas fa-plus")"></i>
-                    <span>@(isFavorited ? "In My List" : "My List")</span>
+                <button class="expand-toggle-btn" id="expandToggleBtn" title="Cinema Mode">
+                    <i class="fas fa-expand"></i> Cinema Mode
                 </button>
-            }
+            </div>
 
-            <button type="button" class="btn-action" onclick="navigator.clipboard.writeText(window.location.href); showToast('Link copied to clipboard!', 'success');">
-                <i class="fas fa-share-alt"></i> Share
-            </button>
-        </div>
-
-        @if (!string.IsNullOrEmpty(Model.Movie.Description))
-        {
-            <div class="movie-description">@Model.Movie.Description</div>
-        }
-
-        <hr style="border-color: #333; margin: 40px 0;" />
-
-        <div class="review-box" id="create-review-section">
-            @if (User.Identity?.IsAuthenticated == true)
-            {
-                <h2 class="section-title"><i class="fas fa-comment-dots text-danger"></i> Leave a Comment</h2>
-                <form id="mainCommentForm" method="post">
-                    @Html.AntiForgeryToken()
-                    <input type="hidden" name="MovieId" value="@Model.Movie.Id" />
-                    <input type="hidden" name="Rating" value="5" /> <div class="mb-3">
-                        <textarea name="Comment" class="review-textarea" rows="3" placeholder="Share your thoughts about this movie..." required></textarea>
-                    </div>
-
-                    <button type="submit" class="btn-submit-review btn-main-submit">
-                        <i class="fas fa-paper-plane"></i> Post Comment
-                    </button>
-                </form>
-            }
-            else
-            {
-                <div class="login-prompt">
-                    <i class="fas fa-user-lock mb-3 d-block" style="font-size: 3rem;"></i>
-                    <p class="mb-3">Sign in to share your thoughts.</p>
-                    <a href="/Identity/Account/Login?returnUrl=@Uri.EscapeDataString(currentUrl)" class="btn-submit-review text-decoration-none">
-                        <i class="fas fa-sign-in-alt"></i> Sign In
-                    </a>
-                </div>
-            }
-        </div>
-
-        <div class="review-box" id="all-reviews-section">
-            <h2 class="section-title">
-                <i class="fas fa-comments text-danger"></i> Comments (<span id="reviewCount">@(reviews?.Count() ?? 0)</span>)
-            </h2>
-
-            <div class="reviews-list" id="reviewsListContainer">
-                @if (reviews != null && reviews.Any())
+            <video id="player" playsinline controls crossorigin poster="@(Model.Movie.PosterUrl ?? "")">
+                @if (isHlsStream)
                 {
-                    // Lọc để lấy comment gốc, phẳng
-                    var rootComments = reviews.Where(r => r.GetType().GetProperty("ParentId") == null || r.GetType().GetProperty("ParentId")?.GetValue(r, null) == null).ToList();
-
-                    @foreach (var comment in rootComments)
-                    {
-                        // Dò Name
-                        var rawName = comment.UserName ?? "User";
-                        var baseName = rawName.Contains("@") ? rawName.Split('@')[0] : rawName;
-                        bool isMyComment = (rawName == User.Identity?.Name || baseName == currentUserName);
-                        string displayName = isMyComment ? currentUserName : baseName;
-
-                        // Dò Avatar từ DTO (Dùng reflection nếu backend có gán Avatar)
-                        var avatarProp = comment.GetType().GetProperty("AvatarUrl") ?? comment.GetType().GetProperty("Avatar");
-                        string dbAvatar = avatarProp?.GetValue(comment, null)?.ToString();
-
-                        // Ép Avatar chuẩn nếu là của mình
-                        string displayAvatar = isMyComment && !currentUserAvatar.Contains("avatar.jpg") ? currentUserAvatar : dbAvatar;
-
-                        string[] colors = { "#e50914", "#f5c518", "#3498db", "#2ecc71", "#9b59b6" };
-                        string avatarBg = colors[Math.Abs(displayName.GetHashCode()) % colors.Length];
-
-                        <div class="review-item" id="review-@comment.Id" style="@(isMyComment ? "border-color: var(--netflix-red); background: rgba(229, 9, 20, 0.02);" : "")">
-                            <div id="display-mode-@comment.Id">
-                                <div class="review-header">
-                                    <div class="review-author">
-                                        <div class="author-avatar" style="background: @avatarBg;">
-                                            @if (!string.IsNullOrEmpty(displayAvatar))
-                                            {
-                                                <img src="@displayAvatar" alt="Avatar" />
-                                            }
-                                            else
-                                            {
-                                                @displayName.Substring(0, 1).ToUpper()
-                                            }
-                                        </div>
-                                        <div class="author-info">
-                                            <h4>
-                                                @displayName
-                                                @if (isMyComment)
-                                                {
-                                                    <span class="badge bg-danger ms-2" style="font-size: 0.7rem;">You</span>
-                                                }
-                                            </h4>
-                                        </div>
-                                    </div>
-                                    <div class="review-date">@comment.CreatedAt.ToString("MMM dd, yyyy")</div>
-                                </div>
-
-                                @if (!string.IsNullOrEmpty(comment.Comment))
-                                {
-                                    <div class="review-content">@comment.Comment</div>
-                                }
-
-                                <div class="review-actions">
-                                    @if (isMyComment)
-                                    {
-                                        <button class="review-action-btn text-primary" onclick="showEditForm('@comment.Id')"><i class="fas fa-edit"></i> Edit</button>
-                                        <button class="review-action-btn text-danger ms-3" onclick="deleteReview('@comment.Id')"><i class="fas fa-trash"></i> Delete</button>
-                                    }
-                                    else
-                                    {
-                                        <button class="review-action-btn"><i class="far fa-thumbs-up"></i> Helpful</button>
-                                        <button class="review-action-btn ms-3"><i class="far fa-flag"></i> Report</button>
-                                    }
-                                </div>
-                            </div>
-
-                            @if (isMyComment)
-                            {
-                                <div id="edit-mode-@comment.Id" style="display: none;">
-                                    <form class="form-edit-review" method="post">
-                                        @Html.AntiForgeryToken()
-                                        <input type="hidden" name="Id" value="@comment.Id" />
-                                        <input type="hidden" name="MovieId" value="@Model.Movie.Id" />
-                                        <input type="hidden" name="Rating" value="5" />
-
-                                        <div class="mt-3 mb-3">
-                                            <textarea name="Comment" class="review-textarea" rows="2" required>@comment.Comment</textarea>
-                                        </div>
-                                        <div class="d-flex gap-2">
-                                            <button type="submit" class="btn btn-danger px-4 fw-bold">Save</button>
-                                            <button type="button" class="btn btn-secondary px-4 fw-bold" onclick="hideEditForm('@comment.Id')">Cancel</button>
-                                        </div>
-                                    </form>
-                                </div>
-                            }
-                        </div>
-                    }
+                    <source src="@streamingUrl" type="application/x-mpegURL" />
                 }
                 else
                 {
-                    <div id="no-reviews-msg" class="text-center text-secondary py-4">
-                        <i class="fas fa-comment-slash fs-1 mb-3"></i>
-                        <p>No comments yet. Be the first to share your thoughts!</p>
+                    <source src="@streamingUrl" type="video/mp4" />
+                }
+
+                @if (subtitles != null)
+                {
+                    foreach (var sub in subtitles)
+                    {
+                        <track kind="captions" label="@sub.Language" srclang="@sub.Code" src="@sub.Url" />
+                    }
+                }
+            </video>
+        </div>
+    </div>
+</div>
+
+<div class="info-section">
+    <div class="movie-title">
+        @Model.Movie.Title
+        @if (currentEpisode != null)
+        {
+            <span>Episode @currentEpisode.EpisodeNumber: @currentEpisode.Title</span>
+        }
+    </div>
+
+    <div class="movie-meta">
+        <span class="meta-badge"><i class="far fa-calendar-alt me-1"></i> @Model.Movie.ReleaseYear</span>
+        <span class="meta-badge"><i class="fas fa-tag me-1"></i> @Model.Movie.Type</span>
+        @if (Model.Movie.DurationMinutes > 0)
+        {
+            <span class="meta-badge"><i class="far fa-clock me-1"></i> @Model.Movie.DurationMinutes min</span>
+        }
+    </div>
+
+    <div class="action-buttons">
+        <a href="@Url.Action("Detail", "Movie", new { slug = Model.Movie.Slug })" class="btn-action">
+            <i class="fas fa-info-circle"></i> View Details
+        </a>
+
+        @if (Model.IsVipOnly)
+        {
+            <a asp-controller="Movie" asp-action="Download" asp-route-id="@Model.Movie.Id" class="btn-action" style="color: #f5c518; border: 1px solid rgba(245, 197, 24, 0.5);">
+                <i class="fa-solid fa-crown"></i> VIP Download
+            </a>
+        }
+        else
+        {
+            <a asp-controller="Movie" asp-action="Download" asp-route-id="@Model.Movie.Id" class="btn-action" style="color: #46d369; border: 1px solid rgba(70, 211, 105, 0.5);">
+                <i class="fa-solid fa-download"></i> VIP Download
+            </a>
+        }
+
+        @if (User.Identity?.IsAuthenticated == true)
+        {
+            <button type="button" class="btn-action favorite-toggle-btn @(isFavorited ? "active" : "")" data-movie-id="@Model.Movie.Id">
+                <i class="@(isFavorited ? "fas fa-check" : "fas fa-plus")"></i>
+                <span>@(isFavorited ? "In My List" : "My List")</span>
+            </button>
+        }
+        <button type="button" class="btn-action" onclick="navigator.clipboard.writeText(window.location.href); showToast('Link copied!', 'success');">
+            <i class="fas fa-share-alt"></i> Share
+        </button>
+    </div>
+
+    @if (!string.IsNullOrEmpty(Model.Movie.Description))
+    {
+        <div class="movie-description">
+            <i class="fas fa-align-left me-2" style="color: var(--netflix-red);"></i> @Model.Movie.Description
+        </div>
+    }
+
+    @if (actors != null && actors.Any())
+    {
+        <h2 class="section-title"><i class="fas fa-users" style="color: var(--netflix-red);"></i> Cast & Crew</h2>
+        <div class="cast-grid">
+            @foreach (var actor in actors)
+            {
+                <a href="/Actor/Dashboard/@actor.Id" style="text-decoration: none; color: inherit;">
+                    <div class="cast-card">
+                        <div class="cast-avatar">
+                            @if (!string.IsNullOrEmpty(actor.AvartUrl))
+                            {
+                                <img src="@actor.AvartUrl" alt="@actor.Name">
+                            }
+                            else
+                            {
+
+                                <i class="fas fa-user"></i>
+                            }
+                        </div>
+                        <div class="cast-name">@actor.Name</div>
+                        @if (!string.IsNullOrEmpty(actor.Gender))
+                        {
+                            <div class="cast-role" style="font-size: 0.75rem; color: var(--netflix-text-secondary);">@actor.Gender</div>
+                        }
+                    </div>
+                </a>
+            }
+        </div>
+    }
+
+    @if (Model.Episodes != null && Model.Episodes.Any() && Model.Movie.Type == MovieType.Series)
+    {
+        <h2 class="section-title"><i class="fas fa-list" style="color: var(--netflix-red);"></i> Episodes</h2>
+        <div class="episodes-list">
+            @foreach (var episode in Model.Episodes)
+            {
+                var isActive = currentEpisode != null && episode.Id == currentEpisode.Id;
+                <a href="@Url.Action("Watch", "Movie", new { slug = Model.Movie.Slug, ep = episode.EpisodeNumber })" class="episode-item @(isActive ? "active" : "")">
+                    <div class="episode-number">Episode @episode.EpisodeNumber</div>
+                    <div class="episode-title">@episode.Title</div>
+                    @if (episode.DurationMinutes.HasValue && episode.DurationMinutes.Value > 0)
+                    {
+                        <div style="font-size: 0.8rem; color: var(--netflix-text-secondary);"><i class="far fa-clock"></i> @episode.DurationMinutes.Value min</div>
+                    }
+                </a>
+            }
+        </div>
+    }
+
+    <hr style="border-color: #333; margin: 40px 0;" />
+
+    <div class="review-box" id="create-review-section">
+        @if (User.Identity?.IsAuthenticated == true)
+        {
+            <h2 class="section-title"><i class="fas fa-comment-dots text-danger"></i> Leave a Comment</h2>
+            <form id="mainCommentForm" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="MovieId" value="@Model.Movie.Id" />
+                <input type="hidden" name="Rating" value="5" />
+
+                <div class="d-flex gap-3 mb-3">
+                    <div class="author-avatar" style="width: 50px; height: 50px; flex-shrink: 0; background: linear-gradient(135deg, #e50914, #ff4b4b);">
+                        @if (!string.IsNullOrEmpty(currentUserAvatar))
+                        {
+                            <img src="@currentUserAvatar" alt="Avatar" />
+                        }
+                        else
+                        {
+                            @currentUserName.Substring(0, 1).ToUpper()
+                        }
+                    </div>
+                    <div class="flex-grow-1">
+                        <textarea name="Comment" class="review-textarea m-0" rows="3" placeholder="Share your thoughts about this movie..." required></textarea>
+                    </div>
+                </div>
+                <div class="text-end">
+                    <button type="submit" class="btn-submit-review btn-main-submit"><i class="fas fa-paper-plane"></i> Post Comment</button>
+                </div>
+            </form>
+        }
+        else
+        {
+            <div class="login-prompt">
+                <i class="fas fa-user-lock mb-3 d-block" style="font-size: 3rem;"></i>
+                <p class="mb-3">Sign in to join the discussion.</p>
+                <a href="/Identity/Account/Login?returnUrl=@Uri.EscapeDataString(currentUrl)" class="btn-submit-review text-decoration-none">Sign In</a>
+            </div>
+        }
+    </div>
+
+    <div class="review-box" id="all-reviews-section">
+        <h2 class="section-title"><i class="fas fa-comments text-danger"></i> Discussion (<span id="reviewCount">@textReviews.Count</span>)</h2>
+
+        <div class="reviews-list" id="reviewsListContainer">
+            @if (textReviews.Any())
+            {
+                @foreach (var comment in textReviews)
+                {
+                    var rawName = comment.UserName ?? "User";
+                    var baseName = rawName.Contains("@") ? rawName.Split('@')[0] : rawName;
+                    bool isMyComment = (comment.UserName == User.Identity?.Name || baseName == currentUserName);
+                    string displayName = isMyComment ? currentUserName : baseName;
+
+                    var avatarProp = comment.GetType().GetProperty("AvatarUrl") ?? comment.GetType().GetProperty("Avatar");
+                    string dbAvatar = avatarProp?.GetValue(comment, null)?.ToString();
+                    string displayAvatar = isMyComment && !string.IsNullOrEmpty(currentUserAvatar) ? currentUserAvatar : dbAvatar;
+
+                    string[] colors = { "#e50914", "#f5c518", "#3498db", "#2ecc71", "#9b59b6" };
+                    string avatarBg = colors[Math.Abs(displayName.GetHashCode()) % colors.Length];
+
+                    <div class="review-item" id="review-@comment.Id" style="@(isMyComment ? "border-color: var(--netflix-red); background: rgba(229, 9, 20, 0.02);" : "")">
+                        <div id="display-mode-@comment.Id">
+                            <div class="review-header">
+                                <div class="review-author">
+                                    <div class="author-avatar" style="background: @avatarBg;">
+                                        @if (!string.IsNullOrEmpty(displayAvatar))
+                                        {
+                                            <img src="@displayAvatar" alt="Avatar" />
+                                        }
+                                        else
+                                        {
+
+                                            @displayName.Substring(0, 1).ToUpper()
+                                        }
+                                    </div>
+                                    <div class="author-info">
+                                        <h4 class="mb-0">
+                                            @displayName
+                                            @if (isMyComment)
+                                            {
+                                                <span class="badge bg-danger ms-2" style="font-size: 0.7rem; padding: 0.3em 0.5em;">You</span>
+                                            }
+                                        </h4>
+                                    </div>
+                                </div>
+                                <div class="review-date">@comment.CreatedAt.ToString("MMM dd, yyyy")</div>
+                            </div>
+                            <div class="review-content">@comment.Comment</div>
+
+                            <div class="review-actions">
+                                @if (isMyComment)
+                                {
+                                    <button class="review-action-btn text-primary" onclick="showEditForm('@comment.Id')"><i class="fas fa-edit"></i> Edit</button>
+                                    <button class="review-action-btn text-danger ms-3" onclick="deleteReview('@comment.Id')"><i class="fas fa-trash"></i> Delete</button>
+                                }
+                                else
+                                {
+                                    <button class="review-action-btn"><i class="far fa-thumbs-up"></i> Helpful</button>
+                                    <button class="review-action-btn ms-3"><i class="far fa-flag"></i> Report</button>
+                                }
+                            </div>
+                        </div>
+
+                        @if (isMyComment)
+                        {
+                            <div id="edit-mode-@comment.Id" style="display: none; margin-top: 15px;">
+                                <form class="form-edit-review" method="post">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="Id" value="@comment.Id" />
+                                    <input type="hidden" name="MovieId" value="@Model.Movie.Id" />
+                                    <input type="hidden" name="Rating" value="5" />
+                                    <textarea name="Comment" class="review-textarea" rows="2" required>@comment.Comment</textarea>
+                                    <div class="d-flex gap-2 mt-2">
+                                        <button type="submit" class="btn btn-danger btn-sm px-3 fw-bold">Save</button>
+                                        <button type="button" class="btn btn-secondary btn-sm px-3 fw-bold" onclick="hideEditForm('@comment.Id')">Cancel</button>
+                                    </div>
+                                </form>
+                            </div>
+                        }
                     </div>
                 }
-            </div>
+            }
+            else
+            {
+                <div id="no-reviews-msg" class="text-center text-secondary py-4">
+                    <i class="fas fa-comment-slash fs-1 mb-3"></i>
+                    <p>No comments yet. Be the first to share your thoughts!</p>
+                </div>
+            }
         </div>
-
     </div>
+</div>
 }
 
 @section Scripts {
@@ -660,18 +905,84 @@ else
         const STREAMING_URL = '@Html.Raw(streamingUrl ?? "")';
         const currentUserName = '@Html.Raw(currentUserName)';
         const currentUserAvatar = '@Html.Raw(currentUserAvatar)';
+        let player = null;
 
         document.addEventListener("DOMContentLoaded", () => {
             const video = document.getElementById("player");
             if (video) {
-                const defaultOptions = { controls: ['play-large', 'play', 'progress', 'current-time', 'duration', 'mute', 'volume', 'captions', 'settings', 'fullscreen'] };
+                const defaultOptions = {
+                    controls: ['play-large', 'play', 'progress', 'current-time', 'duration', 'mute', 'volume', 'captions', 'settings', 'fullscreen'],
+                    settings: ['captions', 'quality', 'speed'],
+                    captions: { active: true, language: 'auto', update: true }
+                };
+
+                // FIX LOGIC CHỌN QUALITY CHO HLS
                 if (Hls.isSupported() && STREAMING_URL.includes('.m3u8')) {
-                    const hls = new Hls(); hls.loadSource(STREAMING_URL); hls.attachMedia(video);
-                    new Plyr(video, defaultOptions);
-                } else { new Plyr(video, defaultOptions); }
+                    const hls = new Hls();
+                    hls.loadSource(STREAMING_URL);
+
+                    hls.on(Hls.Events.MANIFEST_PARSED, function (event, data) {
+                        const availableQualities = hls.levels.map((l) => l.height).sort((a, b) => b - a);
+
+                        // Bơm Option Quality vào Plyr
+                        defaultOptions.quality = {
+                            default: availableQualities[0],
+                            options: availableQualities,
+                            forced: true,
+                            onChange: (e) => updateQuality(e),
+                        };
+
+                        player = new Plyr(video, defaultOptions);
+                    });
+
+                    hls.attachMedia(video);
+                    window.hls = hls;
+
+                    function updateQuality(newQuality) {
+                        window.hls.levels.forEach((level, levelIndex) => {
+                            if (level.height === newQuality) { window.hls.currentLevel = levelIndex; }
+                        });
+                    }
+
+                } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                    video.src = STREAMING_URL;
+                    player = new Plyr(video, defaultOptions);
+                } else {
+                    player = new Plyr(video, defaultOptions);
+                }
             }
 
-            // Xử lý Favorite
+            // Expand/Collapse Cinema Mode
+            const cinemaSection = document.getElementById('cinemaSection');
+            const expandBtn = document.getElementById('expandToggleBtn');
+            if(expandBtn) {
+                const expandIcon = expandBtn.querySelector('i');
+                expandBtn.addEventListener('click', () => {
+                    cinemaSection.classList.toggle('expanded');
+                    if (cinemaSection.classList.contains('expanded')) {
+                        expandIcon.classList.remove('fa-expand');
+                        expandIcon.classList.add('fa-compress');
+                        expandBtn.innerHTML = '<i class="fas fa-compress"></i> Exit Cinema';
+                        document.body.style.overflow = 'hidden';
+                    } else {
+                        expandIcon.classList.remove('fa-compress');
+                        expandIcon.classList.add('fa-expand');
+                        expandBtn.innerHTML = '<i class="fas fa-expand"></i> Cinema Mode';
+                        document.body.style.overflow = '';
+                    }
+                    setTimeout(() => { if (player) player.elements.container.style.height = ''; }, 300);
+                });
+
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape' && cinemaSection.classList.contains('expanded')) {
+                        cinemaSection.classList.remove('expanded');
+                        expandBtn.innerHTML = '<i class="fas fa-expand"></i> Cinema Mode';
+                        document.body.style.overflow = '';
+                    }
+                });
+            }
+
+            // Favorite button handler
             $('.favorite-toggle-btn').click(function() {
                 const btn = $(this);
                 fetch('@Url.Action("Toggle", "Favorites")', {
@@ -688,9 +999,9 @@ else
             });
         });
 
-        // --- HỆ THỐNG AJAX BÌNH LUẬN ---
-        function showEditForm(reviewId) { $('#display-mode-' + reviewId).hide(); $('#edit-mode-' + reviewId).fadeIn(200); }
-        function hideEditForm(reviewId) { $('#edit-mode-' + reviewId).hide(); $('#display-mode-' + reviewId).fadeIn(200); }
+        // --- AJAX BÌNH LUẬN ---
+        function showEditForm(reviewId) { document.getElementById('display-mode-' + reviewId).style.display = 'none'; document.getElementById('edit-mode-' + reviewId).style.display = 'block'; }
+        function hideEditForm(reviewId) { document.getElementById('edit-mode-' + reviewId).style.display = 'none'; document.getElementById('display-mode-' + reviewId).style.display = 'block'; }
 
         function deleteReview(reviewId) {
             if (!confirm('Are you sure you want to delete this comment?')) return;
@@ -700,107 +1011,42 @@ else
                 success: function(response) {
                     if (response.success) {
                         showToast('Deleted successfully!', 'success');
-                        $('#review-' + reviewId).fadeOut(300, function() {
-                            $(this).remove();
-                            let count = parseInt($('#reviewCount').text()) - 1;
-                            $('#reviewCount').text(count > 0 ? count : 0);
-                            if (count <= 0) $('#reviewsListContainer').html(`<div id="no-reviews-msg" class="text-center text-secondary py-4"><i class="fas fa-comment-slash fs-1 mb-3"></i><p>No comments yet.</p></div>`);
-                        });
+                        setTimeout(() => location.reload(), 800);
                     }
                 }
             });
         }
 
         $(document).ready(function() {
-
-            // 1. TẠO COMMENT MỚI (AJAX)
+            // POST COMMENT
             $('#mainCommentForm').on('submit', function(e) {
                 e.preventDefault();
-                const form = $(this);
-                const submitBtn = form.find('.btn-main-submit');
-
+                const submitBtn = $(this).find('.btn-main-submit');
                 submitBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Posting...');
                 $.ajax({
-                    url: '@Url.Action("Create", "Reviews")', type: 'POST', data: form.serialize(),
+                    url: '@Url.Action("Create", "Reviews")', type: 'POST', data: $(this).serialize(),
                     success: function(response) {
                         if (response.success) {
                             showToast('Comment posted!', 'success');
-                            form[0].reset();
-
-                            const newId = response.review ? response.review.id : 'temp-' + Date.now();
-                            const commentText = form.find('textarea[name="Comment"]').val();
-                            const firstLetter = currentUserName.charAt(0).toUpperCase();
-
-                            // Render Ảnh Avatar hoặc Chữ
-                            let avatarContent = (currentUserAvatar && !currentUserAvatar.includes("avatar.jpg"))
-                                ? `<img src="${currentUserAvatar}" alt="Avatar" />`
-                                : `${firstLetter}`;
-
-                            const token = $('input[name="__RequestVerificationToken"]').val();
-
-                            const reviewHtml = `
-                                <div class="review-item" id="review-${newId}" style="border: 1px solid var(--netflix-red); background: rgba(229, 9, 20, 0.05); opacity: 0; animation: fadeIn 0.5s ease forwards; margin-bottom: 1rem;">
-                                    <div id="display-mode-${newId}">
-                                        <div class="review-header">
-                                            <div class="review-author">
-                                                <div class="author-avatar" style="background: linear-gradient(135deg, #f5c518, #ffda44); color: #000;">
-                                                    ${avatarContent}
-                                                </div>
-                                                <div class="author-info">
-                                                    <h4 class="mb-0">${currentUserName} <span class="badge bg-danger ms-2" style="font-size: 0.6rem;">You</span></h4>
-                                                </div>
-                                            </div>
-                                            <div class="review-date">Just now</div>
-                                        </div>
-                                        <div class="review-content mt-2">${commentText}</div>
-                                        <div class="review-actions mt-3 pt-3" style="border-top: 1px solid rgba(255,255,255,0.05);">
-                                            <button class="review-action-btn text-primary" onclick="showEditForm('${newId}')"><i class="fas fa-edit"></i> Edit</button>
-                                            <button class="review-action-btn text-danger ms-3" onclick="deleteReview('${newId}')"><i class="fas fa-trash"></i> Delete</button>
-                                        </div>
-                                    </div>
-                                    <div id="edit-mode-${newId}" style="display: none;">
-                                        <form class="form-edit-review" method="post">
-                                            <input type="hidden" name="__RequestVerificationToken" value="${token}" />
-                                            <input type="hidden" name="Id" value="${newId}" />
-                                            <input type="hidden" name="MovieId" value="@Model.Movie.Id" />
-                                            <input type="hidden" name="Rating" value="5" />
-                                            <div class="mb-3 mt-3">
-                                                <textarea name="Comment" class="review-textarea" rows="2" required>${commentText}</textarea>
-                                            </div>
-                                            <div class="d-flex gap-2 mt-2">
-                                                <button type="submit" class="btn btn-danger btn-sm px-3 fw-bold">Save</button>
-                                                <button type="button" class="btn btn-secondary btn-sm px-3 fw-bold" onclick="hideEditForm('${newId}')">Cancel</button>
-                                            </div>
-                                        </form>
-                                    </div>
-                                </div>`;
-
-                            $('#no-reviews-msg').remove();
-                            $('#reviewsListContainer').prepend(reviewHtml);
-
-                            let count = parseInt($('#reviewCount').text()) + 1;
-                            $('#reviewCount').text(count);
-
+                            setTimeout(() => location.reload(), 800);
                         } else { showToast(response.message, 'error'); }
                     },
                     complete: function() { submitBtn.prop('disabled', false).html('<i class="fas fa-paper-plane"></i> Post Comment'); }
                 });
             });
 
-            // 2. SỬA COMMENT (In-place)
+            // EDIT COMMENT
             $(document).on('submit', '.form-edit-review', function(e) {
                 e.preventDefault();
                 const form = $(this);
                 const reviewId = form.find('input[name="Id"]').val();
                 const newComment = form.find('textarea[name="Comment"]').val();
-
                 $.ajax({
                     url: '@Url.Action("Edit", "Reviews")', type: 'POST', data: form.serialize(),
                     success: function(response) {
                         if (response.success) {
                             showToast('Saved!', 'success');
-                            const displayMode = $('#display-mode-' + reviewId);
-                            displayMode.find('.review-content').text(newComment);
+                            $('#display-mode-' + reviewId).find('.review-content').text(newComment);
                             hideEditForm(reviewId);
                         }
                     }
@@ -808,7 +1054,6 @@ else
             });
         });
 
-        // UI Toast
         function showToast(message, type) {
             $('.toast-notification').remove();
             const borderColor = type === 'success' ? '#46d369' : '#e50914';

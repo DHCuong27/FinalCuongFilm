@@ -165,7 +165,7 @@ namespace FinalCuongFilm.MVC.Areas.Identity.Pages.Account
 				}
 				else
 				{
-					ModelState.AddModelError(string.Empty, "ncorrect email or password. Please check again!");
+					ModelState.AddModelError(string.Empty, "Incorrect email or password. Please check again!");
 					return Page();
 				}
 			}

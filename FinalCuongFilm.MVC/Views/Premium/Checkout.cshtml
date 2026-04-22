@@ -1,7 +1,7 @@
 ﻿@model FinalCuongFilm.ApplicationCore.Entities.VipPackage
 @{
     Layout = "_LayoutUser";
-    ViewData["Title"] = "Thanh toán gói Premium";
+    ViewData["Title"] = "Premium Package Checkout";
 }
 
 <style>
@@ -88,45 +88,45 @@
 
 <div class="container">
     <div class="checkout-container">
-        <h2 class="mb-4 text-center">Xác nhận thanh toán</h2>
+        <h2 class="mb-4 text-center">Confirm Payment</h2>
 
         <div class="order-summary">
-            <h4 class="mb-3 text-white">Chi tiết đơn hàng</h4>
+            <h4 class="mb-3 text-white">Order Details</h4>
             <div class="summary-row">
-                <span style="color: #ccc;">Sản phẩm:</span>
+                <span style="color: #ccc;">Package:</span>
                 <span>@Model.Name</span>
             </div>
             <div class="summary-row">
-                <span style="color: #ccc;">Tài khoản nhận VIP:</span>
+                <span style="color: #ccc;">Account:</span>
                 <span>@User.Identity?.Name</span>
             </div>
             <div class="summary-row">
-                <span style="color: #ccc;">Thời hạn:</span>
-                <span>@Model.DurationInDays ngày</span>
+                <span style="color: #ccc;">Duration:</span>
+                <span>@Model.DurationInDays days</span>
             </div>
             <div class="summary-row total">
-                <span>Tổng tiền:</span>
-                <span>@Model.Price.ToString("N0") VNĐ</span>
+                <span>Total Amount:</span>
+                <span>@Model.Price.ToString("N0") VND</span>
             </div>
         </div>
 
         <div class="payment-methods">
-            <h4 class="mb-3 text-white">Phương thức thanh toán</h4>
+            <h4 class="mb-3 text-white">Payment Method</h4>
             <div class="payment-option">
                 <img src="https://media.loveitopcdn.com/3807/thumb/logo-zalopay1-compressed.jpg" alt="ZALOPAY" />
-                <span>Thanh toán qua cổng ZALOPAY</span>
+                <span>Pay via ZaloPay Gateway</span>
             </div>
         </div>
 
         <form asp-action="ProcessPayment" method="post">
             <input type="hidden" name="packageId" value="@Model.Id" />
             <button type="submit" class="btn-pay">
-                <i class="zmdi zmdi-lock"></i> THANH TOÁN AN TOÀN
+                <i class="zmdi zmdi-lock"></i> SECURE CHECKOUT
             </button>
         </form>
 
         <div class="security-badge">
-            <i class="zmdi zmdi-shield-security"></i> Mọi giao dịch đều được mã hóa chuẩn SSL 256-bit.
+            <i class="zmdi zmdi-shield-security"></i> All transactions are encrypted with 256-bit SSL.
         </div>
     </div>
 </div>

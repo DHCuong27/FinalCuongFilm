@@ -52,7 +52,9 @@ namespace FinalCuongFilm.Service.Services
 					Comment = review.Comment,
 					IsApproved = review.IsApproved,
 					CreatedAt = review.CreatedAt,
-					UpdatedAt = review.UpdatedAt
+					UpdatedAt = review.UpdatedAt,
+					FullName = user?.FullName ?? "Unknown",
+					AvatarUrl = user?.AvatarUrl ?? string.Empty
 				});
 			}
 
@@ -224,7 +226,11 @@ namespace FinalCuongFilm.Service.Services
 			}
 
 			var approvedReviews = movie.Reviews.Where(r => r.IsApproved).ToList();
+			// Đảm bảo em thêm ".Where(r => r.Rating > 0)" trước khi tính toán
+			var validRatings = _context.Reviews.Where(r => r.MovieId == movieId && r.Rating > 0);
 
+			int totalReviews = await validRatings.CountAsync();
+			double averageRating = totalReviews > 0 ? await validRatings.AverageAsync(r => r.Rating) : 0;
 			var ratingDistribution = new Dictionary<int, int>
 			{
 				{ 5, approvedReviews.Count(r => r.Rating == 5) },
