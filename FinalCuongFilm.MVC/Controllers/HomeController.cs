@@ -148,19 +148,19 @@ namespace FinalCuongFilm.MVC.Controllers
 				Guid? countryId = null,
 				string sortBy = "latest",
 				int pageNumber = 1)
-				{
+		{
 			var allMovies = await _movieService.GetAllAsync();
-
-			// Chuẩn bị dữ liệu cho Dropdown ngoài View
-			ViewBag.Genres = await _genreService.GetAllAsync();
-			ViewBag.Countries = await _countryService.GetAllAsync();
+			var genres = await _genreService.GetAllAsync();
+			var countries = await _countryService.GetAllAsync();
 
 			// 1. Lọc cốt lõi theo Type (Movie / TV Series)
 			var query = allMovies.Where(m => m.IsActive && (int)m.Type == type).AsEnumerable();
 
 			// 2. CÁC BỘ LỌC TÙY CHỌN (FILTER)
 			if (!string.IsNullOrWhiteSpace(search))
-				query = query.Where(m => m.Title.Contains(search, StringComparison.OrdinalIgnoreCase));
+				query = query.Where(m =>
+					m.Title.Contains(search, StringComparison.OrdinalIgnoreCase) ||
+					(m.Description?.Contains(search, StringComparison.OrdinalIgnoreCase) ?? false));
 
 			if (genreId.HasValue)
 				query = query.Where(m => m.SelectedGenreIds.Contains(genreId.Value));
@@ -178,27 +178,26 @@ namespace FinalCuongFilm.MVC.Controllers
 			};
 
 			// 4. Phân trang
-			int totalItems = query.Count();
 			int pageSize = 12;
-			var pagedMovies = query.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToList();
+			var filteredList = query.ToList();
+			int totalItems = filteredList.Count;
+			var pagedMovies = filteredList.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToList();
 
-			// Khởi tạo ViewModel (Đảm bảo VM của bạn có thêm mấy thuộc tính Search, GenreId... để lưu trạng thái)
 			var viewModel = new MovieFilterViewModel
 			{
 				Movies = pagedMovies,
+				Genres = genres,
+				Countries = countries,
 				Type = type,
-
-				// Lưu lại trạng thái Filter để View hiển thị
 				Search = search,
 				GenreId = genreId,
 				CountryId = countryId,
 				SortBy = sortBy,
-
 				PageNumber = pageNumber,
 				PageSize = pageSize,
 				TotalItems = totalItems,
-				PageTitle = type == 1 ? "Movies" : "TV Series"
-				//PageSubTitle = type == 0 ? "Khám phá các bộ phim chiếu rạp đặc sắc nhất" : "Cày xuyên đêm với các series phim bộ đỉnh cao"
+				PageTitle = type == 1 ? "Movies" : "TV Series",
+				PageSubTitle = $"{totalItems} {(type == 2 ? "series" : "films")} found"
 			};
 
 			return View(viewModel);

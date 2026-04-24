@@ -299,7 +299,7 @@ namespace FinalCuongFilm.MVC.Controllers
 		// GET: /Movie/PremiumMovies
 		public async Task<IActionResult> PremiumMovies(
 			string? search = null, Guid? genreId = null, Guid? countryId = null,
-			string sortBy = "latest", int pageNumber = 1, int pageSize = 12)
+			int? type = null, string sortBy = "latest", int pageNumber = 1, int pageSize = 12)
 		{
 			var allMovies = await _movieService.GetAllAsync();
 			var genres = await _genreService.GetAllAsync();
@@ -309,18 +309,19 @@ namespace FinalCuongFilm.MVC.Controllers
 			var query = allMovies.Where(m => m.IsActive && m.IsVipOnly).AsEnumerable();
 
 			if (!string.IsNullOrWhiteSpace(search))
-				query = query.Where(m => m.Title.Contains(search, StringComparison.OrdinalIgnoreCase));
+				query = query.Where(m =>
+					m.Title.Contains(search, StringComparison.OrdinalIgnoreCase) ||
+					(m.Description?.Contains(search, StringComparison.OrdinalIgnoreCase) ?? false));
 
 			if (genreId.HasValue) query = query.Where(m => m.SelectedGenreIds.Contains(genreId.Value));
 			if (countryId.HasValue) query = query.Where(m => m.CountryId == countryId.Value);
+			if (type.HasValue) query = query.Where(m => (int)m.Type == type.Value);
 
 			query = sortBy switch
 			{
 				"popular" => query.OrderByDescending(m => m.ViewCount),
-				//"year_asc" => query.OrderBy(m => m.ReleaseYear),
-				//"year_desc" => query.OrderByDescending(m => m.ReleaseYear),
 				"title" => query.OrderBy(m => m.Title),
-				_ => query 
+				_ => query.OrderByDescending(m => m.ReleaseYear)
 			};
 
 			var filteredList = query.ToList();
@@ -335,11 +336,12 @@ namespace FinalCuongFilm.MVC.Controllers
 				Search = search,
 				GenreId = genreId,
 				CountryId = countryId,
+				Type = type,
 				SortBy = sortBy,
 				PageNumber = pageNumber,
 				PageSize = pageSize,
 				TotalItems = totalItems,
-				PageTitle = "Premium Movies",
+				PageTitle = "VIP Premium Movies",
 				PageSubTitle = "Exclusive films for VIP members."
 			};
 

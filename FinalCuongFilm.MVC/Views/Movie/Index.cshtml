@@ -111,6 +111,47 @@
             color: var(--netflix-light-gray);
         }
 
+    .search-input-wrapper {
+        display: flex;
+        background: var(--netflix-gray);
+        border: 1px solid rgba(255,255,255,0.15);
+        border-radius: 8px;
+        overflow: hidden;
+        transition: border-color 0.2s;
+    }
+
+        .search-input-wrapper:focus-within {
+            border-color: var(--netflix-red);
+        }
+
+        .search-input-wrapper input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 0.9rem;
+            padding: 0.6rem 1rem;
+            outline: none;
+        }
+
+        .search-input-wrapper input::placeholder {
+            color: var(--netflix-light-gray);
+        }
+
+        .search-input-wrapper .btn-search {
+            background: var(--netflix-red);
+            color: white;
+            border: none;
+            padding: 0.6rem 1rem;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: background 0.2s;
+        }
+
+        .search-input-wrapper .btn-search:hover {
+            background: #f40612;
+        }
+
     .btn-filter {
         background: var(--netflix-red);
         color: white;
@@ -448,7 +489,10 @@
             <div class="filter-row">
                 <div class="filter-group" style="flex:2; min-width:200px;">
                     <label><i class="fas fa-search"></i> Search</label>
-                    <input type="text" name="search" value="@Model.Search" placeholder="Movie Title..." class="filter-input" />
+                    <div class="search-input-wrapper">
+                        <input type="text" name="search" value="@Model.Search" placeholder="Movie title..." />
+                        <button type="submit" class="btn-search"><i class="fas fa-search"></i></button>
+                    </div>
                 </div>
 
                 <div class="filter-group">
@@ -492,7 +536,6 @@
                 </div>
 
                 <div class="filter-group" style="flex-direction:row; align-items:flex-end; gap:0.5rem; min-width:auto;">
-                    <button type="submit" class="btn-filter"><i class="fas fa-filter"></i> Filter</button>
                     <a asp-action="Index" asp-controller="Movie" class="btn-reset"><i class="fas fa-times"></i> Reset</a>
                 </div>
             </div>
@@ -526,8 +569,11 @@
             }
 
             <div class="filter-result-count">
-                Showing <span>@Model.TotalItems</span> Movies
-                —  <span>@Model.PageNumber</span> / <span>@(Model.TotalPages == 0 ? 1 : Model.TotalPages)</span>
+                Showing <span>@Model.Movies.Count</span> / <span>@Model.TotalItems</span> movies
+                @if (!string.IsNullOrEmpty(Model.Search) || Model.GenreId.HasValue || Model.CountryId.HasValue || Model.Type.HasValue)
+                {
+                    <span style="margin-left:0.5rem; color:var(--netflix-light-gray);">(filtered)</span>
+                }
             </div>
         </form>
     </div>
