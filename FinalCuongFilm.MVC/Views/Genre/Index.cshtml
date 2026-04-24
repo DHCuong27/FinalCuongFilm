@@ -323,6 +323,13 @@
             {
                 <div class="grid-card">
                     <div class="grid-card-poster">
+                        <!-- THÊM ĐOẠN NÀY VÀO ĐÂY -->
+                        @if (movie.IsVipOnly)
+                        {
+                            <div class="premium-movie-badge">
+                                <i class="fa-solid fa-crown"></i> VIP
+                            </div>
+                        }
                         <a asp-controller="Movie" asp-action="Detail" asp-route-slug="@movie.Slug">
                             <img src="@(movie.PosterUrl ?? "https://via.placeholder.com/300x450/2d2d2d/fff?text=No+Poster")" alt="@movie.Title" loading="lazy" />
                         </a>

@@ -1,11 +1,11 @@
 ﻿@model IEnumerable<FinalCuongFilm.Common.DTOs.MovieDto>
 @{
-    ViewData["Title"] = string.IsNullOrEmpty(ViewBag.Keyword) ? "Tìm kiếm phim" : $"Kết quả tìm kiếm cho '{ViewBag.Keyword}'";
+    ViewData["Title"] = string.IsNullOrEmpty(ViewBag.Keyword) ? "Search Movies" : $"Search results for '{ViewBag.Keyword}'";
     Layout = "_LayoutUser";
 }
 
 <style>
-    /* Kế thừa màu sắc chủ đạo */
+    /* Inherit main colors */
     :root {
         --netflix-red: #e50914;
         --netflix-dark: #0f0f0f;
@@ -22,7 +22,7 @@
     .search-page-container {
         max-width: 1400px;
         margin: 0 auto;
-        padding: 100px 2rem 4rem; /* Padding top lớn để tránh bị che bởi Navbar */
+        padding: 100px 2rem 4rem; /* Large top padding to avoid being covered by Navbar */
         min-height: 70vh;
     }
 
@@ -43,14 +43,14 @@
                 font-weight: 800;
             }
 
-    /* Grid layout cho kết quả */
+    /* Grid layout for results */
     .search-results-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
         gap: 1.5rem;
     }
 
-    /* Tái sử dụng CSS Card từ trang chủ */
+    /* Reuse Card CSS from home page */
     .movie-card {
         transition: all 0.3s ease;
         position: relative;
@@ -145,7 +145,7 @@
         justify-content: space-between;
     }
 
-    /* Hộp thông báo trống */
+    /* Empty state box */
     .empty-state {
         text-align: center;
         padding: 4rem 2rem;
@@ -170,11 +170,11 @@
     <div class="search-header">
         @if (string.IsNullOrWhiteSpace(ViewBag.Keyword))
         {
-            <h2>Khám phá phim</h2>
+            <h2>Explore Movies</h2>
         }
         else
         {
-            <h2>Kết quả tìm kiếm cho: <span>"@ViewBag.Keyword"</span> (@Model.Count() phim)</h2>
+            <h2>Search results for: <span>"@ViewBag.Keyword"</span> (@Model.Count() movies)</h2>
         }
     </div>
 
@@ -186,6 +186,15 @@
                 <div class="movie-card">
                     <a asp-controller="Movie" asp-action="Detail" asp-route-slug="@movie.Slug">
                         <div class="movie-poster">
+
+                            <!-- VIP Badge Logic -->
+                            @if (movie.IsVipOnly)
+                            {
+                                <div class="premium-movie-badge">
+                                    <i class="fa-solid fa-crown"></i> VIP
+                                </div>
+                            }
+
                             <img src="@(string.IsNullOrEmpty(movie.PosterUrl) ? "https://via.placeholder.com/300x450/2d2d2d/ffffff?text=No+Poster" : movie.PosterUrl)" alt="@movie.Title" />
                             <div class="movie-overlay">
                                 <div class="play-icon"><i class="fas fa-play"></i></div>
@@ -211,15 +220,15 @@
             <i class="fas fa-search-minus"></i>
             @if (string.IsNullOrWhiteSpace(ViewBag.Keyword))
             {
-                <h3>Vui lòng nhập từ khóa để tìm kiếm</h3>
-                <p class="text-muted">Bạn có thể tìm theo tên phim, diễn viên hoặc thể loại.</p>
+                <h3>Please enter a keyword to search</h3>
+                <p class="text-muted">You can search by movie title, actor, or genre.</p>
             }
             else
             {
-                <h3>Không tìm thấy kết quả nào</h3>
-                <p class="text-muted">Rất tiếc, chúng tôi không tìm thấy phim nào khớp với từ khóa "@ViewBag.Keyword".</p>
+                <h3>No results found</h3>
+                <p class="text-muted">Sorry, we couldn't find any movies matching the keyword "@ViewBag.Keyword".</p>
             }
-            <a href="/Home/Index" class="btn btn-outline-light mt-3">Quay lại Trang chủ</a>
+            <a href="/Home/Index" class="btn btn-outline-light mt-3">Back to Home</a>
         </div>
     }
 </div>

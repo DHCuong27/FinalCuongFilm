@@ -46,7 +46,7 @@ namespace FinalCuongFilm.Service.Services
 			try
 			{
 				// 1. Tải file từ Azure về Local
-				_logger.LogInformation($"[DOWNLOAD] Đang tải file MP4 gốc từ Azure về máy...");
+				_logger.LogInformation($"[DOWNLOAD] Downloading the original MP4 file from Azure to my computer....");
 				using (var httpClient = new HttpClient())
 				{
 					using (var response = await httpClient.GetAsync(sourceFileUrl, HttpCompletionOption.ResponseHeadersRead))

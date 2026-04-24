@@ -1,4 +1,5 @@
-﻿@model FinalCuongFilm.MVC.Models.ViewModels.MovieFilterViewModel
+﻿@using FinalCuongFilm.ApplicationCore.Entities
+@model FinalCuongFilm.MVC.Models.ViewModels.MovieFilterViewModel
 @{
     ViewData["Title"] = Model.PageTitle;
     Layout = "_LayoutUser";
@@ -320,7 +321,14 @@
                 {
                     <div class="col-6 col-sm-4 col-md-3 col-lg-2-4" style="width: 20%; flex: 0 0 auto; min-width: 150px;">
                         <div class="nf-movie-card">
-                            <a asp-controller="Movie" asp-action="Detail" asp-route-slug="@item.Slug" class="d-block">
+                            <!-- THÊM ĐOẠN NÀY VÀO ĐÂY -->
+                            @if (item.IsVipOnly)
+                            {
+                                <div class="premium-movie-badge">
+                                    <i class="fa-solid fa-crown"></i> VIP
+                                </div>
+                            }
+                                <a asp-controller="Movie" asp-action="Detail" asp-route-slug="@item.Slug" class="d-block">
                                 <img src="@item.PosterUrl" alt="@item.Title" class="nf-poster" />
                             </a>
                             <div class="nf-movie-info">
@@ -328,11 +336,7 @@
                                     @item.Title  -
                                     <span>@item.ReleaseYear</span>
                                 </a>
-                                <div class="nf-movie-meta">
-                                    @* <span>@item.ReleaseYear</span> *@
-                                    @* <span>•</span> *@
-                                    @* <span><i class="zmdi zmdi-eye"></i> @item.ViewCount</span> *@
-                                </div>
+                  
                             </div>
                         </div>
                     </div>

@@ -55,7 +55,6 @@ namespace FinalCuongFilm.MVC.Controllers
 			// 2. Lấy các danh sách cố định cho Slider và các Section ngang
 			var latestMovies = allMovies
 				.Where(m => m.IsActive)
-				.OrderByDescending(m => m.ReleaseYear ?? 0)
 				.Take(12) // Lấy 12 phim thay vì 5 như comment cũ để Slider chạy mượt hơn
 				.ToList();
 

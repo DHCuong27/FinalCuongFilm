@@ -811,14 +811,21 @@ else
             {
                 @foreach (var comment in textReviews)
                 {
-                    var rawName = comment.UserName ?? "User";
-                    var baseName = rawName.Contains("@") ? rawName.Split('@')[0] : rawName;
-                    bool isMyComment = (comment.UserName == User.Identity?.Name || baseName == currentUserName);
-                    string displayName = isMyComment ? currentUserName : baseName;
+                    // 1. Ưu tiên lấy FullName mới nhất từ DTO, nếu không có thì lấy UserName
+                    var rawName = !string.IsNullOrEmpty(comment.FullName) && comment.FullName != "Unknown"
+                    ? comment.FullName
+                    : (comment.UserName ?? "User");
 
-                    var avatarProp = comment.GetType().GetProperty("AvatarUrl") ?? comment.GetType().GetProperty("Avatar");
-                    string dbAvatar = avatarProp?.GetValue(comment, null)?.ToString();
-                    string displayAvatar = isMyComment && !string.IsNullOrEmpty(currentUserAvatar) ? currentUserAvatar : dbAvatar;
+                    // Cắt bỏ phần @gmail.com nếu là email
+                    string displayName = rawName.Contains("@") ? rawName.Split('@')[0] : rawName;
+
+                    // 2. Kiểm tra xem có phải comment của user hiện tại không dựa vào UserId (chính xác hơn)
+                    bool isMyComment = User.Identity?.IsAuthenticated == true && comment.UserId == userId;
+
+                    // 3. Lấy AvatarUrl trực tiếp từ DTO vì ReviewService đã join với Identity
+                    string displayAvatar = isMyComment && !string.IsNullOrEmpty(currentUserAvatar)
+                    ? currentUserAvatar
+                    : (comment.AvatarUrl ?? "");
 
                     string[] colors = { "#e50914", "#f5c518", "#3498db", "#2ecc71", "#9b59b6" };
                     string avatarBg = colors[Math.Abs(displayName.GetHashCode()) % colors.Length];
@@ -827,28 +834,29 @@ else
                         <div id="display-mode-@comment.Id">
                             <div class="review-header">
                                 <div class="review-author">
+                                    <!-- Gắn Avatar -->
                                     <div class="author-avatar" style="background: @avatarBg;">
                                         @if (!string.IsNullOrEmpty(displayAvatar))
                                         {
-                                            <img src="@displayAvatar" alt="Avatar" />
+                                            <img src="@displayAvatar" alt="@displayName" />
                                         }
                                         else
                                         {
-
                                             @displayName.Substring(0, 1).ToUpper()
                                         }
                                     </div>
                                     <div class="author-info">
-                                        <h4 class="mb-0">
+                                        <!-- Hiển thị Display Name mới nhất -->
+                                        <h4>
                                             @displayName
                                             @if (isMyComment)
                                             {
-                                                <span class="badge bg-danger ms-2" style="font-size: 0.7rem; padding: 0.3em 0.5em;">You</span>
+                                                <span class="badge bg-danger ms-2" style="font-size: 0.7rem;">You</span>
                                             }
                                         </h4>
+                                        <span class="review-date">@comment.CreatedAt.ToString("MMM dd, yyyy")</span>
                                     </div>
                                 </div>
-                                <div class="review-date">@comment.CreatedAt.ToString("MMM dd, yyyy")</div>
                             </div>
                             <div class="review-content">@comment.Comment</div>
 
@@ -857,11 +865,6 @@ else
                                 {
                                     <button class="review-action-btn text-primary" onclick="showEditForm('@comment.Id')"><i class="fas fa-edit"></i> Edit</button>
                                     <button class="review-action-btn text-danger ms-3" onclick="deleteReview('@comment.Id')"><i class="fas fa-trash"></i> Delete</button>
-                                }
-                                else
-                                {
-                                    <button class="review-action-btn"><i class="far fa-thumbs-up"></i> Helpful</button>
-                                    <button class="review-action-btn ms-3"><i class="far fa-flag"></i> Report</button>
                                 }
                             </div>
                         </div>

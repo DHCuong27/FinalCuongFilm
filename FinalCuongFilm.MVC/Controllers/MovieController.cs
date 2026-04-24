@@ -269,9 +269,6 @@ namespace FinalCuongFilm.MVC.Controllers
 				ViewBag.QualitySources = qualitySources;
 				ViewBag.SubtitleFiles = subtitleFiles;
 				ViewBag.Actors = actors;
-
-				// ======= BẢN FIX NẰM Ở ĐÂY =======
-				// Phải bốc Reviews từ CSDL lên nhét vào ViewBag thì bên màn hình Watch mới có cái mà in ra được!
 				ViewBag.Reviews = await _reviewService.GetMovieReviewsAsync(movie.Id, approvedOnly: false);
 				// =================================
 
@@ -299,6 +296,55 @@ namespace FinalCuongFilm.MVC.Controllers
 			return RedirectToAction("Watch", new { slug = movie.Slug });
 		}
 
+		// GET: /Movie/PremiumMovies
+		public async Task<IActionResult> PremiumMovies(
+			string? search = null, Guid? genreId = null, Guid? countryId = null,
+			string sortBy = "latest", int pageNumber = 1, int pageSize = 12)
+		{
+			var allMovies = await _movieService.GetAllAsync();
+			var genres = await _genreService.GetAllAsync();
+			var countries = await _countryService.GetAllAsync();
+
+			// CHỈ LỌC NHỮNG PHIM CÓ IsVipOnly == true
+			var query = allMovies.Where(m => m.IsActive && m.IsVipOnly).AsEnumerable();
+
+			if (!string.IsNullOrWhiteSpace(search))
+				query = query.Where(m => m.Title.Contains(search, StringComparison.OrdinalIgnoreCase));
+
+			if (genreId.HasValue) query = query.Where(m => m.SelectedGenreIds.Contains(genreId.Value));
+			if (countryId.HasValue) query = query.Where(m => m.CountryId == countryId.Value);
+
+			query = sortBy switch
+			{
+				"popular" => query.OrderByDescending(m => m.ViewCount),
+				//"year_asc" => query.OrderBy(m => m.ReleaseYear),
+				//"year_desc" => query.OrderByDescending(m => m.ReleaseYear),
+				"title" => query.OrderBy(m => m.Title),
+				_ => query 
+			};
+
+			var filteredList = query.ToList();
+			var totalItems = filteredList.Count;
+			var pagedMovies = filteredList.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToList();
+
+			var vm = new MovieFilterViewModel
+			{
+				Movies = pagedMovies,
+				Genres = genres,
+				Countries = countries,
+				Search = search,
+				GenreId = genreId,
+				CountryId = countryId,
+				SortBy = sortBy,
+				PageNumber = pageNumber,
+				PageSize = pageSize,
+				TotalItems = totalItems,
+				PageTitle = "Premium Movies",
+				PageSubTitle = "Exclusive films for VIP members."
+			};
+
+			return View("Index", vm); // Tái sử dụng lại View Index của Movie để hiển thị danh sách
+		}
 
 		[Authorize]
 		public async Task<IActionResult> Download(Guid id)

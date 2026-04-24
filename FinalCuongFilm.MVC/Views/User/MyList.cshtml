@@ -184,7 +184,14 @@
                         {
                             <div class="col-6 col-md-4 col-lg-3">
                                 <div class="nf-movie-card">
-                                    <a asp-controller="Movie" asp-action="Detail" asp-route-slug="@movie.Slug">
+                                    <!-- THÊM ĐOẠN NÀY VÀO ĐÂY -->
+                                    @if (movie.IsVipOnly)
+                                    {
+                                        <div class="premium-movie-badge">
+                                            <i class="fa-solid fa-crown"></i> VIP
+                                        </div>
+                                    }
+                                        <a asp-controller="Movie" asp-action="Detail" asp-route-slug="@movie.Slug">
                                         <img src="@movie.PosterUrl" alt="@movie.Title" class="nf-poster" />
                                     </a>
 

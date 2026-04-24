@@ -1095,6 +1095,12 @@
                     <div class="movie-card">
                         <a asp-controller="Movie" asp-action="Watch" asp-route-slug="@movie.Slug">
                             <div class="movie-poster">
+                                @if (movie.IsVipOnly)
+                                {
+                                    <div class="premium-movie-badge">
+                                        <i class="fa-solid fa-crown"></i> VIP
+                                    </div>
+                                }
                                 <img src="@(movie.PosterUrl ?? "https://via.placeholder.com/300x450/2d2d2d/fff?text=No+Poster")" alt="@movie.Title" loading="lazy" />
                                 <div class="movie-overlay"><div class="play-button"><i class="fas fa-play"></i></div></div>
                                 <div style="position: absolute; bottom: 0; left: 0; right: 0; height: 4px; background: rgba(255,255,255,0.3);">

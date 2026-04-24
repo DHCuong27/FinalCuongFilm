@@ -1,95 +1,442 @@
 ﻿@model FinalCuongFilm.MVC.Models.ViewModels.MovieFilterViewModel
 @{
-    ViewData["Title"] = Model.PageTitle ?? "All Film";
+    ViewData["Title"] = Model.PageTitle ?? "All Movies";
     Layout = "_LayoutUser";
 }
 
 <style>
     :root {
-        --netflix-red: #e50914; --netflix-dark: #0f0f0f; --netflix-dark-bg: #1a1a1a;
-        --netflix-gray: #2d2d2d; --netflix-light-gray: #b3b3b3; --netflix-white: #ffffff;
+        --netflix-red: #e50914;
+        --netflix-dark: #0f0f0f;
+        --netflix-dark-bg: #1a1a1a;
+        --netflix-gray: #2d2d2d;
+        --netflix-light-gray: #b3b3b3;
+        --netflix-white: #ffffff;
     }
-    body { background-color: var(--netflix-dark); color: var(--netflix-white); font-family: 'Segoe UI', sans-serif; }
 
-    .page-container { max-width: 1400px; margin: 0 auto; padding: 100px 2rem 3rem; }
+    body {
+        background-color: var(--netflix-dark);
+        color: var(--netflix-white);
+        font-family: 'Segoe UI', sans-serif;
+    }
+
+    .page-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 100px 2rem 3rem;
+    }
 
     /* Page Header */
-    .page-hero { margin-bottom: 2rem; }
-    .page-hero h1 { font-size: 2.5rem; font-weight: 800; margin-bottom: 0.5rem; }
-    .page-hero p { color: var(--netflix-light-gray); font-size: 1rem; }
+    .page-hero {
+        margin-bottom: 2rem;
+    }
+
+        .page-hero h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+        }
+
+        .page-hero p {
+            color: var(--netflix-light-gray);
+            font-size: 1rem;
+        }
 
     /* Filter Bar */
-    .filter-bar { background: var(--netflix-dark-bg); border: 1px solid var(--netflix-gray); border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem; }
-    .filter-row { display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-end; }
-    .filter-group { display: flex; flex-direction: column; gap: 0.4rem; flex: 1; min-width: 140px; }
-    .filter-group label { font-size: 0.78rem; font-weight: 600; color: var(--netflix-light-gray); text-transform: uppercase; letter-spacing: 0.5px; }
-    .filter-select { background: var(--netflix-gray); border: 1px solid rgba(255,255,255,0.15); color: white; border-radius: 8px; padding: 0.6rem 1rem; font-size: 0.9rem; cursor: pointer; }
-    .filter-select:focus { outline: none; border-color: var(--netflix-red); }
-    .filter-select option { background: var(--netflix-gray); }
-    .filter-input { background: var(--netflix-gray); border: 1px solid rgba(255,255,255,0.15); color: white; border-radius: 8px; padding: 0.6rem 1rem; font-size: 0.9rem; }
-    .filter-input:focus { outline: none; border-color: var(--netflix-red); }
-    .filter-input::placeholder { color: var(--netflix-light-gray); }
-    .btn-filter { background: var(--netflix-red); color: white; border: none; border-radius: 8px; padding: 0.65rem 1.5rem; font-weight: 600; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
-    .btn-filter:hover { background: #f40612; transform: translateY(-1px); }
-    .btn-reset { background: transparent; color: var(--netflix-light-gray); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; padding: 0.65rem 1.2rem; font-size: 0.9rem; cursor: pointer; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 0.3rem; }
-    .btn-reset:hover { border-color: var(--netflix-red); color: var(--netflix-red); }
-    .filter-result-count { font-size: 0.9rem; color: var(--netflix-light-gray); margin-top: 1rem; }
-    .filter-result-count span { color: var(--netflix-red); font-weight: 700; }
+    .filter-bar {
+        background: var(--netflix-dark-bg);
+        border: 1px solid var(--netflix-gray);
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .filter-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        align-items: flex-end;
+    }
+
+    .filter-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+        flex: 1;
+        min-width: 140px;
+    }
+
+        .filter-group label {
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--netflix-light-gray);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+    .filter-select {
+        background: var(--netflix-gray);
+        border: 1px solid rgba(255,255,255,0.15);
+        color: white;
+        border-radius: 8px;
+        padding: 0.6rem 1rem;
+        font-size: 0.9rem;
+        cursor: pointer;
+    }
+
+        .filter-select:focus {
+            outline: none;
+            border-color: var(--netflix-red);
+        }
+
+        .filter-select option {
+            background: var(--netflix-gray);
+        }
+
+    .filter-input {
+        background: var(--netflix-gray);
+        border: 1px solid rgba(255,255,255,0.15);
+        color: white;
+        border-radius: 8px;
+        padding: 0.6rem 1rem;
+        font-size: 0.9rem;
+    }
+
+        .filter-input:focus {
+            outline: none;
+            border-color: var(--netflix-red);
+        }
+
+        .filter-input::placeholder {
+            color: var(--netflix-light-gray);
+        }
+
+    .btn-filter {
+        background: var(--netflix-red);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 0.65rem 1.5rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        white-space: nowrap;
+    }
+
+        .btn-filter:hover {
+            background: #f40612;
+            transform: translateY(-1px);
+        }
+
+    .btn-reset {
+        background: transparent;
+        color: var(--netflix-light-gray);
+        border: 1px solid rgba(255,255,255,0.2);
+        border-radius: 8px;
+        padding: 0.65rem 1.2rem;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+    }
+
+        .btn-reset:hover {
+            border-color: var(--netflix-red);
+            color: var(--netflix-red);
+        }
+
+    .filter-result-count {
+        font-size: 0.9rem;
+        color: var(--netflix-light-gray);
+        margin-top: 1rem;
+    }
+
+        .filter-result-count span {
+            color: var(--netflix-red);
+            font-weight: 700;
+        }
 
     /* Active Filters Tags */
-    .active-filters { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem; }
-    .filter-tag { display: inline-flex; align-items: center; gap: 0.4rem; background: rgba(229,9,20,0.15); border: 1px solid rgba(229,9,20,0.4); color: white; padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.82rem; }
-    .filter-tag a { color: var(--netflix-light-gray); text-decoration: none; margin-left: 0.3rem; }
-    .filter-tag a:hover { color: var(--netflix-red); }
+    .active-filters {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-top: 1rem;
+    }
+
+    .filter-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        background: rgba(229,9,20,0.15);
+        border: 1px solid rgba(229,9,20,0.4);
+        color: white;
+        padding: 0.3rem 0.8rem;
+        border-radius: 20px;
+        font-size: 0.82rem;
+    }
+
+        .filter-tag a {
+            color: var(--netflix-light-gray);
+            text-decoration: none;
+            margin-left: 0.3rem;
+        }
+
+            .filter-tag a:hover {
+                color: var(--netflix-red);
+            }
 
     /* Movies Grid */
-    .movies-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1.2rem; margin-bottom: 3rem; }
-    .grid-card { position: relative; border-radius: 8px; overflow: hidden; background: var(--netflix-dark-bg); border: 1px solid var(--netflix-gray); transition: transform 0.3s, box-shadow 0.3s; }
-    .grid-card:hover { transform: translateY(-6px); box-shadow: 0 12px 30px rgba(0,0,0,0.7); }
-    .grid-card-poster { position: relative; aspect-ratio: 2/3; overflow: hidden; }
-    .grid-card-poster img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s; }
-    .grid-card:hover .grid-card-poster img { transform: scale(1.05); }
-    .grid-card-overlay { position: absolute; inset: 0; background: linear-gradient(180deg, transparent 50%, rgba(0,0,0,0.95) 100%); opacity: 0; transition: opacity 0.3s; display: flex; align-items: flex-end; padding: 1rem; }
-    .grid-card:hover .grid-card-overlay { opacity: 1; }
-    .btn-play-card { display: inline-flex; align-items: center; gap: 0.4rem; background: var(--netflix-red); color: white; padding: 0.5rem 1rem; border-radius: 6px; text-decoration: none; font-size: 0.85rem; font-weight: 600; }
-    .btn-play-card:hover { background: #f40612; color: white; }
-    .grid-card-info { padding: 0.8rem; }
-    .grid-card-title { font-size: 0.9rem; font-weight: 600; margin-bottom: 0.3rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .grid-card-title a { color: white; text-decoration: none; }
-    .grid-card-title a:hover { color: var(--netflix-red); }
-    .grid-card-meta { font-size: 0.78rem; color: var(--netflix-light-gray); display: flex; gap: 0.5rem; flex-wrap: wrap; }
-    .badge-type { position: absolute; top: 8px; left: 8px; background: rgba(229,9,20,0.85); color: white; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.7rem; font-weight: 700; z-index: 3; }
-    .badge-year { position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.75); color: white; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.7rem; z-index: 3; }
-    .favorite-icon-btn { position: absolute; top: 36px; right: 8px; background: rgba(0,0,0,0.7); border: none; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; opacity: 0; transition: opacity 0.3s; cursor: pointer; font-size: 0.8rem; z-index: 3; }
-    .grid-card:hover .favorite-icon-btn { opacity: 1; }
-    .favorite-icon-btn:hover { background: var(--netflix-red); }
+    .movies-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 1.2rem;
+        margin-bottom: 3rem;
+    }
+
+    .grid-card {
+        position: relative;
+        border-radius: 8px;
+        overflow: hidden;
+        background: var(--netflix-dark-bg);
+        border: 1px solid var(--netflix-gray);
+        transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+        .grid-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.7);
+        }
+
+    .grid-card-poster {
+        position: relative;
+        aspect-ratio: 2/3;
+        overflow: hidden;
+    }
+
+        .grid-card-poster img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.4s;
+        }
+
+    .grid-card:hover .grid-card-poster img {
+        transform: scale(1.05);
+    }
+
+    .grid-card-overlay {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(180deg, transparent 50%, rgba(0,0,0,0.95) 100%);
+        opacity: 0;
+        transition: opacity 0.3s;
+        display: flex;
+        align-items: flex-end;
+        padding: 1rem;
+    }
+
+    .grid-card:hover .grid-card-overlay {
+        opacity: 1;
+    }
+
+    .btn-play-card {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        background: var(--netflix-red);
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        text-decoration: none;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+
+        .btn-play-card:hover {
+            background: #f40612;
+            color: white;
+        }
+
+    .grid-card-info {
+        padding: 0.8rem;
+    }
+
+    .grid-card-title {
+        font-size: 0.9rem;
+        font-weight: 600;
+        margin-bottom: 0.3rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+        .grid-card-title a {
+            color: white;
+            text-decoration: none;
+        }
+
+            .grid-card-title a:hover {
+                color: var(--netflix-red);
+            }
+
+    .grid-card-meta {
+        font-size: 0.78rem;
+        color: var(--netflix-light-gray);
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .badge-type {
+        position: absolute;
+        top: 8px;
+        left: 8px;
+        background: rgba(229,9,20,0.85);
+        color: white;
+        padding: 0.2rem 0.6rem;
+        border-radius: 4px;
+        font-size: 0.7rem;
+        font-weight: 700;
+        z-index: 3;
+    }
+
+    .badge-year {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        background: rgba(0,0,0,0.75);
+        color: white;
+        padding: 0.2rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.7rem;
+        z-index: 3;
+    }
+
+    .favorite-icon-btn {
+        position: absolute;
+        top: 36px;
+        right: 8px;
+        background: rgba(0,0,0,0.7);
+        border: none;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        opacity: 0;
+        transition: opacity 0.3s;
+        cursor: pointer;
+        font-size: 0.8rem;
+        z-index: 3;
+    }
+
+    .grid-card:hover .favorite-icon-btn {
+        opacity: 1;
+    }
+
+    .favorite-icon-btn:hover {
+        background: var(--netflix-red);
+    }
 
     /* Pagination */
-    .pagination-wrapper { display: flex; justify-content: center; align-items: center; gap: 0.5rem; margin: 2rem 0; flex-wrap: wrap; }
-    .page-btn { background: var(--netflix-gray); color: white; border: 1px solid rgba(255,255,255,0.1); padding: 0.5rem 0.9rem; border-radius: 6px; cursor: pointer; text-decoration: none; font-size: 0.9rem; transition: all 0.2s; }
-    .page-btn:hover { background: var(--netflix-red); border-color: var(--netflix-red); color: white; }
-    .page-btn.active { background: var(--netflix-red); border-color: var(--netflix-red); font-weight: 700; }
-    .page-btn.disabled { opacity: 0.4; pointer-events: none; }
-    .pagination-info { color: var(--netflix-light-gray); font-size: 0.85rem; margin: 0 0.5rem; }
+    .pagination-wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 0.5rem;
+        margin: 2rem 0;
+        flex-wrap: wrap;
+    }
+
+    .page-btn {
+        background: var(--netflix-gray);
+        color: white;
+        border: 1px solid rgba(255,255,255,0.1);
+        padding: 0.5rem 0.9rem;
+        border-radius: 6px;
+        cursor: pointer;
+        text-decoration: none;
+        font-size: 0.9rem;
+        transition: all 0.2s;
+    }
+
+        .page-btn:hover {
+            background: var(--netflix-red);
+            border-color: var(--netflix-red);
+            color: white;
+        }
+
+        .page-btn.active {
+            background: var(--netflix-red);
+            border-color: var(--netflix-red);
+            font-weight: 700;
+        }
+
+        .page-btn.disabled {
+            opacity: 0.4;
+            pointer-events: none;
+        }
+
+    .pagination-info {
+        color: var(--netflix-light-gray);
+        font-size: 0.85rem;
+        margin: 0 0.5rem;
+    }
 
     /* No results */
-    .netflix-alert { background: var(--netflix-dark-bg); border: 1px solid var(--netflix-gray); border-radius: 8px; padding: 3rem 2rem; margin: 2rem 0; text-align: center; }
-    .netflix-alert i { color: var(--netflix-red); font-size: 3rem; margin-bottom: 1rem; display: block; }
-    .netflix-alert h3 { font-size: 1.5rem; margin-bottom: 0.5rem; }
-    .netflix-alert p { color: var(--netflix-light-gray); }
+    .netflix-alert {
+        background: var(--netflix-dark-bg);
+        border: 1px solid var(--netflix-gray);
+        border-radius: 8px;
+        padding: 3rem 2rem;
+        margin: 2rem 0;
+        text-align: center;
+    }
+
+        .netflix-alert i {
+            color: var(--netflix-red);
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .netflix-alert h3 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .netflix-alert p {
+            color: var(--netflix-light-gray);
+        }
 
     @@media (max-width: 768px) {
-        .page-container { padding: 80px 1rem 2rem; }
-        .page-hero h1 { font-size: 1.8rem; }
-        .filter-row { flex-direction: column; }
-        .movies-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+        .page-container {
+            padding: 80px 1rem 2rem;
+        }
+
+        .page-hero h1 {
+            font-size: 1.8rem;
+        }
+
+        .filter-row {
+            flex-direction: column;
+        }
+
+        .movies-grid {
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        }
     }
 </style>
 
 <div class="page-container">
-    <!-- Page Header -->
     <div class="page-hero">
-        <h1><i class="fas fa-film" style="color:var(--netflix-red); margin-right:0.5rem;"></i>@(Model.PageTitle ?? "All Film")</h1>
+        <h1><i class="fas fa-film" style="color:var(--netflix-red); margin-right:0.5rem;"></i>@(Model.PageTitle ?? "All Movies")</h1>
         @if (!string.IsNullOrEmpty(Model.PageSubTitle))
         {
             <p>@Model.PageSubTitle</p>
@@ -98,11 +445,10 @@
 
     <div class="filter-bar">
         <form method="get" asp-action="Index" asp-controller="Movie">
-
             <div class="filter-row">
                 <div class="filter-group" style="flex:2; min-width:200px;">
                     <label><i class="fas fa-search"></i> Search</label>
-                    <input type="text" name="search" value="@Model.Search" placeholder="Movie Title" class="filter-input" />
+                    <input type="text" name="search" value="@Model.Search" placeholder="Movie Title..." class="filter-input" />
                 </div>
 
                 <div class="filter-group">
@@ -128,11 +474,6 @@
                 </div>
 
                 <div class="filter-group">
-                    <label><i class="fas fa-calendar"></i> Year</label>
-                    <input type="number" name="releaseYear" value="@Model.ReleaseYear" placeholder="Ex: 2024" min="1900" max="2030" class="filter-input" />
-                </div>
-
-                <div class="filter-group">
                     <label><i class="fas fa-tv"></i> Type</label>
                     <select name="type" class="filter-select">
                         <option value="">All Types</option>
@@ -146,8 +487,6 @@
                     <select name="sortBy" class="filter-select">
                         <option value="latest" selected="@(Model.SortBy == "latest" ? "selected" : null)">Latest</option>
                         <option value="popular" selected="@(Model.SortBy == "popular" ? "selected" : null)">Most Popular</option>
-                        <option value="year_desc" selected="@(Model.SortBy == "year_desc" ? "selected" : null)">Year Descending</option>
-                        <option value="year_asc" selected="@(Model.SortBy == "year_asc" ? "selected" : null)">Year Ascending</option>
                         <option value="title" selected="@(Model.SortBy == "title" ? "selected" : null)">Name A-Z</option>
                     </select>
                 </div>
@@ -159,8 +498,7 @@
             </div>
 
             @{
-                bool hasFilter = !string.IsNullOrEmpty(Model.Search) || Model.GenreId.HasValue ||
-                Model.CountryId.HasValue || Model.ReleaseYear.HasValue || Model.Type.HasValue;
+                bool hasFilter = !string.IsNullOrEmpty(Model.Search) || Model.GenreId.HasValue || Model.CountryId.HasValue || Model.Type.HasValue;
             }
 
             @if (hasFilter)
@@ -180,10 +518,6 @@
                         var cName = Model.Countries.FirstOrDefault(c => c.Id == Model.CountryId)?.Name;
                         <span class="filter-tag"><i class="fas fa-globe"></i> @cName</span>
                     }
-                    @if (Model.ReleaseYear.HasValue)
-                    {
-                        <span class="filter-tag"><i class="fas fa-calendar"></i> @Model.ReleaseYear</span>
-                    }
                     @if (Model.Type.HasValue)
                     {
                         <span class="filter-tag"><i class="fas fa-tv"></i> @(Model.Type == 1 ? "Movie" : "TV Series")</span>
@@ -193,25 +527,33 @@
 
             <div class="filter-result-count">
                 Showing <span>@Model.TotalItems</span> Movies
-                —  <span>@Model.PageNumber</span> / <span>@Model.TotalPages</span>
+                —  <span>@Model.PageNumber</span> / <span>@(Model.TotalPages == 0 ? 1 : Model.TotalPages)</span>
             </div>
-
         </form>
     </div>
 
-    <!-- Movies Grid -->
-    @if (Model.Movies.Any())
+    @if (Model.Movies != null && Model.Movies.Any())
     {
         <div class="movies-grid">
             @foreach (var movie in Model.Movies)
             {
                 <div class="grid-card">
                     <div class="grid-card-poster">
+                        <!-- THÊM ĐOẠN NÀY VÀO ĐÂY -->
+                        @if (movie.IsVipOnly)
+                        {
+                            <div class="premium-movie-badge">
+                                <i class="fa-solid fa-crown"></i> VIP
+                            </div>
+                        }
                         <a asp-controller="Movie" asp-action="Detail" asp-route-slug="@movie.Slug">
                             <img src="@(movie.PosterUrl ?? "https://via.placeholder.com/300x450/2d2d2d/fff?text=No+Poster")" alt="@movie.Title" loading="lazy" />
                         </a>
                         <span class="badge-type">@(movie.Type.ToString() == "Series" ? "Series" : "Movie")</span>
-                        @if (movie.ReleaseYear.HasValue) { <span class="badge-year">@movie.ReleaseYear</span> }
+                        @if (movie.ReleaseYear.HasValue)
+                        {
+                            <span class="badge-year">@movie.ReleaseYear</span>
+                        }
                         <div class="grid-card-overlay">
                             <a asp-controller="Movie" asp-action="Watch" asp-route-slug="@movie.Slug" class="btn-play-card">
                                 <i class="fas fa-play"></i> Watch now
@@ -227,49 +569,57 @@
                             <a asp-controller="Movie" asp-action="Detail" asp-route-slug="@movie.Slug">@movie.Title</a>
                         </div>
                         <div class="grid-card-meta">
-                            @if (movie.DurationMinutes.HasValue) { <span><i class="fas fa-clock"></i> @movie.DurationMinutes ph</span> }
-                            @if (!string.IsNullOrEmpty(movie.CountryName)) { <span>@movie.CountryName</span> }
+                            @if (movie.DurationMinutes.HasValue)
+                            {
+                                <span><i class="fas fa-clock"></i> @movie.DurationMinutes min</span>
+                            }
+                            @if (!string.IsNullOrEmpty(movie.CountryName))
+                            {
+                                <span>@movie.CountryName</span>
+                            }
                         </div>
                     </div>
                 </div>
             }
         </div>
 
-        <!-- Pagination -->
         @if (Model.TotalPages > 1)
         {
             <div class="pagination-wrapper">
                 <a asp-action="Index" asp-controller="Movie"
                    asp-route-search="@Model.Search" asp-route-genreId="@Model.GenreId" asp-route-countryId="@Model.CountryId"
-                   asp-route-releaseYear="@Model.ReleaseYear" asp-route-type="@Model.Type"
-                   asp-route-sortBy="@Model.SortBy" asp-route-pageNumber="@(Model.PageNumber - 1)"
+                   asp-route-type="@Model.Type" asp-route-sortBy="@Model.SortBy" asp-route-pageNumber="@(Model.PageNumber - 1)"
                    class="page-btn @(!Model.HasPreviousPage ? "disabled" : "")">
-                    <i class="fas fa-chevron-left"></i> Trước
+                    <i class="fas fa-chevron-left"></i> Previous
                 </a>
 
-                @if (Model.PageNumber > 3) { <span class="pagination-info">...</span> }
+                @if (Model.PageNumber > 3)
+                {
+                    <span class="pagination-info">...</span>
+                }
 
                 @for (int i = Math.Max(1, Model.PageNumber - 2); i <= Math.Min(Model.TotalPages, Model.PageNumber + 2); i++)
                 {
                     <a asp-action="Index" asp-controller="Movie"
                        asp-route-search="@Model.Search" asp-route-genreId="@Model.GenreId" asp-route-countryId="@Model.CountryId"
-                       asp-route-releaseYear="@Model.ReleaseYear" asp-route-type="@Model.Type"
-                       asp-route-sortBy="@Model.SortBy" asp-route-pageNumber="@i"
+                       asp-route-type="@Model.Type" asp-route-sortBy="@Model.SortBy" asp-route-pageNumber="@i"
                        class="page-btn @(i == Model.PageNumber ? "active" : "")">@i</a>
                 }
 
-                @if (Model.PageNumber < Model.TotalPages - 2) { <span class="pagination-info">...</span> }
+                @if (Model.PageNumber < Model.TotalPages - 2)
+                {
+                    <span class="pagination-info">...</span>
+                }
 
                 <a asp-action="Index" asp-controller="Movie"
                    asp-route-search="@Model.Search" asp-route-genreId="@Model.GenreId" asp-route-countryId="@Model.CountryId"
-                   asp-route-releaseYear="@Model.ReleaseYear" asp-route-type="@Model.Type"
-                   asp-route-sortBy="@Model.SortBy" asp-route-pageNumber="@(Model.PageNumber + 1)"
+                   asp-route-type="@Model.Type" asp-route-sortBy="@Model.SortBy" asp-route-pageNumber="@(Model.PageNumber + 1)"
                    class="page-btn @(!Model.HasNextPage ? "disabled" : "")">
-                    Sau <i class="fas fa-chevron-right"></i>
+                    Next <i class="fas fa-chevron-right"></i>
                 </a>
             </div>
             <div style="text-align:center; color:var(--netflix-light-gray); font-size:0.85rem; margin-top:-1rem; margin-bottom:2rem;">
-                Trang @Model.PageNumber / @Model.TotalPages — @Model.TotalItems phim
+                Page @Model.PageNumber of @Model.TotalPages — @Model.TotalItems movies total
             </div>
         }
     }
@@ -277,8 +627,8 @@
     {
         <div class="netflix-alert">
             <i class="fas fa-search"></i>
-            <h3>Không tìm thấy phim nào</h3>
-            <p>Vui lòng thử bộ lọc khác hoặc <a asp-action="Index" asp-controller="Movie" style="color:var(--netflix-red);">xem All Film</a></p>
+            <h3>No movies found</h3>
+            <p>Please try adjusting your filters or <a asp-action="Index" asp-controller="Movie" style="color:var(--netflix-red);">view all movies</a>.</p>
         </div>
     }
 </div>
