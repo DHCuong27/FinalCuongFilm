@@ -142,42 +142,51 @@ namespace FinalCuongFilm.MVC.Controllers
 
 		// GET: /Home/Browse?type=1
 		public async Task<IActionResult> Browse(
-				int type,
-				string? search = null,
-				Guid? genreId = null,
-				Guid? countryId = null,
-				string sortBy = "latest",
-				int pageNumber = 1)
+			int type,
+			string? search = null,
+			Guid? genreId = null,
+			Guid? countryId = null,
+			string sortBy = "latest",
+			int pageNumber = 1)
 		{
 			var allMovies = await _movieService.GetAllAsync();
 			var genres = await _genreService.GetAllAsync();
 			var countries = await _countryService.GetAllAsync();
 
-			// 1. Lọc cốt lõi theo Type (Movie / TV Series)
+
+			ViewBag.Genres = genres;
+			ViewBag.Countries = countries;
+
+			// Base filter by movie type (Movie or TV Series)
 			var query = allMovies.Where(m => m.IsActive && (int)m.Type == type).AsEnumerable();
 
-			// 2. CÁC BỘ LỌC TÙY CHỌN (FILTER)
+			// Apply optional filters
 			if (!string.IsNullOrWhiteSpace(search))
+			{
 				query = query.Where(m =>
 					m.Title.Contains(search, StringComparison.OrdinalIgnoreCase) ||
 					(m.Description?.Contains(search, StringComparison.OrdinalIgnoreCase) ?? false));
+			}
 
 			if (genreId.HasValue)
-				query = query.Where(m => m.SelectedGenreIds.Contains(genreId.Value));
+			{
+				query = query.Where(m => m.SelectedGenreIds != null && m.SelectedGenreIds.Contains(genreId.Value));
+			}
 
 			if (countryId.HasValue)
+			{
 				query = query.Where(m => m.CountryId == countryId.Value);
+			}
 
-			// 3. Sắp xếp
+			// Sorting logic matching the UI dropdown
 			query = sortBy switch
 			{
 				"popular" => query.OrderByDescending(m => m.ViewCount),
-				"year_asc" => query.OrderBy(m => m.ReleaseYear),
 				"title" => query.OrderBy(m => m.Title),
-				_ => query.OrderByDescending(m => m.ReleaseYear) // "latest"
+				_ => query.OrderByDescending(m => m.ReleaseYear) // Default "latest"
 			};
 
-			// 4. Phân trang
+			// Pagination
 			int pageSize = 12;
 			var filteredList = query.ToList();
 			int totalItems = filteredList.Count;
@@ -202,7 +211,6 @@ namespace FinalCuongFilm.MVC.Controllers
 
 			return View(viewModel);
 		}
-
 		// Privacy
 		public IActionResult Privacy() => View();
 

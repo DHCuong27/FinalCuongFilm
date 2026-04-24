@@ -24,6 +24,7 @@
         padding: 0;
     }
 
+    /* VIP Badge (Top Right) */
     .premium-movie-badge {
         position: absolute;
         top: 8px;
@@ -31,13 +32,28 @@
         background: linear-gradient(45deg, #FFD700, #FFA500);
         color: #000;
         font-size: 0.75rem;
-        font-weight: bold;
+        font-weight: 800;
         padding: 3px 8px;
-        border-radius: 5px;
+        border-radius: 4px;
         z-index: 10;
         box-shadow: 0 2px 5px rgba(0,0,0,0.5);
     }
 
+    /* Type Badge (Top Left) */
+    .badge-type {
+        position: absolute;
+        top: 8px;
+        left: 8px;
+        background: var(--netflix-red);
+        color: white;
+        padding: 0.2rem 0.6rem;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        z-index: 10;
+    }
+
+    /* Hero Slider */
     .hero-slider-section {
         position: relative;
         margin-bottom: 4rem;
@@ -68,7 +84,7 @@
             z-index: 2;
         }
 
-    /* Tối ưu hóa background để khớp mọi loại ảnh */
+    /* Background image wrapper */
     .hero-bg {
         position: absolute;
         inset: 0;
@@ -79,7 +95,7 @@
         z-index: 1;
     }
 
-        /* Mặt nạ bảo vệ Text (Gradient từ trái sang phải) */
+        /* Left-to-right gradient text mask */
         .hero-bg::before {
             content: '';
             position: absolute;
@@ -88,7 +104,7 @@
             z-index: 2;
         }
 
-        /* Mặt nạ làm mềm viền (Gradient trên, dưới, phải) */
+        /* Edge fading gradients */
         .hero-bg::after {
             content: '';
             position: absolute;
@@ -130,19 +146,12 @@
         text-shadow: 2px 2px 10px rgba(0,0,0,0.5);
     }
 
-    .featured-subtitle {
-        font-size: 1.1rem;
-        color: #d6b074;
-        margin-bottom: 1.5rem;
-        font-style: italic;
-    }
-
     .featured-meta-badges {
         display: flex;
         flex-wrap: wrap;
         align-items: center;
         gap: 0.8rem;
-        margin-bottom: 1rem;
+        margin-bottom: 1.5rem;
     }
 
     .badge-outline {
@@ -152,22 +161,6 @@
         font-size: 0.85rem;
         color: var(--netflix-white);
         background: rgba(0,0,0,0.3);
-    }
-
-    .featured-tags {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        gap: 0.5rem;
-        margin-bottom: 1.5rem;
-    }
-
-    .tag-dark {
-        background: rgba(255,255,255,0.15);
-        padding: 0.2rem 0.8rem;
-        border-radius: 4px;
-        font-size: 0.85rem;
-        color: #e5e5e5;
     }
 
     .featured-desc {
@@ -189,7 +182,6 @@
         align-items: center;
     }
 
-    /* UPDATED: Play button changed to red */
     .btn-play-round {
         width: 60px;
         height: 60px;
@@ -209,6 +201,7 @@
         .btn-play-round:hover {
             transform: scale(1.08);
             background-color: #f40612;
+            color: #fff;
         }
 
     .btn-icon-round {
@@ -230,13 +223,10 @@
         .btn-icon-round:hover {
             background-color: rgba(255,255,255,0.2);
             border-color: rgba(255,255,255,0.8);
+            color: #fff;
         }
 
-    .hero-poster-content {
-        display: none;
-    }
-
-    /* NEW: Compact Thumbnail Navigation Strip - Bottom Right Corner */
+    /* Thumbnail Strip */
     .thumbnail-strip-compact {
         position: absolute;
         bottom: 30px;
@@ -251,11 +241,11 @@
         border: 1px solid rgba(255, 255, 255, 0.15);
         max-width: 400px;
         overflow-x: auto;
-        scrollbar-width: none; /* Hide scrollbar for cleaner look */
+        scrollbar-width: none;
     }
 
         .thumbnail-strip-compact::-webkit-scrollbar {
-            display: none; /* Hide scrollbar for Chrome/Safari */
+            display: none;
         }
 
     .thumbnail-item-compact {
@@ -308,117 +298,7 @@
             border: 1px solid white;
         }
 
-    /* Optional: Add a small label for the thumbnail strip */
-    .thumbnail-label {
-        position: absolute;
-        bottom: 110px;
-        right: 30px;
-        color: rgba(255,255,255,0.5);
-        font-size: 0.7rem;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        z-index: 19;
-    }
-
-    .global-search-overlay {
-        position: absolute;
-        bottom: 120px;
-        left: 0;
-        right: 0;
-        z-index: 15;
-    }
-
-    .banner-search-container {
-        max-width: 600px;
-        margin: 0 auto;
-        position: relative;
-        padding: 0 2rem;
-    }
-
-    .search-input-wrapper {
-        display: flex;
-        background: rgba(0,0,0,0.75);
-        border: 2px solid rgba(255,255,255,0.1);
-        border-radius: 40px;
-        padding: 3px 3px 3px 20px;
-        backdrop-filter: blur(10px);
-        transition: all 0.3s;
-    }
-
-        .search-input-wrapper:focus-within {
-            border-color: var(--netflix-red);
-            background: rgba(0,0,0,0.95);
-            box-shadow: 0 0 20px rgba(229,9,20,0.3);
-        }
-
-        .search-input-wrapper input {
-            flex: 1;
-            background: transparent;
-            border: none;
-            color: white;
-            font-size: 1.1rem;
-            padding: 12px 0;
-            outline: none;
-        }
-
-            .search-input-wrapper input::placeholder {
-                color: var(--netflix-light-gray);
-            }
-
-        .search-input-wrapper .btn-search {
-            background: var(--netflix-red);
-            color: white;
-            border: none;
-            border-radius: 40px;
-            padding: 12px 30px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-            .search-input-wrapper .btn-search:hover {
-                background: #f40612;
-            }
-
-    .search-suggestions-box {
-        position: absolute;
-        top: 100%;
-        left: 0;
-        right: 0;
-        margin-top: 10px;
-        background: var(--netflix-dark-bg);
-        border: 1px solid var(--netflix-gray);
-        border-radius: 10px;
-        overflow: hidden;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.8);
-        display: none;
-    }
-
-    .suggestion-item {
-        display: flex;
-        align-items: center;
-        padding: 10px 15px;
-        color: white;
-        text-decoration: none;
-        border-bottom: 1px solid rgba(255,255,255,0.05);
-        transition: 0.2s;
-    }
-
-        .suggestion-item:hover {
-            background: rgba(255,255,255,0.1);
-        }
-
-        .suggestion-item img {
-            width: 40px;
-            height: 60px;
-            object-fit: cover;
-            border-radius: 4px;
-            margin-right: 15px;
-        }
-
+    /* Container and Section Headers */
     .container {
         max-width: 1400px;
         margin: 0 auto;
@@ -430,38 +310,22 @@
         align-items: center;
         justify-content: space-between;
         gap: 1rem;
-        margin-bottom: 2rem;
-        padding-bottom: 1rem;
-        border-bottom: 2px solid var(--netflix-gray);
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
         position: relative;
     }
 
         .section-header::after {
             content: '';
             position: absolute;
-            bottom: -2px;
+            bottom: -1px;
             left: 0;
-            width: 100px;
+            width: 60px;
             height: 2px;
             background: var(--netflix-red);
+            opacity: 0.6;
         }
-
-    .section-header-left {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-    }
-
-    .section-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 1rem;
-        margin-bottom: 2rem;
-        padding-bottom: 0.75rem;
-        border-bottom: 1px solid rgba(255,255,255,0.1);
-        position: relative;
-    }
 
     .section-header-left {
         display: flex;
@@ -469,33 +333,18 @@
         gap: 0.75rem;
     }
 
-    .section-header i {
-        font-size: 1.5rem;
-        color: var(--netflix-dark);
-        background: transparent;
-        padding: 0;
-        border-radius: 0;
-    }
+        .section-header-left i {
+            font-size: 1.5rem;
+            color: var(--netflix-red);
+        }
 
-    .section-header h2 {
-        font-size: 1.5rem;
-        font-weight: 600;
-        margin: 0;
-        letter-spacing: -0.5px;
-    }
+        .section-header-left h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 0;
+        }
 
-    /* Optional: subtle red accent line */
-    .section-header::after {
-        content: '';
-        position: absolute;
-        bottom: -1px;
-        left: 0;
-        width: 60px;
-        height: 2px;
-        background: var(--netflix-red);
-        opacity: 0.6;
-    }
-
+    /* Horizontal Movie Scrollers */
     .movies-row-container {
         position: relative;
         margin-bottom: 4rem;
@@ -695,6 +544,7 @@
         opacity: 0;
         transition: opacity 0.3s;
         cursor: pointer;
+        z-index: 10;
     }
 
     .movie-card:hover .favorite-icon-btn {
@@ -704,6 +554,27 @@
     .favorite-icon-btn:hover {
         background: var(--netflix-red);
     }
+
+    /* Filter Form Styles */
+    .btn-toggle-filter {
+        background: rgba(255,255,255,0.1);
+        color: var(--netflix-white);
+        border: 1px solid rgba(255,255,255,0.3);
+        border-radius: 8px;
+        padding: 0.6rem 1.2rem;
+        font-size: 0.95rem;
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s;
+    }
+
+        .btn-toggle-filter:hover, .btn-toggle-filter.active {
+            background: var(--netflix-red);
+            border-color: var(--netflix-red);
+        }
 
     .filter-bar {
         background: var(--netflix-dark-bg);
@@ -733,7 +604,6 @@
             font-weight: 600;
             color: var(--netflix-light-gray);
             text-transform: uppercase;
-            letter-spacing: 0.5px;
         }
 
     .filter-select {
@@ -744,7 +614,6 @@
         padding: 0.6rem 1rem;
         font-size: 0.9rem;
         cursor: pointer;
-        transition: border-color 0.2s;
     }
 
         .filter-select:focus {
@@ -756,6 +625,46 @@
             background: var(--netflix-gray);
         }
 
+    .search-input-wrapper {
+        display: flex;
+        background: var(--netflix-gray);
+        border: 1px solid rgba(255,255,255,0.15);
+        border-radius: 8px;
+        overflow: hidden;
+        transition: border-color 0.2s;
+    }
+
+        .search-input-wrapper:focus-within {
+            border-color: var(--netflix-red);
+        }
+
+        .search-input-wrapper input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 0.9rem;
+            padding: 0.6rem 1rem;
+            outline: none;
+        }
+
+            .search-input-wrapper input::placeholder {
+                color: var(--netflix-light-gray);
+            }
+
+        .search-input-wrapper .btn-search {
+            background: var(--netflix-red);
+            color: white;
+            border: none;
+            padding: 0.6rem 1rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+            .search-input-wrapper .btn-search:hover {
+                background: #f40612;
+            }
+
     .btn-reset {
         background: transparent;
         color: var(--netflix-light-gray);
@@ -765,7 +674,10 @@
         font-size: 0.9rem;
         cursor: pointer;
         transition: all 0.2s;
-        white-space: nowrap;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
     }
 
         .btn-reset:hover {
@@ -776,7 +688,7 @@
     .filter-result-count {
         font-size: 0.9rem;
         color: var(--netflix-light-gray);
-        margin-top: 0.8rem;
+        margin-top: 1rem;
     }
 
         .filter-result-count span {
@@ -784,15 +696,7 @@
             font-weight: 700;
         }
 
-    #filtered-movies-wrapper {
-        transition: opacity 0.3s ease;
-    }
-
-    .loading-state {
-        opacity: 0.5;
-        pointer-events: none;
-    }
-
+    /* Filtered Grid */
     .movies-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
@@ -834,7 +738,7 @@
     .grid-card-overlay {
         position: absolute;
         inset: 0;
-        background: linear-gradient(180deg, transparent 50%, rgba(0,0,0,0.9) 100%);
+        background: linear-gradient(180deg, transparent 50%, rgba(0,0,0,0.95) 100%);
         opacity: 0;
         transition: opacity 0.3s;
         display: flex;
@@ -857,7 +761,14 @@
         text-decoration: none;
         font-size: 0.85rem;
         font-weight: 600;
+        width: 100%;
+        justify-content: center;
     }
+
+        .btn-play-card:hover {
+            background: #f40612;
+            color: white;
+        }
 
     .grid-card-info {
         padding: 0.8rem;
@@ -888,19 +799,7 @@
         gap: 0.5rem;
     }
 
-    .badge-type {
-        position: absolute;
-        top: 8px;
-        left: 8px;
-        background: rgba(229,9,20,0.85);
-        color: white;
-        padding: 0.2rem 0.6rem;
-        border-radius: 4px;
-        font-size: 0.7rem;
-        font-weight: 700;
-        z-index: 3;
-    }
-
+    /* Pagination */
     .pagination-wrapper {
         display: flex;
         justify-content: center;
@@ -939,6 +838,7 @@
             pointer-events: none;
         }
 
+    /* Alert */
     .netflix-alert {
         background: var(--netflix-dark-bg);
         border: 1px solid var(--netflix-gray);
@@ -956,79 +856,47 @@
         }
 
     @@media (max-width: 992px) {
-        .hero-text-content
-
-    {
-        max-width: 100%;
-    }
-
+        .hero-text-content {
+            max-width: 100%;
+        }
     }
 
     @@media (max-width: 768px) {
-        .hero-slider-container
-
-    {
-        height: 100vh;
-        min-height: 600px;
-    }
-
-    .featured-title {
-        font-size: 2.5rem;
-    }
-
-    .global-search-overlay {
-        bottom: 90px;
-    }
-
-    .filter-row {
-        flex-direction: column;
-    }
-
-    .movies-grid {
-        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-    }
-
-    .thumbnail-strip-compact {
-        bottom: 20px;
-        right: 20px;
-        max-width: 280px;
-        padding: 6px 10px;
-    }
-
-    .thumbnail-item-compact {
-        width: 40px;
-        height: 56px;
-    }
-
-    }
-
-    /* --- NÚT ẨN/HIỆN BỘ LỌC TÙY CHỈNH --- */
-    .btn-toggle-filter {
-        background: rgba(255,255,255,0.1);
-        color: var(--netflix-white);
-        border: 1px solid rgba(255,255,255,0.3);
-        border-radius: 8px;
-        padding: 0.6rem 1.2rem;
-        font-size: 0.95rem;
-        font-weight: 600;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        transition: all 0.3s;
-    }
-
-        .btn-toggle-filter:hover, .btn-toggle-filter.active {
-            background: var(--netflix-red);
-            border-color: var(--netflix-red);
+        .hero-slider-container {
+            height: 100vh;
+            min-height: 600px;
         }
+
+        .featured-title {
+            font-size: 2.5rem;
+        }
+
+        .filter-row {
+            flex-direction: column;
+        }
+
+        .movies-grid {
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        }
+
+        .thumbnail-strip-compact {
+            bottom: 20px;
+            right: 20px;
+            max-width: 280px;
+            padding: 6px 10px;
+        }
+
+        .thumbnail-item-compact {
+            width: 40px;
+            height: 56px;
+        }
+    }
 </style>
 
 @if (featuredMovies.Any())
 {
     <div class="hero-slider-section">
         <div class="hero-slider-container" id="heroSlider">
-
             @for (int i = 0; i < featuredMovies.Count; i++)
             {
                 var movie = featuredMovies[i];
@@ -1043,6 +911,12 @@
                             <div class="featured-meta-badges">
                                 <span class="badge-outline">HD</span>
                                 <span class="badge-outline">@(movie.Type.ToString() == "Series" ? "Series" : "Movie")</span>
+                                @if (movie.IsVipOnly)
+                                {
+                                    <span class="badge-outline" style="border-color: #FFD700; color: #FFD700; background: rgba(0,0,0,0.6);">
+                                        <i class="fa-solid fa-crown"></i> VIP
+                                    </span>
+                                }
                             </div>
 
                             <p class="featured-desc">
@@ -1053,8 +927,6 @@
                                 <a asp-controller="Movie" asp-action="Watch" asp-route-slug="@movie.Slug" class="btn-play-round" title="Play">
                                     <i class="fas fa-play"></i>
                                 </a>
-
-                               
                                 <a asp-controller="Movie" asp-action="Detail" asp-route-slug="@movie.Slug" class="btn-icon-round" title="More Info">
                                     <i class="fas fa-info"></i>
                                 </a>
@@ -1116,7 +988,172 @@
     </div>
 }
 
+<div class="container" style="margin-top:2rem;">
+    <div class="section-header">
+        <div class="section-header-left">
+            <i class="fas fa-fire"></i>
+            <h2>Latest Movies</h2>
+        </div>
+    </div>
+    @if (Model.LatestMovies.Any())
+    {
+        <div class="movies-row-container">
+            <button class="scroll-arrow scroll-left" onclick="doScrollLeft('latest')"><i class="fas fa-chevron-left"></i></button>
+            <div class="movies-row" id="latest-movies-row">
+                @foreach (var movie in Model.LatestMovies)
+                {
+                    <div class="movie-card">
+                        <a asp-controller="Movie" asp-action="Detail" asp-route-slug="@movie.Slug">
+                            <div class="movie-poster">
+                                @if (movie.IsVipOnly)
+                                {
+                                    <div class="premium-movie-badge">
+                                        <i class="fa-solid fa-crown"></i> VIP
+                                    </div>
+                                }
+                                <img src="@(string.IsNullOrEmpty(movie.PosterUrl) ? "https://via.placeholder.com/300x450/2d2d2d/fff?text=No+Poster" : movie.PosterUrl)" alt="@movie.Title" loading="lazy" />
+                                <div class="movie-overlay"><div class="play-button"><i class="fas fa-play"></i></div></div>
+                            </div>
+                        </a>
+                        <div class="movie-info">
+                            <h6 class="movie-title"><a asp-controller="Movie" asp-action="Detail" asp-route-slug="@movie.Slug">@movie.Title</a></h6>
+                            <div class="movie-meta">
+                                <span><i class="fas fa-calendar"></i> @movie.ReleaseYear</span>
+                                @if (!string.IsNullOrEmpty(movie.CountryName))
+                                {
+                                    <span><i class="fas fa-globe"></i> @movie.CountryName</span>
+                                }
+                            </div>
+                        </div>
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            <button class="favorite-icon-btn" data-movie-id="@movie.Id"><i class="far fa-heart"></i></button>
+                        }
+                    </div>
+                }
+            </div>
+            <button class="scroll-arrow scroll-right" onclick="doScrollRight('latest')"><i class="fas fa-chevron-right"></i></button>
+        </div>
+    }
+</div>
 
+@if (Model.PopularMovies.Any())
+{
+    <div class="container" style="margin-top:3rem;">
+        <div class="section-header">
+            <div class="section-header-left">
+                <i class="fas fa-star"></i>
+                <h2>Popular Movies</h2>
+            </div>
+        </div>
+        <div class="movies-row-container">
+            <button class="scroll-arrow scroll-left" onclick="doScrollLeft('popular')"><i class="fas fa-chevron-left"></i></button>
+            <div class="movies-row" id="popular-movies-row">
+                @foreach (var movie in Model.PopularMovies)
+                {
+                    <div class="movie-card">
+                        <a asp-controller="Movie" asp-action="Detail" asp-route-slug="@movie.Slug">
+                            <div class="movie-poster">
+                                @if (movie.IsVipOnly)
+                                {
+                                    <div class="premium-movie-badge">
+                                        <i class="fa-solid fa-crown"></i> VIP
+                                    </div>
+                                }
+                                <img src="@(string.IsNullOrEmpty(movie.PosterUrl) ? "https://via.placeholder.com/300x450/2d2d2d/fff?text=No+Poster" : movie.PosterUrl)" alt="@movie.Title" loading="lazy" />
+                                <div class="movie-overlay"><div class="play-button"><i class="fas fa-play"></i></div></div>
+                                <div class="view-badge"><i class="fas fa-eye"></i> @movie.ViewCount.ToString("N0")</div>
+                            </div>
+                        </a>
+                        <div class="movie-info">
+                            <h6 class="movie-title"><a asp-controller="Movie" asp-action="Detail" asp-route-slug="@movie.Slug">@movie.Title</a></h6>
+                            <div class="movie-meta">
+                                <span><i class="fas fa-calendar"></i> @movie.ReleaseYear</span>
+                                @if (!string.IsNullOrEmpty(movie.CountryName))
+                                {
+                                    <span><i class="fas fa-globe"></i> @movie.CountryName</span>
+                                }
+                            </div>
+                        </div>
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            <button class="favorite-icon-btn" data-movie-id="@movie.Id"><i class="far fa-heart"></i></button>
+                        }
+                    </div>
+                }
+            </div>
+            <button class="scroll-arrow scroll-right" onclick="doScrollRight('popular')"><i class="fas fa-chevron-right"></i></button>
+        </div>
+    </div>
+}
+
+@if (Model.KoreanMovies != null && Model.KoreanMovies.Any())
+{
+    <div class="container" style="margin-top:1rem;">
+        <div class="section-header" style="border-bottom: none; padding-bottom: 0;">
+            <div class="section-header-left">
+                <h2>K-Dramas & Movies</h2>
+            </div>
+        </div>
+        <div class="movies-row-container">
+            <button class="scroll-arrow scroll-left" onclick="doScrollLeft('korean')"><i class="fas fa-chevron-left"></i></button>
+            <div class="movies-row" id="korean-movies-row">
+                @foreach (var movie in Model.KoreanMovies)
+                {
+                    <div class="movie-card">
+                        <a asp-controller="Movie" asp-action="Detail" asp-route-slug="@movie.Slug">
+                            <div class="movie-poster">
+                                @if (movie.IsVipOnly)
+                                {
+                                    <div class="premium-movie-badge">
+                                        <i class="fa-solid fa-crown"></i> VIP
+                                    </div>
+                                }
+                                <img src="@(movie.PosterUrl ?? "https://via.placeholder.com/300x450/2d2d2d/fff?text=No+Poster")" alt="@movie.Title" loading="lazy" />
+                                <div class="movie-overlay"><div class="play-button"><i class="fas fa-play"></i></div></div>
+                            </div>
+                        </a>
+                    </div>
+                }
+            </div>
+            <button class="scroll-arrow scroll-right" onclick="doScrollRight('korean')"><i class="fas fa-chevron-right"></i></button>
+        </div>
+    </div>
+}
+
+@if (Model.ChineseMovies != null && Model.ChineseMovies.Any())
+{
+    <div class="container" style="margin-top:1rem;">
+        <div class="section-header" style="border-bottom: none; padding-bottom: 0;">
+            <div class="section-header-left">
+                <h2>Chinese Masterpieces</h2>
+            </div>
+        </div>
+        <div class="movies-row-container">
+            <button class="scroll-arrow scroll-left" onclick="doScrollLeft('chinese')"><i class="fas fa-chevron-left"></i></button>
+            <div class="movies-row" id="chinese-movies-row">
+                @foreach (var movie in Model.ChineseMovies)
+                {
+                    <div class="movie-card">
+                        <a asp-controller="Movie" asp-action="Detail" asp-route-slug="@movie.Slug">
+                            <div class="movie-poster">
+                                @if (movie.IsVipOnly)
+                                {
+                                    <div class="premium-movie-badge">
+                                        <i class="fa-solid fa-crown"></i> VIP
+                                    </div>
+                                }
+                                <img src="@(movie.PosterUrl ?? "https://via.placeholder.com/300x450/2d2d2d/fff?text=No+Poster")" alt="@movie.Title" loading="lazy" />
+                                <div class="movie-overlay"><div class="play-button"><i class="fas fa-play"></i></div></div>
+                            </div>
+                        </a>
+                    </div>
+                }
+            </div>
+            <button class="scroll-arrow scroll-right" onclick="doScrollRight('chinese')"><i class="fas fa-chevron-right"></i></button>
+        </div>
+    </div>
+}
 
 <div class="container" id="filter-section-container" style="margin-top: 3rem;">
     <div class="section-header">
@@ -1124,12 +1161,10 @@
             <i class="fas fa-film"></i>
             <h2>Explore All Movies</h2>
         </div>
-
         <button id="btnToggleFilter" class="btn-toggle-filter">
             <i class="fas fa-sliders-h"></i> Filter
         </button>
     </div>
-
 
     <div class="filter-bar" id="filterBarPanel" style="display: none;">
         <form method="get" asp-action="Index" asp-controller="Home" id="filterForm">
@@ -1202,17 +1237,18 @@
                     <div class="grid-card">
                         <div class="grid-card-poster" style="position: relative;">
 
+                            <span class="badge-type">@(movie.Type.ToString() == "Series" ? "Series" : "Movie")</span>
+
                             @if (movie.IsVipOnly)
                             {
                                 <div class="premium-movie-badge">
-                                    <i class="fa fa-crown"></i> VIP
+                                    <i class="fa-solid fa-crown"></i> VIP
                                 </div>
                             }
 
                             <a asp-controller="Movie" asp-action="Detail" asp-route-slug="@movie.Slug">
                                 <img src="@(movie.PosterUrl ?? "https://via.placeholder.com/300x450/2d2d2d/fff?text=No+Poster")" alt="@movie.Title" loading="lazy" />
                             </a>
-                            <span class="badge-type">@(movie.Type.ToString() == "Series" ? "Series" : "Movie")</span>
                             <div class="grid-card-overlay">
                                 <a asp-controller="Movie" asp-action="Watch" asp-route-slug="@movie.Slug" class="btn-play-card">
                                     <i class="fas fa-play"></i> Watch Now
@@ -1242,178 +1278,45 @@
                 }
             </div>
         }
+        else
+        {
+            <div class="col-12">
+                <div class="netflix-alert">
+                    <i class="fas fa-search"></i>
+                    <h3>No content matches your filters</h3>
+                    <p>Try adjusting your search or filter categories, or <a asp-action="Index" asp-controller="Home" style="color:var(--netflix-red);">reset all filters</a>.</p>
+                </div>
+            </div>
+        }
     </div>
 
-            @if (f.TotalPages > 1)
+    @if (f.TotalPages > 1)
+    {
+        <div class="pagination-wrapper">
+            <a asp-action="Index" asp-controller="Home"
+               asp-route-search="@f.Search" asp-route-genreId="@f.GenreId" asp-route-countryId="@f.CountryId"
+               asp-route-type="@f.Type" asp-route-sortBy="@f.SortBy" asp-route-pageNumber="@(f.PageNumber - 1)"
+               class="page-btn @(!f.HasPreviousPage ? "disabled" : null)">
+                <i class="fas fa-chevron-left"></i>
+            </a>
+
+            @for (int i = Math.Max(1, f.PageNumber - 2); i <= Math.Min(f.TotalPages, f.PageNumber + 2); i++)
             {
-                <div class="pagination-wrapper">
-                    <a asp-action="Index" asp-controller="Home"
-                       asp-route-search="@f.Search" asp-route-genreId="@f.GenreId" asp-route-countryId="@f.CountryId"
-                       asp-route-type="@f.Type" asp-route-sortBy="@f.SortBy" asp-route-pageNumber="@(f.PageNumber - 1)"
-                       class="page-btn @(!f.HasPreviousPage ? "disabled" : null)">
-                        <i class="fas fa-chevron-left"></i>
-                    </a>
-
-                    @for (int i = Math.Max(1, f.PageNumber - 2); i <= Math.Min(f.TotalPages, f.PageNumber + 2); i++)
-                    {
-                        <a asp-action="Index" asp-controller="Home"
-                           asp-route-search="@f.Search" asp-route-genreId="@f.GenreId" asp-route-countryId="@f.CountryId"
-                           asp-route-type="@f.Type" asp-route-sortBy="@f.SortBy" asp-route-pageNumber="@i"
-                           class="page-btn @(i == f.PageNumber ? "active" : null)">@i</a>
-                    }
-
-                    <a asp-action="Index" asp-controller="Home"
-                       asp-route-search="@f.Search" asp-route-genreId="@f.GenreId" asp-route-countryId="@f.CountryId"
-                       asp-route-type="@f.Type" asp-route-sortBy="@f.SortBy" asp-route-pageNumber="@(f.PageNumber + 1)"
-                       class="page-btn @(!f.HasNextPage ? "disabled" : null)">
-                        <i class="fas fa-chevron-right"></i>
-                    </a>
-                </div>
+                <a asp-action="Index" asp-controller="Home"
+                   asp-route-search="@f.Search" asp-route-genreId="@f.GenreId" asp-route-countryId="@f.CountryId"
+                   asp-route-type="@f.Type" asp-route-sortBy="@f.SortBy" asp-route-pageNumber="@i"
+                   class="page-btn @(i == f.PageNumber ? "active" : null)">@i</a>
             }
 
-</div>
-<div class="container" style="margin-top:2rem;">
-    <div class="section-header">
-        <div class="section-header-left">
-            <i class="fas fa-fire"></i>
-            <h2>Latest Movies</h2>
-        </div>
-    </div>
-    @if (Model.LatestMovies.Any())
-    {
-        <div class="movies-row-container">
-            <button class="scroll-arrow scroll-left" onclick="doScrollLeft('latest')"><i class="fas fa-chevron-left"></i></button>
-            <div class="movies-row" id="latest-movies-row">
-                @foreach (var movie in Model.LatestMovies)
-                {
-                    <div class="movie-card">
-                        <a asp-controller="Movie" asp-action="Detail" asp-route-slug="@movie.Slug">
-                            <div class="movie-poster">
-                                <img src="@(string.IsNullOrEmpty(movie.PosterUrl) ? "https://via.placeholder.com/300x450/2d2d2d/fff?text=No+Poster" : movie.PosterUrl)" alt="@movie.Title" loading="lazy" />
-                                <div class="movie-overlay"><div class="play-button"><i class="fas fa-play"></i></div></div>
-                            </div>
-                        </a>
-                        <div class="movie-info">
-                            <h6 class="movie-title"><a asp-controller="Movie" asp-action="Detail" asp-route-slug="@movie.Slug">@movie.Title</a></h6>
-                            <div class="movie-meta">
-                                <span><i class="fas fa-calendar"></i> @movie.ReleaseYear</span>
-                                @if (!string.IsNullOrEmpty(movie.CountryName))
-                                {
-                                    <span><i class="fas fa-globe"></i> @movie.CountryName</span>
-                                }
-                            </div>
-                        </div>
-                        @if (User.Identity?.IsAuthenticated == true)
-                        {
-                            <button class="favorite-icon-btn" data-movie-id="@movie.Id"><i class="far fa-heart"></i></button>
-                        }
-                    </div>
-                }
-            </div>
-            <button class="scroll-arrow scroll-right" onclick="doScrollRight('latest')"><i class="fas fa-chevron-right"></i></button>
+            <a asp-action="Index" asp-controller="Home"
+               asp-route-search="@f.Search" asp-route-genreId="@f.GenreId" asp-route-countryId="@f.CountryId"
+               asp-route-type="@f.Type" asp-route-sortBy="@f.SortBy" asp-route-pageNumber="@(f.PageNumber + 1)"
+               class="page-btn @(!f.HasNextPage ? "disabled" : null)">
+                <i class="fas fa-chevron-right"></i>
+            </a>
         </div>
     }
 </div>
-
-@if (Model.PopularMovies.Any())
-{
-    <div class="container" style="margin-top:3rem;">
-        <div class="section-header">
-            <div class="section-header-left">
-                <i class="fas fa-star"></i>
-                <h2>Popular Movies</h2>
-            </div>
-        </div>
-        <div class="movies-row-container">
-            <button class="scroll-arrow scroll-left" onclick="doScrollLeft('popular')"><i class="fas fa-chevron-left"></i></button>
-            <div class="movies-row" id="popular-movies-row">
-                @foreach (var movie in Model.PopularMovies)
-                {
-                    <div class="movie-card">
-                        <a asp-controller="Movie" asp-action="Detail" asp-route-slug="@movie.Slug">
-                            <div class="movie-poster">
-                                <img src="@(string.IsNullOrEmpty(movie.PosterUrl) ? "https://via.placeholder.com/300x450/2d2d2d/fff?text=No+Poster" : movie.PosterUrl)" alt="@movie.Title" loading="lazy" />
-                                <div class="movie-overlay"><div class="play-button"><i class="fas fa-play"></i></div></div>
-                                <div class="view-badge"><i class="fas fa-eye"></i> @movie.ViewCount.ToString("N0")</div>
-                            </div>
-                        </a>
-                        <div class="movie-info">
-                            <h6 class="movie-title"><a asp-controller="Movie" asp-action="Detail" asp-route-slug="@movie.Slug">@movie.Title</a></h6>
-                            <div class="movie-meta">
-                                <span><i class="fas fa-calendar"></i> @movie.ReleaseYear</span>
-                                @if (!string.IsNullOrEmpty(movie.CountryName))
-                                {
-                                    <span><i class="fas fa-globe"></i> @movie.CountryName</span>
-                                }
-                            </div>
-                        </div>
-                        @if (User.Identity?.IsAuthenticated == true)
-                        {
-                            <button class="favorite-icon-btn" data-movie-id="@movie.Id"><i class="far fa-heart"></i></button>
-                        }
-                    </div>
-                }
-            </div>
-            <button class="scroll-arrow scroll-right" onclick="doScrollRight('popular')"><i class="fas fa-chevron-right"></i></button>
-        </div>
-    </div>
-}
-
-@if (Model.KoreanMovies != null && Model.KoreanMovies.Any())
-{
-    <div class="container" style="margin-top:1rem;">
-        <div class="section-header" style="border-bottom: none; padding-bottom: 0;">
-            <div class="section-header-left">
-                <h2>K-Dramas & Movies</h2>
-            </div>
-        </div>
-        <div class="movies-row-container">
-            <button class="scroll-arrow scroll-left" onclick="doScrollLeft('korean')"><i class="fas fa-chevron-left"></i></button>
-            <div class="movies-row" id="korean-movies-row">
-                @foreach (var movie in Model.KoreanMovies)
-                {
-                    <div class="movie-card">
-                        <a asp-controller="Movie" asp-action="Detail" asp-route-slug="@movie.Slug">
-                            <div class="movie-poster">
-                                <img src="@(movie.PosterUrl ?? "https://via.placeholder.com/300x450/2d2d2d/fff?text=No+Poster")" alt="@movie.Title" loading="lazy" />
-                                <div class="movie-overlay"><div class="play-button"><i class="fas fa-play"></i></div></div>
-                            </div>
-                        </a>
-                    </div>
-                }
-            </div>
-            <button class="scroll-arrow scroll-right" onclick="doScrollRight('korean')"><i class="fas fa-chevron-right"></i></button>
-        </div>
-    </div>
-}
-
-@if (Model.ChineseMovies != null && Model.ChineseMovies.Any())
-{
-    <div class="container" style="margin-top:1rem;">
-        <div class="section-header" style="border-bottom: none; padding-bottom: 0;">
-            <div class="section-header-left">
-                <h2>Chinese Masterpieces</h2>
-            </div>
-        </div>
-        <div class="movies-row-container">
-            <button class="scroll-arrow scroll-left" onclick="doScrollLeft('chinese')"><i class="fas fa-chevron-left"></i></button>
-            <div class="movies-row" id="chinese-movies-row">
-                @foreach (var movie in Model.ChineseMovies)
-                {
-                    <div class="movie-card">
-                        <a asp-controller="Movie" asp-action="Detail" asp-route-slug="@movie.Slug">
-                            <div class="movie-poster">
-                                <img src="@(movie.PosterUrl ?? "https://via.placeholder.com/300x450/2d2d2d/fff?text=No+Poster")" alt="@movie.Title" loading="lazy" />
-                                <div class="movie-overlay"><div class="play-button"><i class="fas fa-play"></i></div></div>
-                            </div>
-                        </a>
-                    </div>
-                }
-            </div>
-            <button class="scroll-arrow scroll-right" onclick="doScrollRight('chinese')"><i class="fas fa-chevron-right"></i></button>
-        </div>
-    </div>
-}
 
 @Html.AntiForgeryToken()
 
@@ -1471,7 +1374,7 @@
 
                 const $activeThumb = $thumbnails.eq(currentSlide);
                 const thumbnailStrip = document.querySelector('.thumbnail-strip-compact');
-                if (thumbnailStrip) {
+                if (thumbnailStrip && $activeThumb.length) {
                     const thumbLeft = $activeThumb[0].offsetLeft;
                     const thumbWidth = $activeThumb.outerWidth();
                     const stripWidth = thumbnailStrip.offsetWidth;
@@ -1559,25 +1462,25 @@
                 });
             }
 
-            // --- 4. XỬ LÝ NÚT BẬT/TẮT BỘ LỌC ---
+            // --- 4. TOGGLE FILTER BUTTON LOGIC ---
             $('#btnToggleFilter').click(function () {
                 const filterPanel = $('#filterBarPanel');
 
-                // Toggle đóng/mở với animation slide
+                // Toggle open/close with slide animation
                 filterPanel.slideToggle(300);
 
-                // Đổi màu nút khi bộ lọc đang mở
+                // Change button color when filter is open
                 $(this).toggleClass('active');
             });
 
-            // Giữ cho bộ lọc mở nếu user đang có tham số tìm kiếm/lọc trên URL
+            // Keep filter open if URL has active search/filter parameters
             if (window.location.search.length > 1) {
                 $('#filterBarPanel').show();
                 $('#btnToggleFilter').addClass('active');
             }
         });
 
-        // --- 5. SCROLL ARROWS CHO TẤT CẢ MOVIE ROWS ---
+        // --- 5. SCROLL ARROWS FOR ALL MOVIE ROWS ---
         function doScrollLeft(id)  { document.getElementById(id + '-movies-row').scrollBy({ left: -600, behavior: 'smooth' }); }
         function doScrollRight(id) { document.getElementById(id + '-movies-row').scrollBy({ left:  600, behavior: 'smooth' }); }
     </script>

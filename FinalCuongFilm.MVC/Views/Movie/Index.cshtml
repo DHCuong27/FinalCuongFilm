@@ -1,7 +1,11 @@
-﻿@model FinalCuongFilm.MVC.Models.ViewModels.MovieFilterViewModel
+﻿@using FinalCuongFilm.ApplicationCore.Entities
+@model FinalCuongFilm.MVC.Models.ViewModels.MovieFilterViewModel
 @{
     ViewData["Title"] = Model.PageTitle ?? "All Movies";
     Layout = "_LayoutUser";
+
+    // DYNAMIC ACTION ROUTING
+    var currentAction = ViewContext.RouteData.Values["action"]?.ToString() ?? "Index";
 }
 
 <style>
@@ -82,6 +86,7 @@
         padding: 0.6rem 1rem;
         font-size: 0.9rem;
         cursor: pointer;
+        transition: border-color 0.2s;
     }
 
         .filter-select:focus {
@@ -134,9 +139,9 @@
             outline: none;
         }
 
-        .search-input-wrapper input::placeholder {
-            color: var(--netflix-light-gray);
-        }
+            .search-input-wrapper input::placeholder {
+                color: var(--netflix-light-gray);
+            }
 
         .search-input-wrapper .btn-search {
             background: var(--netflix-red);
@@ -148,9 +153,9 @@
             transition: background 0.2s;
         }
 
-        .search-input-wrapper .btn-search:hover {
-            background: #f40612;
-        }
+            .search-input-wrapper .btn-search:hover {
+                background: #f40612;
+            }
 
     .btn-filter {
         background: var(--netflix-red);
@@ -178,6 +183,7 @@
         font-size: 0.9rem;
         cursor: pointer;
         transition: all 0.2s;
+        white-space: nowrap;
         text-decoration: none;
         display: inline-flex;
         align-items: center;
@@ -192,7 +198,7 @@
     .filter-result-count {
         font-size: 0.9rem;
         color: var(--netflix-light-gray);
-        margin-top: 1rem;
+        margin-top: 0.8rem;
     }
 
         .filter-result-count span {
@@ -206,6 +212,8 @@
         flex-wrap: wrap;
         gap: 0.5rem;
         margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid rgba(255,255,255,0.05);
     }
 
     .filter-tag {
@@ -230,7 +238,7 @@
                 color: var(--netflix-red);
             }
 
-    /* Movies Grid */
+    /* Movie Card Styles */
     .movies-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
@@ -238,18 +246,20 @@
         margin-bottom: 3rem;
     }
 
-    .grid-card {
+    .nf-movie-card {
         position: relative;
-        border-radius: 8px;
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        cursor: pointer;
+        border-radius: 4px;
         overflow: hidden;
         background: var(--netflix-dark-bg);
         border: 1px solid var(--netflix-gray);
-        transition: transform 0.3s, box-shadow 0.3s;
     }
 
-        .grid-card:hover {
-            transform: translateY(-6px);
-            box-shadow: 0 12px 30px rgba(0,0,0,0.7);
+        .nf-movie-card:hover {
+            transform: scale(1.08);
+            z-index: 10;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.8);
         }
 
     .grid-card-poster {
@@ -258,17 +268,47 @@
         overflow: hidden;
     }
 
-        .grid-card-poster img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transition: transform 0.4s;
-        }
+    .nf-poster {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 4px 4px 0 0;
+        transition: transform 0.4s;
+    }
 
-    .grid-card:hover .grid-card-poster img {
+    .nf-movie-card:hover .nf-poster {
         transform: scale(1.05);
     }
 
+    /* Badges */
+    .badge-type {
+        position: absolute;
+        top: 8px;
+        left: 8px;
+        background: var(--netflix-red);
+        color: white;
+        padding: 0.2rem 0.6rem;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        z-index: 10;
+    }
+
+    .premium-movie-badge {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        background: #ffc107; /* Gold */
+        color: #000;
+        font-size: 0.75rem;
+        font-weight: 800;
+        padding: 0.2rem 0.6rem;
+        border-radius: 4px;
+        z-index: 10;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+    }
+
+    /* Hover Overlay & Play Button */
     .grid-card-overlay {
         position: absolute;
         inset: 0;
@@ -280,21 +320,23 @@
         padding: 1rem;
     }
 
-    .grid-card:hover .grid-card-overlay {
+    .nf-movie-card:hover .grid-card-overlay {
         opacity: 1;
     }
 
     .btn-play-card {
-        display: inline-flex;
+        display: flex;
+        justify-content: center;
         align-items: center;
+        width: 100%;
         gap: 0.4rem;
         background: var(--netflix-red);
         color: white;
-        padding: 0.5rem 1rem;
-        border-radius: 6px;
+        padding: 0.6rem;
+        border-radius: 4px;
         text-decoration: none;
-        font-size: 0.85rem;
-        font-weight: 600;
+        font-size: 0.95rem;
+        font-weight: 700;
     }
 
         .btn-play-card:hover {
@@ -302,87 +344,34 @@
             color: white;
         }
 
-    .grid-card-info {
+    /* Movie Info */
+    .nf-movie-info {
         padding: 0.8rem;
     }
 
-    .grid-card-title {
-        font-size: 0.9rem;
+    .nf-movie-title {
+        color: #fff;
+        font-size: 0.95rem;
         font-weight: 600;
         margin-bottom: 0.3rem;
+        text-decoration: none;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+        display: block;
     }
 
-        .grid-card-title a {
-            color: white;
-            text-decoration: none;
+        .nf-movie-title:hover {
+            color: var(--netflix-red);
         }
 
-            .grid-card-title a:hover {
-                color: var(--netflix-red);
-            }
-
-    .grid-card-meta {
-        font-size: 0.78rem;
+    .nf-movie-meta {
+        font-size: 0.8rem;
         color: var(--netflix-light-gray);
         display: flex;
+        align-items: center;
         gap: 0.5rem;
         flex-wrap: wrap;
-    }
-
-    .badge-type {
-        position: absolute;
-        top: 8px;
-        left: 8px;
-        background: rgba(229,9,20,0.85);
-        color: white;
-        padding: 0.2rem 0.6rem;
-        border-radius: 4px;
-        font-size: 0.7rem;
-        font-weight: 700;
-        z-index: 3;
-    }
-
-    .badge-year {
-        position: absolute;
-        top: 8px;
-        right: 8px;
-        background: rgba(0,0,0,0.75);
-        color: white;
-        padding: 0.2rem 0.5rem;
-        border-radius: 4px;
-        font-size: 0.7rem;
-        z-index: 3;
-    }
-
-    .favorite-icon-btn {
-        position: absolute;
-        top: 36px;
-        right: 8px;
-        background: rgba(0,0,0,0.7);
-        border: none;
-        width: 30px;
-        height: 30px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        opacity: 0;
-        transition: opacity 0.3s;
-        cursor: pointer;
-        font-size: 0.8rem;
-        z-index: 3;
-    }
-
-    .grid-card:hover .favorite-icon-btn {
-        opacity: 1;
-    }
-
-    .favorite-icon-btn:hover {
-        background: var(--netflix-red);
     }
 
     /* Pagination */
@@ -485,7 +474,7 @@
     </div>
 
     <div class="filter-bar">
-        <form method="get" asp-action="Index" asp-controller="Movie">
+        <form method="get" asp-action="@currentAction" asp-controller="Movie" id="filterForm">
             <div class="filter-row">
                 <div class="filter-group" style="flex:2; min-width:200px;">
                     <label><i class="fas fa-search"></i> Search</label>
@@ -497,7 +486,7 @@
 
                 <div class="filter-group">
                     <label><i class="fas fa-theater-masks"></i> Genre</label>
-                    <select name="genreId" class="filter-select">
+                    <select name="genreId" class="filter-select" onchange="this.form.submit()">
                         <option value="">All Genres</option>
                         @foreach (var g in Model.Genres)
                         {
@@ -508,7 +497,7 @@
 
                 <div class="filter-group">
                     <label><i class="fas fa-globe"></i> Country</label>
-                    <select name="countryId" class="filter-select">
+                    <select name="countryId" class="filter-select" onchange="this.form.submit()">
                         <option value="">All Countries</option>
                         @foreach (var c in Model.Countries)
                         {
@@ -519,7 +508,7 @@
 
                 <div class="filter-group">
                     <label><i class="fas fa-tv"></i> Type</label>
-                    <select name="type" class="filter-select">
+                    <select name="type" class="filter-select" onchange="this.form.submit()">
                         <option value="">All Types</option>
                         <option value="1" selected="@(Model.Type == 1 ? "selected" : null)">Movie</option>
                         <option value="2" selected="@(Model.Type == 2 ? "selected" : null)">TV Series</option>
@@ -527,16 +516,16 @@
                 </div>
 
                 <div class="filter-group">
-                    <label><i class="fas fa-sort"></i> Sort</label>
-                    <select name="sortBy" class="filter-select">
+                    <label><i class="fas fa-sort"></i> Sort by</label>
+                    <select name="sortBy" class="filter-select" onchange="this.form.submit()">
                         <option value="latest" selected="@(Model.SortBy == "latest" ? "selected" : null)">Latest</option>
                         <option value="popular" selected="@(Model.SortBy == "popular" ? "selected" : null)">Most Popular</option>
                         <option value="title" selected="@(Model.SortBy == "title" ? "selected" : null)">Name A-Z</option>
                     </select>
                 </div>
 
-                <div class="filter-group" style="flex-direction:row; align-items:flex-end; gap:0.5rem; min-width:auto;">
-                    <a asp-action="Index" asp-controller="Movie" class="btn-reset"><i class="fas fa-times"></i> Reset</a>
+                <div class="filter-group" style="justify-content:flex-end; flex-direction:row; gap:0.5rem; min-width:auto;">
+                    <a asp-action="@currentAction" asp-controller="Movie" class="btn-reset"><i class="fas fa-times"></i> Reset</a>
                 </div>
             </div>
 
@@ -570,111 +559,123 @@
 
             <div class="filter-result-count">
                 Showing <span>@Model.Movies.Count</span> / <span>@Model.TotalItems</span> movies
-                @if (!string.IsNullOrEmpty(Model.Search) || Model.GenreId.HasValue || Model.CountryId.HasValue || Model.Type.HasValue)
+                @if (hasFilter)
                 {
-                    <span style="margin-left:0.5rem; color:var(--netflix-light-gray);">(filtered)</span>
+                    <span style="margin-left:0.5rem; color:var(--netflix-light-gray); font-weight: normal;">(filtered)</span>
                 }
             </div>
         </form>
     </div>
 
-    @if (Model.Movies != null && Model.Movies.Any())
-    {
-        <div class="movies-grid">
-            @foreach (var movie in Model.Movies)
+    <div class="row g-3 g-md-4">
+        @if (Model.Movies != null && Model.Movies.Any())
+        {
+            foreach (var item in Model.Movies)
             {
-                <div class="grid-card">
-                    <div class="grid-card-poster">
-                        <!-- THÊM ĐOẠN NÀY VÀO ĐÂY -->
-                        @if (movie.IsVipOnly)
-                        {
-                            <div class="premium-movie-badge">
-                                <i class="fa-solid fa-crown"></i> VIP
-                            </div>
-                        }
-                        <a asp-controller="Movie" asp-action="Detail" asp-route-slug="@movie.Slug">
-                            <img src="@(movie.PosterUrl ?? "https://via.placeholder.com/300x450/2d2d2d/fff?text=No+Poster")" alt="@movie.Title" loading="lazy" />
-                        </a>
-                        <span class="badge-type">@(movie.Type.ToString() == "Series" ? "Series" : "Movie")</span>
-                        @if (movie.ReleaseYear.HasValue)
-                        {
-                            <span class="badge-year">@movie.ReleaseYear</span>
-                        }
-                        <div class="grid-card-overlay">
-                            <a asp-controller="Movie" asp-action="Watch" asp-route-slug="@movie.Slug" class="btn-play-card">
-                                <i class="fas fa-play"></i> Watch now
+                <div class="col-6 col-sm-4 col-md-3 col-lg-2-4" style="width: 20%; flex: 0 0 auto; min-width: 150px;">
+                    <div class="nf-movie-card">
+
+                        <div class="grid-card-poster">
+                            <span class="badge-type">@(item.Type.ToString() == "Series" ? "Series" : "Movie")</span>
+
+                            @if (item.IsVipOnly)
+                            {
+                                <div class="premium-movie-badge">
+                                    <i class="fa-solid fa-crown"></i> VIP
+                                </div>
+                            }
+
+                            <a asp-controller="Movie" asp-action="Detail" asp-route-slug="@item.Slug" class="d-block">
+                                <img src="@(item.PosterUrl ?? "https://via.placeholder.com/300x450/2d2d2d/fff?text=No+Poster")" alt="@item.Title" class="nf-poster" loading="lazy" />
                             </a>
+
+                            <div class="grid-card-overlay">
+                                <a asp-controller="Movie" asp-action="Watch" asp-route-slug="@item.Slug" class="btn-play-card">
+                                    <i class="fas fa-play"></i> Watch Now
+                                </a>
+                            </div>
                         </div>
-                        @if (User.Identity?.IsAuthenticated == true)
-                        {
-                            <button class="favorite-icon-btn" data-movie-id="@movie.Id"><i class="far fa-heart"></i></button>
-                        }
-                    </div>
-                    <div class="grid-card-info">
-                        <div class="grid-card-title">
-                            <a asp-controller="Movie" asp-action="Detail" asp-route-slug="@movie.Slug">@movie.Title</a>
+
+                        <div class="nf-movie-info">
+                            <a asp-controller="Movie" asp-action="Detail" asp-route-slug="@item.Slug" class="nf-movie-title">
+                                @item.Title
+                            </a>
+                            <div class="nf-movie-meta">
+                                @if (item.ReleaseYear.HasValue)
+                                {
+                                    <span><i class="far fa-calendar-alt"></i> @item.ReleaseYear</span>
+                                }
+                                @if (!string.IsNullOrEmpty(item.CountryName))
+                                {
+                                    <span>@item.CountryName</span>
+                                }
+                            </div>
                         </div>
-                        <div class="grid-card-meta">
-                            @if (movie.DurationMinutes.HasValue)
-                            {
-                                <span><i class="fas fa-clock"></i> @movie.DurationMinutes min</span>
-                            }
-                            @if (!string.IsNullOrEmpty(movie.CountryName))
-                            {
-                                <span>@movie.CountryName</span>
-                            }
-                        </div>
+
                     </div>
                 </div>
             }
-        </div>
-
-        @if (Model.TotalPages > 1)
+        }
+        else
         {
-            <div class="pagination-wrapper">
-                <a asp-action="Index" asp-controller="Movie"
-                   asp-route-search="@Model.Search" asp-route-genreId="@Model.GenreId" asp-route-countryId="@Model.CountryId"
-                   asp-route-type="@Model.Type" asp-route-sortBy="@Model.SortBy" asp-route-pageNumber="@(Model.PageNumber - 1)"
-                   class="page-btn @(!Model.HasPreviousPage ? "disabled" : "")">
-                    <i class="fas fa-chevron-left"></i> Previous
-                </a>
-
-                @if (Model.PageNumber > 3)
-                {
-                    <span class="pagination-info">...</span>
-                }
-
-                @for (int i = Math.Max(1, Model.PageNumber - 2); i <= Math.Min(Model.TotalPages, Model.PageNumber + 2); i++)
-                {
-                    <a asp-action="Index" asp-controller="Movie"
-                       asp-route-search="@Model.Search" asp-route-genreId="@Model.GenreId" asp-route-countryId="@Model.CountryId"
-                       asp-route-type="@Model.Type" asp-route-sortBy="@Model.SortBy" asp-route-pageNumber="@i"
-                       class="page-btn @(i == Model.PageNumber ? "active" : "")">@i</a>
-                }
-
-                @if (Model.PageNumber < Model.TotalPages - 2)
-                {
-                    <span class="pagination-info">...</span>
-                }
-
-                <a asp-action="Index" asp-controller="Movie"
-                   asp-route-search="@Model.Search" asp-route-genreId="@Model.GenreId" asp-route-countryId="@Model.CountryId"
-                   asp-route-type="@Model.Type" asp-route-sortBy="@Model.SortBy" asp-route-pageNumber="@(Model.PageNumber + 1)"
-                   class="page-btn @(!Model.HasNextPage ? "disabled" : "")">
-                    Next <i class="fas fa-chevron-right"></i>
-                </a>
-            </div>
-            <div style="text-align:center; color:var(--netflix-light-gray); font-size:0.85rem; margin-top:-1rem; margin-bottom:2rem;">
-                Page @Model.PageNumber of @Model.TotalPages — @Model.TotalItems movies total
+            <div class="col-12">
+                <div class="netflix-alert">
+                    <i class="fas fa-search"></i>
+                    <h3>No content matches your filters</h3>
+                    <p>Try adjusting your search or filter categories, or <a asp-action="@currentAction" asp-controller="Movie" style="color:var(--netflix-red);">reset all filters</a>.</p>
+                </div>
             </div>
         }
-    }
-    else
+    </div>
+
+    @if (Model.TotalPages > 1)
     {
-        <div class="netflix-alert">
-            <i class="fas fa-search"></i>
-            <h3>No movies found</h3>
-            <p>Please try adjusting your filters or <a asp-action="Index" asp-controller="Movie" style="color:var(--netflix-red);">view all movies</a>.</p>
+        <div class="pagination-wrapper">
+            <a asp-action="@currentAction" asp-controller="Movie"
+               asp-route-search="@Model.Search" asp-route-genreId="@Model.GenreId" asp-route-countryId="@Model.CountryId"
+               asp-route-type="@Model.Type" asp-route-sortBy="@Model.SortBy" asp-route-pageNumber="@(Model.PageNumber - 1)"
+               class="page-btn @(!Model.HasPreviousPage ? "disabled" : "")">
+                <i class="fas fa-chevron-left"></i> Previous
+            </a>
+
+            @if (Model.PageNumber > 3)
+            {
+                <span class="pagination-info">...</span>
+            }
+
+            @for (int i = Math.Max(1, Model.PageNumber - 2); i <= Math.Min(Model.TotalPages, Model.PageNumber + 2); i++)
+            {
+                <a asp-action="@currentAction" asp-controller="Movie"
+                   asp-route-search="@Model.Search" asp-route-genreId="@Model.GenreId" asp-route-countryId="@Model.CountryId"
+                   asp-route-type="@Model.Type" asp-route-sortBy="@Model.SortBy" asp-route-pageNumber="@i"
+                   class="page-btn @(i == Model.PageNumber ? "active" : "")">@i</a>
+            }
+
+            @if (Model.PageNumber < Model.TotalPages - 2)
+            {
+                <span class="pagination-info">...</span>
+            }
+
+            <a asp-action="@currentAction" asp-controller="Movie"
+               asp-route-search="@Model.Search" asp-route-genreId="@Model.GenreId" asp-route-countryId="@Model.CountryId"
+               asp-route-type="@Model.Type" asp-route-sortBy="@Model.SortBy" asp-route-pageNumber="@(Model.PageNumber + 1)"
+               class="page-btn @(!Model.HasNextPage ? "disabled" : "")">
+                Next <i class="fas fa-chevron-right"></i>
+            </a>
+        </div>
+        <div style="text-align:center; color:var(--netflix-light-gray); font-size:0.85rem; margin-top:-1rem; margin-bottom:2rem;">
+            Page @Model.PageNumber of @Model.TotalPages — @Model.TotalItems movies total
         </div>
     }
 </div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            // Filter is always visible in this design
+            if (window.location.search.length > 1) {
+                var params = new URLSearchParams(window.location.search);
+            }
+        });
+    </script>
+}

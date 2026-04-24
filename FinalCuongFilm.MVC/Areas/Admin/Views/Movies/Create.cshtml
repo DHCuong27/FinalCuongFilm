@@ -600,7 +600,7 @@
                         </div>
                     </div>
 
-                    <div class="form-group form-col-full" style="margin-top: 16px; border-top: 1px solid var(--border-color); padding-top: 16px;">
+                    @* <div class="form-group form-col-full" style="margin-top: 16px; border-top: 1px solid var(--border-color); padding-top: 16px;">
                         <label class="form-label">Trailer URL</label>
                         <div class="url-group">
                             <input asp-for="TrailerUrl" class="form-control" id="trailerUrlInput" placeholder="https://youtube.com/watch?v=..." />
@@ -611,7 +611,7 @@
                         <span asp-validation-for="TrailerUrl" class="text-danger"></span>
 
                         <div class="embed-preview" id="trailerPreview"></div>
-                    </div>
+                    </div> *@
 
                 </div>
             </div>
@@ -853,19 +853,19 @@
             document.getElementById('posterPreviewImg').src = '';
         }
 
-        /* Trailer Preview */
-        function previewTrailer() {
-            const urlElement = document.getElementById('trailerUrlInput');
-            if (!urlElement) return;
+        // Trailer Preview
+        // function previewTrailer() {
+        //     const urlElement = document.getElementById('trailerUrlInput');
+        //     if (!urlElement) return;
 
-            const url  = urlElement.value.trim();
-            const wrap = document.getElementById('trailerPreview');
-            if (!url) { alert('Please enter a trailer URL first.'); return; }
-            const embed = getEmbedUrl(url);
-            if (!embed) { alert('Unsupported URL. Please use a YouTube or Vimeo link.'); return; }
-            wrap.innerHTML = `<iframe src="${embed}" frameborder="0" allowfullscreen></iframe>`;
-            wrap.style.display = 'block';
-        }
+        //     const url  = urlElement.value.trim();
+        //     const wrap = document.getElementById('trailerPreview');
+        //     if (!url) { alert('Please enter a trailer URL first.'); return; }
+        //     const embed = getEmbedUrl(url);
+        //     if (!embed) { alert('Unsupported URL. Please use a YouTube or Vimeo link.'); return; }
+        //     wrap.innerHTML = `<iframe src="${embed}" frameborder="0" allowfullscreen></iframe>`;
+        //     wrap.style.display = 'block';
+        // }
 
         function clearTrailer() {
             const urlElement = document.getElementById('trailerUrlInput');

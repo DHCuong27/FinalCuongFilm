@@ -33,7 +33,12 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 			ViewBag.TotalMediaFiles = await _context.MediaFiles.CountAsync();
 			ViewBag.TotalUsers = await _userManager.Users.CountAsync();
 			ViewBag.TotalVipPackages = await _context.VipPackages.CountAsync();
-			ViewBag.TotalUserSubscriptions = await _context.UserSubscriptions.CountAsync();
+			// BUSINESS LOGIC: Count unique active VIP users, not total subscription records
+			ViewBag.TotalUserSubscriptions = await _context.UserSubscriptions
+				.Where(sub => sub.IsActive && sub.EndDate >= DateTime.UtcNow) // Only currently active subs
+				.Select(sub => sub.UserId) // Focus only on the User IDs
+				.Distinct() // Ensure 1 user with multiple purchases is only counted once
+				.CountAsync();
 			ViewBag.TotalTransactions = await _context.Transactions.CountAsync();
 			
 

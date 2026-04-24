@@ -31,7 +31,6 @@ namespace FinalCuongFilm.MVC.Controllers
 
 			var allCountries = await _countryService.GetAllAsync();
 			var country = allCountries.FirstOrDefault(c => c.Slug == slug);
-
 			if (country == null)
 				return NotFound();
 

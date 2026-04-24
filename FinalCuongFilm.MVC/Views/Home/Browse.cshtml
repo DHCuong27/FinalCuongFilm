@@ -15,20 +15,6 @@
         --netflix-white: #ffffff;
     }
 
-    .premium-movie-badge {
-        position: absolute;
-        top: 8px;
-        right: 8px;
-        background: linear-gradient(45deg, #FFD700, #FFA500);
-        color: #000;
-        font-size: 0.75rem;
-        font-weight: bold;
-        padding: 3px 8px;
-        border-radius: 5px;
-        z-index: 10;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.5);
-    }
-
     body {
         background-color: var(--netflix-dark);
         color: var(--netflix-white);
@@ -184,9 +170,9 @@
             outline: none;
         }
 
-        .search-input-wrapper input::placeholder {
-            color: var(--netflix-light-gray);
-        }
+            .search-input-wrapper input::placeholder {
+                color: var(--netflix-light-gray);
+            }
 
         .search-input-wrapper .btn-search {
             background: var(--netflix-red);
@@ -198,9 +184,9 @@
             transition: background 0.2s;
         }
 
-        .search-input-wrapper .btn-search:hover {
-            background: #f40612;
-        }
+            .search-input-wrapper .btn-search:hover {
+                background: #f40612;
+            }
 
     /* Reset Button */
     .btn-reset {
@@ -224,7 +210,7 @@
             color: var(--netflix-red);
         }
 
-    /* Filter Result Count */
+    /* Filter Result Count & Tags */
     .filter-result-count {
         font-size: 0.9rem;
         color: var(--netflix-light-gray);
@@ -236,13 +222,53 @@
             font-weight: 700;
         }
 
+    .active-filters {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .filter-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        background: rgba(229,9,20,0.15);
+        border: 1px solid rgba(229,9,20,0.4);
+        color: white;
+        padding: 0.3rem 0.8rem;
+        border-radius: 20px;
+        font-size: 0.82rem;
+    }
+
+        .filter-tag a {
+            color: var(--netflix-light-gray);
+            text-decoration: none;
+            margin-left: 0.3rem;
+        }
+
+            .filter-tag a:hover {
+                color: var(--netflix-red);
+            }
+
     /* Movie Card Styles */
+    .movies-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 1.2rem;
+        margin-bottom: 3rem;
+    }
+
     .nf-movie-card {
         position: relative;
         transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         cursor: pointer;
         border-radius: 4px;
         overflow: hidden;
+        background: var(--netflix-dark-bg);
+        border: 1px solid var(--netflix-gray);
     }
 
         .nf-movie-card:hover {
@@ -251,39 +277,119 @@
             box-shadow: 0 10px 20px rgba(0,0,0,0.8);
         }
 
-    .nf-poster {
-        width: 100%;
+    .grid-card-poster {
+        position: relative;
         aspect-ratio: 2/3;
-        object-fit: cover;
-        border-radius: 4px;
+        overflow: hidden;
     }
 
+    .nf-poster {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 4px 4px 0 0;
+        transition: transform 0.4s;
+    }
+
+    .nf-movie-card:hover .nf-poster {
+        transform: scale(1.05);
+    }
+
+    /* Badges exactly like the screenshot */
+    .badge-type {
+        position: absolute;
+        top: 8px;
+        left: 8px;
+        background: var(--netflix-red);
+        color: white;
+        padding: 0.2rem 0.6rem;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        z-index: 10;
+    }
+
+    .premium-movie-badge {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        background: #ffc107; /* Gold color */
+        color: #000;
+        font-size: 0.75rem;
+        font-weight: 800;
+        padding: 0.2rem 0.6rem;
+        border-radius: 4px;
+        z-index: 10;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+    }
+
+    /* Hover Overlay & Play Button */
+    .grid-card-overlay {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(180deg, transparent 50%, rgba(0,0,0,0.95) 100%);
+        opacity: 0;
+        transition: opacity 0.3s;
+        display: flex;
+        align-items: flex-end;
+        padding: 1rem;
+    }
+
+    .nf-movie-card:hover .grid-card-overlay {
+        opacity: 1;
+    }
+
+    .btn-play-card {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        gap: 0.4rem;
+        background: var(--netflix-red);
+        color: white;
+        padding: 0.6rem;
+        border-radius: 4px;
+        text-decoration: none;
+        font-size: 0.95rem;
+        font-weight: 700;
+    }
+
+        .btn-play-card:hover {
+            background: #f40612;
+            color: white;
+        }
+
+    /* Movie Info */
     .nf-movie-info {
-        padding: 8px 0;
+        padding: 0.8rem;
     }
 
     .nf-movie-title {
         color: #fff;
-        font-size: 1rem;
+        font-size: 0.95rem;
         font-weight: 600;
-        margin-bottom: 2px;
+        margin-bottom: 0.3rem;
         text-decoration: none;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: block;
     }
 
         .nf-movie-title:hover {
-            text-decoration: underline;
-            color: #fff;
+            color: var(--netflix-red);
         }
 
     .nf-movie-meta {
-        font-size: 0.85rem;
+        font-size: 0.8rem;
         color: var(--netflix-light-gray);
         display: flex;
         align-items: center;
-        gap: 6px;
+        gap: 0.5rem;
+        flex-wrap: wrap;
     }
 
-    /* Pagination Styles */
+    /* Pagination */
     .pagination-wrapper {
         display: flex;
         justify-content: center;
@@ -366,6 +472,10 @@
         .filter-row {
             flex-direction: column;
         }
+
+        .movies-grid {
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        }
     }
 </style>
 
@@ -403,8 +513,8 @@
 
                 <div class="filter-group">
                     <label><i class="fas fa-theater-masks"></i> Genre</label>
-                    <select name="genreId" class="filter-select">
-                        <option value="">All</option>
+                    <select name="genreId" class="filter-select" onchange="this.form.submit()">
+                        <option value="">All Genres</option>
                         @foreach (var g in Model.Genres)
                         {
                             <option value="@g.Id" selected="@(Model.GenreId == g.Id ? "selected" : null)">@g.Name</option>
@@ -414,8 +524,8 @@
 
                 <div class="filter-group">
                     <label><i class="fas fa-globe"></i> Country</label>
-                    <select name="countryId" class="filter-select">
-                        <option value="">All</option>
+                    <select name="countryId" class="filter-select" onchange="this.form.submit()">
+                        <option value="">All Countries</option>
                         @foreach (var c in Model.Countries)
                         {
                             <option value="@c.Id" selected="@(Model.CountryId == c.Id ? "selected" : null)">@c.Name</option>
@@ -425,7 +535,7 @@
 
                 <div class="filter-group">
                     <label><i class="fas fa-sort"></i> Sort by</label>
-                    <select name="sortBy" class="filter-select">
+                    <select name="sortBy" class="filter-select" onchange="this.form.submit()">
                         <option value="latest" selected="@(Model.SortBy == "latest" ? "selected" : null)">Latest</option>
                         <option value="popular" selected="@(Model.SortBy == "popular" ? "selected" : null)">Most Popular</option>
                         <option value="title" selected="@(Model.SortBy == "title" ? "selected" : null)">Name A-Z</option>
@@ -437,11 +547,35 @@
                 </div>
             </div>
 
+            @{
+                bool hasFilter = !string.IsNullOrEmpty(Model.Search) || Model.GenreId.HasValue || Model.CountryId.HasValue;
+            }
+
+            @if (hasFilter)
+            {
+                <div class="active-filters">
+                    @if (!string.IsNullOrEmpty(Model.Search))
+                    {
+                        <span class="filter-tag"><i class="fas fa-search"></i> "@Model.Search"</span>
+                    }
+                    @if (Model.GenreId.HasValue)
+                    {
+                        var gName = Model.Genres.FirstOrDefault(g => g.Id == Model.GenreId)?.Name;
+                        <span class="filter-tag"><i class="fas fa-theater-masks"></i> @gName</span>
+                    }
+                    @if (Model.CountryId.HasValue)
+                    {
+                        var cName = Model.Countries.FirstOrDefault(c => c.Id == Model.CountryId)?.Name;
+                        <span class="filter-tag"><i class="fas fa-globe"></i> @cName</span>
+                    }
+                </div>
+            }
+
             <div class="filter-result-count">
                 Showing <span>@Model.Movies.Count</span> / <span>@Model.TotalItems</span> @(Model.Type == 2 ? "series" : "movies")
-                @if (!string.IsNullOrEmpty(Model.Search) || Model.GenreId.HasValue || Model.CountryId.HasValue)
+                @if (hasFilter)
                 {
-                    <span style="margin-left:0.5rem; color:var(--netflix-light-gray);">(filtered)</span>
+                    <span style="margin-left:0.5rem; color:var(--netflix-light-gray); font-weight: normal;">(filtered)</span>
                 }
             </div>
         </form>
@@ -454,23 +588,36 @@
             {
                 <div class="col-6 col-sm-4 col-md-3 col-lg-2-4" style="width: 20%; flex: 0 0 auto; min-width: 150px;">
                     <div class="nf-movie-card">
-                        @if (item.IsVipOnly)
-                        {
-                            <div class="premium-movie-badge">
-                                <i class="fa-solid fa-crown"></i> VIP
+
+                        <div class="grid-card-poster">
+                            <span class="badge-type">@(item.Type.ToString() == "Series" ? "Series" : "Movie")</span>
+
+                            @if (item.IsVipOnly)
+                            {
+                                <div class="premium-movie-badge">
+                                    <i class="fa-solid fa-crown"></i> VIP
+                                </div>
+                            }
+
+                            <a asp-controller="Movie" asp-action="Detail" asp-route-slug="@item.Slug" class="d-block">
+                                <img src="@(item.PosterUrl ?? "https://via.placeholder.com/300x450/2d2d2d/fff?text=No+Poster")" alt="@item.Title" class="nf-poster" loading="lazy" />
+                            </a>
+
+                            <div class="grid-card-overlay">
+                                <a asp-controller="Movie" asp-action="Watch" asp-route-slug="@item.Slug" class="btn-play-card">
+                                    <i class="fas fa-play"></i> Watch Now
+                                </a>
                             </div>
-                        }
-                        <a asp-controller="Movie" asp-action="Detail" asp-route-slug="@item.Slug" class="d-block">
-                            <img src="@item.PosterUrl" alt="@item.Title" class="nf-poster" />
-                        </a>
+                        </div>
+
                         <div class="nf-movie-info">
-                            <a asp-controller="Movie" asp-action="Detail" asp-route-slug="@item.Slug" class="nf-movie-title text-truncate d-block">
+                            <a asp-controller="Movie" asp-action="Detail" asp-route-slug="@item.Slug" class="nf-movie-title">
                                 @item.Title
                             </a>
                             <div class="nf-movie-meta">
                                 @if (item.ReleaseYear.HasValue)
                                 {
-                                    <span><i class="fas fa-calendar"></i> @item.ReleaseYear</span>
+                                    <span><i class="far fa-calendar-alt"></i> @item.ReleaseYear</span>
                                 }
                                 @if (!string.IsNullOrEmpty(item.CountryName))
                                 {
@@ -478,6 +625,7 @@
                                 }
                             </div>
                         </div>
+
                     </div>
                 </div>
             }

@@ -1,86 +1,39 @@
 ﻿@{
-    ViewData["Title"] = "Admin Dashboard";
-    Layout = "~/Areas/Admin/Views/Shared/_LayoutAdmin.cshtml";
+    ViewData["Title"] = "Dashboard Overview";
 }
 
 <style>
-    :root {
-        --bg-body: #f1f5f9;
-        --card-bg: #ffffff;
-        --text-main: #1e293b;
-        --text-muted: #64748b;
-        --border-color: #e2e8f0;
-        --radius: 12px;
-        --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-        --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-        --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
-    }
-
-    .dashboard-container {
-        padding: 1.5rem;
-        max-width: 1600px;
-        margin: 0 auto;
-        font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-    }
-
-    .page-title {
+    .dashboard-header {
         font-size: 1.75rem;
         font-weight: 700;
-        color: var(--text-main);
-        margin-bottom: 2rem;
-        display: flex;
-        align-items: center;
-        gap: 12px;
+        color: #1e293b;
+        margin-bottom: 1.5rem;
     }
 
-    /* Grid System */
-    .dashboard-grid {
-        display: grid;
-        gap: 1.5rem;
-        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    }
-
-    @@media (min-width: 1280px) {
-        .dashboard-grid
-
-    {
-        grid-template-columns: repeat(4, 1fr);
-    }
-
-    }
-
-    /* Card Design */
-    .dashboard-card {
-        background-color: var(--card-bg);
-        border-radius: var(--radius);
-        box-shadow: var(--shadow-sm);
-        border: 1px solid var(--border-color);
-        display: flex;
-        flex-direction: column;
-        transition: var(--transition);
-        overflow: hidden;
+    .dash-card {
+        border: none;
+        border-radius: 16px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
         height: 100%;
-        animation: fadeInUp 0.4s ease-out forwards;
+        background-color: #ffffff;
     }
 
-        .dashboard-card:hover {
+        .dash-card:hover {
             transform: translateY(-5px);
-            box-shadow: var(--shadow-lg);
-            border-color: #cbd5e1;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
         }
 
-    .card-content {
+    .dash-body {
         padding: 1.5rem;
-        flex-grow: 1;
         display: flex;
         align-items: center;
-        gap: 1.25rem;
+        gap: 1rem;
     }
 
-    .card-icon {
-        width: 56px;
-        height: 56px;
+    .dash-icon {
+        width: 55px;
+        height: 55px;
         border-radius: 12px;
         display: flex;
         align-items: center;
@@ -89,237 +42,311 @@
         flex-shrink: 0;
     }
 
-    /* Dynamic Colors */
-    .icon-movie {
-        background: #e0f2fe;
-        color: #0284c7;
-    }
-
-    .icon-user {
-        background: #dcfce7;
-        color: #166534;
-    }
-
-    .icon-actor {
-        background: #fef08a;
-        color: #ca8a04;
-    }
-
-    .icon-genre {
-        background: #f3e8ff;
-        color: #9333ea;
-    }
-
-    .icon-country {
-        background: #ffedd5;
-        color: #ea580c;
-    }
-
-    .icon-language {
-        background: #e0e7ff;
-        color: #4338ca;
-    }
-
-    .icon-episode {
-        background: #ccfbf1;
-        color: #0d9488;
-    }
-
-    .icon-media {
-        background: #fee2e2;
-        color: #dc2626;
-    }
-
-    /* NEW: Premium Colors */
-    .icon-vip-acc {
-        background: #fef3c7;
-        color: #d97706;
-    }
-
-    .icon-vip-plan {
-        background: #fae8ff;
-        color: #a21caf;
-    }
-
-    .icon-payment {
-        background: #ecfdf5;
-        color: #059669;
-    }
-
-    .card-text h2 {
+    .dash-num {
         font-size: 1.75rem;
         font-weight: 700;
-        margin: 0;
-        color: var(--text-main);
+        color: #1e293b;
+        line-height: 1.1;
+        margin-bottom: 0.2rem;
     }
 
-    .card-text span {
-        color: var(--text-muted);
-        font-size: 0.85rem;
+    .dash-label {
+        font-size: 0.75rem;
         font-weight: 600;
-        text-transform: uppercase;
+        color: #64748b;
         letter-spacing: 0.5px;
+        text-transform: uppercase;
+        margin: 0;
     }
 
-    .card-action {
-        background-color: #f8fafc;
-        border-top: 1px solid var(--border-color);
-        padding: 0.875rem 1.5rem;
+    .dash-footer {
+        background-color: transparent;
+        border-top: 1px solid #f1f5f9;
+        padding: 1rem 1.5rem;
     }
 
-    .btn-manage {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
+    .dash-link {
         color: #3b82f6;
         text-decoration: none;
-        font-weight: 600;
+        font-weight: 500;
         font-size: 0.9rem;
-        transition: var(--transition);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: color 0.2s ease;
     }
 
-        .btn-manage:hover {
-            color: #1d4ed8;
+        .dash-link:hover {
+            color: #2563eb;
         }
 
-        .btn-manage i {
-            transition: transform 0.2s;
-        }
-
-        .btn-manage:hover i {
-            transform: translateX(5px);
-        }
-
-    @@keyframes fadeInUp {
-        from
-
-    {
-        opacity: 0;
-        transform: translateY(15px);
+    /* Custom Icon Colors matching your design */
+    .icon-blue {
+        background-color: #e0f2fe;
+        color: #3b82f6;
     }
 
-    to {
-        opacity: 1;
-        transform: translateY(0);
+    .icon-teal {
+        background-color: #ccfbf1;
+        color: #14b8a6;
     }
 
+    .icon-red {
+        background-color: #fee2e2;
+        color: #ef4444;
+    }
+
+    .icon-green {
+        background-color: #dcfce7;
+        color: #10b981;
+    }
+
+    .icon-gold {
+        background-color: #fef3c7;
+        color: #f59e0b;
+    }
+
+    .icon-pink {
+        background-color: #fce7f3;
+        color: #ec4899;
+    }
+
+    .icon-lightgreen {
+        background-color: #ecfccb;
+        color: #10b981;
+    }
+
+    .icon-yellow {
+        background-color: #fef08a;
+        color: #eab308;
+    }
+
+    .icon-purple {
+        background-color: #f3e8ff;
+        color: #a855f7;
+    }
+
+    .icon-orange {
+        background-color: #ffedd5;
+        color: #f97316;
+    }
+
+    .icon-indigo {
+        background-color: #e0e7ff;
+        color: #6366f1;
     }
 </style>
 
-<div class="dashboard-container">
-    <h1 class="page-title">
-        <i class="zmdi zmdi-view-dashboard"></i> Dashboard Overview
-    </h1>
+<div class="container-fluid py-4">
+    <h2 class="dashboard-header">Dashboard Overview</h2>
 
-    <div class="dashboard-grid">
-
-        <div class="dashboard-card">
-            <div class="card-content">
-                <div class="card-icon icon-movie"><i class="fas fa-film"></i></div>
-                <div class="card-text"><h2>@ViewBag.TotalMovies</h2><span>Total Movies</span></div>
-            </div>
-            <div class="card-action">
-                <a asp-area="Admin" asp-controller="Movies" asp-action="Index" class="btn-manage">Manage Movies <i class="fas fa-arrow-right"></i></a>
+    <div class="row g-4">
+        <div class="col-12 col-md-6 col-lg-3">
+            <div class="dash-card">
+                <div class="dash-body">
+                    <div class="dash-icon icon-blue">
+                        <i class="fa-solid fa-film"></i>
+                    </div>
+                    <div>
+                        <div class="dash-num">@ViewBag.TotalMovies</div>
+                        <p class="dash-label">Total Movies</p>
+                    </div>
+                </div>
+                <div class="dash-footer">
+                    <a asp-controller="Movies" asp-action="Index" class="dash-link">
+                        Manage Movies <i class="fa-solid fa-arrow-right"></i>
+                    </a>
+                </div>
             </div>
         </div>
 
-        <div class="dashboard-card">
-            <div class="card-content">
-                <div class="card-icon icon-episode"><i class="fas fa-tv"></i></div>
-                <div class="card-text"><h2>@ViewBag.TotalEpisodes</h2><span>Episodes</span></div>
-            </div>
-            <div class="card-action">
-                <a asp-area="Admin" asp-controller="Episodes" asp-action="Index" class="btn-manage">Manage Episodes <i class="fas fa-arrow-right"></i></a>
-            </div>
-        </div>
-
-        <div class="dashboard-card">
-            <div class="card-content">
-                <div class="card-icon icon-media"><i class="fas fa-file-video"></i></div>
-                <div class="card-text"><h2>@ViewBag.TotalMediaFiles</h2><span>Media Files</span></div>
-            </div>
-            <div class="card-action">
-                <a asp-area="Admin" asp-controller="MediaUpload" asp-action="Index" class="btn-manage">Manage Media <i class="fas fa-arrow-right"></i></a>
-            </div>
-        </div>
-
-        <div class="dashboard-card">
-            <div class="card-content">
-                <div class="card-icon icon-user"><i class="fas fa-users"></i></div>
-                <div class="card-text"><h2>@ViewBag.TotalUsers</h2><span>Total Users</span></div>
-            </div>
-            <div class="card-action">
-                <a asp-area="Admin" asp-controller="User" asp-action="Index" class="btn-manage">Manage Users <i class="fas fa-arrow-right"></i></a>
+        <div class="col-12 col-md-6 col-lg-3">
+            <div class="dash-card">
+                <div class="dash-body">
+                    <div class="dash-icon icon-teal">
+                        <i class="fa-solid fa-tv"></i>
+                    </div>
+                    <div>
+                        <div class="dash-num">@ViewBag.TotalEpisodes</div>
+                        <p class="dash-label">Episodes</p>
+                    </div>
+                </div>
+                <div class="dash-footer">
+                    <a asp-controller="Episodes" asp-action="Index" class="dash-link">
+                        Manage Episodes <i class="fa-solid fa-arrow-right"></i>
+                    </a>
+                </div>
             </div>
         </div>
 
-        <div class="dashboard-card">
-            <div class="card-content">
-                <div class="card-icon icon-vip-acc"><i class="fas fa-crown"></i></div>
-                <div class="card-text"><h2>@ViewBag.TotalPremiumUsers</h2><span>VIP Accounts</span></div>
-            </div>
-            <div class="card-action">
-                <a asp-area="Admin" asp-controller="VipManager" asp-action="ActiveVips" class="btn-manage">Active VIPs <i class="fas fa-arrow-right"></i></a>
-            </div>
-        </div>
-
-        <div class="dashboard-card">
-            <div class="card-content">
-                <div class="card-icon icon-vip-plan"><i class="fas fa-gem"></i></div>
-                <div class="card-text"><h2>@ViewBag.TotalPremiumPlans</h2><span>Premium Plans</span></div>
-            </div>
-            <div class="card-action">
-                <a asp-area="Admin" asp-controller="VipPackage" asp-action="Index" class="btn-manage">Manage Plans <i class="fas fa-arrow-right"></i></a>
-            </div>
-        </div>
-
-        <div class="dashboard-card">
-            <div class="card-content">
-                <div class="card-icon icon-payment"><i class="fas fa-receipt"></i></div>
-                <div class="card-text"><h2>@ViewBag.TotalTransactions</h2><span>Payment History</span></div>
-            </div>
-            <div class="card-action">
-                <a asp-area="Admin" asp-controller="VipManager" asp-action="Transactions" class="btn-manage">View History <i class="fas fa-arrow-right"></i></a>
+        <div class="col-12 col-md-6 col-lg-3">
+            <div class="dash-card">
+                <div class="dash-body">
+                    <div class="dash-icon icon-red">
+                        <i class="fa-solid fa-file-video"></i>
+                    </div>
+                    <div>
+                        <div class="dash-num">@ViewBag.TotalMediaFiles</div>
+                        <p class="dash-label">Media Files</p>
+                    </div>
+                </div>
+                <div class="dash-footer">
+                    <a asp-controller="MediaUpload" asp-action="Index" class="dash-link">
+                        Manage Media <i class="fa-solid fa-arrow-right"></i>
+                    </a>
+                </div>
             </div>
         </div>
 
-        <div class="dashboard-card">
-            <div class="card-content">
-                <div class="card-icon icon-actor"><i class="fas fa-user-astronaut"></i></div>
-                <div class="card-text"><h2>@ViewBag.TotalActors</h2><span>Actors</span></div>
-            </div>
-            <div class="card-action">
-                <a asp-area="Admin" asp-controller="Actors" asp-action="Index" class="btn-manage">Manage Actors <i class="fas fa-arrow-right"></i></a>
-            </div>
-        </div>
-
-        <div class="dashboard-card">
-            <div class="card-content">
-                <div class="card-icon icon-genre"><i class="fas fa-tags"></i></div>
-                <div class="card-text"><h2>@ViewBag.TotalGenres</h2><span>Genres</span></div>
-            </div>
-            <div class="card-action">
-                <a asp-area="Admin" asp-controller="Genres" asp-action="Index" class="btn-manage">Manage Genres <i class="fas fa-arrow-right"></i></a>
-            </div>
-        </div>
-
-        <div class="dashboard-card">
-            <div class="card-content">
-                <div class="card-icon icon-country"><i class="fas fa-globe-americas"></i></div>
-                <div class="card-text"><h2>@ViewBag.TotalCountries</h2><span>Countries</span></div>
-            </div>
-            <div class="card-action">
-                <a asp-area="Admin" asp-controller="Countries" asp-action="Index" class="btn-manage">Manage Countries <i class="fas fa-arrow-right"></i></a>
+        <div class="col-12 col-md-6 col-lg-3">
+            <div class="dash-card">
+                <div class="dash-body">
+                    <div class="dash-icon icon-green">
+                        <i class="fa-solid fa-users"></i>
+                    </div>
+                    <div>
+                        <div class="dash-num">@ViewBag.TotalUsers</div>
+                        <p class="dash-label">Total Users</p>
+                    </div>
+                </div>
+                <div class="dash-footer">
+                    <a asp-controller="User" asp-action="Index" class="dash-link">
+                        Manage Users <i class="fa-solid fa-arrow-right"></i>
+                    </a>
+                </div>
             </div>
         </div>
 
-        <div class="dashboard-card">
-            <div class="card-content">
-                <div class="card-icon icon-language"><i class="fas fa-language"></i></div>
-                <div class="card-text"><h2>@ViewBag.TotalLanguages</h2><span>Languages</span></div>
+        <div class="col-12 col-md-6 col-lg-3">
+            <div class="dash-card">
+                <div class="dash-body">
+                    <div class="dash-icon icon-gold">
+                        <i class="fa-solid fa-crown"></i>
+                    </div>
+                    <div>
+                        <div class="dash-num">@ViewBag.TotalUserSubscriptions</div>
+                        <p class="dash-label">VIP Accounts</p>
+                    </div>
+                </div>
+                <div class="dash-footer">
+                    <a asp-controller="VipManager" asp-action="ActiveVips" class="dash-link">
+                        Active VIPs <i class="fa-solid fa-arrow-right"></i>
+                    </a>
+                </div>
             </div>
-            <div class="card-action">
-                <a asp-area="Admin" asp-controller="Languages" asp-action="Index" class="btn-manage">Manage Languages <i class="fas fa-arrow-right"></i></a>
+        </div>
+
+        <div class="col-12 col-md-6 col-lg-3">
+            <div class="dash-card">
+                <div class="dash-body">
+                    <div class="dash-icon icon-pink">
+                        <i class="fa-solid fa-gem"></i>
+                    </div>
+                    <div>
+                        <div class="dash-num">@ViewBag.TotalVipPackages</div>
+                        <p class="dash-label">Premium Plans</p>
+                    </div>
+                </div>
+                <div class="dash-footer">
+                    <a asp-controller="VipPackage" asp-action="Index" class="dash-link">
+                        Manage Plans <i class="fa-solid fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-6 col-lg-3">
+            <div class="dash-card">
+                <div class="dash-body">
+                    <div class="dash-icon icon-lightgreen">
+                        <i class="fa-solid fa-file-invoice-dollar"></i>
+                    </div>
+                    <div>
+                        <div class="dash-num">@ViewBag.TotalTransactions</div>
+                        <p class="dash-label">Payment History</p>
+                    </div>
+                </div>
+                <div class="dash-footer">
+                    <a asp-controller="VipManager" asp-action="Transactions" class="dash-link">
+                        View History <i class="fa-solid fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-6 col-lg-3">
+            <div class="dash-card">
+                <div class="dash-body">
+                    <div class="dash-icon icon-yellow">
+                        <i class="fa-solid fa-user-tie"></i>
+                    </div>
+                    <div>
+                        <div class="dash-num">@ViewBag.TotalActors</div>
+                        <p class="dash-label">Actors</p>
+                    </div>
+                </div>
+                <div class="dash-footer">
+                    <a asp-controller="Actors" asp-action="Index" class="dash-link">
+                        Manage Actors <i class="fa-solid fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-6 col-lg-3">
+            <div class="dash-card">
+                <div class="dash-body">
+                    <div class="dash-icon icon-purple">
+                        <i class="fa-solid fa-tags"></i>
+                    </div>
+                    <div>
+                        <div class="dash-num">@ViewBag.TotalGenres</div>
+                        <p class="dash-label">Genres</p>
+                    </div>
+                </div>
+                <div class="dash-footer">
+                    <a asp-controller="Genres" asp-action="Index" class="dash-link">
+                        Manage Genres <i class="fa-solid fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-6 col-lg-3">
+            <div class="dash-card">
+                <div class="dash-body">
+                    <div class="dash-icon icon-orange">
+                        <i class="fa-solid fa-earth-americas"></i>
+                    </div>
+                    <div>
+                        <div class="dash-num">@ViewBag.TotalCountries</div>
+                        <p class="dash-label">Countries</p>
+                    </div>
+                </div>
+                <div class="dash-footer">
+                    <a asp-controller="Countries" asp-action="Index" class="dash-link">
+                        Manage Countries <i class="fa-solid fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-6 col-lg-3">
+            <div class="dash-card">
+                <div class="dash-body">
+                    <div class="dash-icon icon-indigo">
+                        <i class="fa-solid fa-language"></i>
+                    </div>
+                    <div>
+                        <div class="dash-num">@ViewBag.TotalLanguages</div>
+                        <p class="dash-label">Languages</p>
+                    </div>
+                </div>
+                <div class="dash-footer">
+                    <a asp-controller="Languages" asp-action="Index" class="dash-link">
+                        Manage Languages <i class="fa-solid fa-arrow-right"></i>
+                    </a>
+                </div>
             </div>
         </div>
 

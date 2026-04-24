@@ -45,7 +45,7 @@ namespace FinalCuongFilm.MVC.Controllers
 		// GET: /Movie
 		public async Task<IActionResult> Index(
 			string? search = null, Guid? genreId = null, Guid? countryId = null,
-			int? releaseYear = null, int? type = null, string sortBy = "latest",
+			int? type = null, string sortBy = "latest",
 			int pageNumber = 1, int pageSize = 12)
 		{
 			var allMovies = await _movieService.GetAllAsync();
@@ -54,28 +54,45 @@ namespace FinalCuongFilm.MVC.Controllers
 
 			var query = allMovies.Where(m => m.IsActive).AsEnumerable();
 
+			// 1. Filter by Search Keyword
 			if (!string.IsNullOrWhiteSpace(search))
+			{
 				query = query.Where(m => m.Title.Contains(search, StringComparison.OrdinalIgnoreCase) ||
 										(m.Description?.Contains(search, StringComparison.OrdinalIgnoreCase) ?? false));
+			}
 
-			if (genreId.HasValue) query = query.Where(m => m.SelectedGenreIds.Contains(genreId.Value));
-			if (countryId.HasValue) query = query.Where(m => m.CountryId == countryId.Value);
-			if (releaseYear.HasValue) query = query.Where(m => m.ReleaseYear == releaseYear.Value);
-			if (type.HasValue) query = query.Where(m => (int)m.Type == type.Value);
+			// 2. Filter by Genre (Added null check for safety)
+			if (genreId.HasValue)
+			{
+				query = query.Where(m => m.SelectedGenreIds != null && m.SelectedGenreIds.Contains(genreId.Value));
+			}
 
+			// 3. Filter by Country
+			if (countryId.HasValue)
+			{
+				query = query.Where(m => m.CountryId == countryId.Value);
+			}
+
+			// 4. Filter by Movie Type (1 = Movie, 2 = TV Series)
+			if (type.HasValue)
+			{
+				query = query.Where(m => (int)m.Type == type.Value);
+			}
+
+			// 5. Sorting Logic (Strictly matched to the UI options)
 			query = sortBy switch
 			{
 				"popular" => query.OrderByDescending(m => m.ViewCount),
-				"year_asc" => query.OrderBy(m => m.ReleaseYear),
-				"year_desc" => query.OrderByDescending(m => m.ReleaseYear),
 				"title" => query.OrderBy(m => m.Title),
-				_ => query.OrderByDescending(m => m.ReleaseYear)
+				_ => query.OrderByDescending(m => m.ReleaseYear) // Default is "latest"
 			};
 
+			// 6. Pagination
 			var filteredList = query.ToList();
 			var totalItems = filteredList.Count;
 			var pagedMovies = filteredList.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToList();
 
+			// 7. Prepare ViewModel
 			var vm = new MovieFilterViewModel
 			{
 				Movies = pagedMovies,
@@ -84,14 +101,13 @@ namespace FinalCuongFilm.MVC.Controllers
 				Search = search,
 				GenreId = genreId,
 				CountryId = countryId,
-				ReleaseYear = releaseYear,
 				Type = type,
 				SortBy = sortBy,
 				PageNumber = pageNumber,
 				PageSize = pageSize,
 				TotalItems = totalItems,
-				PageTitle = type switch { 1 => "Movies", 2 => "TV Series", _ => "All Films" },
-				PageSubTitle = $"{totalItems} films found"
+				PageTitle = type switch { 1 => "Movies", 2 => "TV Series", _ => "All Movies" },
+				PageSubTitle = $"{totalItems} movies found"
 			};
 
 			return View(vm);
@@ -305,23 +321,39 @@ namespace FinalCuongFilm.MVC.Controllers
 			var genres = await _genreService.GetAllAsync();
 			var countries = await _countryService.GetAllAsync();
 
-			// CHỈ LỌC NHỮNG PHIM CÓ IsVipOnly == true
+
+			ViewBag.Genres = genres;
+			ViewBag.Countries = countries;
+			// Filter exclusively for VIP movies
 			var query = allMovies.Where(m => m.IsActive && m.IsVipOnly).AsEnumerable();
 
 			if (!string.IsNullOrWhiteSpace(search))
+			{
 				query = query.Where(m =>
 					m.Title.Contains(search, StringComparison.OrdinalIgnoreCase) ||
 					(m.Description?.Contains(search, StringComparison.OrdinalIgnoreCase) ?? false));
+			}
 
-			if (genreId.HasValue) query = query.Where(m => m.SelectedGenreIds.Contains(genreId.Value));
-			if (countryId.HasValue) query = query.Where(m => m.CountryId == countryId.Value);
-			if (type.HasValue) query = query.Where(m => (int)m.Type == type.Value);
+			if (genreId.HasValue)
+			{
+				query = query.Where(m => m.SelectedGenreIds != null && m.SelectedGenreIds.Contains(genreId.Value));
+			}
+
+			if (countryId.HasValue)
+			{
+				query = query.Where(m => m.CountryId == countryId.Value);
+			}
+
+			if (type.HasValue)
+			{
+				query = query.Where(m => (int)m.Type == type.Value);
+			}
 
 			query = sortBy switch
 			{
 				"popular" => query.OrderByDescending(m => m.ViewCount),
 				"title" => query.OrderBy(m => m.Title),
-				_ => query.OrderByDescending(m => m.ReleaseYear)
+				_ => query.OrderByDescending(m => m.ReleaseYear) // Default "latest"
 			};
 
 			var filteredList = query.ToList();
@@ -342,10 +374,11 @@ namespace FinalCuongFilm.MVC.Controllers
 				PageSize = pageSize,
 				TotalItems = totalItems,
 				PageTitle = "VIP Premium Movies",
-				PageSubTitle = "Exclusive films for VIP members."
+				PageSubTitle = "Exclusive films for VIP members"
 			};
 
-			return View("Index", vm); // Tái sử dụng lại View Index của Movie để hiển thị danh sách
+			// Reuse the Index view to display the filtered list
+			return View("Index", vm);
 		}
 
 		[Authorize]

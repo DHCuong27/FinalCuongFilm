@@ -85,12 +85,12 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 			var currentUser = await _userManager.GetUserAsync(User);
 			if (currentUser != null && currentUser.Id == user.Id)
 			{
-				TempData["Error"] = "Bạn không thể tự khóa tài khoản của chính mình.";
+				TempData["Error"] = "You cannot lock your own account.";
 				return RedirectToAction(nameof(Index));
 			}
 
 			await _userManager.SetLockoutEndDateAsync(user, DateTimeOffset.UtcNow.AddYears(100));
-			TempData["Success"] = $"Đã khóa tài khoản {user.Email} thành công.";
+			TempData["Success"] = $"Account locked {user.Email} successfully.";
 
 			return RedirectToAction(nameof(Index));
 		}
@@ -105,7 +105,7 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 			if (user == null) return NotFound();
 
 			await _userManager.SetLockoutEndDateAsync(user, null);
-			TempData["Success"] = $"Đã mở khóa tài khoản {user.Email}.";
+			TempData["Success"] = $"Account unlocked {user.Email}.";
 
 			return RedirectToAction(nameof(Index));
 		}
