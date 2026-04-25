@@ -239,26 +239,6 @@
             background: var(--danger-color);
         }
 
-    .embed-preview {
-        margin-top: 12px;
-        border-radius: 6px;
-        overflow: hidden;
-        display: none;
-        position: relative;
-        padding-bottom: 56.25%;
-        height: 0;
-        border: 1px solid var(--border-color);
-    }
-
-        .embed-preview iframe {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            border: none;
-        }
-
     /* File Input Wrapper */
     .file-input-wrap {
         margin-top: 8px;
@@ -299,25 +279,6 @@
                     border-color: var(--primary-color);
                     color: var(--primary-color);
                 }
-
-    .upload-divider {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        margin: 16px 0;
-        color: var(--text-muted);
-        font-size: 12px;
-        text-transform: uppercase;
-        font-weight: 600;
-    }
-
-        .upload-divider::before,
-        .upload-divider::after {
-            content: '';
-            flex: 1;
-            height: 1px;
-            background: var(--border-color);
-        }
 
     /* Tag Picker CSS */
     .tag-picker {
@@ -484,25 +445,22 @@
 
     /* Responsive */
     @@media (max-width: 768px) {
-        .form-grid
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
 
-    {
-        grid-template-columns: 1fr;
-    }
+        .action-bar {
+            flex-direction: column;
+        }
 
-    .action-bar {
-        flex-direction: column;
-    }
+        .btn-custom {
+            width: 100%;
+            justify-content: center;
+        }
 
-    .btn-custom {
-        width: 100%;
-        justify-content: center;
-    }
-
-    .url-group {
-        flex-direction: column;
-    }
-
+        .url-group {
+            flex-direction: column;
+        }
     }
 </style>
 
@@ -594,19 +552,6 @@
                             <button type="button" class="preview-clear-btn" onclick="editClearPoster()"><i class="zmdi zmdi-close"></i></button>
                         </div>
                     </div>
-
-                  @*   <div class="form-group form-col-full" style="margin-top: 16px; border-top: 1px solid var(--border-color); padding-top: 16px;">
-                        <label class="form-label">Trailer URL</label>
-                        <div class="url-group">
-                            <input asp-for="TrailerUrl" class="form-control" id="editTrailerUrl" placeholder="https://youtube.com/watch?v=..." />
-                            <button type="button" class="btn-outline" onclick="editPreviewTrailer()"><i class="zmdi zmdi-eye"></i> Preview</button>
-                            <button type="button" class="btn-outline" onclick="editClearTrailer()" style="color:var(--text-muted);"><i class="zmdi zmdi-close"></i> Clear</button>
-                        </div>
-                        <span class="form-hint">YouTube or Vimeo link.</span>
-                        <span asp-validation-for="TrailerUrl" class="text-danger"></span>
-
-                        <div class="embed-preview" id="editTrailerPreview"></div>
-                    </div> *@
 
                 </div>
             </div>
@@ -788,7 +733,7 @@
                     }
                 });
 
-                renderChips(); // Initialize existing data
+                renderChips();
             }
 
             buildTagPicker('actorSelect', 'actorSearch', 'actorDropdown', 'actorChips', 'actorPicker');
@@ -797,7 +742,7 @@
             /* Submit feedback */
             document.getElementById('editForm').addEventListener('submit', () => {
                 const btn = document.getElementById('submitBtn');
-                btn.innerHTML = '<i class="zmdi zmdi-spinner zmdi-hc-spin"></i> Saving…';
+                btn.innerHTML = '<i class="zmdi zmdi-spinner zmdi-hc-spin"></i> Saving...';
                 btn.disabled = true;
             });
 
@@ -808,11 +753,6 @@
                 const img  = document.getElementById('editPosterPreviewImg');
                 img.onload = () => wrap.style.display = 'block';
                 img.src = posterUrl;
-            }
-
-            const trailerElement = document.getElementById('editTrailerUrl');
-            if (trailerElement && trailerElement.value.trim()) {
-                editPreviewTrailer();
             }
         });
 
@@ -839,15 +779,6 @@
             }
         }
 
-        /* Shared helpers */
-        function getEmbedUrl(url) {
-            const yt = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
-            if (yt) return `https://www.youtube.com/embed/${yt[1]}`;
-            const vi = url.match(/vimeo\.com\/([0-9]+)/);
-            if (vi) return `https://player.vimeo.com/video/${vi[1]}`;
-            return null;
-        }
-
         function editPreviewPoster() {
             const url  = document.getElementById('editPosterUrl').value.trim();
             const wrap = document.getElementById('editPosterPreview');
@@ -864,29 +795,6 @@
             document.getElementById('editPosterFileInput').value = '';
             document.getElementById('editPosterPreview').style.display = 'none';
             document.getElementById('editPosterPreviewImg').src = '';
-        }
-
-        // function editPreviewTrailer() {
-        //     const urlElement = document.getElementById('editTrailerUrl');
-        //     if (!urlElement) return;
-
-        //     const url = urlElement.value.trim();
-        //     const wrap = document.getElementById('editTrailerPreview');
-        //     if (!url) { alert('Please enter a trailer URL first.'); return; }
-        //     const embed = getEmbedUrl(url);
-        //     if (!embed) { alert('Unsupported URL. Please use a YouTube or Vimeo link.'); return; }
-        //     wrap.innerHTML = `<iframe src="${embed}" frameborder="0" allowfullscreen></iframe>`;
-        //     wrap.style.display = 'block';
-        // }
-
-        function editClearTrailer() {
-            const urlElement = document.getElementById('editTrailerUrl');
-            if (urlElement) urlElement.value = '';
-            const wrap = document.getElementById('editTrailerPreview');
-            if (wrap) {
-                wrap.style.display = 'none';
-                wrap.innerHTML = '';
-            }
         }
     </script>
 }

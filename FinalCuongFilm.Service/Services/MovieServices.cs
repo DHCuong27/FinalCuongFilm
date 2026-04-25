@@ -66,7 +66,11 @@ namespace FinalCuongFilm.Service.Services
 		{
 			var movie = await _context.Movies
 				.Include(m => m.MovieActors)
-					.ThenInclude(ma => ma.Actor) 
+					.ThenInclude(ma => ma.Actor)
+				.Include(m => m.MovieGenres)
+					.ThenInclude(mg => mg.Genre)
+				.Include(m => m.Country)
+				.Include(m => m.Language)
 				.FirstOrDefaultAsync(m => m.Id == id);
 
 			if (movie == null)
@@ -83,14 +87,21 @@ namespace FinalCuongFilm.Service.Services
 				ReleaseYear = movie.ReleaseYear,
 				Status = movie.Status,
 				IsActive = movie.IsActive,
+				IsVipOnly = movie.IsVipOnly, // Added VIP Mapping
 				PosterUrl = movie.PosterUrl,
 				GenreName = movie.MovieGenres.FirstOrDefault()?.Genre?.Name,
-					CountryName = movie.Country != null ? movie.Country.Name : null,
-					LanguageName = movie.Language != null ? movie.Language.Name : null,
-				ActorName = movie.MovieActors
-								  .Where(ma => ma.Actor != null)
-								  .Select(ma => ma.Actor.Name)
-								  .ToList()
+				CountryName = movie.Country != null ? movie.Country.Name : null,
+				LanguageName = movie.Language != null ? movie.Language.Name : null,
+
+				Actors = movie.MovieActors.Select(ma => new MovieActorDto
+				{
+					ActorId = ma.Actor.Id,
+					Name = ma.Actor.Name,
+					AvatarUrl = ma.Actor.AvartUrl // Maps the DB AvatarUrl to the View's ImageUrl
+				}).ToList(),
+
+				// Fixed compiler error: changed 'm' to 'movie'
+				ActorName = movie.MovieActors.Select(ma => ma.Actor.Name).ToList()
 			};
 		}
 
@@ -282,7 +293,7 @@ namespace FinalCuongFilm.Service.Services
 			var totalCount = await query.CountAsync();
 
 			var items = await query
-				.OrderByDescending(m => m.CreatedAt) 
+				.OrderByDescending(m => m.CreatedAt)
 				.Skip((page - 1) * pageSize)
 				.Take(pageSize)
 				.Select(m => new MovieDto
@@ -294,9 +305,8 @@ namespace FinalCuongFilm.Service.Services
 					Type = m.Type,
 					ReleaseYear = m.ReleaseYear,
 					IsActive = m.IsActive,
-
+					IsVipOnly = m.IsVipOnly,
 					CountryName = m.Country != null ? m.Country.Name : "Unknown"
-
 				})
 				.ToListAsync();
 

@@ -35,6 +35,7 @@ namespace FinalCuongFilm.Common.DTOs
 
 		public string? GenreName { get; set; }
 
+		public List<MovieActorDto> Actors { get; set; }
 		// Collections cho many-to-many
 
 		public List<string> ActorName { get; set; } = new List<string>();
@@ -68,5 +69,11 @@ namespace FinalCuongFilm.Common.DTOs
 		public Guid Id { get; set; }
 		public DateTime CreatedAt { get; set; }
 		public bool IsVipOnly { get; set; }
+	}
+	public class MovieActorDto
+	{
+		public Guid ActorId { get; set; }
+		public string Name { get; set; }
+		public string AvatarUrl { get; set; }
 	}
 }

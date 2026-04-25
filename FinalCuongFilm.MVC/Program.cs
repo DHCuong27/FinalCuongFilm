@@ -76,11 +76,8 @@ builder.Services.AddScoped<IEpisodeService, EpisodeService>();
 builder.Services.AddScoped<IMediaFileService, MediaFileService>();
 builder.Services.AddScoped<IFavoriteService, FavoriteService>();
 builder.Services.AddScoped<IReviewService, ReviewService>();
-
 builder.Services.AddHttpClient<ITmdbService, TmdbService>();
 builder.Services.AddScoped<IMovieImportService, MovieImportService>();
-
-
 builder.Services.AddScoped<IAzureBlobService, AzureBlobService>();
 builder.Services.AddScoped<IVideoConversionService, VideoConversionService>();
 builder.Services.AddScoped<IVipService, VipService>();

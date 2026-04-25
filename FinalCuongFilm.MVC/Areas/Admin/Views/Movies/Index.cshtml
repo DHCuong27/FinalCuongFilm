@@ -1,6 +1,5 @@
 ﻿@model FinalCuongFilm.Common.DTOs.PagedResult<FinalCuongFilm.Common.DTOs.MovieDto>
 
-
 @{
     ViewData["Title"] = "Movie Management";
 }
@@ -304,82 +303,42 @@
         border: 1px solid #e2e8f0;
     }
 
-    /* 1. Ép chiều cao cố định cho tất cả các nút nhỏ (btn-sm) */
+    /* VIP Badge specific styling for the title */
+    .badge-vip-inline {
+        background: #fef08a;
+        color: #854d0e;
+        border: 1px solid #fde047;
+        padding: 2px 8px;
+        font-size: 11px;
+        border-radius: 12px;
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+        white-space: nowrap;
+    }
+
+    /* Buttons inside table */
     td .btn-sm {
-        height: 32px; /* Chiều cao vàng chuẩn UI */
+        height: 32px;
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        box-sizing: border-box; /* Ép padding không làm phình to nút */
+        box-sizing: border-box;
         line-height: 1;
-        border: none; /* Xóa viền mặc định của button */
+        border: none;
         margin: 0;
         vertical-align: middle;
     }
 
-    /* 2. Ép các nút CHỈ CÓ ICON thành hình vuông hoàn hảo */
     td .btn-icon {
-        width: 32px; /* Rộng = Cao = 32px */
-        padding: 0 !important; /* Xóa padding thừa */
+        width: 32px;
+        padding: 0 !important;
     }
 
-    /* 3. Bắt buộc thẻ form phải hiển thị dạng Flex để không bị lẹm chiều cao */
     td form.m-0 {
         display: inline-flex;
         height: 32px;
     }
-
-    /* Làm cho các nút chỉ chứa Icon thành hình vuông chuẩn */
-    .action-group .btn-icon {
-        width: 32px;
-        height: 32px;
-        padding: 0;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 6px; /* Muốn nút tròn xoe thì đổi thành 50% nhé */
-    }
-
-        .action-group .btn-icon i {
-            margin: 0;
-            font-size: 0.9rem;
-        }
-
-
-    .action-btn {
-        width: 32px;
-        height: 32px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 6px;
-        color: var(--text-muted);
-        background: var(--bg-light);
-        border: 1px solid var(--border-color);
-        transition: all 0.2s;
-        text-decoration: none;
-        cursor: pointer;
-    }
-
-        .action-btn:hover {
-            background: var(--bg-white);
-        }
-
-        .action-btn.view:hover {
-            color: var(--primary-color);
-            border-color: var(--primary-color);
-        }
-
-        .action-btn.edit:hover {
-            color: var(--warning-color);
-            border-color: var(--warning-color);
-        }
-
-        .action-btn.delete:hover {
-            color: var(--danger-color);
-            border-color: var(--danger-color);
-            background: #fef2f2;
-        }
 
     /* Pagination */
     .pagination-container {
@@ -446,27 +405,24 @@
         }
 
     @@media (max-width: 768px) {
-        .page-header
+        .page-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
 
-    {
-        flex-direction: column;
-        align-items: flex-start;
-    }
+        .table-toolbar {
+            flex-direction: column;
+            align-items: stretch;
+        }
 
-    .table-toolbar {
-        flex-direction: column;
-        align-items: stretch;
-    }
+        .search-wrapper, .search-input {
+            width: 100%;
+        }
 
-    .search-wrapper, .search-input {
-        width: 100%;
-    }
-
-    .btn-custom {
-        width: 100%;
-        justify-content: center;
-    }
-
+        .btn-custom {
+            width: 100%;
+            justify-content: center;
+        }
     }
 </style>
 
@@ -512,7 +468,7 @@
             </div>
             <div class="search-wrapper">
                 <i class="zmdi zmdi-search search-icon"></i>
-                <input type="text" placeholder="Search current page..." id="tableSearch" class="search-input" />
+                <input type="text" placeholder="Search all columns..." id="tableSearch" class="search-input" />
             </div>
         </div>
 
@@ -549,7 +505,15 @@
                             </td>
                             <td>
                                 <div class="title-cell">
-                                    <strong class="movie-title">@item.Title</strong>
+                                    <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                                        <strong class="movie-title" style="font-size: 15px; margin: 0;">@item.Title</strong>
+                                        @if (item.IsVipOnly)
+                                        {
+                                            <span class="badge-vip-inline">
+                                                <i class="fa-solid fa-crown"></i> VIP
+                                            </span>
+                                        }
+                                    </div>
                                     <span class="slug-text">@item.Slug</span>
                                 </div>
                             </td>
@@ -642,17 +606,16 @@
 
 @section Scripts {
     <script>
-        // --- CLIENT-SIDE SEARCH FUNCTIONALITY ---
+        // --- CLIENT-SIDE GLOBAL SEARCH FUNCTIONALITY ---
         document.getElementById('tableSearch')?.addEventListener('keyup', function() {
             const searchValue = this.value.toLowerCase();
             const rows = document.querySelectorAll('.data-table tbody tr.data-table-row');
 
             rows.forEach(row => {
-                const title = row.querySelector('.movie-title')?.textContent.toLowerCase();
-                const type = row.querySelector('.type-badge')?.textContent.toLowerCase();
-                const country = row.querySelector('.country-text')?.textContent.toLowerCase();
+                // Search all text inside the row
+                const rowContent = row.textContent.toLowerCase();
 
-                if (title?.includes(searchValue) || type?.includes(searchValue) || country?.includes(searchValue)) {
+                if (rowContent.includes(searchValue)) {
                     row.style.display = '';
                 } else {
                     row.style.display = 'none';
@@ -681,21 +644,14 @@
             msgSpan.style.color = 'var(--text-muted)';
             msgSpan.innerText = `Loading movie information for "${title}" from TMDB...`;
 
-            // Lấy token bảo mật từ form
             const token = document.querySelector('#antiforgeryForm input[name="__RequestVerificationToken"]').value;
-
             const formData = new FormData();
             formData.append('title', title);
-
-
-            // Gắn token thẳng vào formData để ASP.NET Core tự động map
-
             formData.append('__RequestVerificationToken', token);
 
             try {
                 const response = await fetch('@Url.Action("ImportFromTmdb", "Movies", new { area = "Admin" })', {
                     method: 'POST',
-                    // Bỏ thuộc tính headers chứa token lỗi cũ đi
                     body: formData
                 });
 
@@ -721,7 +677,6 @@
             }
         });
 
-        // Allow Enter key to trigger import
         document.getElementById('movieTitle')?.addEventListener('keypress', function (e) {
             if (e.key === 'Enter') {
                 e.preventDefault();

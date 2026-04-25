@@ -32,7 +32,7 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 			CuongFilmDbContext context,
 			IAzureBlobService azureBlobService,
 			IMovieImportService movieImportService,
-			ILogger<MoviesController> logger) 
+			ILogger<MoviesController> logger)
 		{
 			_movieService = movieService;
 			_actorService = actorService;
@@ -67,8 +67,8 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 			catch (Exception ex)
 			{
 				var innerMessage = ex.InnerException != null ? ex.InnerException.Message : ex.Message;
-				_logger.LogError(ex, "Lỗi khi import phim từ TMDB: {MovieTitle}", title); // Dùng Logger
-				return Json(new { success = false, message = $"Error system: {innerMessage}" });
+				_logger.LogError(ex, "Error importing movie from TMDB: {MovieTitle}", title);
+				return Json(new { success = false, message = $"System Error: {innerMessage}" });
 			}
 		}
 
@@ -94,7 +94,6 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 		[ValidateAntiForgeryToken]
 		public async Task<IActionResult> Create(MovieCreateDto dto, IFormFile? posterFile)
 		{
-		
 			if (posterFile != null && posterFile.Length > 0)
 			{
 				var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".webp" };
@@ -111,7 +110,6 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 				{
 					if (posterFile != null && posterFile.Length > 0)
 					{
-						
 						var tempSlug = !string.IsNullOrEmpty(dto.Slug)
 							? dto.Slug
 							: (dto.Title?.ToLower().Replace(" ", "-") ?? Guid.NewGuid().ToString());
@@ -126,14 +124,14 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 				catch (DbUpdateException dbEx)
 				{
 					var innerException = dbEx.InnerException?.Message ?? dbEx.Message;
-					ModelState.AddModelError("", $"Error database: {innerException}");
-					_logger.LogError(dbEx, "Error Database when create film"); 
+					ModelState.AddModelError("", $"Database Error: {innerException}");
+					_logger.LogError(dbEx, "Database Error when creating film");
 				}
 				catch (Exception ex)
 				{
 					var innerException = ex.InnerException?.Message ?? ex.Message;
-					ModelState.AddModelError("", $"Lỗi: {innerException}");
-					_logger.LogError(ex, "Lỗi hệ thống khi tạo phim"); 
+					ModelState.AddModelError("", $"Error: {innerException}");
+					_logger.LogError(ex, "System error when creating film");
 				}
 			}
 
@@ -146,7 +144,6 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 		{
 			if (id == null) return NotFound();
 
-			
 			var movie = await _context.Movies
 				.Include(m => m.MovieActors)
 				.Include(m => m.MovieGenres)
@@ -154,7 +151,7 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 
 			if (movie == null) return NotFound();
 
-			// 2. Map dữ liệu sang DTO 
+			// Map data to DTO 
 			var dto = new MovieUpdateDto
 			{
 				Id = movie.Id,
@@ -168,13 +165,18 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 				Type = movie.Type,
 				Status = movie.Status,
 				IsActive = movie.IsActive,
+
+				// ----> THE CRITICAL MISSING LINE ADDED HERE <----
+				IsVipOnly = movie.IsVipOnly,
+				// ------------------------------------------------
+
 				CountryId = movie.CountryId ?? Guid.Empty,
-				LanguageId = movie.LanguageId ?? Guid.Empty, 
+				LanguageId = movie.LanguageId ?? Guid.Empty,
 				ActorIds = movie.MovieActors.Select(ma => ma.ActorId).ToList(),
 				GenreIds = movie.MovieGenres.Select(mg => mg.GenreId).ToList()
 			};
 
-			// 3. Đổ danh sách tổng vào ViewBag để giao diện có dữ liệu tạo Dropdown
+			// Populate ViewBag for dropdowns
 			ViewBag.Countries = new SelectList(await _context.Countries.ToListAsync(), "Id", "Name");
 			ViewBag.Languages = new SelectList(await _context.Languages.ToListAsync(), "Id", "Name");
 			ViewBag.Actors = new SelectList(await _context.Actors.ToListAsync(), "Id", "Name");
@@ -218,8 +220,8 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 				}
 				catch (Exception ex)
 				{
-					ModelState.AddModelError("", $"Fail to update: {ex.Message}");
-					_logger.LogError(ex, "Lỗi khi cập nhật phim {MovieId}", id);
+					ModelState.AddModelError("", $"Failed to update: {ex.Message}");
+					_logger.LogError(ex, "Error updating movie {MovieId}", id);
 				}
 			}
 
@@ -248,7 +250,7 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 				var result = await _movieService.DeleteAsync(id);
 				if (!result) return NotFound();
 
-				TempData["Success"] = "Delete film succesfully!";
+				TempData["Success"] = "Delete film successfully!";
 				return RedirectToAction(nameof(Index));
 			}
 			catch (InvalidOperationException ex)
@@ -258,7 +260,7 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError(ex, "Lỗi khi xóa phim {MovieId}", id);
+				_logger.LogError(ex, "Error deleting movie {MovieId}", id);
 				TempData["Error"] = "An error occurred while deleting the movie.";
 				return RedirectToAction(nameof(Delete), new { id });
 			}
