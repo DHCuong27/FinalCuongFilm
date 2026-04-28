@@ -26,8 +26,29 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 		}
 
 		// 1. Manage Transaction History (Payments)
+
 		public async Task<IActionResult> Transactions(int page = 1)
 		{
+
+			var timeLimit = DateTime.UtcNow.AddMinutes(-15);
+
+			var expiredTransactions = await _context.Transactions
+				.Where(t => t.Status == TransactionStatus.Pending
+						 && t.TransactionDate < timeLimit)
+				.ToListAsync();
+
+			if (expiredTransactions.Any())
+			{
+				foreach (var tx in expiredTransactions)
+				{
+					tx.Status = TransactionStatus.Failed;
+				
+				}
+
+				await _context.SaveChangesAsync();
+			}
+
+
 			int pageSize = 10;
 			var totalItems = await _context.Transactions.CountAsync();
 			var totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
