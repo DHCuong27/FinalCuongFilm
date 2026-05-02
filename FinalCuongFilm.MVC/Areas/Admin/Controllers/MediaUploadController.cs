@@ -280,8 +280,8 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 					var createdMedia = await _mediaFileService.CreateAsync(mediaFileDto);
 
 					// Bắn Job nén HLS ngầm vào Hangfire
-					BackgroundJob.Enqueue<IVideoConversionService>(service =>
-						service.ProcessVideoBackgroundJobAsync(createdMedia.Id, originalUrl, movie.Slug, dto.EpisodeNumber ?? 1));
+					BackgroundJob.Enqueue<IVideoConversionService>(x =>
+						x.ProcessVideoBackgroundJobAsync(createdMedia.Id, originalUrl, movie.Slug, dto.EpisodeNumber ?? 1, CancellationToken.None));
 
 					return Json(new { success = true, message = "Upload complete! The system is automatically compressing HLS in the background." });
 				}

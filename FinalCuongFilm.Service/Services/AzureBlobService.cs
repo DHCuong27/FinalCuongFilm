@@ -150,6 +150,7 @@ namespace FinalCuongFilm.Service.Services
 		}
 
 		// Generate a streaming URL with SAS token for secure access
+		// Generate a streaming URL with SAS token for secure access
 		public async Task<string> GetStreamingUrlAsync(string blobUrl, int expiryHours = 24)
 		{
 			try
@@ -172,21 +173,43 @@ namespace FinalCuongFilm.Service.Services
 					return blobUrl;
 				}
 
+				// BƯỚC 1: Kiểm tra xem đây có phải là file HLS playlist không
+				bool isHls = blobUriBuilder.BlobName.EndsWith(".m3u8", StringComparison.OrdinalIgnoreCase);
+
 				var sasBuilder = new BlobSasBuilder
 				{
 					BlobContainerName = blobUriBuilder.BlobContainerName,
-					BlobName = blobUriBuilder.BlobName,
-					Resource = "b",
+					// Nếu là HLS, ta để trống BlobName để cấp quyền cho toàn bộ Container
+					BlobName = isHls ? "" : blobUriBuilder.BlobName,
+					// "c" là Container (thư mục), "b" là Blob (file đơn)
+					Resource = isHls ? "c" : "b",
 					StartsOn = DateTimeOffset.UtcNow.AddMinutes(-5),
 					ExpiresOn = DateTimeOffset.UtcNow.AddHours(expiryHours)
 				};
+				
 
-				sasBuilder.SetPermissions(BlobSasPermissions.Read);
+				// BƯỚC 2: Cấp quyền và tạo chuỗi URL tương ứng
+				if (isHls)
+				{
+					// Cấp quyền đọc cho Container
+					sasBuilder.SetPermissions(BlobContainerSasPermissions.Read);
+					var sasUri = containerClient.GenerateSasUri(sasBuilder);
 
-				var sasUri = blobClient.GenerateSasUri(sasBuilder);
-				_logger.LogInformation($" Generated SAS URL for {blobUriBuilder.BlobName} (expires in {expiryHours}h)");
+					// Nối tên file .m3u8 vào giữa URL của Container và chuỗi Token
+					var fullHlsUrl = $"{containerClient.Uri}/{blobUriBuilder.BlobName}{sasUri.Query}";
 
-				return sasUri.ToString();
+					_logger.LogInformation($"Generated CONTAINER SAS URL for HLS {blobUriBuilder.BlobName} (expires in {expiryHours}h)");
+					return fullHlsUrl;
+				}
+				else
+				{
+					// Cấp quyền đọc cho Blob (logic cũ của bạn)
+					sasBuilder.SetPermissions(BlobSasPermissions.Read);
+					var sasUri = blobClient.GenerateSasUri(sasBuilder);
+
+					_logger.LogInformation($"Generated BLOB SAS URL for {blobUriBuilder.BlobName} (expires in {expiryHours}h)");
+					return sasUri.ToString();
+				}
 			}
 			catch (Exception ex)
 			{

@@ -11,6 +11,29 @@
     ViewData["Title"] = "Watch " + Model.Movie.Title;
     Layout = "_LayoutUser";
 
+    // 🚀 BƯỚC SỬA LỖI: Hàm giúp chuẩn hóa đường dẫn từ Vật lý (C:\...) sang Web (/...)
+    string CleanWebUrl(string url)
+    {
+        if (string.IsNullOrWhiteSpace(url)) return "";
+
+        // Chuyển gạch chéo ngược (Windows) thành gạch chéo xuôi (Web)
+        url = url.Replace("\\", "/");
+
+        // Nếu database lỡ lưu cả thư mục wwwroot, ta cắt bỏ nó đi
+        int wwwrootIndex = url.IndexOf("wwwroot", StringComparison.OrdinalIgnoreCase);
+        if (wwwrootIndex >= 0)
+        {
+            url = url.Substring(wwwrootIndex + "wwwroot".Length);
+        }
+
+        // Đảm bảo đường dẫn Web bắt đầu bằng '/' nếu nó không phải là một link http
+        if (!url.StartsWith("http") && !url.StartsWith("/"))
+        {
+            url = "/" + url;
+        }
+        return url;
+    }
+
     var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
     bool isVip = userId != null && await VipService.HasActiveVipAsync(userId);
 
@@ -24,7 +47,9 @@
         {
             string rawName = !string.IsNullOrEmpty(currentUser.FullName) ? currentUser.FullName : currentUser.UserName;
             currentUserName = rawName.Contains("@") ? rawName.Split('@')[0] : rawName;
-            currentUserAvatar = currentUser.AvatarUrl ?? "";
+
+            // Áp dụng CleanWebUrl cho Avatar User
+            currentUserAvatar = CleanWebUrl(currentUser.AvatarUrl);
         }
     }
 
@@ -33,8 +58,11 @@
     var mediaFile = Model.MediaFiles?.FirstOrDefault();
     var isFavorited = ViewBag.IsFavorited != null ? (bool)ViewBag.IsFavorited : false;
     var actors = ViewBag.Actors as IEnumerable<FinalCuongFilm.Common.DTOs.ActorDto> ?? new List<FinalCuongFilm.Common.DTOs.ActorDto>();
-    var streamingUrl = ViewBag.StreamingUrl as string ?? "";
+
+    // Áp dụng CleanWebUrl cho URL Streaming và Subtitles
+    var streamingUrl = CleanWebUrl(ViewBag.StreamingUrl as string);
     var subtitles = ViewBag.SubtitleFiles as IEnumerable<dynamic>;
+    var moviePoster = CleanWebUrl(Model.Movie?.PosterUrl);
 
     var reviews = ViewBag.Reviews as IEnumerable<FinalCuongFilm.Common.DTOs.ReviewDto> ?? new List<FinalCuongFilm.Common.DTOs.ReviewDto>();
     var textReviews = reviews.Where(r => !string.IsNullOrWhiteSpace(r.Comment)).ToList();
@@ -44,11 +72,15 @@
     var isHlsStream = streamingUrl.Contains(".m3u8");
 }
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
-<link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
-<link href="https://fonts.cdnfonts.com/css/netflix-sans" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" referrerpolicy="no-referrer" />
+<link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" referrerpolicy="no-referrer" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
 <style>
+    /* Giữ nguyên toàn bộ CSS của bạn */
     :root {
         --netflix-red: #e50914;
         --netflix-black: #141414;
@@ -65,24 +97,27 @@
     body {
         background-color: var(--netflix-black);
         color: var(--netflix-text);
-        font-family: 'Netflix Sans', Arial, sans-serif;
+        font-family: 'Inter', Arial, sans-serif;
         line-height: 1.5;
     }
 
-    /* Cinema Section */
     .cinema-section {
         position: relative;
         width: 100%;
         background-color: #000;
         border-bottom: 1px solid #333;
+        display: flex;
+        justify-content: center;
+        align-items: center;
     }
 
     .cinema-screen-wrapper {
         position: relative;
         width: 100%;
-        max-width: 1400px;
+        max-width: 1200px;
         margin: 0 auto;
         transition: all 0.3s ease;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.8);
     }
 
     .cinema-screen {
@@ -90,9 +125,9 @@
         width: 100%;
         background: #000;
         overflow: hidden;
+        aspect-ratio: 16 / 9;
     }
 
-    /* Expanded (Cinema) Mode */
     .cinema-section.expanded {
         position: fixed;
         top: 0;
@@ -102,22 +137,21 @@
         z-index: 10000;
         background: #000;
         overflow: hidden;
+        display: flex;
+        justify-content: center;
+        align-items: center;
     }
 
         .cinema-section.expanded .cinema-screen-wrapper {
             max-width: 100%;
+            width: 100%;
             height: 100vh;
         }
 
-        .cinema-section.expanded .cinema-screen, .cinema-section.expanded .plyr {
+        .cinema-section.expanded .cinema-screen {
             height: 100%;
+            aspect-ratio: unset;
         }
-
-            .cinema-section.expanded .plyr video {
-                max-height: 100vh;
-                height: 100%;
-                object-fit: contain;
-            }
 
         .cinema-section.expanded .info-section {
             display: none;
@@ -125,6 +159,7 @@
 
     .plyr {
         width: 100%;
+        height: 100%;
         --plyr-color-main: var(--netflix-red);
         --plyr-video-background: #000;
         --plyr-menu-background: rgba(20, 20, 20, 0.95);
@@ -133,9 +168,8 @@
     }
 
         .plyr video {
-            aspect-ratio: 16 / 9;
             width: 100%;
-            max-height: 80vh;
+            height: 100%;
             object-fit: contain;
             background: #000;
         }
@@ -192,7 +226,6 @@
         margin-left: 8px;
     }
 
-    /* Expand Button placed next to Title */
     .expand-toggle-btn {
         background: rgba(255,255,255,0.15);
         border: 1px solid rgba(255,255,255,0.3);
@@ -213,7 +246,6 @@
             border-color: var(--netflix-red);
         }
 
-    /* Info Section */
     .info-section {
         max-width: 1400px;
         margin: 0 auto;
@@ -302,7 +334,6 @@
         gap: 10px;
     }
 
-    /* Cast & Episodes */
     .cast-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
@@ -318,7 +349,6 @@
         padding: 15px 10px;
         cursor: pointer;
         border: 1px solid var(--border-color);
-        /* Thêm 3 dòng này để thẻ cố định khung */
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -358,7 +388,6 @@
         font-weight: 600;
         margin-bottom: 0.3rem;
         color: var(--text-primary);
-        /* Thêm 4 dòng này để cắt chữ có dấu 3 chấm (...) khi quá dài */
         width: 100%;
         white-space: nowrap;
         overflow: hidden;
@@ -406,7 +435,6 @@
         font-weight: 500;
     }
 
-    /* Comments Area */
     .review-box {
         background: var(--bg-card);
         border: 1px solid var(--border-color);
@@ -553,7 +581,6 @@
         border: 1px dashed var(--border-color);
     }
 
-    /* Toast */
     .toast-notification {
         position: fixed;
         top: 90px;
@@ -625,10 +652,11 @@ else
                             <i class="fas fa-arrow-left"></i>
                         </button>
                         <div class="cinema-title">
-                            <h2>@Model.Movie.Title @if (currentEpisode != null) {
-                            <span>Episode @currentEpisode.EpisodeNumber</span>
-                        }
-</h2>
+                            <h2>
+                                @Model.Movie.Title @if (currentEpisode != null) {
+                                <span>Episode @currentEpisode.EpisodeNumber</span>
+                            }
+                        </h2>
                     </div>
                 </div>
                 <button class="expand-toggle-btn" id="expandToggleBtn" title="Cinema Mode">
@@ -636,7 +664,8 @@ else
                 </button>
             </div>
 
-            <video id="player" playsinline controls crossorigin poster="@(Model.Movie.PosterUrl ?? "")">
+            <!-- Đã sửa PosterUrl -->
+            <video id="player" playsinline controls poster="@moviePoster">
                 @if (isHlsStream)
                 {
                     <source src="@streamingUrl" type="application/x-mpegURL" />
@@ -650,7 +679,9 @@ else
                 {
                     foreach (var sub in subtitles)
                     {
-                        <track kind="captions" label="@sub.Language" srclang="@sub.Code" src="@sub.Url" />
+                        <!-- Ép kiểu và dọn dẹp URL Subtitle -->
+                        string subUrlClean = CleanWebUrl((string)sub.Url);
+                        <track kind="captions" label="@sub.Language" srclang="@sub.Code" src="@subUrlClean" />
                     }
                 }
             </video>
@@ -724,7 +755,8 @@ else
                         <div class="cast-avatar">
                             @if (!string.IsNullOrEmpty(actor.AvartUrl))
                             {
-                                <img src="@actor.AvartUrl" alt="@actor.Name">
+                                <!-- Đã dùng hàm dọn dẹp URL cho hình diễn viên -->
+                                <img src="@CleanWebUrl(actor.AvartUrl)" alt="@actor.Name">
                             }
                             else
                             {
@@ -811,21 +843,18 @@ else
             {
                 @foreach (var comment in textReviews)
                 {
-                    // 1. Ưu tiên lấy FullName mới nhất từ DTO, nếu không có thì lấy UserName
                     var rawName = !string.IsNullOrEmpty(comment.FullName) && comment.FullName != "Unknown"
                     ? comment.FullName
                     : (comment.UserName ?? "User");
 
-                    // Cắt bỏ phần @gmail.com nếu là email
                     string displayName = rawName.Contains("@") ? rawName.Split('@')[0] : rawName;
 
-                    // 2. Kiểm tra xem có phải comment của user hiện tại không dựa vào UserId (chính xác hơn)
                     bool isMyComment = User.Identity?.IsAuthenticated == true && comment.UserId == userId;
 
-                    // 3. Lấy AvatarUrl trực tiếp từ DTO vì ReviewService đã join với Identity
+                    // Đã dùng hàm dọn dẹp URL cho hình Avatar của comment
                     string displayAvatar = isMyComment && !string.IsNullOrEmpty(currentUserAvatar)
                     ? currentUserAvatar
-                    : (comment.AvatarUrl ?? "");
+                    : CleanWebUrl(comment.AvatarUrl);
 
                     string[] colors = { "#e50914", "#f5c518", "#3498db", "#2ecc71", "#9b59b6" };
                     string avatarBg = colors[Math.Abs(displayName.GetHashCode()) % colors.Length];
@@ -834,7 +863,6 @@ else
                         <div id="display-mode-@comment.Id">
                             <div class="review-header">
                                 <div class="review-author">
-                                    <!-- Gắn Avatar -->
                                     <div class="author-avatar" style="background: @avatarBg;">
                                         @if (!string.IsNullOrEmpty(displayAvatar))
                                         {
@@ -846,7 +874,6 @@ else
                                         }
                                     </div>
                                     <div class="author-info">
-                                        <!-- Hiển thị Display Name mới nhất -->
                                         <h4>
                                             @displayName
                                             @if (isMyComment)
@@ -901,8 +928,8 @@ else
 }
 
 @section Scripts {
-    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-    <script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest" referrerpolicy="no-referrer"></script>
+    <script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js" referrerpolicy="no-referrer"></script>
 
     <script>
         const STREAMING_URL = '@Html.Raw(streamingUrl ?? "")';
@@ -912,40 +939,62 @@ else
 
         document.addEventListener("DOMContentLoaded", () => {
             const video = document.getElementById("player");
-            if (video) {
+            if (video && STREAMING_URL) {
                 const defaultOptions = {
                     controls: ['play-large', 'play', 'progress', 'current-time', 'duration', 'mute', 'volume', 'captions', 'settings', 'fullscreen'],
                     settings: ['captions', 'quality', 'speed'],
                     captions: { active: true, language: 'auto', update: true }
                 };
 
-                // FIX LOGIC CHỌN QUALITY CHO HLS
-                if (Hls.isSupported() && STREAMING_URL.includes('.m3u8')) {
-                    const hls = new Hls();
-                    hls.loadSource(STREAMING_URL);
+                   if (Hls.isSupported() && STREAMING_URL.includes('.m3u8')) {
+        const hls = new Hls({
+            // Tùy chỉnh này giúp HLS phớt lờ một số lỗi nhỏ và cố gắng tải lại
+            debug: false,
+        });
 
-                    hls.on(Hls.Events.MANIFEST_PARSED, function (event, data) {
-                        const availableQualities = hls.levels.map((l) => l.height).sort((a, b) => b - a);
+        hls.loadSource(STREAMING_URL);
 
-                        // Bơm Option Quality vào Plyr
-                        defaultOptions.quality = {
-                            default: availableQualities[0],
-                            options: availableQualities,
-                            forced: true,
-                            onChange: (e) => updateQuality(e),
-                        };
+        hls.on(Hls.Events.MANIFEST_PARSED, function (event, data) {
+            const availableQualities = hls.levels.map((l) => l.height).sort((a, b) => b - a);
+            defaultOptions.quality = {
+                default: availableQualities[0],
+                options: availableQualities,
+                forced: true,
+                onChange: (e) => updateQuality(e),
+            };
+            player = new Plyr(video, defaultOptions);
+        });
 
-                        player = new Plyr(video, defaultOptions);
-                    });
+        // 🚀 THÊM MỚI: Bộ xử lý lỗi dứt điểm giúp Console luôn sạch sẽ
+        hls.on(Hls.Events.ERROR, function (event, data) {
+            if (data.fatal) {
+                switch (data.type) {
+                    case Hls.ErrorTypes.NETWORK_ERROR:
+                        // Lỗi mạng (thiếu file .ts hoặc m3u8). Báo log nhẹ nhàng và thử tải lại.
+                        console.warn("Hệ thống đang thử tải lại luồng video...");
+                        hls.startLoad();
+                        break;
+                    case Hls.ErrorTypes.MEDIA_ERROR:
+                        // Lỗi giải mã video. Cố gắng tự động phục hồi.
+                        console.warn("Phát hiện lỗi định dạng video, đang phục hồi...");
+                        hls.recoverMediaError();
+                        break;
+                    default:
+                        // Lỗi nặng không thể cứu vãn, hủy hls để tránh văng lỗi liên tục
+                        hls.destroy();
+                        break;
+                }
+            }
+        });
 
-                    hls.attachMedia(video);
-                    window.hls = hls;
+        hls.attachMedia(video);
+        window.hls = hls;
 
-                    function updateQuality(newQuality) {
-                        window.hls.levels.forEach((level, levelIndex) => {
-                            if (level.height === newQuality) { window.hls.currentLevel = levelIndex; }
-                        });
-                    }
+        function updateQuality(newQuality) {
+            window.hls.levels.forEach((level, levelIndex) => {
+                if (level.height === newQuality) { window.hls.currentLevel = levelIndex; }
+            });
+        }
 
                 } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
                     video.src = STREAMING_URL;
@@ -1002,7 +1051,6 @@ else
             });
         });
 
-        // --- AJAX BÌNH LUẬN ---
         function showEditForm(reviewId) { document.getElementById('display-mode-' + reviewId).style.display = 'none'; document.getElementById('edit-mode-' + reviewId).style.display = 'block'; }
         function hideEditForm(reviewId) { document.getElementById('edit-mode-' + reviewId).style.display = 'none'; document.getElementById('display-mode-' + reviewId).style.display = 'block'; }
 
@@ -1021,7 +1069,6 @@ else
         }
 
         $(document).ready(function() {
-            // POST COMMENT
             $('#mainCommentForm').on('submit', function(e) {
                 e.preventDefault();
                 const submitBtn = $(this).find('.btn-main-submit');
@@ -1038,7 +1085,6 @@ else
                 });
             });
 
-            // EDIT COMMENT
             $(document).on('submit', '.form-edit-review', function(e) {
                 e.preventDefault();
                 const form = $(this);

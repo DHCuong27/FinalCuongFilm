@@ -74,7 +74,7 @@
         box-shadow: var(--shadow-sm);
         border: 1px solid var(--border-color);
         margin-bottom: 24px;
-        overflow: visible; /* Fixed to allow dropdowns to show */
+        overflow: visible;
     }
 
     .form-card-header {
@@ -165,37 +165,24 @@
         display: block;
     }
 
-    /* URL & Media Groups */
-    .url-group {
-        display: flex;
-        gap: 8px;
-    }
-
-        .url-group .form-control {
-            flex: 1;
-        }
-
-    .btn-outline {
-        padding: 0 16px;
-        height: 42px;
-        background: var(--bg-white);
-        border: 1px solid var(--border-color);
-        border-radius: 6px;
-        color: var(--text-dark);
-        font-size: 13px;
-        font-weight: 600;
+    /* Quick Add Button CSS */
+    .btn-quick-add {
+        background: none;
+        border: 1px dashed var(--primary-color);
+        color: var(--primary-color);
+        padding: 2px 10px;
+        border-radius: 4px;
+        font-size: 12px;
         cursor: pointer;
-        white-space: nowrap;
         transition: all 0.2s;
         display: inline-flex;
         align-items: center;
-        justify-content: center;
+        gap: 4px;
     }
 
-        .btn-outline:hover {
-            border-color: var(--primary-color);
-            color: var(--primary-color);
-            background: var(--bg-light);
+        .btn-quick-add:hover {
+            background: var(--primary-color);
+            color: white;
         }
 
     /* Preview Wrappers */
@@ -239,29 +226,8 @@
             background: var(--danger-color);
         }
 
-    .embed-preview {
-        margin-top: 12px;
-        border-radius: 6px;
-        overflow: hidden;
-        display: none;
-        position: relative;
-        padding-bottom: 56.25%;
-        height: 0;
-        border: 1px solid var(--border-color);
-    }
-
-        .embed-preview iframe {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            border: none;
-        }
-
     /* File Input Wrapper */
     .file-input-wrap {
-        margin-top: 8px;
         padding: 12px;
         background: var(--bg-light);
         border: 1px dashed #cbd5e1;
@@ -299,25 +265,6 @@
                     border-color: var(--primary-color);
                     color: var(--primary-color);
                 }
-
-    .upload-divider {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        margin: 16px 0;
-        color: var(--text-muted);
-        font-size: 12px;
-        text-transform: uppercase;
-        font-weight: 600;
-    }
-
-        .upload-divider::before,
-        .upload-divider::after {
-            content: '';
-            flex: 1;
-            height: 1px;
-            background: var(--border-color);
-        }
 
     /* Tag Picker */
     .tag-picker {
@@ -490,25 +437,18 @@
 
     /* Responsive */
     @@media (max-width: 768px) {
-        .form-grid
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
 
-    {
-        grid-template-columns: 1fr;
-    }
+        .action-bar {
+            flex-direction: column;
+        }
 
-    .action-bar {
-        flex-direction: column;
-    }
-
-    .btn-custom {
-        width: 100%;
-        justify-content: center;
-    }
-
-    .url-group {
-        flex-direction: column;
-    }
-
+        .btn-custom {
+            width: 100%;
+            justify-content: center;
+        }
     }
 </style>
 
@@ -520,6 +460,7 @@
         <p class="page-subtitle">Fill in all the details to create a new movie entry</p>
     </div>
 
+    <!-- MAIN FORM -->
     <form asp-action="Create" method="post" enctype="multipart/form-data" id="createForm">
 
         @if (!ViewData.ModelState.IsValid)
@@ -541,7 +482,7 @@
                 <div class="form-grid">
                     <div class="form-group form-col-full">
                         <label class="form-label">Title <span class="req">*</span></label>
-                        <input asp-for="Title" class="form-control" id="titleInput" placeholder="Enter movie title…" autocomplete="off" />
+                        <input asp-for="Title" class="form-control" id="titleInput" placeholder="Enter movie title…" autocomplete="off" required />
                         <span asp-validation-for="Title" class="text-danger"></span>
                     </div>
 
@@ -559,14 +500,14 @@
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">Release Year</label>
-                        <input asp-for="ReleaseYear" class="form-control" type="number" min="1900" max="2100" placeholder="e.g. 2024" />
+                        <label class="form-label">Release Year <span class="req">*</span></label>
+                        <input asp-for="ReleaseYear" class="form-control" type="number" min="1888" max="2100" required placeholder="e.g. 2024" />
                         <span asp-validation-for="ReleaseYear" class="text-danger"></span>
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">Duration (minutes)</label>
-                        <input asp-for="DurationMinutes" class="form-control" type="number" min="1" placeholder="e.g. 120" />
+                        <label class="form-label">Duration (minutes) <span class="req">*</span></label>
+                        <input asp-for="DurationMinutes" class="form-control" type="number" min="1" max="1000" required placeholder="e.g. 120" />
                         <span asp-validation-for="DurationMinutes" class="text-danger"></span>
                     </div>
                 </div>
@@ -579,39 +520,18 @@
                 <div class="form-grid">
 
                     <div class="form-group form-col-full">
-                        <label class="form-label">Poster Image</label>
+                        <label class="form-label">Poster Image <span class="req">*</span></label>
 
                         <div class="file-input-wrap" id="posterFileWrap">
-                            <input type="file" name="posterFile" id="posterFileInput" accept=".jpg,.jpeg,.png,.webp" onchange="onPosterFileChange(this)" />
-                            <span class="form-hint" style="margin-top: 8px;">Select image file (JPG, PNG, WEBP). Max 5MB.</span>
+                            <input type="file" name="posterFile" id="posterFileInput" accept=".jpg,.jpeg,.png,.webp" onchange="onPosterFileChange(this)" required />
                         </div>
-
-                        <div class="url-group mt-2">
-                            <input asp-for="PosterUrl" class="form-control" id="posterUrlInput" placeholder="https://example.com/poster.jpg" />
-                            <button type="button" class="btn-outline" onclick="previewPoster()"><i class="zmdi zmdi-eye"></i> Preview</button>
-                            <button type="button" class="btn-outline" onclick="clearPoster()" style="color:var(--text-muted);"><i class="zmdi zmdi-close"></i> Clear</button>
-                        </div>
-                        <span class="form-hint">Paste a direct image link. Click Preview to verify.</span>
-                        <span asp-validation-for="PosterUrl" class="text-danger"></span>
+                        <span class="form-hint mt-2">Select image file (JPG, PNG, WEBP). Max 5MB.</span>
 
                         <div class="img-preview-wrap" id="posterPreview">
                             <img src="" alt="Poster preview" id="posterPreviewImg" />
                             <button type="button" class="preview-clear-btn" onclick="clearPoster()"><i class="zmdi zmdi-close"></i></button>
                         </div>
                     </div>
-
-                    @* <div class="form-group form-col-full" style="margin-top: 16px; border-top: 1px solid var(--border-color); padding-top: 16px;">
-                        <label class="form-label">Trailer URL</label>
-                        <div class="url-group">
-                            <input asp-for="TrailerUrl" class="form-control" id="trailerUrlInput" placeholder="https://youtube.com/watch?v=..." />
-                            <button type="button" class="btn-outline" onclick="previewTrailer()"><i class="zmdi zmdi-eye"></i> Preview</button>
-                            <button type="button" class="btn-outline" onclick="clearTrailer()" style="color:var(--text-muted);"><i class="zmdi zmdi-close"></i> Clear</button>
-                        </div>
-                        <span class="form-hint">YouTube or Vimeo link.</span>
-                        <span asp-validation-for="TrailerUrl" class="text-danger"></span>
-
-                        <div class="embed-preview" id="trailerPreview"></div>
-                    </div> *@
 
                 </div>
             </div>
@@ -623,7 +543,7 @@
                 <div class="form-grid">
                     <div class="form-group">
                         <label class="form-label">Movie Type <span class="req">*</span></label>
-                        <select asp-for="Type" class="form-control" asp-items="Html.GetEnumSelectList<FinalCuongFilm.ApplicationCore.Entities.Enum.MovieType>()">
+                        <select asp-for="Type" class="form-control" asp-items="Html.GetEnumSelectList<FinalCuongFilm.ApplicationCore.Entities.Enum.MovieType>()" required>
                             <option value="">-- Select Type --</option>
                         </select>
                         <span asp-validation-for="Type" class="text-danger"></span>
@@ -631,7 +551,7 @@
 
                     <div class="form-group">
                         <label class="form-label">Status <span class="req">*</span></label>
-                        <select asp-for="Status" class="form-control" asp-items="Html.GetEnumSelectList<FinalCuongFilm.ApplicationCore.Entities.Enum.MovieStatus>()">
+                        <select asp-for="Status" class="form-control" asp-items="Html.GetEnumSelectList<FinalCuongFilm.ApplicationCore.Entities.Enum.MovieStatus>()" required>
                             <option value="">-- Select Status --</option>
                         </select>
                         <span asp-validation-for="Status" class="text-danger"></span>
@@ -639,7 +559,7 @@
 
                     <div class="form-group">
                         <label class="form-label">Country <span class="req">*</span></label>
-                        <select asp-for="CountryId" class="form-control" asp-items="ViewBag.Countries">
+                        <select asp-for="CountryId" class="form-control" asp-items="ViewBag.Countries" required>
                             <option value="">-- Select Country --</option>
                         </select>
                         <span asp-validation-for="CountryId" class="text-danger"></span>
@@ -647,7 +567,7 @@
 
                     <div class="form-group">
                         <label class="form-label">Language <span class="req">*</span></label>
-                        <select asp-for="LanguageId" class="form-control" asp-items="ViewBag.Languages">
+                        <select asp-for="LanguageId" class="form-control" asp-items="ViewBag.Languages" required>
                             <option value="">-- Select Language --</option>
                         </select>
                         <span asp-validation-for="LanguageId" class="text-danger"></span>
@@ -660,8 +580,18 @@
             <div class="form-card-header"><i class="zmdi zmdi-accounts-alt"></i> Cast &amp; Genres</div>
             <div class="form-card-body">
                 <div class="form-grid">
+
+                    <!-- ACTOR SECTION -->
                     <div class="form-group">
-                        <label class="form-label">Actors</label>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <label class="form-label" style="margin-bottom: 0;">Actors</label>
+
+                            <!-- QUICK ADD BUTTON -->
+                            <button type="button" class="btn-quick-add" data-bs-toggle="modal" data-bs-target="#quickAddActorModal">
+                                <i class="zmdi zmdi-plus"></i> Add New
+                            </button>
+                        </div>
+
                         <select asp-for="ActorIds" asp-items="ViewBag.Actors" multiple id="actorSelect" class="form-control" style="display:none"></select>
 
                         <div class="tag-picker" id="actorPicker">
@@ -676,6 +606,7 @@
                         <span asp-validation-for="ActorIds" class="text-danger"></span>
                     </div>
 
+                    <!-- GENRE SECTION -->
                     <div class="form-group">
                         <label class="form-label">Genres</label>
                         <select asp-for="GenreIds" asp-items="ViewBag.Genres" multiple id="genreSelect" class="form-control" style="display:none"></select>
@@ -714,6 +645,33 @@
     </form>
 </div>
 
+<!-- ============================================== -->
+<!-- QUICK ADD ACTOR MODAL (Placed outside the form) -->
+<!-- ============================================== -->
+<div class="modal fade" id="quickAddActorModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-light">
+                <h5 class="modal-title" style="font-size: 16px; font-weight: 600;"><i class="zmdi zmdi-account-add text-primary"></i> Quick Add Actor</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group mb-0">
+                    <label class="form-label" for="newActorName">Actor Name <span class="req">*</span></label>
+                    <input type="text" id="newActorName" class="form-control" placeholder="E.g. Matthew McConaughey..." autocomplete="off" />
+                    <span id="actorErrorMsg" class="text-danger mt-1" style="display:none; font-size: 13px;"></span>
+                </div>
+            </div>
+            <div class="modal-footer border-top-0">
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal" style="border-radius: 4px;">Cancel</button>
+                <button type="button" class="btn-custom btn-primary" id="btnSaveActorModal" style="padding: 6px 16px; font-size: 13px;">
+                    <i class="zmdi zmdi-save"></i> Save Actor
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
@@ -721,7 +679,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', function () {
 
-            /* Slug */
+            /* Slug Generator */
             const titleEl = document.getElementById('titleInput');
             const slugEl  = document.getElementById('slugInput');
             let slugLocked = false;
@@ -760,7 +718,9 @@
                     }
                 }
 
-                // Search Event
+                // CỰC KỲ QUAN TRỌNG: Gắn hàm renderChips vào element select để có thể gọi từ AJAX
+                sel.renderChips = renderChips;
+
                 search.addEventListener('input', function() {
                     const term = this.value.toLowerCase().trim();
                     dropdown.innerHTML = '';
@@ -789,100 +749,147 @@
                     dropdown.style.display = matches > 0 ? 'block' : 'none';
                 });
 
-                // Close dropdown on outside click
                 document.addEventListener('click', function(e) {
                     if (picker && !picker.contains(e.target)) {
                         dropdown.style.display = 'none';
                     }
                 });
 
-                renderChips(); // Initialize empty state
+                renderChips();
             }
 
             buildTagPicker('actorSelect', 'actorSearch', 'actorDropdown', 'actorChips', 'actorPicker');
             buildTagPicker('genreSelect', 'genreSearch', 'genreDropdown', 'genreChips', 'genrePicker');
 
             /* Submit feedback */
-            document.getElementById('createForm').addEventListener('submit', () => {
-                const btn = document.getElementById('submitBtn');
-                btn.innerHTML = '<i class="zmdi zmdi-spinner zmdi-hc-spin"></i> Saving…';
-                btn.disabled = true;
+            document.getElementById('createForm').addEventListener('submit', function (e) {
+                // Ensure form is completely valid before disabling button
+                if (this.checkValidity()) {
+                    const btn = document.getElementById('submitBtn');
+                    btn.innerHTML = '<i class="zmdi zmdi-spinner zmdi-hc-spin"></i> Saving…';
+                    // We use setTimeout so the form submission isn't blocked by the disabled state
+                    setTimeout(() => { btn.disabled = true; }, 10);
+                }
             });
+
+            /* ============================================== */
+            /* QUICK ADD ACTOR - AJAX LOGIC                   */
+            /* ============================================== */
+            const btnSaveActorModal = document.getElementById('btnSaveActorModal');
+            if (btnSaveActorModal) {
+                btnSaveActorModal.addEventListener('click', function () {
+                    const nameInput = document.getElementById('newActorName');
+                    const actorName = nameInput.value.trim();
+                    const errorSpan = document.getElementById('actorErrorMsg');
+
+                    if (!actorName) {
+                        errorSpan.textContent = 'Actor name cannot be empty.';
+                        errorSpan.style.display = 'block';
+                        return;
+                    }
+
+                    const originalText = this.innerHTML;
+                    this.innerHTML = '<i class="zmdi zmdi-spinner zmdi-hc-spin"></i> Saving...';
+                    this.disabled = true;
+                    errorSpan.style.display = 'none';
+
+                    // Sử dụng FormData để gọi API /Admin/Actors/QuickAdd
+                    const formData = new FormData();
+                    formData.append('actorName', actorName);
+
+                          const tokenElement = document.querySelector('input[name="__RequestVerificationToken"]');
+                        if (tokenElement) {
+                            formData.append('__RequestVerificationToken', tokenElement.value);
+                        }  
+
+                    fetch('@Url.Action("QuickAdd", "Actors", new { area = "Admin" })', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // 1. Lấy dropdown Actor và thêm Option mới
+                            const selectEl = document.getElementById('actorSelect');
+                            const newOption = new Option(data.name, data.id, true, true);
+                            selectEl.appendChild(newOption);
+
+                            // 2. Kích hoạt render lại giao diện Chip (gọi hàm đã được gắn ở trên)
+                            if (typeof selectEl.renderChips === 'function') {
+                                selectEl.renderChips();
+                            }
+
+                            // 3. Đóng Modal
+                            const modalEl = document.getElementById('quickAddActorModal');
+                            if (typeof bootstrap !== 'undefined') {
+                                const modalInstance = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+                                modalInstance.hide();
+                            } else if (typeof $ !== 'undefined') {
+                                $('#quickAddActorModal').modal('hide');
+                            }
+
+                            // 4. Xóa trắng form cho lần mở sau
+                            nameInput.value = '';
+                        } else {
+                            // Báo lỗi từ Server (ví dụ: Trùng tên)
+                            errorSpan.textContent = data.message;
+                            errorSpan.style.display = 'block';
+                        }
+                    })
+                    .catch(error => {
+                        errorSpan.textContent = 'System error. Please try again.';
+                        errorSpan.style.display = 'block';
+                    })
+                    .finally(() => {
+                        // Trả lại trạng thái cho nút
+                        this.innerHTML = originalText;
+                        this.disabled = false;
+                    });
+                });
+
+                // Tiện ích: Bấm phím Enter ở ô text sẽ tự Submit
+                document.getElementById('newActorName').addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault(); // Tránh submit nhầm form ngoài
+                        btnSaveActorModal.click();
+                    }
+                });
+            }
         });
 
-        /* Poster File Upload Preview */
+        /* File Upload Handler & Preview */
         function onPosterFileChange(input) {
             const wrap = document.getElementById('posterPreview');
             const img  = document.getElementById('posterPreviewImg');
-            const urlInput = document.getElementById('posterUrlInput');
 
             if (input.files && input.files[0]) {
                 const file = input.files[0];
+
+                // Validate size (Max 5MB)
                 if (file.size > 5 * 1024 * 1024) {
-                    alert('File is too large. Please select an image under 5MB.');
-                    input.value = '';
+                    alert('Image size is too large. Please select an image under 5MB.');
+                    clearPoster();
                     return;
                 }
+
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     img.src = e.target.result;
                     wrap.style.display = 'block';
                 };
                 reader.readAsDataURL(file);
-                urlInput.value = '';
+            } else {
+                clearPoster();
             }
         }
 
-        /* Poster URL Preview */
-        function previewPoster() {
-            const url  = document.getElementById('posterUrlInput').value.trim();
-            const wrap = document.getElementById('posterPreview');
-            const img  = document.getElementById('posterPreviewImg');
-            if (!url) { alert('Please enter a poster URL first.'); return; }
-            img.onload  = () => { wrap.style.display = 'block'; };
-            img.onerror = () => { alert('Could not load image. Check the URL.'); wrap.style.display = 'none'; };
-            img.src = url;
-            document.getElementById('posterFileInput').value = '';
-        }
-
+        /* Clear Poster Input */
         function clearPoster() {
-            document.getElementById('posterUrlInput').value = '';
             document.getElementById('posterFileInput').value = '';
             const wrap = document.getElementById('posterPreview');
             wrap.style.display = 'none';
             document.getElementById('posterPreviewImg').src = '';
         }
 
-        // Trailer Preview
-        // function previewTrailer() {
-        //     const urlElement = document.getElementById('trailerUrlInput');
-        //     if (!urlElement) return;
-
-        //     const url  = urlElement.value.trim();
-        //     const wrap = document.getElementById('trailerPreview');
-        //     if (!url) { alert('Please enter a trailer URL first.'); return; }
-        //     const embed = getEmbedUrl(url);
-        //     if (!embed) { alert('Unsupported URL. Please use a YouTube or Vimeo link.'); return; }
-        //     wrap.innerHTML = `<iframe src="${embed}" frameborder="0" allowfullscreen></iframe>`;
-        //     wrap.style.display = 'block';
-        // }
-
-        function clearTrailer() {
-            const urlElement = document.getElementById('trailerUrlInput');
-            if (urlElement) urlElement.value = '';
-            const wrap = document.getElementById('trailerPreview');
-            if (wrap) {
-                wrap.style.display = 'none';
-                wrap.innerHTML = '';
-            }
-        }
-
-        function getEmbedUrl(url) {
-            const yt = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
-            if (yt) return `https://www.youtube.com/embed/${yt[1]}`;
-            const vi = url.match(/vimeo\.com\/([0-9]+)/);
-            if (vi) return `https://player.vimeo.com/video/${vi[1]}`;
-            return null;
-        }
     </script>
 }

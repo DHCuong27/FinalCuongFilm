@@ -110,7 +110,69 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 			await PopulateMoviesDropdown();
 			return View(dto);
 		}
+		[HttpPost]
+		[ValidateAntiForgeryToken]
+		public async Task<IActionResult> QuickAdd([FromForm] string actorName)
+		{
+			try
+			{
+				if (string.IsNullOrWhiteSpace(actorName))
+				{
+					return Json(new { success = false, message = "The actor's name cannot be left blank." });
+				}
 
+				// Kiểm tra xem diễn viên đã tồn tại chưa
+				var existingActor = await _context.Actors
+					.FirstOrDefaultAsync(a => a.Name.ToLower() == actorName.ToLower());
+
+				if (existingActor != null)
+				{
+					return Json(new { success = false, message = "This actor already exists!" });
+				}
+
+				// Tạo Slug tạm từ tên (rất nhiều project dính lỗi vì bảng Actor bắt buộc phải có Slug)
+				string tempSlug = actorName.ToLower().Replace(" ", "-").Replace("'", "") + "-" + Guid.NewGuid().ToString().Substring(0, 5);
+
+				// Khởi tạo Actor với đầy đủ các trường cơ bản nhất
+				var newActor = new Actor
+				{
+					Id = Guid.NewGuid(), // Bắt buộc sinh ID mới
+					Name = actorName,
+					Gender = "Unknown",
+					DateOfBirth = null,
+					AvartUrl = null,
+					Slug = tempSlug,
+					
+				};
+
+				_context.Actors.Add(newActor);
+				await _context.SaveChangesAsync(); // Lưu xuống DB
+
+				return Json(new
+				{
+					success = true,
+					id = newActor.Id,
+					name = newActor.Name
+				});
+			}
+			catch (Exception ex)
+			{
+				// 🌟 BÍ QUYẾT TÌM LỖI: Lôi cái "Inner Exception" ra và ném thẳng lên màn hình UI
+				string detailedError = ex.Message;
+
+				if (ex.InnerException != null)
+				{
+					detailedError = ex.InnerException.Message; // Đây mới là câu chửi thật sự của SQL Server!
+				}
+
+				// Log ra Console của Visual Studio để bạn dễ nhìn
+				Console.WriteLine(" Error ADDING ACTOR ");
+				Console.WriteLine(detailedError);
+
+				// Trả lỗi về thẳng cho AJAX hiện lên màn hình đỏ
+				return Json(new { success = false, message = "Error DB: " + detailedError });
+			}
+		}
 		private async Task PopulateMoviesDropdown()
 		{
 			// Business logic: Only fetch Active movies, and only get Id + Title to optimize RAM

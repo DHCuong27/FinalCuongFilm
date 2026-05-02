@@ -14,12 +14,12 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.WebHost.ConfigureKestrel(serverOptions =>
 {
-	serverOptions.Limits.MaxRequestBodySize = 5_000_000_000;
+	serverOptions.Limits.MaxRequestBodySize = 5368709120;
 });
 
 builder.Services.Configure<FormOptions>(options =>
 {
-    options.MultipartBodyLengthLimit = 5_000_000_000; 
+    options.MultipartBodyLengthLimit = 5368709120; 
 });
 
 //  DATABASE 
