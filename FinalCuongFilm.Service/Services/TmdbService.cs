@@ -96,8 +96,7 @@ namespace FinalCuongFilm.Service.Services
 
 		// Helper để lấy thời lượng tập phim (vì nó trả về mảng int[])
 		private int bindingRunTime(JsonElement element)
-		{
-			if (element.ValueKind == JsonValueKind.Array && element.GetArrayLength() > 0)
+		{			if (element.ValueKind == JsonValueKind.Array && element.GetArrayLength() > 0)
 				return element[0].GetInt32();
 			return 0;
 		}

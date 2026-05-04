@@ -286,7 +286,7 @@ namespace FinalCuongFilm.MVC.Controllers
 				ViewBag.SubtitleFiles = subtitleFiles;
 				ViewBag.Actors = actors;
 				ViewBag.Reviews = await _reviewService.GetMovieReviewsAsync(movie.Id, approvedOnly: false);
-				// =================================
+				
 
 				var viewModel = new MovieWatchViewModel
 				{
@@ -300,7 +300,7 @@ namespace FinalCuongFilm.MVC.Controllers
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError(ex, "[Watch] Lỗi nghiêm trọng khi load phim: {Slug}", slug);
+				_logger.LogError(ex, "[Watch] Error when load film: {Slug}", slug);
 				return RedirectToAction("Index", "Home");
 			}
 		}

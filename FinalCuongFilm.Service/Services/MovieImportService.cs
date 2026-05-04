@@ -67,7 +67,7 @@ namespace FinalCuongFilm.Service.Services
 					MovieActors = new List<MovieActor>()
 				};
 
-				// 2. Process Country (FIXED: Added Local cache & Slug check to prevent Unique Index Error)
+				// 2. Process Country Added Local cache & Slug check to prevent Unique Index Error)
 				var firstCountry = movieDetails.ProductionCountries?.FirstOrDefault();
 				if (firstCountry != null)
 				{
@@ -107,7 +107,7 @@ namespace FinalCuongFilm.Service.Services
 					{
 						var slug = SlugHelper.GenerateSlug(genreData.Name);
 
-						// FIXED: Check Local cache as well to prevent duplicates in the same transaction
+						// Check Local cache as well to prevent duplicates in the same transaction
 						var genre = _dbContext.Genres.Local.FirstOrDefault(g => g.Slug == slug)
 									?? existingGenres.FirstOrDefault(g => g.Slug == slug);
 

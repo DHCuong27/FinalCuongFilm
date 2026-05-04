@@ -21,9 +21,11 @@ namespace FinalCuongFilm.Service.Services
 				.Where(p => p.IsActive)
 				.OrderBy(p => p.Price) // Sắp xếp từ rẻ đến đắt
 				.ToListAsync();
+
+
 		}
 
-		// SỬA LỖI 2: Bổ sung implementation cho hàm này
+	//  implementation 
 		public async Task<VipPackage?> GetPackageByIdAsync(Guid packageId)
 		{
 			return await _context.VipPackages.FindAsync(packageId);
@@ -44,7 +46,7 @@ namespace FinalCuongFilm.Service.Services
 		public async Task<Transaction> CreateTransactionAsync(string userId, Guid packageId)
 		{
 			var package = await _context.VipPackages.FindAsync(packageId);
-			if (package == null || !package.IsActive) throw new Exception("Gói VIP không hợp lệ.");
+			if (package == null || !package.IsActive) throw new Exception("VIP package is invalid.");
 
 			var transaction = new Transaction
 			{
@@ -52,7 +54,7 @@ namespace FinalCuongFilm.Service.Services
 				UserId = userId,
 				PackageId = packageId,
 				Amount = package.Price,
-				OrderInfo = $"Upgrade {package.Name}", // Tiếng Việt không dấu cho ZaloPay
+				OrderInfo = $"Upgrade {package.Name}", 
 				Status = TransactionStatus.Pending,
 				TransactionDate = DateTime.UtcNow
 			};

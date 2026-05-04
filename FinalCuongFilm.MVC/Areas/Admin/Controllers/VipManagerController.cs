@@ -26,7 +26,6 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 		}
 
 		// 1. Manage Transaction History (Payments)
-
 		public async Task<IActionResult> Transactions(int page = 1)
 		{
 
@@ -47,7 +46,6 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 
 				await _context.SaveChangesAsync();
 			}
-
 
 			int pageSize = 10;
 			var totalItems = await _context.Transactions.CountAsync();
@@ -72,10 +70,10 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 
 		public async Task<IActionResult> ActiveVips()
 		{
-			// ĐÃ FIX: Bỏ điều kiện "&& s.IsActive" để lấy cả những gói đang bị Khóa tạm thời
+			
 			var rawActiveVips = await _context.UserSubscriptions
 				.Include(s => s.Package)
-				.Where(s => s.EndDate > DateTime.UtcNow) // Chỉ lọc những gói chưa hết hạn
+				.Where(s => s.EndDate > DateTime.UtcNow) //  lọc những gói chưa hết hạn
 				.ToListAsync();
 
 			var activeVips = rawActiveVips

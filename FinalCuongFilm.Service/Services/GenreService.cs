@@ -98,7 +98,7 @@ namespace FinalCuongFilm.Service.Services
 			// Kiểm tra nghiệp vụ: không cho xóa nếu có phim thuộc thể loại này
 			if (genre.MovieGenres.Any())
 			{
-				throw new InvalidOperationException("Không thể xóa thể loại đang được sử dụng. Vui lòng gỡ thể loại khỏi các phim trước.");
+				throw new InvalidOperationException("Cannot remove the genre currently in use. Please remove the genre from the films first.");
 			}
 
 			_context.Genres.Remove(genre);
