@@ -22,7 +22,6 @@ namespace FinalCuongFilm.Service.Services
 			if (!Directory.Exists(_tempPath)) Directory.CreateDirectory(_tempPath);
 		}
 
-		// Bổ sung CancellationToken vào hàm
 		public async Task<string> ConvertToHlsAsync(string sourceFileUrl, string slug, int episodeNumber, CancellationToken cancellationToken)
 		{
 			_logger.LogInformation($"[START] Processing HLS for: {slug} - Ep: {episodeNumber}");
@@ -55,7 +54,7 @@ namespace FinalCuongFilm.Service.Services
 					}
 				}
 
-				// 2. Transcode bằng FFmpeg
+				// 2. Transcode  FFmpeg
 				_logger.LogInformation($"[FFMPEG] Start splitting and compressing multi-resolution video....");
 				string ffmpegArgs =
 				$"-i \"{localInputPath}\" " +
@@ -73,7 +72,6 @@ namespace FinalCuongFilm.Service.Services
 
 				var conversion = FFmpeg.Conversions.New().AddParameter(ffmpegArgs);
 
-				// 🔥 ĐIỂM CHỐT HẠ: Truyền token vào Start(). 
 				// Khi Hangfire hủy Job, lệnh này sẽ bắt Xabe.FFmpeg ép kill tiến trình ffmpeg.exe
 				await conversion.Start(cancellationToken);
 
@@ -105,7 +103,7 @@ namespace FinalCuongFilm.Service.Services
 					}
 					finally
 					{
-						semaphore.Release(); // Xong việc thì nhường chỗ cho file khác
+						semaphore.Release(); 
 					}
 				});
 
@@ -139,12 +137,11 @@ namespace FinalCuongFilm.Service.Services
 			}
 		}
 
-		// Bổ sung CancellationToken vào tham số của Hangfire Job
+	// Hang Fire
 		public async Task ProcessVideoBackgroundJobAsync(Guid mediaFileId, string mp4Url, string slug, int episodeNumber, CancellationToken cancellationToken)
 		{
 			try
-			{
-				// 1. Chạy hàm convert (Chuyền token xuống dưới)
+			{	
 				string masterM3u8Url = await ConvertToHlsAsync(mp4Url, slug, episodeNumber, cancellationToken);
 
 				// 2. Cập nhật Database sau khi xong
@@ -177,7 +174,7 @@ namespace FinalCuongFilm.Service.Services
 			catch (Exception ex)
 			{
 				_logger.LogError(ex, $"[HANGFIRE] Error when processing video in the background for MediaId: {mediaFileId}");
-				throw; // Ném lỗi ra ngoài để Hangfire Dashboard đổi sang màu đỏ (Failed)
+				throw; 
 			}
 		}
 	}

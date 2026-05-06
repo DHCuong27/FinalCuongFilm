@@ -20,7 +20,7 @@ namespace FinalCuongFilm.Service.Interfaces
 
 		Task CompleteTransactionAsync(Guid transactionId, bool isSuccess);
 
-		//  Admin CRUD
+
 		Task<IEnumerable<VipPackage>> GetAllPackagesAsync(); // Lấy cả gói bị ẩn
 		Task CreatePackageAsync(VipPackage package);
 		Task UpdatePackageAsync(VipPackage package);

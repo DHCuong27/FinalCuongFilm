@@ -150,7 +150,6 @@ namespace FinalCuongFilm.Service.Services
 		}
 
 		// Generate a streaming URL with SAS token for secure access
-		// Generate a streaming URL with SAS token for secure access
 		public async Task<string> GetStreamingUrlAsync(string blobUrl, int expiryHours = 24)
 		{
 			try

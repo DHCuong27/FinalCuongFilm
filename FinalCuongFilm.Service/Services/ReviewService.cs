@@ -216,7 +216,6 @@ namespace FinalCuongFilm.Service.Services
 		public async Task<MovieRatingDto> GetMovieRatingAsync(Guid movieId)
 		{
 			var movie = await _context.Movies
-				.Include(m => m.Reviews.Where(r => r.IsApproved))
 				.Include(m => m.Favorites)
 				.FirstOrDefaultAsync(m => m.Id == movieId);
 
@@ -225,30 +224,34 @@ namespace FinalCuongFilm.Service.Services
 				throw new KeyNotFoundException("Film not found");
 			}
 
-			var approvedReviews = movie.Reviews.Where(r => r.IsApproved).ToList();
-			// Đảm bảo em thêm ".Where(r => r.Rating > 0)" trước khi tính toán
-			var validRatings = _context.Reviews.Where(r => r.MovieId == movieId && r.Rating > 0);
+			// 1. Tải TOÀN BỘ dữ liệu cần thiết lên RAM (ToListAsync) trước khi tính toán
+			var approvedReviews = await _context.Reviews
+				.Where(r => r.MovieId == movieId && r.IsApproved)
+				.ToListAsync();
 
-			int totalReviews = await validRatings.CountAsync();
-			double averageRating = totalReviews > 0 ? await validRatings.AverageAsync(r => r.Rating) : 0;
+			// 2. Lọc ra những người có đánh giá sao > 0
+			var validRatings = approvedReviews.Where(r => r.Rating > 0).ToList();
+
+			// 3. Tính toán thủ công trên Memory (không gọi AverageAsync của EF nữa)
+			int totalReviews = validRatings.Count;
+			double averageRating = totalReviews > 0 ? validRatings.Average(r => r.Rating) : 0;
+
 			var ratingDistribution = new Dictionary<int, int>
-			{
-				{ 5, approvedReviews.Count(r => r.Rating == 5) },
-				{ 4, approvedReviews.Count(r => r.Rating == 4) },
-				{ 3, approvedReviews.Count(r => r.Rating == 3) },
-				{ 2, approvedReviews.Count(r => r.Rating == 2) },
-				{ 1, approvedReviews.Count(r => r.Rating == 1) }
-			};
+	{
+		{ 5, validRatings.Count(r => r.Rating == 5) },
+		{ 4, validRatings.Count(r => r.Rating == 4) },
+		{ 3, validRatings.Count(r => r.Rating == 3) },
+		{ 2, validRatings.Count(r => r.Rating == 2) },
+		{ 1, validRatings.Count(r => r.Rating == 1) }
+	};
 
 			return new MovieRatingDto
 			{
 				MovieId = movie.Id,
 				MovieTitle = movie.Title,
-				AverageRating = approvedReviews.Any()
-					? Math.Round(approvedReviews.Average(r => r.Rating), 1)
-					: 0,
-				TotalReviews = approvedReviews.Count,
-				TotalFavorites = movie.Favorites.Count,
+				AverageRating = Math.Round(averageRating, 1),
+				TotalReviews = totalReviews,
+				TotalFavorites = movie.Favorites?.Count ?? 0,
 				RatingDistribution = ratingDistribution
 			};
 		}

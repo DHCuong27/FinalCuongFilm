@@ -658,15 +658,33 @@
     <script>
         document.addEventListener('DOMContentLoaded', function () {
 
-            /* Slug Logic */
+            /* 1. Slug Logic */
             const titleEl = document.getElementById('titleInput');
             const slugEl  = document.getElementById('slugInput');
-            let slugLocked = slugEl.value.trim().length > 0;
-            const toSlug = t => t.toLowerCase().replace(/[^\w\s-]/g,'').replace(/\s+/g,'-').replace(/-+/g,'-').trim();
-            titleEl.addEventListener('input', () => { if (!slugLocked) slugEl.value = toSlug(titleEl.value); });
-            slugEl.addEventListener('input',  () => { slugLocked = slugEl.value.length > 0; });
+            let slugLocked = slugEl && slugEl.value.trim().length > 0;
 
-            /* TAG PICKER FACTORY */
+            function toSlug(str) {
+                str = str.toLowerCase();
+                str = str.replace(/(à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ)/g, 'a');
+                str = str.replace(/(è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ)/g, 'e');
+                str = str.replace(/(ì|í|ị|ỉ|ĩ)/g, 'i');
+                str = str.replace(/(ò|ó|ọ|ỏ|õ|ô|ồ|ố|ộ|ổ|ỗ|ơ|ờ|ớ|ợ|ở|ỡ)/g, 'o');
+                str = str.replace(/(ù|ú|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ)/g, 'u');
+                str = str.replace(/(ỳ|ý|ỵ|ỷ|ỹ)/g, 'y');
+                str = str.replace(/(đ)/g, 'd');
+                str = str.replace(/([^0-9a-z-\s])/g, '');
+                str = str.replace(/(\s+)/g, '-');
+                str = str.replace(/^-+/g, '');
+                str = str.replace(/-+$/g, '');
+                return str;
+            }
+
+            if (titleEl && slugEl) {
+                titleEl.addEventListener('input', () => { if (!slugLocked) slugEl.value = toSlug(titleEl.value); });
+                slugEl.addEventListener('input',  () => { slugLocked = slugEl.value.trim().length > 0; });
+            }
+
+            /* 2. TAG PICKER FACTORY */
             function buildTagPicker(selectId, searchId, dropdownId, chipsId, pickerId) {
                 const sel      = document.getElementById(selectId);
                 const search   = document.getElementById(searchId);
@@ -697,7 +715,8 @@
                     }
                 }
 
-                // Search Event
+                sel.renderChips = renderChips;
+
                 search.addEventListener('input', function() {
                     const term = this.value.toLowerCase().trim();
                     dropdown.innerHTML = '';
@@ -726,37 +745,120 @@
                     dropdown.style.display = matches > 0 ? 'block' : 'none';
                 });
 
-                // Close dropdown on outside click
                 document.addEventListener('click', function(e) {
                     if (picker && !picker.contains(e.target)) {
                         dropdown.style.display = 'none';
                     }
                 });
 
+                // Chạy ngay khi load trang để load diễn viên cũ
                 renderChips();
             }
 
             buildTagPicker('actorSelect', 'actorSearch', 'actorDropdown', 'actorChips', 'actorPicker');
             buildTagPicker('genreSelect', 'genreSearch', 'genreDropdown', 'genreChips', 'genrePicker');
 
-            /* Submit feedback */
-            document.getElementById('editForm').addEventListener('submit', () => {
-                const btn = document.getElementById('submitBtn');
-                btn.innerHTML = '<i class="zmdi zmdi-spinner zmdi-hc-spin"></i> Saving...';
-                btn.disabled = true;
-            });
+            /* 3. Submit feedback */
+            const editForm = document.getElementById('editForm');
+            if (editForm) {
+                editForm.addEventListener('submit', function() {
+                    if (this.checkValidity()) {
+                        const btn = document.getElementById('submitBtn');
+                        btn.innerHTML = '<i class="zmdi zmdi-spinner zmdi-hc-spin"></i> Saving...';
+                        setTimeout(() => { btn.disabled = true; }, 10);
+                    }
+                });
+            }
 
-            /* Show existing poster and trailer on page load */
-            const posterUrl = document.getElementById('editPosterUrl')?.value.trim();
+            /* 4. Show existing poster on page load */
+            const posterUrlEl = document.getElementById('editPosterUrl');
+            const posterUrl = posterUrlEl ? posterUrlEl.value.trim() : "";
             if (posterUrl) {
                 const wrap = document.getElementById('editPosterPreview');
                 const img  = document.getElementById('editPosterPreviewImg');
                 img.onload = () => wrap.style.display = 'block';
                 img.src = posterUrl;
             }
+
+            /* ========================================= */
+            /* 5. QUICK ADD ACTOR - AJAX LOGIC ĐÃ ĐƯỢC FIX */
+            /* ========================================= */
+            const btnSaveActorModal = document.getElementById('btnSaveActorModal');
+            if (btnSaveActorModal) {
+                btnSaveActorModal.addEventListener('click', function () {
+                    const nameInput = document.getElementById('newActorName');
+                    const actorName = nameInput.value.trim();
+                    const errorSpan = document.getElementById('actorErrorMsg');
+
+                    if (!actorName) {
+                        errorSpan.textContent = 'Actor name cannot be empty.';
+                        errorSpan.style.display = 'block';
+                        return;
+                    }
+
+                    const originalText = this.innerHTML;
+                    this.innerHTML = '<i class="zmdi zmdi-spinner zmdi-hc-spin"></i> Saving...';
+                    this.disabled = true;
+                    errorSpan.style.display = 'none';
+
+                    const formData = new FormData();
+                    formData.append('actorName', actorName);
+
+                    const tokenElement = document.querySelector('input[name="__RequestVerificationToken"]');
+                    if (tokenElement) {
+                        formData.append('__RequestVerificationToken', tokenElement.value);
+                    }
+
+                    fetch('@Url.Action("QuickAdd", "Actors", new { area = "Admin" })', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            const selectEl = document.getElementById('actorSelect');
+                            const newOption = new Option(data.name, data.id, true, true);
+                            selectEl.appendChild(newOption);
+
+                            if (typeof selectEl.renderChips === 'function') {
+                                selectEl.renderChips();
+                            }
+
+                            const modalEl = document.getElementById('quickAddActorModal');
+                            if (typeof bootstrap !== 'undefined') {
+                                const modalInstance = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+                                modalInstance.hide();
+                            } else if (typeof $ !== 'undefined') {
+                                $('#quickAddActorModal').modal('hide');
+                            }
+                            nameInput.value = '';
+                        } else {
+                            errorSpan.textContent = data.message;
+                            errorSpan.style.display = 'block';
+                        }
+                    })
+                    .catch(error => {
+                        errorSpan.textContent = 'System error. Please try again.';
+                        errorSpan.style.display = 'block';
+                    })
+                    .finally(() => {
+                        this.innerHTML = originalText;
+                        this.disabled = false;
+                    });
+                });
+
+                document.getElementById('newActorName').addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        btnSaveActorModal.click();
+                    }
+                });
+            }
         });
 
-        /* Poster File Upload Preview (Edit) */
+        /* ========================================= */
+        /* 6. FILE UPLOAD PREVIEW                    */
+        /* ========================================= */
         function onEditPosterFileChange(input) {
             const wrap     = document.getElementById('editPosterPreview');
             const img      = document.getElementById('editPosterPreviewImg');
@@ -775,7 +877,7 @@
                     wrap.style.display = 'block';
                 };
                 reader.readAsDataURL(file);
-                urlInput.value = ''; // Clear URL input to avoid conflicts
+                if (urlInput) urlInput.value = '';
             }
         }
 
@@ -791,7 +893,8 @@
         }
 
         function editClearPoster() {
-            document.getElementById('editPosterUrl').value = '';
+            const urlInput = document.getElementById('editPosterUrl');
+            if(urlInput) urlInput.value = '';
             document.getElementById('editPosterFileInput').value = '';
             document.getElementById('editPosterPreview').style.display = 'none';
             document.getElementById('editPosterPreviewImg').src = '';

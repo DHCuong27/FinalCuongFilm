@@ -20,7 +20,7 @@ namespace FinalCuongFilm.API.Extensions
 			services.AddAutoMapper(cfg =>
 				cfg.AddMaps(typeof(FinalCuongFilm.Service.Mappings.MappingProfile)));
 
-			// ✅ FIX: Đăng ký Identity với CuongFilmUser + CuongFilmIdentityDbContext
+			// Đăng ký Identity với CuongFilmUser + CuongFilmIdentityDbContext
 			// Thiếu phần này là nguyên nhân chính gây 401 và 500 trên API
 			services.AddIdentity<CuongFilmUser, CuongFilmRole>(options =>
 			{
@@ -61,7 +61,7 @@ namespace FinalCuongFilm.API.Extensions
 
 			services.AddAuthentication(options =>
 			{
-				// ✅ FIX: Đặt scheme mặc định là JWT thay vì Cookie
+				// Đặt scheme mặc định là JWT thay vì Cookie
 				// (khi dùng AddIdentity, scheme mặc định bị ghi đè thành Cookie)
 				options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
 				options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -84,7 +84,7 @@ namespace FinalCuongFilm.API.Extensions
 					ClockSkew = TimeSpan.Zero
 				};
 
-				// ✅ FIX: Trả về JSON 401 thay vì redirect về trang login
+				// Trả về JSON 401 thay vì redirect về trang login
 				options.Events = new JwtBearerEvents
 				{
 					OnChallenge = async context =>

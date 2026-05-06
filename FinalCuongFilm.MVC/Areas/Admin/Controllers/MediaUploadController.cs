@@ -37,8 +37,6 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 		#region 1. GLOBAL MEDIA MANAGEMENT (Quản lý toàn bộ danh sách file)
 
 		// GET: Admin/MediaUpload/Index
-
-		// Đã thêm tham số searchTerm
 		public async Task<IActionResult> Index(Guid? movieId, Guid? episodeId, string fileType = null, string searchTerm = null, int page = 1)
 		{
 			int pageSize = 10;
@@ -218,7 +216,7 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 		[HttpGet]
 		public async Task<IActionResult> UploadVideo(Guid? id)
 		{
-			// Bảo vệ UX: Tránh văng lỗi 404 nếu Admin truy cập URL không có ID
+			
 			if (id == null)
 			{
 				TempData["Error"] = "Please select a movie from the list to manage videos.";
@@ -262,6 +260,18 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 				// Xử lý upload file MP4 từ Local
 				if (dto.VideoFile != null && dto.VideoFile.Length > 0)
 				{
+					var allowedExtensions = new[] { ".mp4" };
+					var extension = Path.GetExtension(dto.VideoFile.FileName).ToLowerInvariant();
+
+					
+					if (!allowedExtensions.Contains(extension) || dto.VideoFile.ContentType != "video/mp4")
+					{
+						return Json(new
+						{
+							success = false,
+							message = "Upload Failed: Invalid file format. The system only accepts strictly .mp4 video files."
+						});
+					}
 					string originalUrl = await _azureBlobService.UploadVideoAsync(dto.VideoFile, movie.Slug, dto.EpisodeNumber);
 					long fileSize = dto.VideoFile.Length;
 

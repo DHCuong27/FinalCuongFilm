@@ -46,10 +46,9 @@ builder.Services.AddIdentity<CuongFilmUser, CuongFilmRole>(options =>
 	options.Password.RequireUppercase = true;
 	options.Password.RequireLowercase = true;
 	options.Password.RequireNonAlphanumeric = false;
-
 	options.User.RequireUniqueEmail = true;
-
 	options.SignIn.RequireConfirmedAccount = false;
+
 })
 .AddEntityFrameworkStores<CuongFilmIdentityDbContext>()
 .AddDefaultTokenProviders()
@@ -61,6 +60,8 @@ builder.Services.ConfigureApplicationCookie(options =>
 	options.LoginPath = "/Identity/Account/Login";
 	options.LogoutPath = "/Identity/Account/Logout";
 	options.AccessDeniedPath = "/Identity/Account/AccessDenied";
+	options.ExpireTimeSpan = TimeSpan.FromHours(24); 
+	options.SlidingExpiration = true;
 });
 
 // AutoMapper

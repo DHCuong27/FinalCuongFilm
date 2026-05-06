@@ -144,8 +144,8 @@ namespace FinalCuongFilm.MVC.Controllers
 			var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 			ViewBag.IsFavorited = userId != null && await _favoriteService.IsFavoriteAsync(userId, movie.Id);
 
-			try { ViewBag.Rating = await _reviewService.GetMovieRatingAsync(movie.Id); }
-			catch { ViewBag.Rating = null; }
+			// Luôn lấy Rating model, dù phim chưa có rating nào thì hàm GetMovieRatingAsync vẫn trả về model với giá trị 0
+			ViewBag.Rating = await _reviewService.GetMovieRatingAsync(movie.Id);
 
 			var reviews = await _reviewService.GetMovieReviewsAsync(movie.Id, approvedOnly: true);
 			ViewBag.Reviews = reviews.Take(5);

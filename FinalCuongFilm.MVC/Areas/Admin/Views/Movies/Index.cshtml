@@ -98,6 +98,16 @@
             box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
         }
 
+    .btn-secondary {
+        background: var(--bg-light);
+        color: var(--text-dark);
+        border: 1px solid var(--border-color);
+    }
+
+        .btn-secondary:hover {
+            background: #e2e8f0;
+        }
+
     /* Import Section */
     .import-section {
         background: var(--bg-white);
@@ -460,18 +470,19 @@
         @Html.AntiForgeryToken()
     </form>
 
+    <div class="table-toolbar">
+        <div style="font-weight: 600; color: var(--text-dark);">
+            Content List <span class="total-badge">@(Model?.TotalCount ?? 0) items</span>
+        </div>
+        <div class="search-wrapper">
+            <i class="zmdi zmdi-search search-icon"></i>
+            <input type="text" placeholder="Search Movies..." id="tableSearch" class="search-input" />
+        </div>
+    </div>
+
+    <!-- KIỂM TRA ĐỂ HIỂN THỊ BẢNG HOẶC EMPTY STATE -->
     @if (Model != null && Model.Items != null && Model.Items.Any())
     {
-        <div class="table-toolbar">
-            <div style="font-weight: 600; color: var(--text-dark);">
-                Content List <span class="total-badge">@Model.TotalCount items</span>
-            </div>
-            <div class="search-wrapper">
-                <i class="zmdi zmdi-search search-icon"></i>
-                <input type="text" placeholder="Search all columns..." id="tableSearch" class="search-input" />
-            </div>
-        </div>
-
         <div class="table-container">
             <table class="data-table">
                 <thead>
@@ -593,95 +604,168 @@
     }
     else
     {
+        <!-- 🔥 FIX: EMPTY STATE ĐƯỢC NÂNG CẤP ĐỂ XỬ LÝ TRƯỜNG HỢP SEARCH KHÔNG RA 🔥 -->
         <div class="empty-state">
             <i class="zmdi zmdi-movie-alt"></i>
             <h3 style="margin: 0 0 8px 0; color: var(--text-dark);">No Movies Found</h3>
-            <p style="color: var(--text-muted); margin-bottom: 24px;">There are no movies to display at the moment.</p>
-            <a asp-action="Create" class="btn-custom btn-primary">
-                <i class="zmdi zmdi-plus"></i> Add New Movie
-            </a>
+
+            @if (!string.IsNullOrEmpty(ViewBag.SearchTerm))
+            {
+                <p style="color: var(--text-muted); margin-bottom: 24px;">No results match your search for "<strong>@ViewBag.SearchTerm</strong>".</p>
+                <a asp-action="Index" class="btn-custom btn-secondary">
+                    <i class="zmdi zmdi-close"></i> Clear Search
+                </a>
+            }
+            else
+            {
+                <p style="color: var(--text-muted); margin-bottom: 24px;">There are no movies to display at the moment.</p>
+                <a asp-action="Create" class="btn-custom btn-primary">
+                    <i class="zmdi zmdi-plus"></i> Add New Movie
+                </a>
+            }
         </div>
     }
 </div>
 
 @section Scripts {
     <script>
-        // --- CLIENT-SIDE GLOBAL SEARCH FUNCTIONALITY ---
-        document.getElementById('tableSearch')?.addEventListener('keyup', function() {
-            const searchValue = this.value.toLowerCase();
-            const rows = document.querySelectorAll('.data-table tbody tr.data-table-row');
+        document.addEventListener("DOMContentLoaded", () => {
 
-            rows.forEach(row => {
-                // Search all text inside the row
-                const rowContent = row.textContent.toLowerCase();
+            // 1. SEARCH FUNCTIONALITY
+            const initSearch = () => {
+                const searchInput = document.getElementById("tableSearch");
+                if (!searchInput) return;
 
-                if (rowContent.includes(searchValue)) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
+                const currentUrl = new URL(window.location.href);
+                const currentSearchTerm = currentUrl.searchParams.get('searchTerm');
+
+                // Restore search keyword and focus
+                if (currentSearchTerm) {
+                    searchInput.value = currentSearchTerm;
+                    setTimeout(() => {
+                        searchInput.focus();
+                        searchInput.setSelectionRange(searchInput.value.length, searchInput.value.length);
+                    }, 0);
                 }
-            });
-        });
 
-        // --- TMDB IMPORT FUNCTIONALITY ---
-        document.getElementById('btnImport')?.addEventListener('click', async function () {
-            const titleInput = document.getElementById('movieTitle');
-            const title = titleInput.value.trim();
-            const btn = document.getElementById('btnImport');
-            const statusBox = document.getElementById('importStatus');
-            const spinner = document.getElementById('importSpinner');
-            const msgSpan = document.getElementById('importMessage');
+                // Debounce Helper
+                const debounce = (func, delay) => {
+                    let timer;
+                    return (...args) => {
+                        clearTimeout(timer);
+                        timer = setTimeout(() => func(...args), delay);
+                    };
+                };
 
-            if (!title) {
-                alert('Please input a movie title to Import!');
-                titleInput.focus();
-                return;
-            }
+                // Search Handler
+                const handleSearch = debounce((e) => {
+                    const keyword = e.target.value.trim();
 
-            btn.disabled = true;
-            statusBox.style.display = 'block';
-            spinner.style.display = 'inline-block';
-            msgSpan.style.color = 'var(--text-muted)';
-            msgSpan.innerText = `Loading movie information for "${title}" from TMDB...`;
+                    if (keyword === (currentSearchTerm || "")) return;
 
-            const token = document.querySelector('#antiforgeryForm input[name="__RequestVerificationToken"]').value;
-            const formData = new FormData();
-            formData.append('title', title);
-            formData.append('__RequestVerificationToken', token);
+                    if (keyword) {
+                        currentUrl.searchParams.set("searchTerm", keyword);
+                    } else {
+                        currentUrl.searchParams.delete("searchTerm");
+                    }
 
-            try {
-                const response = await fetch('@Url.Action("ImportFromTmdb", "Movies", new { area = "Admin" })', {
-                    method: 'POST',
-                    body: formData
+                    currentUrl.searchParams.set("page", "1");
+                    window.location.href = currentUrl.toString();
+                }, 500);
+
+                searchInput.addEventListener("input", handleSearch);
+            };
+
+            // 2. TMDB IMPORT FUNCTIONALITY
+            const initTmdbImport = () => {
+                // Cache DOM Elements to avoid querying them repeatedly
+                const titleInput = document.getElementById('movieTitle');
+                const btnImport = document.getElementById('btnImport');
+                const statusBox = document.getElementById('importStatus');
+                const spinner = document.getElementById('importSpinner');
+                const msgSpan = document.getElementById('importMessage');
+                const tokenInput = document.querySelector('#antiforgeryForm input[name="__RequestVerificationToken"]');
+
+                // Exit early if this page doesn't have the import feature
+                if (!btnImport || !titleInput) return;
+
+                // Centralized UI State Manager
+                const updateUI = (state, message = '') => {
+                    switch (state) {
+                        case 'loading':
+                            btnImport.disabled = true;
+                            statusBox.style.display = 'block';
+                            spinner.style.display = 'inline-block';
+                            msgSpan.style.color = 'var(--text-muted)';
+                            msgSpan.innerText = message;
+                            break;
+                        case 'success':
+                            spinner.style.display = 'none';
+                            msgSpan.style.color = 'var(--success-color)';
+                            msgSpan.innerHTML = `<i class="zmdi zmdi-check-circle"></i> ${message}`;
+                            break;
+                        case 'error':
+                            spinner.style.display = 'none';
+                            msgSpan.style.color = 'var(--danger-color)';
+                            msgSpan.innerHTML = `<i class="zmdi zmdi-close-circle"></i> ${message}`;
+                            btnImport.disabled = false; // Re-enable button on error
+                            break;
+                    }
+                };
+
+                // Import Handler
+                const handleImport = async () => {
+                    const title = titleInput.value.trim();
+
+                    if (!title) {
+                        alert('Please input a movie title to Import!');
+                        titleInput.focus();
+                        return;
+                    }
+
+                    updateUI('loading', `Loading movie information for "${title}" from TMDB...`);
+
+                    const formData = new FormData();
+                    formData.append('title', title);
+
+                    // Safely append anti-forgery token if it exists
+                    if (tokenInput) formData.append('__RequestVerificationToken', tokenInput.value);
+
+                    try {
+                        const response = await fetch('@Url.Action("ImportFromTmdb", "Movies", new { area = "Admin" })', {
+                            method: 'POST',
+                            body: formData
+                        });
+
+                        const data = await response.json();
+
+                        if (data.success) {
+                            updateUI('success', `${data.message} The page will refresh shortly...`);
+                            titleInput.value = '';
+                            setTimeout(() => window.location.reload(), 1500);
+                        } else {
+                            updateUI('error', data.message);
+                        }
+                    } catch (error) {
+                        console.error('TMDB Import Error:', error);
+                        updateUI('error', 'Server connection error. Please try again.');
+                    }
+                };
+
+                // Event Listeners
+                btnImport.addEventListener('click', handleImport);
+
+                titleInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        btnImport.click();
+                    }
                 });
+            };
 
-                const data = await response.json();
-
-                if (data.success) {
-                    spinner.style.display = 'none';
-                    msgSpan.style.color = 'var(--success-color)';
-                    msgSpan.innerHTML = `<i class="zmdi zmdi-check-circle"></i> ${data.message} The page will refresh shortly...`;
-                    titleInput.value = '';
-                    setTimeout(() => window.location.reload(), 1500);
-                } else {
-                    spinner.style.display = 'none';
-                    msgSpan.style.color = 'var(--danger-color)';
-                    msgSpan.innerHTML = `<i class="zmdi zmdi-close-circle"></i> ${data.message}`;
-                }
-            } catch (error) {
-                spinner.style.display = 'none';
-                msgSpan.style.color = 'var(--danger-color)';
-                msgSpan.innerHTML = `<i class="zmdi zmdi-alert-triangle"></i> Server connection error. Please try again.`;
-            } finally {
-                btn.disabled = false;
-            }
-        });
-
-        document.getElementById('movieTitle')?.addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                document.getElementById('btnImport').click();
-            }
+            // Initialize features
+            initSearch();
+            initTmdbImport();
         });
     </script>
 }

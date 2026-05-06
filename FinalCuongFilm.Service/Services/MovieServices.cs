@@ -139,21 +139,38 @@ namespace FinalCuongFilm.Service.Services
 
 		public async Task<MovieDto> CreateAsync(MovieCreateDto dto)
 		{
-			if (await _context.Movies.AnyAsync(m => m.Slug == dto.Slug))
-				throw new Exception("Slug already exists");
+		
+			string normalizedTitle = dto.Title.Trim().ToLower();
 
+			bool isDuplicate = await _context.Movies.AnyAsync(m =>
+				m.Title.ToLower() == normalizedTitle &&
+				m.ReleaseYear == dto.ReleaseYear
+			);
+
+			if (isDuplicate)
+			{
+				_logger.LogWarning($"[Validation Failed] Attempted to create a duplicate movie: '{dto.Title}' ({dto.ReleaseYear})");
+				throw new Exception($"Cannot create! The movie '{dto.Title}' ({dto.ReleaseYear}) already exists in the system.");
+			}
+
+			// 3. SECONDARY DEFENSE: Check for URL Slug collision
+			if (await _context.Movies.AnyAsync(m => m.Slug == dto.Slug))
+			{
+				throw new Exception($"The slug '{dto.Slug}' is already in use. Please modify the title to generate a unique URL.");
+			}
+
+			// 4. Map and initialize the new movie entity
 			var movie = _mapper.Map<Movie>(dto);
 			movie.IsVipOnly = dto.IsVipOnly;
 			movie.CreatedAt = DateTime.UtcNow;
 			movie.IsActive = true;
 			movie.ViewCount = 0;
 
+			// 5. Save to database
 			_context.Movies.Add(movie);
 			await _context.SaveChangesAsync();
 
-
-
-			_logger.LogInformation($"Created movie: {movie.Title}");
+			_logger.LogInformation($"Successfully created manual movie: {movie.Title} (ID: {movie.Id})");
 
 			return _mapper.Map<MovieDto>(movie);
 		}
@@ -284,36 +301,42 @@ namespace FinalCuongFilm.Service.Services
 		}
 
 		// Pagination 
-		public async Task<PagedResult<MovieDto>> GetPagedAsync(int page, int pageSize)
+		public async Task<PagedResult<MovieDto>> GetPagedAsync(string searchTerm, int page, int pageSize)
 		{
 			var query = _context.Movies
 				.Include(m => m.Country)
 				.AsQueryable();
 
-			var totalCount = await query.CountAsync();
+		
+			if (!string.IsNullOrWhiteSpace(searchTerm))
+			{
+				string keyword = searchTerm.Trim().ToLower();
 
-			var items = await query
+				query = query.Where(m =>
+					m.Title.ToLower().Contains(keyword) ||
+					m.Slug.ToLower().Contains(keyword) ||
+					(m.Country != null && m.Country.Name.ToLower().Contains(keyword))
+				);
+			}
+
+			int totalItems = await query.CountAsync();
+			int totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
+
+			page = page < 1 ? 1 : page;
+			page = page > totalPages && totalPages > 0 ? totalPages : page;
+
+
+			var movies = await query
 				.OrderByDescending(m => m.CreatedAt)
 				.Skip((page - 1) * pageSize)
 				.Take(pageSize)
-				.Select(m => new MovieDto
-				{
-					Id = m.Id,
-					Title = m.Title,
-					Slug = m.Slug,
-					PosterUrl = m.PosterUrl,
-					Type = m.Type,
-					ReleaseYear = m.ReleaseYear,
-					IsActive = m.IsActive,
-					IsVipOnly = m.IsVipOnly,
-					CountryName = m.Country != null ? m.Country.Name : "Unknown"
-				})
 				.ToListAsync();
 
+	
 			return new PagedResult<MovieDto>
 			{
-				Items = items,
-				TotalCount = totalCount,
+				Items = _mapper.Map<List<MovieDto>>(movies),
+				TotalCount = totalItems,
 				PageIndex = page,
 				PageSize = pageSize
 			};

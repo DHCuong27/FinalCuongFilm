@@ -13,29 +13,38 @@ namespace FinalCuongFilm.MVC.Controllers
 		private readonly IVipService _vipService;
 		private readonly IConfiguration _config;
 		private readonly ILogger<PremiumController> _logger;
+		private readonly IGenreService _genreService;
+		private readonly ICountryService _countryService;
 
 		public PremiumController(
 			IVipService vipService,
 			IConfiguration config,
-			ILogger<PremiumController> logger)
+			ILogger<PremiumController> logger,
+			IGenreService genreService,
+			ICountryService countryService)
 		{
 			_vipService = vipService;
 			_config = config;
 			_logger = logger;
+			_genreService = genreService;
+			_countryService = countryService;
 		}
 
 		[HttpGet]
 		public async Task<IActionResult> Index()
 		{
 			var packages = await _vipService.GetActivePackagesAsync();
-
+			
 			var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 			if (!string.IsNullOrEmpty(userId))
 			{
 				var currentVip = await _vipService.GetCurrentUserSubscriptionAsync(userId);
 				ViewBag.CurrentVipEndDate = currentVip?.EndDate;
-			}
 
+			}
+			// Truyền dữ liệu vào ViewBag
+			ViewBag.Genres = await _genreService.GetAllAsync();
+			ViewBag.Countries = await _countryService.GetAllAsync();
 			return View(packages);
 		}
 
@@ -43,6 +52,7 @@ namespace FinalCuongFilm.MVC.Controllers
 		[HttpGet]
 		public async Task<IActionResult> Checkout(Guid packageId)
 		{
+
 			var packages = await _vipService.GetActivePackagesAsync();
 			var selectedPackage = packages.FirstOrDefault(p => p.Id == packageId);
 
@@ -51,7 +61,9 @@ namespace FinalCuongFilm.MVC.Controllers
 				TempData["Error"] = "VIP package does not exist.";
 				return RedirectToAction(nameof(Index));
 			}
-
+			// Truyền dữ liệu vào ViewBag
+			ViewBag.Genres = await _genreService.GetAllAsync();
+			ViewBag.Countries = await _countryService.GetAllAsync();
 			return View(selectedPackage);
 		}
 

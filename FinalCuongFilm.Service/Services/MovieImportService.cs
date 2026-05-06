@@ -29,30 +29,42 @@ namespace FinalCuongFilm.Service.Services
 				isTvSeries = true;
 			}
 
+			// check if the movie exists on TMDB
 			if (searchResult == null)
 				return (false, $"Film not found '{title}' on TMDB (both Movie and TV Show).");
 
-			// Check if movie exists in DB
-			var isExist = await _dbContext.Movies.AnyAsync(m => m.TmdbId == searchResult.Id && m.Type == (isTvSeries ? MovieType.Series : MovieType.Movie));
-			if (isExist)
-				return (false, $"Film '{searchResult.Title}' already exists in the system!");
-
-			// Fetch movie details
+			// fetch movie details 
 			var movieDetails = isTvSeries
 				? await _tmdbService.GetTvShowDetailsAsync(searchResult.Id)
 				: await _tmdbService.GetMovieDetailsAsync(searchResult.Id);
 
 			if (movieDetails == null)
-				return (false, $"Unable to obtain film details for '{searchResult.Title}'.");
+				return (false, $"Unable to obtain film details for TMDB ID '{searchResult.Id}'.");
+
+			// Extract Official Title and Release Year for validation
+			string officialTitle = movieDetails.Title;
+			int officialReleaseYear = !string.IsNullOrEmpty(movieDetails.ReleaseDate)
+				? DateTime.Parse(movieDetails.ReleaseDate).Year
+				: DateTime.Now.Year;
+
+			bool isDuplicate = await _dbContext.Movies.AnyAsync(m =>
+				m.Title.ToLower() == officialTitle.ToLower() &&
+				m.ReleaseYear == officialReleaseYear
+			);
+
+			if (isDuplicate)
+			{
+				return (false, $"Import Failed! The content '{officialTitle}' ({officialReleaseYear}) already exists in the system. Please check again to avoid duplication.");
+			}
 
 			using var transaction = await _dbContext.Database.BeginTransactionAsync();
 			try
 			{
-				// 1. Initialize Movie Entity (Root of the graph)
+				// Initialize Movie Entity (Root of the graph)
 				var movie = new Movie
 				{
-					Title = movieDetails.Title,
-					Slug = SlugHelper.GenerateSlug(movieDetails.Title) + "-" + movieDetails.Id,
+					Title = officialTitle,
+					Slug = SlugHelper.GenerateSlug(officialTitle) + "-" + movieDetails.Id,
 					Description = movieDetails.Overview,
 					PosterUrl = !string.IsNullOrEmpty(movieDetails.PosterPath) ? "https://image.tmdb.org/t/p/w500" + movieDetails.PosterPath : null,
 					TmdbId = movieDetails.Id,
@@ -60,14 +72,12 @@ namespace FinalCuongFilm.Service.Services
 					Type = isTvSeries ? MovieType.Series : MovieType.Movie,
 					IsActive = true,
 					DurationMinutes = movieDetails.Runtime,
-					ReleaseYear = !string.IsNullOrEmpty(movieDetails.ReleaseDate) ? DateTime.Parse(movieDetails.ReleaseDate).Year : DateTime.Now.Year,
-
-					// Initialize Collections to let EF Core handle Foreign Keys automatically
+					ReleaseYear = officialReleaseYear,
 					MovieGenres = new List<MovieGenre>(),
 					MovieActors = new List<MovieActor>()
 				};
 
-				// 2. Process Country Added Local cache & Slug check to prevent Unique Index Error)
+				// Process Country
 				var firstCountry = movieDetails.ProductionCountries?.FirstOrDefault();
 				if (firstCountry != null)
 				{
@@ -87,18 +97,16 @@ namespace FinalCuongFilm.Service.Services
 					}
 					else if (string.IsNullOrEmpty(country.IsoCode))
 					{
-						// Update IsoCode if the existing record in DB has a missing/null IsoCode
 						country.IsoCode = firstCountry.Iso_3166_1;
 					}
 
 					movie.Country = country;
 				}
 
-				// 3. Process Genre - Bulk Read
+				// Process Genre - Bulk Read
 				if (movieDetails.Genres != null && movieDetails.Genres.Any())
 				{
 					var genreSlugs = movieDetails.Genres.Select(g => SlugHelper.GenerateSlug(g.Name)).ToList();
-
 					var existingGenres = await _dbContext.Genres
 						.Where(g => genreSlugs.Contains(g.Slug))
 						.ToListAsync();
@@ -121,7 +129,7 @@ namespace FinalCuongFilm.Service.Services
 					}
 				}
 
-				// 4. Process Actor - Bulk Read
+				// Process Actor - Bulk Read
 				var credits = isTvSeries
 					? await _tmdbService.GetTvCreditsAsync(movieDetails.Id)
 					: await _tmdbService.GetMovieCreditsAsync(movieDetails.Id);
@@ -137,7 +145,7 @@ namespace FinalCuongFilm.Service.Services
 
 					foreach (var cast in topCast)
 					{
-						// FIXED: Added Local cache check for actors
+						// Added Local cache check for actors
 						var actor = _dbContext.Actors.Local.FirstOrDefault(a => a.TmdbId == cast.Id)
 									?? existingActors.FirstOrDefault(a => a.TmdbId == cast.Id);
 
@@ -158,7 +166,7 @@ namespace FinalCuongFilm.Service.Services
 					}
 				}
 
-				// 5. FINAL: Add Movie to DB and SaveChanges ONLY ONCE
+				// Add Movie to DB and SaveChanges 
 				_dbContext.Movies.Add(movie);
 				await _dbContext.SaveChangesAsync();
 				await transaction.CommitAsync();

@@ -60,9 +60,9 @@ namespace FinalCuongFilm.MVC.Controllers
 			return View(reviews);
 		}
 
-		// =================================================================================
+		// 
 		// API 1: RATE MOVIE - DÀNH RIÊNG CHO VIỆC CLICK ĐÁNH GIÁ SAO (1 User / 1 Lần / 1 Phim)
-		// =================================================================================
+		// 
 		[HttpPost]
 		[Authorize]
 		[ValidateAntiForgeryToken]
@@ -95,7 +95,10 @@ namespace FinalCuongFilm.MVC.Controllers
 						Comment = existingRating.Comment
 					};
 					await _reviewService.UpdateReviewAsync(userId, updateDto);
+		
 
+					// THÊM DÒNG NÀY VÀO ĐỂ AUTO-DUYỆT LẠI RATING:
+					await _reviewService.ApproveReviewAsync(existingRating.Id);
 					return Json(new { success = true, message = "Your rating has been updated!" });
 				}
 				else
@@ -120,9 +123,9 @@ namespace FinalCuongFilm.MVC.Controllers
 			}
 		}
 
-		// =================================================================================
+		// 
 		// API 2: CREATE COMMENT - DÀNH RIÊNG CHO BÌNH LUẬN TEXT (Nhiều Comment / 1 User)
-		// =================================================================================
+		// 
 		[HttpPost]
 		[Authorize]
 		[ValidateAntiForgeryToken]
@@ -135,6 +138,16 @@ namespace FinalCuongFilm.MVC.Controllers
 				{
 					return Json(new { success = false, message = "Please log in to comment." });
 				}
+				dto.Rating = 0;
+
+				// Thêm dòng này để xóa lỗi validation từ [Range(1, 5)] trên DTO
+				ModelState.Remove("Rating");
+
+				if (!ModelState.IsValid)
+				{
+					var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
+					return Json(new { success = false, message = string.Join(", ", errors) });
+				}
 
 				if (!ModelState.IsValid)
 				{
@@ -144,8 +157,7 @@ namespace FinalCuongFilm.MVC.Controllers
 
 				// QUAN TRỌNG: Ép Rating = 0 cho tất cả các bình luận dạng Text.
 				// Việc này đảm bảo các comment không làm sai lệch thuật toán tính trung bình cộng (Average) của số sao.
-				dto.Rating = 0;
-
+				
 				var review = await _reviewService.CreateReviewAsync(userId, dto);
 
 				// Auto approve bình luận ngay lập tức
@@ -178,9 +190,9 @@ namespace FinalCuongFilm.MVC.Controllers
 			}
 		}
 
-		// =================================================================================
+		// 
 		// API 3: EDIT COMMENT - CẬP NHẬT BÌNH LUẬN
-		// =================================================================================
+		// 
 		[HttpPost]
 		[Authorize]
 		[ValidateAntiForgeryToken]
@@ -226,9 +238,9 @@ namespace FinalCuongFilm.MVC.Controllers
 			}
 		}
 
-		// =================================================================================
+	
 		// API 4: DELETE COMMENT - XÓA BÌNH LUẬN
-		// =================================================================================
+		
 		[HttpPost]
 		[Authorize]
 		[ValidateAntiForgeryToken]

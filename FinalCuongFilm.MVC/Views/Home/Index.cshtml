@@ -1025,10 +1025,6 @@
                                 }
                             </div>
                         </div>
-                        @if (User.Identity?.IsAuthenticated == true)
-                        {
-                            <button class="favorite-icon-btn" data-movie-id="@movie.Id"><i class="far fa-heart"></i></button>
-                        }
                     </div>
                 }
             </div>
@@ -1075,10 +1071,6 @@
                                 }
                             </div>
                         </div>
-                        @if (User.Identity?.IsAuthenticated == true)
-                        {
-                            <button class="favorite-icon-btn" data-movie-id="@movie.Id"><i class="far fa-heart"></i></button>
-                        }
                     </div>
                 }
             </div>
@@ -1270,14 +1262,51 @@
                                 }
                             </div>
                         </div>
-                        @if (User.Identity?.IsAuthenticated == true)
-                        {
-                            <button class="favorite-icon-btn" data-movie-id="@movie.Id" style="top:46px;"><i class="far fa-heart"></i></button>
-                        }
                     </div>
                 }
             </div>
+
+            <!-- Phân trang đã fix lỗi nhảy số (Cố định 5 nút) -->
+    @if (f.TotalPages > 1)
+    {
+        // Tính toán để luôn hiển thị đủ maxPagesToShow nút (nếu tổng số trang đủ lớn)
+        int maxPagesToShow = 5;
+        int startPage = Math.Max(1, f.PageNumber - maxPagesToShow / 2);
+        int endPage = Math.Min(f.TotalPages, startPage + maxPagesToShow - 1);
+
+        if (endPage - startPage + 1 < maxPagesToShow)
+        {
+            startPage = Math.Max(1, endPage - maxPagesToShow + 1);
         }
+
+                <div class="pagination-wrapper">
+                    <!-- Nút Previous -->
+                    <a asp-action="Index" asp-controller="Home"
+                       asp-route-search="@f.Search" asp-route-genreId="@f.GenreId" asp-route-countryId="@f.CountryId"
+                       asp-route-type="@f.Type" asp-route-sortBy="@f.SortBy" asp-route-pageNumber="@(f.PageNumber - 1)"
+                       class="page-btn @(!f.HasPreviousPage ? "disabled" : null)">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+
+                    <!-- Các nút số trang cố định -->
+                    @for (int i = startPage; i <= endPage; i++)
+                    {
+                        <a asp-action="Index" asp-controller="Home"
+                           asp-route-search="@f.Search" asp-route-genreId="@f.GenreId" asp-route-countryId="@f.CountryId"
+                           asp-route-type="@f.Type" asp-route-sortBy="@f.SortBy" asp-route-pageNumber="@i"
+                           class="page-btn @(i == f.PageNumber ? "active" : null)">@i</a>
+                    }
+
+                    <!-- Nút Next -->
+                    <a asp-action="Index" asp-controller="Home"
+                       asp-route-search="@f.Search" asp-route-genreId="@f.GenreId" asp-route-countryId="@f.CountryId"
+                       asp-route-type="@f.Type" asp-route-sortBy="@f.SortBy" asp-route-pageNumber="@(f.PageNumber + 1)"
+                       class="page-btn @(!f.HasNextPage ? "disabled" : null)">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                </div>
+    }
+    }
         else
         {
             <div class="col-12">
@@ -1289,35 +1318,7 @@
             </div>
         }
     </div>
-
-    @if (f.TotalPages > 1)
-    {
-        <div class="pagination-wrapper">
-            <a asp-action="Index" asp-controller="Home"
-               asp-route-search="@f.Search" asp-route-genreId="@f.GenreId" asp-route-countryId="@f.CountryId"
-               asp-route-type="@f.Type" asp-route-sortBy="@f.SortBy" asp-route-pageNumber="@(f.PageNumber - 1)"
-               class="page-btn @(!f.HasPreviousPage ? "disabled" : null)">
-                <i class="fas fa-chevron-left"></i>
-            </a>
-
-            @for (int i = Math.Max(1, f.PageNumber - 2); i <= Math.Min(f.TotalPages, f.PageNumber + 2); i++)
-            {
-                <a asp-action="Index" asp-controller="Home"
-                   asp-route-search="@f.Search" asp-route-genreId="@f.GenreId" asp-route-countryId="@f.CountryId"
-                   asp-route-type="@f.Type" asp-route-sortBy="@f.SortBy" asp-route-pageNumber="@i"
-                   class="page-btn @(i == f.PageNumber ? "active" : null)">@i</a>
-            }
-
-            <a asp-action="Index" asp-controller="Home"
-               asp-route-search="@f.Search" asp-route-genreId="@f.GenreId" asp-route-countryId="@f.CountryId"
-               asp-route-type="@f.Type" asp-route-sortBy="@f.SortBy" asp-route-pageNumber="@(f.PageNumber + 1)"
-               class="page-btn @(!f.HasNextPage ? "disabled" : null)">
-                <i class="fas fa-chevron-right"></i>
-            </a>
-        </div>
-    }
-</div>
-
+</div> <!-- Đóng filter-section-container -->
 @Html.AntiForgeryToken()
 
 @section Scripts {

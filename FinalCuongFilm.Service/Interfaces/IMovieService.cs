@@ -20,7 +20,7 @@ public interface IMovieService
 	Task<IEnumerable<MovieDto>> GetByCountryAsync(Guid countryId);
 
 	Task<IEnumerable<MovieDto>> SearchAsync(string keyword);
-	Task<PagedResult<MovieDto>> GetPagedAsync(int page = 1, int pageSize = 10);
+	Task<PagedResult<MovieDto>> GetPagedAsync(string searchTerm, int page , int pageSize);
 
 
 

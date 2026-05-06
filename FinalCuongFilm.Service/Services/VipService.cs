@@ -77,7 +77,7 @@ namespace FinalCuongFilm.Service.Services
 				// 1. Update Transaction status
 				transaction.Status = TransactionStatus.Success;
 
-				// 2. CRITICAL LOGIC FIX: Check if the user already has an ACTIVE subscription
+				// 2. Check if the user already has an ACTIVE subscription
 				var existingSub = await _context.UserSubscriptions
 					.Where(s => s.UserId == transaction.UserId && s.IsActive && s.EndDate > DateTime.UtcNow)
 					.OrderByDescending(s => s.EndDate)
@@ -85,17 +85,17 @@ namespace FinalCuongFilm.Service.Services
 
 				if (existingSub != null)
 				{
-					// SCENARIO A: Extend the existing subscription (Cộng dồn ngày)
+					//  Extend the existing subscription (Cộng dồn ngày)
 					existingSub.EndDate = existingSub.EndDate.AddDays(package.DurationInDays);
 
-					// Optional: Update PackageId in case they bought a higher tier
+					// Optional Update PackageId in case they bought a higher tier
 					existingSub.PackageId = package.Id;
 
 					_context.UserSubscriptions.Update(existingSub);
 				}
 				else
 				{
-					// SCENARIO B: Create a brand new subscription (Tạo mới)
+					//  Create a brand new subscription (Tạo mới)
 					var newSub = new UserSubscription
 					{
 						Id = Guid.NewGuid(),

@@ -19,7 +19,7 @@ namespace FinalCuongFilm.MVC.Controllers
 			_config = config;
 		}
 
-		// ĐỊA CHỈ NÀY LÀ: /api/payment/zalopay-callback (KHỚP VỚI CẤU HÌNH NGROK CỦA BẠN)
+		
 		[HttpPost("zalopay-callback")]
 		public async Task<IActionResult> ZaloPayCallback([FromBody] dynamic cbdata)
 		{

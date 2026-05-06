@@ -44,10 +44,13 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 		}
 
 		// GET: Admin/Movies
-		public async Task<IActionResult> Index(int page = 1)
+		public async Task<IActionResult> Index(string searchTerm = null, int page = 1)
 		{
 			int pageSize = 10;
-			var pagedData = await _movieService.GetPagedAsync(page, pageSize);
+			var pagedData = await _movieService.GetPagedAsync(searchTerm, page, pageSize);
+
+			ViewBag.SearchTerm = searchTerm;
+
 			return View(pagedData);
 		}
 
@@ -166,9 +169,9 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 				Status = movie.Status,
 				IsActive = movie.IsActive,
 
-				// ----> THE CRITICAL MISSING LINE ADDED HERE <----
+				// THE CRITICAL MISSING LINE ADDED HERE
 				IsVipOnly = movie.IsVipOnly,
-				// ------------------------------------------------
+				
 
 				CountryId = movie.CountryId ?? Guid.Empty,
 				LanguageId = movie.LanguageId ?? Guid.Empty,

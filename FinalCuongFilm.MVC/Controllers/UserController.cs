@@ -32,25 +32,17 @@ namespace FinalCuongFilm.MVC.Controllers
 		}
 
 		// GET: /User/Profile
-		// 1. HÀM GET PROFILE (Phải lấy user ném ra View)
 		[HttpGet]
 		public async Task<IActionResult> Profile()
 		{
-			// 1. Get the currently logged-in user from the Database
 			var user = await _userManager.GetUserAsync(User);
 
 			if (user == null)
 			{
 				return RedirectToPage("/Account/Login", new { area = "Identity" });
 			}
-
-			// 2. CRITICAL FIX: Fetch the active VIP subscription using the user's ID
 			var currentVip = await _vipService.GetCurrentUserSubscriptionAsync(user.Id);
-
-			// 3. Pass the VIP data to the View via ViewBag
 			ViewBag.CurrentVip = currentVip;
-
-			// 4. Return the View WITH the user model so AvatarUrl and FullName work perfectly
 			return View(user);
 		}
 
@@ -131,19 +123,21 @@ namespace FinalCuongFilm.MVC.Controllers
 			// Ưu tiên 1: Người dùng upload file từ máy
 			if (AvatarFile != null && AvatarFile.Length > 0)
 			{
-				var fileName = $"{Guid.NewGuid()}_{Path.GetFileName(AvatarFile.FileName)}";
-				var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images/avatars");
+				var allowedContentTypes = new[] { "image/png", "image/jpeg" };
+				var allowedExtensions = new[] { ".png", ".jpg", ".jpeg" };
 
-				if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
-
-				var filePath = Path.Combine(uploadsFolder, fileName);
-
-				using (var stream = new FileStream(filePath, FileMode.Create))
+				var ext = Path.GetExtension(AvatarFile.FileName).ToLowerInvariant();
+				if (!allowedExtensions.Contains(ext) || !allowedContentTypes.Contains(AvatarFile.ContentType))
 				{
-					await AvatarFile.CopyToAsync(stream);
+					ModelState.AddModelError("AvatarFile", "Only PNG or JPG/JPEG images are allowed to be uploaded.");
+					// return View/Redirect kèm lỗi tùy flow của bạn
 				}
 
-				finalAvatarUrl = $"/images/avatars/{fileName}";
+				// (optional) giới hạn dung lượng 2MB
+				if (AvatarFile.Length > 2 * 1024 * 1024)
+				{
+					ModelState.AddModelError("AvatarFile", "Maximum file size is 2MB.");
+				}
 			}
 			// Ưu tiên 2: Chọn ảnh có sẵn từ Modal
 			else if (!string.IsNullOrEmpty(SelectedAvatarUrl))

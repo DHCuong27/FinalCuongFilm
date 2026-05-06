@@ -1109,7 +1109,21 @@
                         {
                             <a href="/Movie/Watch/@Model.Movie.Slug?ep=@episode.EpisodeNumber" class="episode-item">
                                 <div class="episode-number">@episode.EpisodeNumber</div>
-                                <div class="episode-thumb"><i class="fas fa-play-circle"></i></div>
+
+                                <!-- Phần hiển thị Poster Tập phim -->
+                                <div class="episode-thumb">
+                                    
+                                    @if (!string.IsNullOrEmpty(episode.PosterUrl))
+                                    {
+                                        <img src="@episode.PosterUrl" alt="@episode.Title" loading="lazy" />
+                                    }
+                                    else
+                                    {
+                                        <img src="@Model.Movie.PosterUrl" alt="@Model.Movie.Title" loading="lazy" />
+                                    }
+                                    <div class="play-overlay"><i class="fas fa-play"></i></div>
+                                </div>
+
                                 <div class="episode-info">
                                     <div class="episode-title">@episode.Title</div>
                                     @if (!string.IsNullOrEmpty(episode.Description))
@@ -1117,11 +1131,11 @@
                                         <div class="episode-desc">@episode.Description</div>
                                     }
                                 </div>
+
                                 @if (episode.DurationMinutes.HasValue)
                                 {
                                     <div class="episode-duration">@episode.DurationMinutes min</div>
                                 }
-                                <div class="btn-play-ep"><i class="fas fa-play"></i></div>
                             </a>
                         }
                     </div>
@@ -1143,6 +1157,7 @@
                                 <div class="rate-prompt-text">@(myCurrentStar > 0 ? "Your Rating:" : "Rate this movie:")</div>
                                 <form id="ratingForm" class="interactive-rating">
                                     <input type="hidden" name="MovieId" value="@Model.Movie.Id" />
+                                    @Html.AntiForgeryToken()
                                     @for (int i = 5; i >= 1; i--)
                                     {
                                         string isChecked = (i == myCurrentStar) ? "checked" : "";

@@ -224,9 +224,9 @@
                 <a asp-controller="User" asp-action="MyList" class="list-group-item">
                     <i class="zmdi zmdi-bookmark"></i> My List
                 </a>
-                <a asp-controller="User" asp-action="ContinueWatching" class="list-group-item">
+                @* <a asp-controller="User" asp-action="ContinueWatching" class="list-group-item">
                     <i class="zmdi zmdi-time-restore"></i> Watch History
-                </a>
+                </a> *@
                 <form asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })" method="post" class="w-100">
                     <button type="submit" class="list-group-item mt-4 w-100 text-start" style="color: var(--nf-red); background: transparent; border: 1px solid var(--nf-border); cursor: pointer;">
                         <i class="zmdi zmdi-sign-in"></i> Sign Out
@@ -365,7 +365,12 @@
                     <div class="text-center my-3" style="color: var(--nf-text-muted);">OR</div>
 
                     <p class="nf-form-label mb-2">Upload from device</p>
-                    <input type="file" name="AvatarFile" id="uploadAvatarInput" class="form-control nf-input" accept="image/*" onchange="previewUploadedAvatar(this)">
+                    <input type="file"
+                           name="AvatarFile"
+                           id="uploadAvatarInput"
+                           class="form-control nf-input"
+                           accept=".png,.jpg,.jpeg,image/png,image/jpeg"
+                           onchange="previewUploadedAvatar(this)">
                     <small class="text-muted d-block mt-2">Max file size: 2MB. Format: JPG, PNG.</small>
                 </div>
                 <div class="modal-footer border-top-0">

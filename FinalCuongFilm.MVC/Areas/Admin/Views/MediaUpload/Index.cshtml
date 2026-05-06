@@ -539,7 +539,8 @@
 
                     <div class="form-group">
                         <label>Select Video (MP4) <span style="color:red">*</span></label>
-                        <input type="file" id="videoFile" name="VideoFile" accept="video/mp4,video/*" required />
+                 
+                        <input type="file" id="videoFile" name="VideoFile" accept=".mp4,video/mp4" class="form-control" required />
                     </div>
 
                     <button type="submit" class="btn-submit-upload" id="btnSubmitUpload">
@@ -621,7 +622,7 @@
                         <th>File Information</th>
                         <th>Type</th>
                         <th>Quality</th>
-                        <th>Size</th>
+                        @* <th>Size</th> *@
                         <th>Belongs To</th>
                         <th>Upload Date</th>
                         <th>Actions</th>
@@ -662,9 +663,9 @@
                                     <span style="color: var(--text-muted);">-</span>
                                 }
                             </td>
-                            <td style="font-family: monospace; color: var(--text-muted);">
+                            @* <td style="font-family: monospace; color: var(--text-muted);">
                                 @item.FileSizeFormatted
-                            </td>
+                            </td> *@
                             <td>
                                 @if (item.EpisodeId.HasValue)
                                 {
