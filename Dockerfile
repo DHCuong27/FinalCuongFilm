@@ -17,5 +17,10 @@ COPY --from=build /app .
 # 3. Cài đặt FFmpeg để Hangfire dùng nén video
 RUN apt-get update && apt-get install -y ffmpeg
 
-# 4. Lệnh khởi động web
+
+# Thêm 2 dòng này để chỉ định cứng cổng mạng cho Railway
+ENV ASPNETCORE_URLS=http://+:8080
+EXPOSE 8080
+
+# Dòng cuối cùng giữ nguyên
 ENTRYPOINT ["dotnet", "FinalCuongFilm.MVC.dll"]

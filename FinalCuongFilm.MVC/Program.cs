@@ -17,7 +17,16 @@ AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 var builder = WebApplication.CreateBuilder(args);
 
 // Cấu hình đường dẫn FFmpeg động cho Azure/Railway
-Xabe.FFmpeg.FFmpeg.SetExecutablesPath(Path.Combine(builder.Environment.ContentRootPath, "ffmpeg"));
+if (builder.Environment.IsDevelopment())
+{
+	// Khi chạy dưới máy Windows (Localhost): Tìm trong thư mục dự án
+	Xabe.FFmpeg.FFmpeg.SetExecutablesPath(Path.Combine(builder.Environment.ContentRootPath, "ffmpeg"));
+}
+else
+{
+	// Khi đưa lên mạng (Railway/Linux/Docker): FFmpeg đã được cài mặc định ở hệ thống
+	Xabe.FFmpeg.FFmpeg.SetExecutablesPath("/usr/bin");
+}
 
 builder.WebHost.ConfigureKestrel(serverOptions =>
 {
@@ -40,12 +49,18 @@ builder.Services.AddDbContext<CuongFilmDbContext>(options =>
 builder.Services.AddDbContext<CuongFilmIdentityDbContext>(options =>
 	options.UseNpgsql(connectionString));
 
-// HANGFIRE: Dùng PostgreSQL Storage
+// 2. Chốt chặn an toàn
+if (string.IsNullOrEmpty(connectionString))
+{
+	throw new InvalidOperationException("CRITICAL ERROR: Không tìm thấy chuỗi kết nối Database! Hãy kiểm tra lại biến ConnectionStrings__CuongFilmConnection trên Railway.");
+}
+
+// 3. HANGFIRE: Dùng PostgreSQL Storage
 builder.Services.AddHangfire(configuration => configuration
-	.SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
-	.UseSimpleAssemblyNameTypeSerializer()
-	.UseRecommendedSerializerSettings()
-	.UsePostgreSqlStorage(connectionString));
+    .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+    .UseSimpleAssemblyNameTypeSerializer()
+    .UseRecommendedSerializerSettings()
+    .UsePostgreSqlStorage(connectionString));
 
 builder.Services.AddHangfireServer();
 
