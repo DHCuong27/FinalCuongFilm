@@ -10,7 +10,7 @@ namespace FinalCuongFilm.Service.Services
 {
 	public class AzureBlobService : IAzureBlobService
 	{
-		private readonly BlobServiceClient _blobServiceClient;
+		private readonly BlobServiceClient? _blobServiceClient;
 		private readonly ILogger<AzureBlobService> _logger;
 		private readonly IConfiguration _configuration;
 
@@ -18,7 +18,7 @@ namespace FinalCuongFilm.Service.Services
 		private const string POSTER_CONTAINER = "posters";
 		private const string SUBTITLE_CONTAINER = "subtitles";
 
-		private static readonly string[] AllowedVideoExtensions = { ".mp4", ".mkv", ".avi", ".webm" };
+		private static readonly string[] AllowedVideoExtensions = { ".mp4", ".mkv", ".avi", ".webm", ".m3u8" };
 		private static readonly string[] AllowedImageExtensions = { ".jpg", ".jpeg", ".png", ".webp" };
 		private static readonly string[] AllowedSubtitleExtensions = { ".srt", ".vtt" };
 
@@ -27,315 +27,202 @@ namespace FinalCuongFilm.Service.Services
 			_configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
 			_logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
-			//var connectionString = _configuration.GetConnectionString("AzureBlobStorage")
-			//	?? throw new ArgumentNullException("AzureBlobStorage connection string not found");
+			var connectionString = _configuration.GetConnectionString("AzureBlobStorage");
 
-			//_blobServiceClient = new BlobServiceClient(connectionString);
-			_logger = logger;
-
-			_ = EnsureContainersExistAsync();
+			// KIỂM TRA THÔNG MINH: Nếu không có Connection String hoặc là "fake", Service vẫn sống nhưng báo Warning
+			if (!string.IsNullOrEmpty(connectionString) && connectionString != "fake")
+			{
+				try
+				{
+					_blobServiceClient = new BlobServiceClient(connectionString);
+					// Chạy khởi tạo container ngầm
+					_ = EnsureContainersExistAsync();
+				}
+				catch (Exception ex)
+				{
+					_logger.LogError(ex, "❌ Cấu hình Azure Connection String không hợp lệ.");
+				}
+			}
+			else
+			{
+				_logger.LogWarning("⚠️ CẢNH BÁO: Azure Storage chưa được cấu hình. Chức năng media sẽ bị lỗi.");
+			}
 		}
 
-		// Ensure the necessary containers exist with appropriate access levels
 		private async Task EnsureContainersExistAsync()
 		{
+			if (_blobServiceClient == null) return;
 			try
 			{
-				//  Create PRIVATE containers (no public access)
 				await CreateContainerIfNotExistsAsync(VIDEO_CONTAINER, PublicAccessType.None);
 				await CreateContainerIfNotExistsAsync(POSTER_CONTAINER, PublicAccessType.None);
 				await CreateContainerIfNotExistsAsync(SUBTITLE_CONTAINER, PublicAccessType.None);
-
-				_logger.LogInformation(" All containers created with PRIVATE access. SAS tokens will be used for access.");
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError(ex, "❌ Error creating containers");
+				_logger.LogError(ex, "❌ Lỗi tạo Containers khởi tạo.");
 			}
 		}
 
-		// Create container if it doesn't exist, with specified access type
 		private async Task CreateContainerIfNotExistsAsync(string containerName, PublicAccessType accessType = PublicAccessType.None)
 		{
-			try
-			{
-				var containerClient = _blobServiceClient.GetBlobContainerClient(containerName);
-
-				var response = await containerClient.CreateIfNotExistsAsync(accessType);
-
-				if (response != null && response.Value != null)
-				{
-					_logger.LogInformation($"Created container: {containerName} with access: {accessType}");
-				}
-				else
-				{
-					_logger.LogInformation($"Container already exists: {containerName}");
-				}
-			}
-			catch (Exception ex)
-			{
-				_logger.LogError(ex, $"Error with container {containerName}");
-				throw;
-			}
+			if (_blobServiceClient == null) return;
+			var containerClient = _blobServiceClient.GetBlobContainerClient(containerName);
+			await containerClient.CreateIfNotExistsAsync(accessType);
 		}
 
-		// Upload file to specified container, with optional custom filename
 		public async Task<string> UploadAsync(IFormFile file, string containerName, string? customFileName = null)
 		{
-			if (file == null || file.Length == 0)
-				throw new ArgumentException("File is empty");
+			if (_blobServiceClient == null) throw new InvalidOperationException("Azure chưa được cấu hình.");
 
-			var fileName = customFileName ?? Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
+			var fileName = customFileName ?? (Guid.NewGuid().ToString() + Path.GetExtension(file.FileName));
 			var containerClient = _blobServiceClient.GetBlobContainerClient(containerName);
 			var blobClient = containerClient.GetBlobClient(fileName);
-
-			var contentType = GetContentType(Path.GetExtension(file.FileName));
-			var blobHttpHeaders = new BlobHttpHeaders
-			{
-				ContentType = contentType,
-				CacheControl = "public, max-age=31536000"
-			};
 
 			using var stream = file.OpenReadStream();
 			await blobClient.UploadAsync(stream, new BlobUploadOptions
 			{
-				HttpHeaders = blobHttpHeaders
+				HttpHeaders = new BlobHttpHeaders { ContentType = GetContentType(Path.GetExtension(file.FileName)) }
 			});
-
-			_logger.LogInformation($"Uploaded {fileName} to {containerName} with ContentType: {contentType}");
 
 			return blobClient.Uri.ToString();
 		}
 
-		// Specialized upload methods for different media types
-		public async Task<string> UploadVideoAsync(IFormFile file, string movieSlug, int? episodeNumber = null)
-		{
-			var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
-			if (!AllowedVideoExtensions.Contains(extension))
-				throw new ArgumentException($"Invalid video format: {extension}");
-
-			var timestamp = DateTime.UtcNow.ToString("yyyyMMddHHmmss");
-			var fileName = episodeNumber.HasValue
-				? $"{movieSlug}/episodes/ep{episodeNumber:D3}-{timestamp}{extension}"
-				: $"{movieSlug}/movie-{timestamp}{extension}";
-
-			return await UploadAsync(file, VIDEO_CONTAINER, fileName);
-		}
-
-
-		// Upload poster with organized folder structure
-		public async Task<string> UploadPosterAsync(IFormFile file, string movieSlug)
-		{
-			var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
-			if (!AllowedImageExtensions.Contains(extension))
-				throw new ArgumentException($"Invalid image format: {extension}");
-
-			var timestamp = DateTime.UtcNow.ToString("yyyyMMddHHmmss");
-			var fileName = $"{movieSlug}/poster-{timestamp}{extension}";
-
-			return await UploadAsync(file, POSTER_CONTAINER, fileName);
-		}
-
-		// Upload subtitle with organized folder structure
-		public async Task<string> UploadSubtitleAsync(IFormFile file, string movieSlug, string language)
-		{
-			var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
-			if (!AllowedSubtitleExtensions.Contains(extension))
-				throw new ArgumentException($"Invalid subtitle format: {extension}");
-
-			var timestamp = DateTime.UtcNow.ToString("yyyyMMddHHmmss");
-			var fileName = $"{movieSlug}/subtitles/{language}-{timestamp}{extension}";
-
-			return await UploadAsync(file, SUBTITLE_CONTAINER, fileName);
-		}
-
-		// Generate a streaming URL with SAS token for secure access
 		public async Task<string> GetStreamingUrlAsync(string blobUrl, int expiryHours = 24)
 		{
+			if (_blobServiceClient == null || string.IsNullOrEmpty(blobUrl)) return blobUrl;
+
 			try
 			{
 				var uri = new Uri(blobUrl);
 				var blobUriBuilder = new BlobUriBuilder(uri);
-
 				var containerClient = _blobServiceClient.GetBlobContainerClient(blobUriBuilder.BlobContainerName);
 				var blobClient = containerClient.GetBlobClient(blobUriBuilder.BlobName);
 
-				if (!await blobClient.ExistsAsync())
-				{
-					_logger.LogWarning($"Blob not found: {blobUrl}");
-					return blobUrl;
-				}
+				if (!blobClient.CanGenerateSasUri) return blobUrl;
 
-				if (!blobClient.CanGenerateSasUri)
-				{
-					_logger.LogWarning("Cannot generate SAS token. Returning direct URL");
-					return blobUrl;
-				}
-
-				// BƯỚC 1: Kiểm tra xem đây có phải là file HLS playlist không
 				bool isHls = blobUriBuilder.BlobName.EndsWith(".m3u8", StringComparison.OrdinalIgnoreCase);
 
 				var sasBuilder = new BlobSasBuilder
 				{
 					BlobContainerName = blobUriBuilder.BlobContainerName,
-					// Nếu là HLS, ta để trống BlobName để cấp quyền cho toàn bộ Container
 					BlobName = isHls ? "" : blobUriBuilder.BlobName,
-					// "c" là Container (thư mục), "b" là Blob (file đơn)
 					Resource = isHls ? "c" : "b",
 					StartsOn = DateTimeOffset.UtcNow.AddMinutes(-5),
 					ExpiresOn = DateTimeOffset.UtcNow.AddHours(expiryHours)
 				};
-				
 
-				// BƯỚC 2: Cấp quyền và tạo chuỗi URL tương ứng
 				if (isHls)
 				{
-					// Cấp quyền đọc cho Container
 					sasBuilder.SetPermissions(BlobContainerSasPermissions.Read);
-					var sasUri = containerClient.GenerateSasUri(sasBuilder);
-
-					// Nối tên file .m3u8 vào giữa URL của Container và chuỗi Token
-					var fullHlsUrl = $"{containerClient.Uri}/{blobUriBuilder.BlobName}{sasUri.Query}";
-
-					_logger.LogInformation($"Generated CONTAINER SAS URL for HLS {blobUriBuilder.BlobName} (expires in {expiryHours}h)");
-					return fullHlsUrl;
 				}
 				else
 				{
-					// Cấp quyền đọc cho Blob (logic cũ của bạn)
 					sasBuilder.SetPermissions(BlobSasPermissions.Read);
-					var sasUri = blobClient.GenerateSasUri(sasBuilder);
-
-					_logger.LogInformation($"Generated BLOB SAS URL for {blobUriBuilder.BlobName} (expires in {expiryHours}h)");
-					return sasUri.ToString();
 				}
+
+				if (isHls)
+				{
+					var sasUri = containerClient.GenerateSasUri(sasBuilder);
+					return $"{containerClient.Uri}/{blobUriBuilder.BlobName}{sasUri.Query}";
+				}
+
+				return blobClient.GenerateSasUri(sasBuilder).ToString();
 			}
-			catch (Exception ex)
+			catch
 			{
-				_logger.LogError(ex, $"Error generating SAS URL for: {blobUrl}");
 				return blobUrl;
 			}
 		}
 
-		// Delete blob by URL
 		public async Task<bool> DeleteAsync(string blobUrl)
 		{
+			if (_blobServiceClient == null || string.IsNullOrEmpty(blobUrl)) return false;
 			try
 			{
 				var uri = new Uri(blobUrl);
 				var blobUriBuilder = new BlobUriBuilder(uri);
-
-				var containerClient = _blobServiceClient.GetBlobContainerClient(blobUriBuilder.BlobContainerName);
-				var blobClient = containerClient.GetBlobClient(blobUriBuilder.BlobName);
-
-				var response = await blobClient.DeleteIfExistsAsync();
-
-				if (response.Value)
-				{
-					_logger.LogInformation($"Deleted blob: {blobUriBuilder.BlobName}");
-				}
-
-				return response.Value;
+				return await _blobServiceClient.GetBlobContainerClient(blobUriBuilder.BlobContainerName)
+											  .GetBlobClient(blobUriBuilder.BlobName).DeleteIfExistsAsync();
 			}
-			catch (Exception ex)
-			{
-				_logger.LogError(ex, $"Error deleting blob: {blobUrl}");
-				return false;
-			}
+			catch { return false; }
 		}
 
-		// Specialized delete methods for different media types (optional, can also use DeleteAsync directly)
-		public Task DeleteFileAsync(string fileUrl)
-		{
-			return DeleteAsync(fileUrl);
-		}
-
-		// Check if blob exists by URL
 		public async Task<bool> ExistsAsync(string blobUrl)
 		{
+			if (_blobServiceClient == null || string.IsNullOrEmpty(blobUrl)) return false;
 			try
 			{
 				var uri = new Uri(blobUrl);
 				var blobUriBuilder = new BlobUriBuilder(uri);
-
-				var containerClient = _blobServiceClient.GetBlobContainerClient(blobUriBuilder.BlobContainerName);
-				var blobClient = containerClient.GetBlobClient(blobUriBuilder.BlobName);
-
-				return await blobClient.ExistsAsync();
+				return await _blobServiceClient.GetBlobContainerClient(blobUriBuilder.BlobContainerName)
+											  .GetBlobClient(blobUriBuilder.BlobName).ExistsAsync();
 			}
-			catch
-			{
-				return false;
-			}
+			catch { return false; }
 		}
 
-		// Get blob metadata by URL
-		public async Task<BlobMetadata> GetMetadataAsync(string blobUrl)
+		public async Task<string> UploadVideoAsync(IFormFile file, string movieSlug, int? episodeNumber = null)
 		{
-			var uri = new Uri(blobUrl);
-			var blobUriBuilder = new BlobUriBuilder(uri);
-
-			var containerClient = _blobServiceClient.GetBlobContainerClient(blobUriBuilder.BlobContainerName);
-			var blobClient = containerClient.GetBlobClient(blobUriBuilder.BlobName);
-
-			var properties = await blobClient.GetPropertiesAsync();
-
-			return new BlobMetadata
-			{
-				FileName = blobUriBuilder.BlobName,
-				FileSize = properties.Value.ContentLength,
-				ContentType = properties.Value.ContentType,
-				LastModified = properties.Value.LastModified.DateTime,
-				Url = blobUrl
-			};
+			var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
+			var fileName = episodeNumber.HasValue
+				? $"{movieSlug}/episodes/ep{episodeNumber:D3}-{DateTime.UtcNow:yyyyMMdd}{extension}"
+				: $"{movieSlug}/movie-{DateTime.UtcNow:yyyyMMdd}{extension}";
+			return await UploadAsync(file, VIDEO_CONTAINER, fileName);
 		}
 
-		// Upload a stream with specified filename and folder path, returning the blob URL
+		public async Task<string> UploadPosterAsync(IFormFile file, string movieSlug)
+		{
+			return await UploadAsync(file, POSTER_CONTAINER, $"{movieSlug}/poster-{DateTime.UtcNow:yyyyMMdd}{Path.GetExtension(file.FileName)}");
+		}
+
+		public async Task<string> UploadSubtitleAsync(IFormFile file, string movieSlug, string language)
+		{
+			return await UploadAsync(file, SUBTITLE_CONTAINER, $"{movieSlug}/subs/{language}-{DateTime.UtcNow:yyyyMMdd}{Path.GetExtension(file.FileName)}");
+		}
+
 		public async Task<string> UploadStreamAsync(Stream stream, string fileName, string folderPath)
 		{
-			var containerClient = _blobServiceClient.GetBlobContainerClient(VIDEO_CONTAINER);
+			if (_blobServiceClient == null) throw new InvalidOperationException("Azure chưa cấu hình.");
 			var blobName = string.IsNullOrEmpty(folderPath) ? fileName : $"{folderPath.TrimEnd('/')}/{fileName}";
-			var blobClient = containerClient.GetBlobClient(blobName);
-
-			var contentType = GetContentType(Path.GetExtension(fileName));
-			var blobHttpHeaders = new BlobHttpHeaders
-			{
-				ContentType = contentType,
-				CacheControl = "public, max-age=31536000"
-			};
+			var blobClient = _blobServiceClient.GetBlobContainerClient(VIDEO_CONTAINER).GetBlobClient(blobName);
 
 			await blobClient.UploadAsync(stream, new BlobUploadOptions
 			{
-				HttpHeaders = blobHttpHeaders
+				HttpHeaders = new BlobHttpHeaders { ContentType = GetContentType(Path.GetExtension(fileName)) }
 			});
-
-			_logger.LogInformation($"Uploaded stream as {blobName} to {VIDEO_CONTAINER} with ContentType: {contentType}");
-
 			return blobClient.Uri.ToString();
 		}
 
-		// Map file extensions to content types for proper handling in Azure Blob Storage
-		private string GetContentType(string fileExtension)
+		private string GetContentType(string ext) => ext.ToLowerInvariant() switch
 		{
-			return fileExtension.ToLowerInvariant() switch
+			".mp4" => "video/mp4",
+			".m3u8" => "application/x-mpegURL",
+			".jpg" or ".jpeg" => "image/jpeg",
+			".png" => "image/png",
+			_ => "application/octet-stream"
+		};
+
+		public Task DeleteFileAsync(string fileUrl) => DeleteAsync(fileUrl);
+
+		public async Task<BlobMetadata> GetMetadataAsync(string blobUrl)
+		{
+			if (_blobServiceClient == null) return new BlobMetadata { Url = blobUrl };
+			try
 			{
-				".mp4" => "video/mp4",
-				".webm" => "video/webm",
-				".ogg" => "video/ogg",
-				".mov" => "video/quicktime",
-				".avi" => "video/x-msvideo",
-				".mkv" => "video/x-matroska",
-				".m4v" => "video/x-m4v",
-				".jpg" or ".jpeg" => "image/jpeg",
-				".png" => "image/png",
-				".webp" => "image/webp",
-				".srt" => "text/plain",
-				".vtt" => "text/vtt",
-				".m3u8" => "application/x-mpegURL", //  HLS playlist
-				".ts" => "video/MP2T",              //  HLS segment
-				_ => "application/octet-stream"
-			};
+				var uri = new Uri(blobUrl);
+				var blobUriBuilder = new BlobUriBuilder(uri);
+				var properties = await _blobServiceClient.GetBlobContainerClient(blobUriBuilder.BlobContainerName)
+													   .GetBlobClient(blobUriBuilder.BlobName).GetPropertiesAsync();
+				return new BlobMetadata
+				{
+					Url = blobUrl,
+					FileName = blobUriBuilder.BlobName,
+					FileSize = properties.Value.ContentLength,
+					ContentType = properties.Value.ContentType,
+					LastModified = properties.Value.LastModified.DateTime
+				};
+			}
+			catch { return new BlobMetadata { Url = blobUrl }; }
 		}
-		
 	}
 }
