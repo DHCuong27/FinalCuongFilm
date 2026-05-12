@@ -289,9 +289,14 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 
 					var createdMedia = await _mediaFileService.CreateAsync(mediaFileDto);
 
-					// Bắn Job nén HLS ngầm vào Hangfire
+					// 1. Tách các biến ra trước để đảm bảo an toàn tuyệt đối cho bộ biên dịch của Hangfire
+					var mediaId = createdMedia.Id;
+					var slug = movie.Slug;
+					var episodeNum = dto.EpisodeNumber ?? 1;
+
+					// 2. Bắn Job nén HLS ngầm vào Hangfire với các biến đã "làm sạch"
 					BackgroundJob.Enqueue<IVideoConversionService>(x =>
-						x.ProcessVideoBackgroundJobAsync(createdMedia.Id, originalUrl, movie.Slug, dto.EpisodeNumber ?? 1, CancellationToken.None));
+						x.ProcessVideoBackgroundJobAsync(mediaId, originalUrl, slug, episodeNum, CancellationToken.None));
 
 					return Json(new { success = true, message = "Upload complete! The system is automatically compressing HLS in the background." });
 				}

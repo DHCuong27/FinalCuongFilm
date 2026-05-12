@@ -73,7 +73,7 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 			
 			var rawActiveVips = await _context.UserSubscriptions
 				.Include(s => s.Package)
-				.Where(s => s.EndDate > DateTime.UtcNow) //  lọc những gói chưa hết hạn
+				.Where(s => s.EndDate > DateTime.UtcNow) 
 				.ToListAsync();
 
 			var activeVips = rawActiveVips
@@ -92,7 +92,7 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 			return View(activeVips);
 		}
 
-		// 3. Hàm Xử lý Nút Revoke (Thu hồi quyền VIP)
+	
 		[HttpPost, ActionName("Revoke")]
 		[ValidateAntiForgeryToken]
 		public async Task<IActionResult> RevokeConfirmed(Guid id)
@@ -100,7 +100,7 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 			var subscription = await _context.UserSubscriptions.FindAsync(id);
 			if (subscription == null) return NotFound();
 
-			// Tước quyền: Sửa ngày hết hạn về hiện tại và tắt cờ Active (Giữ lại lịch sử trong DB)
+	
 			subscription.EndDate = DateTime.UtcNow;
 			subscription.IsActive = false;
 
@@ -118,7 +118,6 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 			var subscription = await _context.UserSubscriptions.FindAsync(id);
 			if (subscription == null) return NotFound();
 
-			// CHỈ ĐẢO NGƯỢC CỜ IsActive (Tắt thành Mở, Mở thành Tắt). Giữ nguyên EndDate!
 			subscription.IsActive = !subscription.IsActive;
 
 			_context.Update(subscription);
@@ -131,7 +130,6 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 			return RedirectToAction(nameof(ActiveVips));
 		}
 
-		// 4. Hàm Xử lý Nút Details (Xem chi tiết Gói)
 		[HttpGet]
 		public async Task<IActionResult> Details(Guid? id)
 		{

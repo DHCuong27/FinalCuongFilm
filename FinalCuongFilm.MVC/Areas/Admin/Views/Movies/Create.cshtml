@@ -1,7 +1,14 @@
 ﻿@model FinalCuongFilm.Common.DTOs.MovieCreateDto
 @using FinalCuongFilm.ApplicationCore
+@using Microsoft.AspNetCore.Mvc.Rendering
+@using System.Linq
 @{
     ViewData["Title"] = "Add New Movie";
+
+    var actors = ViewBag.Actors as IEnumerable<SelectListItem> ?? Enumerable.Empty<SelectListItem>();
+    var genres = ViewBag.Genres as IEnumerable<SelectListItem> ?? Enumerable.Empty<SelectListItem>();
+    var countries = ViewBag.Countries as IEnumerable<SelectListItem> ?? Enumerable.Empty<SelectListItem>();
+    var languages = ViewBag.Languages as IEnumerable<SelectListItem> ?? Enumerable.Empty<SelectListItem>();
 }
 
 <style>
@@ -460,7 +467,6 @@
         <p class="page-subtitle">Fill in all the details to create a new movie entry</p>
     </div>
 
-    <!-- MAIN FORM -->
     <form asp-action="Create" method="post" enctype="multipart/form-data" id="createForm">
 
         @if (!ViewData.ModelState.IsValid)
@@ -559,7 +565,7 @@
 
                     <div class="form-group">
                         <label class="form-label">Country <span class="req">*</span></label>
-                        <select asp-for="CountryId" class="form-control" asp-items="ViewBag.Countries" required>
+                        <select asp-for="CountryId" class="form-control" asp-items="countries" required>
                             <option value="">-- Select Country --</option>
                         </select>
                         <span asp-validation-for="CountryId" class="text-danger"></span>
@@ -567,7 +573,7 @@
 
                     <div class="form-group">
                         <label class="form-label">Language <span class="req">*</span></label>
-                        <select asp-for="LanguageId" class="form-control" asp-items="ViewBag.Languages" required>
+                        <select asp-for="LanguageId" class="form-control" asp-items="languages" required>
                             <option value="">-- Select Language --</option>
                         </select>
                         <span asp-validation-for="LanguageId" class="text-danger"></span>
@@ -580,19 +586,15 @@
             <div class="form-card-header"><i class="zmdi zmdi-accounts-alt"></i> Cast &amp; Genres</div>
             <div class="form-card-body">
                 <div class="form-grid">
-
-                    <!-- ACTOR SECTION -->
                     <div class="form-group">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                             <label class="form-label" style="margin-bottom: 0;">Actors</label>
-
-                            <!-- QUICK ADD BUTTON -->
                             <button type="button" class="btn-quick-add" data-bs-toggle="modal" data-bs-target="#quickAddActorModal">
                                 <i class="zmdi zmdi-plus"></i> Add New
                             </button>
                         </div>
 
-                        <select asp-for="ActorIds" asp-items="ViewBag.Actors" multiple id="actorSelect" class="form-control" style="display:none"></select>
+                        <select asp-for="ActorIds" asp-items="actors" multiple id="actorSelect" class="form-control" style="display:none"></select>
 
                         <div class="tag-picker" id="actorPicker">
                             <div class="tag-search-box">
@@ -606,10 +608,9 @@
                         <span asp-validation-for="ActorIds" class="text-danger"></span>
                     </div>
 
-                    <!-- GENRE SECTION -->
                     <div class="form-group">
                         <label class="form-label">Genres</label>
-                        <select asp-for="GenreIds" asp-items="ViewBag.Genres" multiple id="genreSelect" class="form-control" style="display:none"></select>
+                        <select asp-for="GenreIds" asp-items="genres" multiple id="genreSelect" class="form-control" style="display:none"></select>
 
                         <div class="tag-picker" id="genrePicker">
                             <div class="tag-search-box">
@@ -645,9 +646,6 @@
     </form>
 </div>
 
-<!-- ============================================== -->
-<!-- QUICK ADD ACTOR MODAL (Placed outside the form) -->
-<!-- ============================================== -->
 <div class="modal fade" id="quickAddActorModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -679,15 +677,37 @@
     <script>
         document.addEventListener('DOMContentLoaded', function () {
 
-            /* Slug Generator */
+            /* ========================================= */
+            /* 1. SLUG GENERATOR (HỖ TRỢ TIẾNG VIỆT)     */
+            /* ========================================= */
             const titleEl = document.getElementById('titleInput');
             const slugEl  = document.getElementById('slugInput');
             let slugLocked = false;
-            const toSlug = t => t.toLowerCase().replace(/[^\w\s-]/g,'').replace(/\s+/g,'-').replace(/-+/g,'-').trim();
-            titleEl.addEventListener('input', () => { if (!slugLocked) slugEl.value = toSlug(titleEl.value); });
-            slugEl.addEventListener('input',  () => { slugLocked = slugEl.value.length > 0; });
 
-            /* Tag Picker Factory */
+            function toSlug(str) {
+                str = str.toLowerCase();
+                str = str.replace(/(à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ)/g, 'a');
+                str = str.replace(/(è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ)/g, 'e');
+                str = str.replace(/(ì|í|ị|ỉ|ĩ)/g, 'i');
+                str = str.replace(/(ò|ó|ọ|ỏ|õ|ô|ồ|ố|ộ|ổ|ỗ|ơ|ờ|ớ|ợ|ở|ỡ)/g, 'o');
+                str = str.replace(/(ù|ú|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ)/g, 'u');
+                str = str.replace(/(ỳ|ý|ỵ|ỷ|ỹ)/g, 'y');
+                str = str.replace(/(đ)/g, 'd');
+                str = str.replace(/([^0-9a-z-\s])/g, '');
+                str = str.replace(/(\s+)/g, '-');
+                str = str.replace(/^-+/g, '');
+                str = str.replace(/-+$/g, '');
+                return str;
+            }
+
+            if (titleEl && slugEl) {
+                titleEl.addEventListener('input', () => { if (!slugLocked) slugEl.value = toSlug(titleEl.value); });
+                slugEl.addEventListener('input',  () => { slugLocked = slugEl.value.trim().length > 0; });
+            }
+
+            /* ========================================= */
+            /* 2. TAG PICKER FACTORY                     */
+            /* ========================================= */
             function buildTagPicker(selectId, searchId, dropdownId, chipsId, pickerId) {
                 const sel      = document.getElementById(selectId);
                 const search   = document.getElementById(searchId);
@@ -718,7 +738,6 @@
                     }
                 }
 
-                // CỰC KỲ QUAN TRỌNG: Gắn hàm renderChips vào element select để có thể gọi từ AJAX
                 sel.renderChips = renderChips;
 
                 search.addEventListener('input', function() {
@@ -761,19 +780,23 @@
             buildTagPicker('actorSelect', 'actorSearch', 'actorDropdown', 'actorChips', 'actorPicker');
             buildTagPicker('genreSelect', 'genreSearch', 'genreDropdown', 'genreChips', 'genrePicker');
 
-            /* Submit feedback */
-            document.getElementById('createForm').addEventListener('submit', function (e) {
-                // Ensure form is completely valid before disabling button
-                if (this.checkValidity()) {
-                    const btn = document.getElementById('submitBtn');
-                    btn.innerHTML = '<i class="zmdi zmdi-spinner zmdi-hc-spin"></i> Saving…';
-                    // We use setTimeout so the form submission isn't blocked by the disabled state
-                    setTimeout(() => { btn.disabled = true; }, 10);
-                }
-            });
+            /* ========================================= */
+            /* 3. SUBMIT FEEDBACK                        */
+            /* ========================================= */
+            const form = document.getElementById('createForm');
+            if (form) {
+                form.addEventListener('submit', function () {
+                    if (this.checkValidity()) {
+                        const btn = document.getElementById('submitBtn');
+                        btn.innerHTML = '<i class="zmdi zmdi-spinner zmdi-hc-spin"></i> Saving…';
+                        setTimeout(() => { btn.disabled = true; }, 10);
+                    }
+                });
+            }
 
-
-            // QUICK ADD ACTOR - AJAX LOGIC                   
+            /* ========================================= */
+            /* 4. QUICK ADD ACTOR - AJAX LOGIC           */
+            /* ========================================= */
             const btnSaveActorModal = document.getElementById('btnSaveActorModal');
             if (btnSaveActorModal) {
                 btnSaveActorModal.addEventListener('click', function () {
@@ -792,14 +815,13 @@
                     this.disabled = true;
                     errorSpan.style.display = 'none';
 
-                    // Sử dụng FormData để gọi API /Admin/Actors/QuickAdd
                     const formData = new FormData();
                     formData.append('actorName', actorName);
 
-                          const tokenElement = document.querySelector('input[name="__RequestVerificationToken"]');
-                        if (tokenElement) {
-                            formData.append('__RequestVerificationToken', tokenElement.value);
-                        }  
+                    const tokenElement = document.querySelector('input[name="__RequestVerificationToken"]');
+                    if (tokenElement) {
+                        formData.append('__RequestVerificationToken', tokenElement.value);
+                    }
 
                     fetch('@Url.Action("QuickAdd", "Actors", new { area = "Admin" })', {
                         method: 'POST',
@@ -808,17 +830,14 @@
                     .then(response => response.json())
                     .then(data => {
                         if (data.success) {
-                            // 1. Lấy dropdown Actor và thêm Option mới
                             const selectEl = document.getElementById('actorSelect');
                             const newOption = new Option(data.name, data.id, true, true);
                             selectEl.appendChild(newOption);
 
-                            // 2. Kích hoạt render lại giao diện Chip (gọi hàm đã được gắn ở trên)
                             if (typeof selectEl.renderChips === 'function') {
                                 selectEl.renderChips();
                             }
 
-                            // 3. Đóng Modal
                             const modalEl = document.getElementById('quickAddActorModal');
                             if (typeof bootstrap !== 'undefined') {
                                 const modalInstance = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
@@ -826,37 +845,34 @@
                             } else if (typeof $ !== 'undefined') {
                                 $('#quickAddActorModal').modal('hide');
                             }
-
-                            // 4. Xóa trắng form cho lần mở sau
                             nameInput.value = '';
                         } else {
-                            // Báo lỗi từ Server (ví dụ: Trùng tên)
                             errorSpan.textContent = data.message;
                             errorSpan.style.display = 'block';
                         }
                     })
-                    .catch(error => {
+                    .catch(() => {
                         errorSpan.textContent = 'System error. Please try again.';
                         errorSpan.style.display = 'block';
                     })
                     .finally(() => {
-                        // Trả lại trạng thái cho nút
                         this.innerHTML = originalText;
                         this.disabled = false;
                     });
                 });
 
-                // Tiện ích: Bấm phím Enter ở ô text sẽ tự Submit
                 document.getElementById('newActorName').addEventListener('keypress', function(e) {
                     if (e.key === 'Enter') {
-                        e.preventDefault(); // Tránh submit nhầm form ngoài
+                        e.preventDefault();
                         btnSaveActorModal.click();
                     }
                 });
             }
         });
 
-        /* File Upload Handler & Preview */
+        /* ========================================= */
+        /* 5. FILE UPLOAD HANDLER & PREVIEW          */
+        /* ========================================= */
         function onPosterFileChange(input) {
             const wrap = document.getElementById('posterPreview');
             const img  = document.getElementById('posterPreviewImg');
@@ -864,7 +880,6 @@
             if (input.files && input.files[0]) {
                 const file = input.files[0];
 
-                // Validate size (Max 5MB)
                 if (file.size > 5 * 1024 * 1024) {
                     alert('Image size is too large. Please select an image under 5MB.');
                     clearPoster();
@@ -882,13 +897,11 @@
             }
         }
 
-        /* Clear Poster Input */
         function clearPoster() {
             document.getElementById('posterFileInput').value = '';
             const wrap = document.getElementById('posterPreview');
             wrap.style.display = 'none';
             document.getElementById('posterPreviewImg').src = '';
         }
-
     </script>
 }

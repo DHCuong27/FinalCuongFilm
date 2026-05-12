@@ -27,27 +27,24 @@ namespace FinalCuongFilm.MVC.Controllers
 
 			try
 			{
-				// 1. Kiểm tra chữ ký (MAC) để chống giả mạo
 				string dataStr = Convert.ToString(cbdata["data"]);
 				string reqMac = Convert.ToString(cbdata["mac"]);
-				string key2 = _config["ZaloPay:Key2"]; // Key2 dùng để verify callback
+				string key2 = _config["ZaloPay:Key2"]; // Key2 verify callback
 
 				string mac = HmacSHA256(dataStr, key2);
 
-				// Nếu chữ ký không khớp -> Đây là request giả mạo (hacker)
+		
 				if (!reqMac.Equals(mac))
 				{
 					result["return_code"] = -1;
 					result["return_message"] = "mac not equal";
-					return Ok(result); // Trả về Ok() theo chuẩn ZaloPay, nhưng báo lỗi bên trong
+					return Ok(result); 
 				}
 
-				// 2. Chữ ký hợp lệ -> Lấy thông tin giao dịch từ ZaloPay
+				// Parse data
 				var dataJson = JsonConvert.DeserializeObject<Dictionary<string, object>>(dataStr);
 				string appTransId = Convert.ToString(dataJson["app_trans_id"]);
-
-				// App_trans_id của bạn có dạng: yyMMdd_Guid
-				// Cần tách chuỗi để lấy ra Guid gốc của Transaction trong database
+	
 				string[] transParts = appTransId.Split('_');
 				if (transParts.Length < 2)
 				{
@@ -58,13 +55,11 @@ namespace FinalCuongFilm.MVC.Controllers
 
 				string txnGuidStr = transParts[1];
 
-				// 3. XỬ LÝ GIAO DỊCH (Gọi hàm Service của bạn)
+				
 				if (Guid.TryParse(txnGuidStr, out Guid transactionId))
 				{
-					// Truyền isSuccess = true vì ZaloPay gọi callback khi giao dịch đã thành công
 					await _vipService.CompleteTransactionAsync(transactionId, true);
 
-					// Trả về chuẩn JSON để ZaloPay biết bạn đã nhận thành công, ngừng gọi lại
 					result["return_code"] = 1;
 					result["return_message"] = "success";
 				}
@@ -75,8 +70,7 @@ namespace FinalCuongFilm.MVC.Controllers
 				}
 			}
 			catch (Exception ex)
-			{
-				// Có lỗi hệ thống
+			{		
 				result["return_code"] = 0;
 				result["return_message"] = ex.Message;
 			}
@@ -85,7 +79,7 @@ namespace FinalCuongFilm.MVC.Controllers
 			return Ok(result);
 		}
 
-		// Hàm helper sinh chữ ký
+		// Sgnature HMAC SHA256
 		private string HmacSHA256(string inputData, string key)
 		{
 			byte[] keyByte = Encoding.UTF8.GetBytes(key);

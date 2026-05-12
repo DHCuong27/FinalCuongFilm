@@ -7,7 +7,6 @@ namespace FinalCuongFilm.Service.Interfaces
 		// 1. Lấy danh sách gói cước
 		Task<IEnumerable<VipPackage>> GetActivePackagesAsync();
 
-		// SỬA LỖI 2: Thêm kiểu trả về VipPackage? cho hàm này
 		Task<VipPackage?> GetPackageByIdAsync(Guid packageId);
 
 		// 2. Kiểm tra User có đang là VIP không
@@ -21,10 +20,10 @@ namespace FinalCuongFilm.Service.Interfaces
 		Task CompleteTransactionAsync(Guid transactionId, bool isSuccess);
 
 
-		Task<IEnumerable<VipPackage>> GetAllPackagesAsync(); // Lấy cả gói bị ẩn
+		Task<IEnumerable<VipPackage>> GetAllPackagesAsync(); 
 		Task CreatePackageAsync(VipPackage package);
 		Task UpdatePackageAsync(VipPackage package);
-		Task DeactivatePackageAsync(Guid packageId); // Soft Delete
+		Task DeactivatePackageAsync(Guid packageId); 
 	
 	}
 }

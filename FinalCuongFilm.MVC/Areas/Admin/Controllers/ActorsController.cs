@@ -214,7 +214,7 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 		// POST: Admin/Actors/Edit/5
 		[HttpPost]
 		[ValidateAntiForgeryToken]
-		// FIX: Added IFormFile? posterFile to support Avatar updates during Edit
+		// : Added IFormFile? posterFile to support Avatar updates during Edit
 		public async Task<IActionResult> Edit(Guid id, ActorUpdateDto dto, IFormFile? posterFile)
 		{
 			if (id != dto.Id)
@@ -255,7 +255,7 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 				}
 			}
 
-			// FIX: Must reload the dropdown data if ModelState is invalid
+			// : Must reload the dropdown data if ModelState is invalid
 			await PopulateMoviesDropdown();
 			return View(dto);
 		}

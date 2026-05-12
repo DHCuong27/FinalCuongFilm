@@ -1,15 +1,15 @@
-﻿using static FinalCuongFilm.ApplicationCore.Entities.Enum;
-
+﻿using System.ComponentModel.DataAnnotations;
+using static FinalCuongFilm.ApplicationCore.Entities.Enum;
 
 namespace FinalCuongFilm.Common.DTOs
 {
 	public class MovieDto
 	{
 		public Guid Id { get; set; }
+		[Required(ErrorMessage = "Title is required.")]
 		public string Title { get; set; } = string.Empty;
 		public string Slug { get; set; } = string.Empty;
 		public string? Description { get; set; }
-
 
 		public int? ReleaseYear { get; set; }
 		public long ViewCount { get; set; }
@@ -27,22 +27,19 @@ namespace FinalCuongFilm.Common.DTOs
 		public bool IsVipOnly { get; set; }
 
 		public string? VideoUrl { get; set; }
-		// Navigation properties 
 
-		public string? CountryName { get; set; } 
-
+		public string? CountryName { get; set; }
 		public string? LanguageName { get; set; }
 
 		public string? GenreName { get; set; }
+		public List<string> GenreNames { get; set; } = new();
 
 		public List<MovieActorDto> Actors { get; set; }
-		// Collections cho many-to-many
-
 		public List<string> ActorName { get; set; } = new List<string>();
+
 		public List<Guid> SelectedActorIds { get; set; } = new();
 		public List<Guid> SelectedGenreIds { get; set; } = new();
 		public List<Guid> SelectedCountryIds { get; set; } = new();
-
 	}
 
 	public class MovieCreateDto
@@ -70,6 +67,7 @@ namespace FinalCuongFilm.Common.DTOs
 		public DateTime CreatedAt { get; set; }
 		public bool IsVipOnly { get; set; }
 	}
+
 	public class MovieActorDto
 	{
 		public Guid ActorId { get; set; }

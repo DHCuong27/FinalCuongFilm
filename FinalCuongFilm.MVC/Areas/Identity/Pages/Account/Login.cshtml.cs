@@ -114,7 +114,7 @@ namespace FinalCuongFilm.MVC.Areas.Identity.Pages.Account
 
 		public async Task<IActionResult> OnPostAsync(string returnUrl = null)
 		{
-			// THÊM ĐOẠN NÀY ĐỂ FIX LỖI VÒNG LẶP LOGOUT
+	
 			if (!string.IsNullOrEmpty(returnUrl) && returnUrl.Contains("Logout", StringComparison.OrdinalIgnoreCase))
 			{
 				returnUrl = "~/";

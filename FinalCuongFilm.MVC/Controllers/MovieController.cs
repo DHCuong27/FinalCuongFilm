@@ -122,6 +122,15 @@ namespace FinalCuongFilm.MVC.Controllers
 			var movie = allMovies.FirstOrDefault(m => m.Slug == slug && m.IsActive);
 			if (movie == null) return NotFound();
 
+			// Trong MoviesController.cs -> Hàm Detail()
+			ViewData["Title"] = movie.Title;
+			ViewData["MetaDescription"] = movie.Description;
+			ViewData["OgImage"] = movie.PosterUrl; // Khi share link sẽ hiện cái Poster này
+			ViewData["OgType"] = "video.movie";
+			ViewData["CanonicalUrl"] = $"https://cuongfilm.com/movie/{movie.Slug}";
+			ViewBag.Genres = await _genreService.GetAllAsync();
+			ViewBag.Countries = await _countryService.GetAllAsync();
+
 			var episodes = await _episodeService.GetByMovieIdAsync(movie.Id);
 			var mediaFiles = await _mediaFileService.GetByMovieIdAsync(movie.Id);
 
@@ -137,9 +146,7 @@ namespace FinalCuongFilm.MVC.Controllers
 							(m.CountryId == movie.CountryId || m.SelectedGenreIds.Intersect(movie.SelectedGenreIds).Any()))
 				.OrderByDescending(m => m.ViewCount)
 				.Take(6).ToList();
-
-			ViewBag.Genres = await _genreService.GetAllAsync();
-			ViewBag.Countries = await _countryService.GetAllAsync();
+		
 
 			var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 			ViewBag.IsFavorited = userId != null && await _favoriteService.IsFavoriteAsync(userId, movie.Id);
@@ -165,7 +172,7 @@ namespace FinalCuongFilm.MVC.Controllers
 
 
 		// Watch: /Movie/Watch/{slug}?ep=1
-		
+
 		[AllowAnonymous]
 		[Route("Movie/Watch/{slug}")]
 		public async Task<IActionResult> Watch(string slug, int? ep = null)
@@ -286,7 +293,7 @@ namespace FinalCuongFilm.MVC.Controllers
 				ViewBag.SubtitleFiles = subtitleFiles;
 				ViewBag.Actors = actors;
 				ViewBag.Reviews = await _reviewService.GetMovieReviewsAsync(movie.Id, approvedOnly: false);
-				
+
 
 				var viewModel = new MovieWatchViewModel
 				{
@@ -387,26 +394,24 @@ namespace FinalCuongFilm.MVC.Controllers
 			var movie = await _context.Movies.FindAsync(id);
 			if (movie == null) return NotFound();
 
-			
-			// BUSINESS LOGIC: DOWNLOAD FEATURE IS EXCLUSIVE TO VIP ACCOUNTS
-			
+
+
+
 			var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 			bool hasVip = await _vipService.HasActiveVipAsync(userId);
 
 			if (!hasVip)
 			{
-				// If not a VIP -> Redirect to the Premium upgrade page immediately
 				TempData["Error"] = "The download feature is exclusive to Premium members. Please upgrade your account!";
 				return RedirectToAction("Index", "Premium");
 			}
-			
+
 
 			try
 			{
 				var blobServiceClient = new BlobServiceClient(_configuration.GetConnectionString("AzureBlobStorage"));
 				var containerClient = blobServiceClient.GetBlobContainerClient("videos");
 
-				// The folder containing the MP4 file is named exactly as the movie's Slug (e.g., "test-download/")
 				string searchPrefix = $"{movie.Slug}/";
 				string targetBlobName = null;
 
@@ -502,5 +507,6 @@ namespace FinalCuongFilm.MVC.Controllers
 				return null;
 			}
 		}
+
 	}
 }

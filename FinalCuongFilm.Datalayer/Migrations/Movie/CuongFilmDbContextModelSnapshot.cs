@@ -3,62 +3,63 @@ using System;
 using FinalCuongFilm.DataLayer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Metadata;
-using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace FinalCuongFilm.Datalayer.Migrations
+namespace FinalCuongFilm.Datalayer.Migrations.Movie
 {
     [DbContext(typeof(CuongFilmDbContext))]
-    [Migration("20260224073223_RenamePascelCase")]
-    partial class RenamePascelCase
+    partial class CuongFilmDbContextModelSnapshot : ModelSnapshot
     {
-        /// <inheritdoc />
-        protected override void BuildTargetModel(ModelBuilder modelBuilder)
+        protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("ProductVersion", "8.0.23")
-                .HasAnnotation("Relational:MaxIdentifierLength", 128);
+                .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
-            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+            NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("FinalCuongFilm.ApplicationCore.Entities.Actor", b =>
+            modelBuilder.Entity("Actor", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("Age")
-                        .HasColumnType("int");
+                        .HasColumnType("uuid");
 
                     b.Property<string>("AvartUrl")
                         .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                        .HasColumnType("character varying(500)");
 
                     b.Property<DateTime?>("DateOfBirth")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("Gender")
                         .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
+                        .HasColumnType("character varying(10)");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
+                        .HasColumnType("character varying(150)");
 
                     b.Property<string>("Slug")
                         .IsRequired()
                         .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<long?>("TmdbId")
+                        .HasColumnType("bigint");
 
                     b.HasKey("Id");
 
                     b.HasIndex("Slug")
                         .IsUnique();
+
+                    b.HasIndex("TmdbId")
+                        .IsUnique()
+                        .HasFilter("\"TmdbId\" IS NOT NULL");
 
                     b.ToTable("Actors", (string)null);
                 });
@@ -67,21 +68,21 @@ namespace FinalCuongFilm.Datalayer.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<string>("IsoCode")
                         .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                        .HasColumnType("character varying(20)");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("character varying(100)");
 
                     b.Property<string>("Slug")
                         .IsRequired()
                         .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
+                        .HasColumnType("character varying(200)");
 
                     b.HasKey("Id");
 
@@ -97,41 +98,41 @@ namespace FinalCuongFilm.Datalayer.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<DateTime?>("AirDate")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasColumnType("timestamp without time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<string>("Description")
                         .HasMaxLength(2000)
-                        .HasColumnType("nvarchar(2000)");
+                        .HasColumnType("character varying(2000)");
 
                     b.Property<int?>("DurationMinutes")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.Property<int>("EpisodeNumber")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.Property<bool>("IsActive")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
+                        .HasColumnType("boolean")
                         .HasDefaultValue(true);
 
                     b.Property<Guid>("MovieId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
+                        .HasColumnType("character varying(255)");
 
                     b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<long>("ViewCount")
                         .ValueGeneratedOnAdd()
@@ -154,20 +155,20 @@ namespace FinalCuongFilm.Datalayer.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasColumnType("timestamp without time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<Guid>("MovieId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<string>("UserId")
                         .IsRequired()
                         .HasMaxLength(450)
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("character varying(450)");
 
                     b.HasKey("Id");
 
@@ -185,21 +186,21 @@ namespace FinalCuongFilm.Datalayer.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Description")
                         .HasMaxLength(4000)
-                        .HasColumnType("nvarchar(4000)");
+                        .HasColumnType("character varying(4000)");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("character varying(100)");
 
                     b.Property<string>("Slug")
                         .IsRequired()
                         .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
+                        .HasColumnType("character varying(200)");
 
                     b.HasKey("Id");
 
@@ -209,21 +210,85 @@ namespace FinalCuongFilm.Datalayer.Migrations
                     b.ToTable("Genres", (string)null);
                 });
 
+            modelBuilder.Entity("FinalCuongFilm.ApplicationCore.Entities.Identity.CuongFilmUser", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("text");
+
+                    b.Property<int>("AccessFailedCount")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("AvatarUrl")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ConcurrencyStamp")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("Email")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("EmailConfirmed")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("FullName")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Gender")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("LockoutEnabled")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTimeOffset?>("LockoutEnd")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("NormalizedEmail")
+                        .HasColumnType("text");
+
+                    b.Property<string>("NormalizedUserName")
+                        .HasColumnType("text");
+
+                    b.Property<string>("PasswordHash")
+                        .HasColumnType("text");
+
+                    b.Property<string>("PhoneNumber")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("PhoneNumberConfirmed")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("SecurityStamp")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("TwoFactorEnabled")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("UserName")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("CuongFilmUser");
+                });
+
             modelBuilder.Entity("FinalCuongFilm.ApplicationCore.Entities.Language", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("character varying(100)");
 
                     b.Property<string>("Slug")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("character varying(100)");
 
                     b.HasKey("Id");
 
@@ -237,19 +302,19 @@ namespace FinalCuongFilm.Datalayer.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<Guid?>("EpisodeId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<string>("FileName")
                         .IsRequired()
                         .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
+                        .HasColumnType("character varying(255)");
 
                     b.Property<string>("FilePath")
                         .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                        .HasColumnType("character varying(500)");
 
                     b.Property<long?>("FileSizeBytes")
                         .HasColumnType("bigint")
@@ -258,29 +323,29 @@ namespace FinalCuongFilm.Datalayer.Migrations
                     b.Property<string>("FileType")
                         .IsRequired()
                         .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                        .HasColumnType("character varying(20)");
 
                     b.Property<string>("FileUrl")
                         .IsRequired()
                         .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                        .HasColumnType("character varying(500)");
 
                     b.Property<string>("Language")
                         .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
+                        .HasColumnType("character varying(10)");
 
                     b.Property<Guid?>("MovieId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Quality")
                         .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                        .HasColumnType("character varying(20)");
 
                     b.Property<DateTime>("UploadedAt")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
+                        .HasColumnType("timestamp without time zone")
                         .HasColumnName("CreatedAt")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.HasKey("Id");
 
@@ -297,60 +362,71 @@ namespace FinalCuongFilm.Datalayer.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
-                    b.Property<Guid>("CountryId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<Guid?>("CountryId")
+                        .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasColumnType("timestamp without time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<string>("Description")
                         .HasMaxLength(4000)
-                        .HasColumnType("nvarchar(4000)");
+                        .HasColumnType("character varying(4000)");
 
                     b.Property<int?>("DurationMinutes")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.Property<bool>("IsActive")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
+                        .HasColumnType("boolean")
                         .HasDefaultValue(true);
 
-                    b.Property<Guid>("LanguageId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<bool>("IsVipOnly")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
+                    b.Property<Guid?>("LanguageId")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("PosterUrl")
                         .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                        .HasColumnType("character varying(500)");
 
                     b.Property<int?>("ReleaseYear")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.Property<string>("Slug")
                         .IsRequired()
                         .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
+                        .HasColumnType("character varying(200)");
 
                     b.Property<int>("Status")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<long?>("TmdbId")
+                        .HasColumnType("bigint");
 
                     b.Property<string>("TrailerUrl")
                         .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                        .HasColumnType("character varying(500)");
 
                     b.Property<int>("Type")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("VideoUrl")
+                        .HasColumnType("text");
 
                     b.Property<long>("ViewCount")
                         .ValueGeneratedOnAdd()
@@ -370,6 +446,10 @@ namespace FinalCuongFilm.Datalayer.Migrations
                     b.HasIndex("Slug")
                         .IsUnique();
 
+                    b.HasIndex("TmdbId")
+                        .IsUnique()
+                        .HasFilter("\"TmdbId\" IS NOT NULL");
+
                     b.HasIndex("ViewCount");
 
                     b.ToTable("Movies", (string)null);
@@ -378,10 +458,10 @@ namespace FinalCuongFilm.Datalayer.Migrations
             modelBuilder.Entity("FinalCuongFilm.ApplicationCore.Entities.MovieActor", b =>
                 {
                     b.Property<Guid>("MovieId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<Guid>("ActorId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.HasKey("MovieId", "ActorId");
 
@@ -389,16 +469,16 @@ namespace FinalCuongFilm.Datalayer.Migrations
 
                     b.HasIndex("MovieId");
 
-                    b.ToTable("Movie_Actors", (string)null);
+                    b.ToTable("MovieActors", (string)null);
                 });
 
             modelBuilder.Entity("FinalCuongFilm.ApplicationCore.Entities.MovieGenre", b =>
                 {
                     b.Property<Guid>("MovieId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<Guid>("GenreId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.HasKey("MovieId", "GenreId");
 
@@ -406,16 +486,16 @@ namespace FinalCuongFilm.Datalayer.Migrations
 
                     b.HasIndex("MovieId");
 
-                    b.ToTable("Movie_Genres", (string)null);
+                    b.ToTable("MovieGenres", (string)null);
                 });
 
             modelBuilder.Entity("FinalCuongFilm.ApplicationCore.Entities.MovieTag", b =>
                 {
                     b.Property<Guid>("MovieId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<Guid>("TagId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.HasKey("MovieId", "TagId");
 
@@ -423,42 +503,42 @@ namespace FinalCuongFilm.Datalayer.Migrations
 
                     b.HasIndex("TagId");
 
-                    b.ToTable("Movie_Tags", (string)null);
+                    b.ToTable("MovieTags", (string)null);
                 });
 
             modelBuilder.Entity("FinalCuongFilm.ApplicationCore.Entities.Review", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Comment")
                         .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
+                        .HasColumnType("character varying(1000)");
 
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasColumnType("timestamp without time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<bool>("IsApproved")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
+                        .HasColumnType("boolean")
                         .HasDefaultValue(false);
 
                     b.Property<Guid>("MovieId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<int>("Rating")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("UserId")
                         .IsRequired()
                         .HasMaxLength(450)
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("character varying(450)");
 
                     b.HasKey("Id");
 
@@ -479,17 +559,17 @@ namespace FinalCuongFilm.Datalayer.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasColumnType("timestamp without time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<string>("SuggestionText")
                         .IsRequired()
                         .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
+                        .HasColumnType("character varying(255)");
 
                     b.HasKey("Id");
 
@@ -504,17 +584,17 @@ namespace FinalCuongFilm.Datalayer.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("character varying(100)");
 
                     b.Property<string>("Slug")
                         .IsRequired()
                         .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
+                        .HasColumnType("character varying(200)");
 
                     b.HasKey("Id");
 
@@ -524,28 +604,147 @@ namespace FinalCuongFilm.Datalayer.Migrations
                     b.ToTable("Tags", (string)null);
                 });
 
+            modelBuilder.Entity("FinalCuongFilm.ApplicationCore.Entities.Transaction", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<string>("OrderInfo")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<Guid>("PackageId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("PaymentMethod")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasDefaultValue("ZALOPAY");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<DateTime>("TransactionDate")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp without time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("character varying(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TransactionDate");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Transactions", (string)null);
+                });
+
+            modelBuilder.Entity("FinalCuongFilm.ApplicationCore.Entities.UserSubscription", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("EndDate")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid>("PackageId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("character varying(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PackageId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("UserSubscriptions", (string)null);
+                });
+
+            modelBuilder.Entity("FinalCuongFilm.ApplicationCore.Entities.VipPackage", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<int>("DurationInDays")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true);
+
+                    b.Property<bool>("IsPopular")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<decimal>("Price")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("VipPackages", (string)null);
+                });
+
             modelBuilder.Entity("FinalCuongFilm.ApplicationCore.Entities.WatchHistory", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
-                    b.Property<Guid?>("EpisodeId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<DateTime>("LastWatchedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp without time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<Guid>("MovieId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
-                    b.Property<DateTime>("WatchedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
+                    b.HasIndex("LastWatchedAt");
+
                     b.HasIndex("MovieId");
 
-                    b.HasIndex("WatchedAt");
+                    b.HasIndex("UserId");
 
                     b.ToTable("WatchHistories", (string)null);
                 });
@@ -592,14 +791,12 @@ namespace FinalCuongFilm.Datalayer.Migrations
                     b.HasOne("FinalCuongFilm.ApplicationCore.Entities.Country", "Country")
                         .WithMany()
                         .HasForeignKey("CountryId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("FinalCuongFilm.ApplicationCore.Entities.Language", "Language")
                         .WithMany("Movies")
                         .HasForeignKey("LanguageId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Country");
 
@@ -608,14 +805,14 @@ namespace FinalCuongFilm.Datalayer.Migrations
 
             modelBuilder.Entity("FinalCuongFilm.ApplicationCore.Entities.MovieActor", b =>
                 {
-                    b.HasOne("FinalCuongFilm.ApplicationCore.Entities.Actor", "Actor")
-                        .WithMany("Movie_Actors")
+                    b.HasOne("Actor", "Actor")
+                        .WithMany("MovieActors")
                         .HasForeignKey("ActorId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("FinalCuongFilm.ApplicationCore.Entities.Movie", "Movie")
-                        .WithMany("Movie_Actors")
+                        .WithMany("MovieActors")
                         .HasForeignKey("MovieId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -628,13 +825,13 @@ namespace FinalCuongFilm.Datalayer.Migrations
             modelBuilder.Entity("FinalCuongFilm.ApplicationCore.Entities.MovieGenre", b =>
                 {
                     b.HasOne("FinalCuongFilm.ApplicationCore.Entities.Genre", "Genre")
-                        .WithMany("Movie_Genres")
+                        .WithMany("MovieGenres")
                         .HasForeignKey("GenreId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("FinalCuongFilm.ApplicationCore.Entities.Movie", "Movie")
-                        .WithMany("Movie_Genres")
+                        .WithMany("MovieGenres")
                         .HasForeignKey("MovieId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -647,13 +844,13 @@ namespace FinalCuongFilm.Datalayer.Migrations
             modelBuilder.Entity("FinalCuongFilm.ApplicationCore.Entities.MovieTag", b =>
                 {
                     b.HasOne("FinalCuongFilm.ApplicationCore.Entities.Movie", "Movie")
-                        .WithMany("Movie_Tags")
+                        .WithMany("MovieTags")
                         .HasForeignKey("MovieId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("FinalCuongFilm.ApplicationCore.Entities.Tag", "Tag")
-                        .WithMany("Movie_Tags")
+                        .WithMany("MovieTags")
                         .HasForeignKey("TagId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -674,9 +871,58 @@ namespace FinalCuongFilm.Datalayer.Migrations
                     b.Navigation("Movie");
                 });
 
-            modelBuilder.Entity("FinalCuongFilm.ApplicationCore.Entities.Actor", b =>
+            modelBuilder.Entity("FinalCuongFilm.ApplicationCore.Entities.Transaction", b =>
                 {
-                    b.Navigation("Movie_Actors");
+                    b.HasOne("FinalCuongFilm.ApplicationCore.Entities.Identity.CuongFilmUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("FinalCuongFilm.ApplicationCore.Entities.UserSubscription", b =>
+                {
+                    b.HasOne("FinalCuongFilm.ApplicationCore.Entities.VipPackage", "Package")
+                        .WithMany()
+                        .HasForeignKey("PackageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("FinalCuongFilm.ApplicationCore.Entities.Identity.CuongFilmUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Package");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("FinalCuongFilm.ApplicationCore.Entities.WatchHistory", b =>
+                {
+                    b.HasOne("FinalCuongFilm.ApplicationCore.Entities.Movie", "Movie")
+                        .WithMany()
+                        .HasForeignKey("MovieId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("FinalCuongFilm.ApplicationCore.Entities.Identity.CuongFilmUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Movie");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Actor", b =>
+                {
+                    b.Navigation("MovieActors");
                 });
 
             modelBuilder.Entity("FinalCuongFilm.ApplicationCore.Entities.Episode", b =>
@@ -686,7 +932,7 @@ namespace FinalCuongFilm.Datalayer.Migrations
 
             modelBuilder.Entity("FinalCuongFilm.ApplicationCore.Entities.Genre", b =>
                 {
-                    b.Navigation("Movie_Genres");
+                    b.Navigation("MovieGenres");
                 });
 
             modelBuilder.Entity("FinalCuongFilm.ApplicationCore.Entities.Language", b =>
@@ -702,18 +948,18 @@ namespace FinalCuongFilm.Datalayer.Migrations
 
                     b.Navigation("MediaFiles");
 
-                    b.Navigation("Movie_Actors");
+                    b.Navigation("MovieActors");
 
-                    b.Navigation("Movie_Genres");
+                    b.Navigation("MovieGenres");
 
-                    b.Navigation("Movie_Tags");
+                    b.Navigation("MovieTags");
 
                     b.Navigation("Reviews");
                 });
 
             modelBuilder.Entity("FinalCuongFilm.ApplicationCore.Entities.Tag", b =>
                 {
-                    b.Navigation("Movie_Tags");
+                    b.Navigation("MovieTags");
                 });
 #pragma warning restore 612, 618
         }

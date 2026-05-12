@@ -137,15 +137,16 @@ namespace FinalCuongFilm.Service.Services
 				if (credits != null && credits.Cast.Any())
 				{
 					var topCast = credits.Cast.Take(8).ToList();
-					var castTmdbIds = topCast.Select(c => c.Id).ToList();
+
+					// Tối ưu ép kiểu thành mảng long? để Entity Framework không bị bối rối khi dịch lệnh
+					var castTmdbIds = topCast.Select(c => (long?)c.Id).ToList();
 
 					var existingActors = await _dbContext.Actors
-							.Where(a => a.TmdbId.HasValue && castTmdbIds.Contains(a.TmdbId.Value))
+							.Where(a => castTmdbIds.Contains(a.TmdbId))
 							.ToListAsync();
 
 					foreach (var cast in topCast)
 					{
-						// Added Local cache check for actors
 						var actor = _dbContext.Actors.Local.FirstOrDefault(a => a.TmdbId == cast.Id)
 									?? existingActors.FirstOrDefault(a => a.TmdbId == cast.Id);
 

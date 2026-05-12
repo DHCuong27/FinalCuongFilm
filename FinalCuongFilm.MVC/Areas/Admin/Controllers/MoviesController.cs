@@ -5,11 +5,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
-using System;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 {
@@ -97,6 +92,10 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 		[ValidateAntiForgeryToken]
 		public async Task<IActionResult> Create(MovieCreateDto dto, IFormFile? posterFile)
 		{
+			//  Đảm bảo danh sách không bao giờ bị null nếu người dùng không chọn gì
+			dto.ActorIds ??= new List<Guid>();
+			dto.GenreIds ??= new List<Guid>();
+
 			if (posterFile != null && posterFile.Length > 0)
 			{
 				var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".webp" };
@@ -113,9 +112,10 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 				{
 					if (posterFile != null && posterFile.Length > 0)
 					{
-						var tempSlug = !string.IsNullOrEmpty(dto.Slug)
-							? dto.Slug
-							: (dto.Title?.ToLower().Replace(" ", "-") ?? Guid.NewGuid().ToString());
+						var tempSlug =
+							!string.IsNullOrWhiteSpace(dto.Slug) ? dto.Slug :
+							!string.IsNullOrWhiteSpace(dto.Title) ? dto.Title.ToLower().Replace(" ", "-") :
+							Guid.NewGuid().ToString();
 
 						dto.PosterUrl = await _azureBlobService.UploadPosterAsync(posterFile, tempSlug);
 					}
@@ -168,23 +168,14 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 				Type = movie.Type,
 				Status = movie.Status,
 				IsActive = movie.IsActive,
-
-				// THE CRITICAL MISSING LINE ADDED HERE
 				IsVipOnly = movie.IsVipOnly,
-				
-
 				CountryId = movie.CountryId ?? Guid.Empty,
 				LanguageId = movie.LanguageId ?? Guid.Empty,
 				ActorIds = movie.MovieActors.Select(ma => ma.ActorId).ToList(),
 				GenreIds = movie.MovieGenres.Select(mg => mg.GenreId).ToList()
 			};
 
-			// Populate ViewBag for dropdowns
-			ViewBag.Countries = new SelectList(await _context.Countries.ToListAsync(), "Id", "Name");
-			ViewBag.Languages = new SelectList(await _context.Languages.ToListAsync(), "Id", "Name");
-			ViewBag.Actors = new SelectList(await _context.Actors.ToListAsync(), "Id", "Name");
-			ViewBag.Genres = new SelectList(await _context.Genres.ToListAsync(), "Id", "Name");
-
+			await PopulateDropdowns(dto.LanguageId, dto.CountryId, dto.ActorIds, dto.GenreIds);
 			return View(dto);
 		}
 
@@ -194,6 +185,10 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 		public async Task<IActionResult> Edit(Guid id, MovieUpdateDto dto, IFormFile? posterFile)
 		{
 			if (id != dto.Id) return NotFound();
+
+			//  Đảm bảo danh sách không bao giờ bị null
+			dto.ActorIds ??= new List<Guid>();
+			dto.GenreIds ??= new List<Guid>();
 
 			if (posterFile != null && posterFile.Length > 0)
 			{
@@ -269,6 +264,7 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 			}
 		}
 
+		//  Thêm .ToListAsync() để tránh lỗi DB chạy đồng thời và tối ưu tốc độ
 		private async Task PopulateDropdowns(
 			Guid? selectedLanguageId = null,
 			Guid? selectedCountryId = null,
@@ -277,11 +273,13 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 		{
 			var actors = await _actorService.GetAllAsync();
 			var genres = await _genreService.GetAllAsync();
+			var languages = await _context.Languages.ToListAsync();
+			var countries = await _context.Countries.ToListAsync();
 
 			ViewBag.Actors = new MultiSelectList(actors, "Id", "Name", selectedActorIds);
 			ViewBag.Genres = new MultiSelectList(genres, "Id", "Name", selectedGenreIds);
-			ViewBag.Languages = new SelectList(_context.Languages, "Id", "Name", selectedLanguageId);
-			ViewBag.Countries = new SelectList(_context.Countries, "Id", "Name", selectedCountryId);
+			ViewBag.Languages = new SelectList(languages, "Id", "Name", selectedLanguageId);
+			ViewBag.Countries = new SelectList(countries, "Id", "Name", selectedCountryId);
 		}
 	}
 }

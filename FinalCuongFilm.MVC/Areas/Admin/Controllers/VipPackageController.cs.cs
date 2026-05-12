@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 {
 	[Area("Admin")]
-	[Authorize(Roles = "Admin")] // Bắt buộc phải là Admin mới vào được
+	[Authorize(Roles = "Admin")] 
 	public class VipPackageController : Controller
 	{
 		private readonly IVipService _vipService;
@@ -20,7 +20,7 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 			_context = context;
 		}
 
-		// 1. READ (Hiển thị danh sách)
+		
 		public async Task<IActionResult> Index()
 		{
 			var packages = await _vipService.GetAllPackagesAsync();
@@ -74,7 +74,7 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 			return View(model);
 		}
 
-		// 4. DELETE (Soft Delete - POST từ một form hoặc nút bấm)
+		// 4. DELETE 
 		[HttpPost]
 		[ValidateAntiForgeryToken]
 		public async Task<IActionResult> Delete(Guid id)
@@ -95,8 +95,6 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 				TempData["Error"] = "Package not found!";
 				return RedirectToAction(nameof(Index));
 			}
-
-			// Lật ngược trạng thái: Nếu đang True (Bán) -> Thành False (Ẩn), và ngược lại
 			package.IsActive = !package.IsActive;
 
 			_context.Update(package);

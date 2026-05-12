@@ -87,24 +87,28 @@ namespace FinalCuongFilm.Service.Services
 				ReleaseYear = movie.ReleaseYear,
 				Status = movie.Status,
 				IsActive = movie.IsActive,
-				IsVipOnly = movie.IsVipOnly, // Added VIP Mapping
+				IsVipOnly = movie.IsVipOnly,
 				PosterUrl = movie.PosterUrl,
 				GenreName = movie.MovieGenres.FirstOrDefault()?.Genre?.Name,
+				GenreNames = movie.MovieGenres
+					.Where(mg => mg.Genre != null)
+					.Select(mg => mg.Genre!.Name)
+					.ToList(),
 				CountryName = movie.Country != null ? movie.Country.Name : null,
 				LanguageName = movie.Language != null ? movie.Language.Name : null,
+				SelectedActorIds = movie.MovieActors.Select(ma => ma.ActorId).ToList(),
+				SelectedGenreIds = movie.MovieGenres.Select(mg => mg.GenreId).ToList(),
 
 				Actors = movie.MovieActors.Select(ma => new MovieActorDto
 				{
 					ActorId = ma.Actor.Id,
 					Name = ma.Actor.Name,
-					AvatarUrl = ma.Actor.AvartUrl // Maps the DB AvatarUrl to the View's ImageUrl
+					AvatarUrl = ma.Actor.AvartUrl
 				}).ToList(),
 
-				// Fixed compiler error: changed 'm' to 'movie'
 				ActorName = movie.MovieActors.Select(ma => ma.Actor.Name).ToList()
 			};
 		}
-
 
 		public async Task<MovieDto?> GetBySlugAsync(string slug)
 		{
@@ -139,7 +143,6 @@ namespace FinalCuongFilm.Service.Services
 
 		public async Task<MovieDto> CreateAsync(MovieCreateDto dto)
 		{
-		
 			string normalizedTitle = dto.Title.Trim().ToLower();
 
 			bool isDuplicate = await _context.Movies.AnyAsync(m =>
@@ -153,23 +156,50 @@ namespace FinalCuongFilm.Service.Services
 				throw new Exception($"Cannot create! The movie '{dto.Title}' ({dto.ReleaseYear}) already exists in the system.");
 			}
 
-			// 3. SECONDARY DEFENSE: Check for URL Slug collision
 			if (await _context.Movies.AnyAsync(m => m.Slug == dto.Slug))
 			{
 				throw new Exception($"The slug '{dto.Slug}' is already in use. Please modify the title to generate a unique URL.");
 			}
 
-			// 4. Map and initialize the new movie entity
 			var movie = _mapper.Map<Movie>(dto);
 			movie.IsVipOnly = dto.IsVipOnly;
 			movie.CreatedAt = DateTime.UtcNow;
 			movie.IsActive = true;
 			movie.ViewCount = 0;
 
-			// 5. Save to database
 			_context.Movies.Add(movie);
 			await _context.SaveChangesAsync();
 
+			//  SAVE MANY-TO-MANY RELATIONS 
+			if (dto.ActorIds != null && dto.ActorIds.Any())
+			{
+				var movieActors = dto.ActorIds
+					.Distinct()
+					.Select(actorId => new MovieActor
+					{
+						MovieId = movie.Id,
+						ActorId = actorId
+					})
+					.ToList();
+
+				_context.MovieActors.AddRange(movieActors);
+			}
+
+			if (dto.GenreIds != null && dto.GenreIds.Any())
+			{
+				var movieGenres = dto.GenreIds
+					.Distinct()
+					.Select(genreId => new MovieGenre
+					{
+						MovieId = movie.Id,
+						GenreId = genreId
+					})
+					.ToList();
+
+				_context.MovieGenres.AddRange(movieGenres);
+			}
+
+			await _context.SaveChangesAsync();
 			_logger.LogInformation($"Successfully created manual movie: {movie.Title} (ID: {movie.Id})");
 
 			return _mapper.Map<MovieDto>(movie);
@@ -177,7 +207,11 @@ namespace FinalCuongFilm.Service.Services
 
 		public async Task<MovieDto?> UpdateAsync(Guid id, MovieUpdateDto dto)
 		{
-			var movie = await _context.Movies.FindAsync(id);
+			var movie = await _context.Movies
+				.Include(m => m.MovieActors)
+				.Include(m => m.MovieGenres)
+				.FirstOrDefaultAsync(m => m.Id == id);
+
 			if (movie == null) return null;
 
 			if (await _context.Movies
@@ -187,6 +221,46 @@ namespace FinalCuongFilm.Service.Services
 			_mapper.Map(dto, movie);
 			movie.IsVipOnly = dto.IsVipOnly;
 			movie.UpdatedAt = DateTime.UtcNow;
+
+			//  SYNC ACTORS 
+			if (dto.ActorIds != null)
+			{
+				var existingActorIds = movie.MovieActors.Select(ma => ma.ActorId).ToList();
+
+				var toRemove = movie.MovieActors
+					.Where(ma => !dto.ActorIds.Contains(ma.ActorId))
+					.ToList();
+				_context.MovieActors.RemoveRange(toRemove);
+
+				var toAdd = dto.ActorIds
+					.Except(existingActorIds)
+					.Select(actorId => new MovieActor
+					{
+						MovieId = movie.Id,
+						ActorId = actorId
+					});
+				_context.MovieActors.AddRange(toAdd);
+			}
+
+			//  SYNC GENRES 
+			if (dto.GenreIds != null)
+			{
+				var existingGenreIds = movie.MovieGenres.Select(mg => mg.GenreId).ToList();
+
+				var toRemove = movie.MovieGenres
+					.Where(mg => !dto.GenreIds.Contains(mg.GenreId))
+					.ToList();
+				_context.MovieGenres.RemoveRange(toRemove);
+
+				var toAdd = dto.GenreIds
+					.Except(existingGenreIds)
+					.Select(genreId => new MovieGenre
+					{
+						MovieId = movie.Id,
+						GenreId = genreId
+					});
+				_context.MovieGenres.AddRange(toAdd);
+			}
 
 			await _context.SaveChangesAsync();
 
@@ -211,7 +285,6 @@ namespace FinalCuongFilm.Service.Services
 
 			if (movie == null) return false;
 
-			// Delete blobs first
 			var allMedia = movie.MediaFiles
 				.Concat(movie.Episodes.SelectMany(e => e.MediaFiles))
 				.ToList();
@@ -300,14 +373,12 @@ namespace FinalCuongFilm.Service.Services
 				.ToListAsync();
 		}
 
-		// Pagination 
 		public async Task<PagedResult<MovieDto>> GetPagedAsync(string searchTerm, int page, int pageSize)
 		{
 			var query = _context.Movies
 				.Include(m => m.Country)
 				.AsQueryable();
 
-		
 			if (!string.IsNullOrWhiteSpace(searchTerm))
 			{
 				string keyword = searchTerm.Trim().ToLower();
@@ -325,14 +396,12 @@ namespace FinalCuongFilm.Service.Services
 			page = page < 1 ? 1 : page;
 			page = page > totalPages && totalPages > 0 ? totalPages : page;
 
-
 			var movies = await query
 				.OrderByDescending(m => m.CreatedAt)
 				.Skip((page - 1) * pageSize)
 				.Take(pageSize)
 				.ToListAsync();
 
-	
 			return new PagedResult<MovieDto>
 			{
 				Items = _mapper.Map<List<MovieDto>>(movies),
@@ -343,7 +412,5 @@ namespace FinalCuongFilm.Service.Services
 		}
 
 		#endregion
-
-
 	}
 }

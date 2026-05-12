@@ -6,6 +6,7 @@
     ViewData["Title"] = "Movie Detail";
 }
 
+
 <style>
     :root {
         --primary-color: #2563eb;
@@ -574,10 +575,19 @@
                         <div class="detail-value">@Model.Type</div>
                     </div>
 
-                    @* <div class="detail-item">
-                        <div class="detail-label">Genre</div>
-                        <div class="detail-value">@(string.IsNullOrEmpty(Model.GenreName) ? "N/A" : Model.GenreName)</div>
-                    </div> *@
+                    <div class="detail-item">
+                        <div class="detail-label">Genres</div>
+                        <div class="detail-value">
+                            @if (Model.GenreNames != null && Model.GenreNames.Any())
+                            {
+                                @string.Join(", ", Model.GenreNames)
+                            }
+                            else
+                            {
+                                <span>N/A</span>
+                            }
+                        </div>
+                    </div>
 
                     <div class="detail-item">
                         <div class="detail-label">Status</div>
@@ -603,9 +613,6 @@
                         Cast & Crew
                     </div>
                     <div class="actor-list">
-                        @* Assuming Model.Actors is a list of objects containing Name and ImageUrl. 
-                           If Model.Actors doesn't exist, this falls back to Model.ActorName strings.
-                        *@
                         @if (Model.Actors != null && Model.Actors.Any())
                         {
                             foreach (var actor in Model.Actors)

@@ -55,7 +55,7 @@ namespace FinalCuongFilm.MVC.Controllers
 			// 2. Lấy các danh sách cố định cho Slider và các Section ngang
 			var latestMovies = allMovies
 				.Where(m => m.IsActive)
-				.Take(12) // Lấy 12 phim thay vì 5 như comment cũ để Slider chạy mượt hơn
+				.Take(12) 
 				.ToList();
 
 			var popularMovies = allMovies
@@ -64,7 +64,6 @@ namespace FinalCuongFilm.MVC.Controllers
 				.Take(12)
 				.ToList();
 
-			// ĐÃ FIX: Lọc phim Hàn Quốc và Trung Quốc (Bắt cả tiếng Anh lẫn tiếng Việt cho chắc)
 			var koreanMovies = allMovies
 				.Where(m => m.IsActive && (m.CountryName == "South Korea" || m.CountryName == "Hàn Quốc"))
 				.ToList();
@@ -131,9 +130,9 @@ namespace FinalCuongFilm.MVC.Controllers
 			{
 				LatestMovies = latestMovies,
 				PopularMovies = popularMovies,
-				KoreanMovies = koreanMovies,     // Data đã được nạp
-				ChineseMovies = chineseMovies,   // Data đã được nạp
-				ContinueWatchingMovies = new List<MovieDto>(), // Chờ tích hợp DB sau
+				KoreanMovies = koreanMovies,     
+				ChineseMovies = chineseMovies,  
+				ContinueWatchingMovies = new List<MovieDto>(),
 				AllMoviesFilter = filterVM
 			};
 

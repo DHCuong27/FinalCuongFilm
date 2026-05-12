@@ -8,14 +8,28 @@ namespace FinalCuongFilm.Service.Mappings
 	{
 		public MappingProfile()
 		{
-			// ===== Movie Mappings =====
+
 
 			// Movie → MovieDto (Read)
+
 			CreateMap<Movie, MovieDto>()
-				.ForMember(dest => dest.CountryName, opt => opt.MapFrom(src => src.Country != null ? src.Country.Name : null))
-				.ForMember(dest => dest.LanguageName, opt => opt.MapFrom(src => src.Language != null ? src.Language.Name : null))
-				.ForMember(dest => dest.GenreName, opt => opt.MapFrom(src => src.MovieGenres.Select(mg => mg.Genre.Name).ToList()))
-				.ForMember(dest => dest.SelectedGenreIds, opt => opt.MapFrom(src => src.MovieGenres.Select(mg => mg.GenreId).ToList()));
+		.ForMember(dest => dest.CountryName,
+			opt => opt.MapFrom(src => src.Country != null ? src.Country.Name : null))
+		.ForMember(dest => dest.LanguageName,
+			opt => opt.MapFrom(src => src.Language != null ? src.Language.Name : null))
+		.ForMember(dest => dest.GenreName,
+			opt => opt.MapFrom(src =>
+				src.MovieGenres != null
+					? string.Join(", ",
+						src.MovieGenres
+							.Where(mg => mg.Genre != null && mg.Genre.Name != null)
+							.Select(mg => mg.Genre.Name))
+					: null))
+		.ForMember(dest => dest.SelectedGenreIds,
+			opt => opt.MapFrom(src =>
+				src.MovieGenres != null
+					? src.MovieGenres.Select(mg => mg.GenreId).ToList()
+					: new List<Guid>()));
 
 			// MovieDto → Movie
 			CreateMap<MovieDto, Movie>()

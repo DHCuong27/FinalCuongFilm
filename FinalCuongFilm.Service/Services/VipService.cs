@@ -84,11 +84,8 @@ namespace FinalCuongFilm.Service.Services
 					.FirstOrDefaultAsync();
 
 				if (existingSub != null)
-				{
-					//  Extend the existing subscription (Cộng dồn ngày)
-					existingSub.EndDate = existingSub.EndDate.AddDays(package.DurationInDays);
-
-					// Optional Update PackageId in case they bought a higher tier
+				{	
+					existingSub.EndDate = existingSub.EndDate.AddDays(package.DurationInDays);	
 					existingSub.PackageId = package.Id;
 
 					_context.UserSubscriptions.Update(existingSub);
@@ -116,7 +113,7 @@ namespace FinalCuongFilm.Service.Services
 			await _context.SaveChangesAsync();
 		}
 
-		// Lấy TẤT CẢ gói (cả Active lẫn Inactive) để Admin quản lý
+		// Get All Packages (Admin)
 		public async Task<IEnumerable<VipPackage>> GetAllPackagesAsync()
 		{
 			return await _context.VipPackages

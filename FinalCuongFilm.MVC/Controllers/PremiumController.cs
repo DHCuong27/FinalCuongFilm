@@ -97,7 +97,7 @@ namespace FinalCuongFilm.MVC.Controllers
 			var appTransId = $"{DateTime.Now:yyMMdd}_{transaction.Id:N}";
 			var appTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds().ToString();
 
-			// KEY CHANGE: Pass both txnId and appTransId back to the Success page via URL parameters
+			
 			var redirectUrlWithParams = $"{redirectUrl}?txnId={transaction.Id}&appTransId={appTransId}";
 			var embedData = JsonConvert.SerializeObject(new { redirecturl = redirectUrlWithParams });
 			var item = "[]";

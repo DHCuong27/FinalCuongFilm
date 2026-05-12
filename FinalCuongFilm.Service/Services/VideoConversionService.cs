@@ -38,29 +38,27 @@ namespace FinalCuongFilm.Service.Services
 
 			try
 			{
-				// 1. Tải file từ Azure về Local
+			
 				_logger.LogInformation($"[DOWNLOAD] Downloading the original MP4 file from Azure to my computer....");
 				using (var httpClient = new HttpClient())
 				{
-					// Chèn token vào GetAsync để có thể hủy tải file nếu cần
+			
 					using (var response = await httpClient.GetAsync(sourceFileUrl, HttpCompletionOption.ResponseHeadersRead, cancellationToken))
 					{
 						response.EnsureSuccessStatusCode();
 						using (var fileStream = new FileStream(localInputPath, FileMode.Create, FileAccess.Write, FileShare.None))
 						{
-							// Chèn token vào CopyToAsync
 							await response.Content.CopyToAsync(fileStream, cancellationToken);
 						}
 					}
 				}
 
-				// 2. Transcode  FFmpeg
+				// Transcode  FFmpeg
 				_logger.LogInformation($"[FFMPEG] Start splitting and compressing multi-resolution video....");
 				string ffmpegArgs =
 				$"-i \"{localInputPath}\" " +
 				"-map 0:v:0 -map 0:v:0 -map 0:v:0 -map 0:a:0 -map 0:a:0 -map 0:a:0 " +
 
-				// Thêm -preset ultrafast vào từng luồng
 				"-s:v:0 1920x1080 -c:v:0 libx264 -preset ultrafast -b:v:0 3000k -profile:v:0 main " +
 				"-s:v:1 1280x720 -c:v:1 libx264 -preset ultrafast -b:v:1 1500k -profile:v:1 main " +
 				"-s:v:2 854x480 -c:v:2 libx264 -preset ultrafast -b:v:2 800k -profile:v:2 main " +
@@ -71,11 +69,9 @@ namespace FinalCuongFilm.Service.Services
 				$"-f hls \"{localOutputDir}/%v/playlist.m3u8\"";
 
 				var conversion = FFmpeg.Conversions.New().AddParameter(ffmpegArgs);
-
-				// Khi Hangfire hủy Job, lệnh này sẽ bắt Xabe.FFmpeg ép kill tiến trình ffmpeg.exe
 				await conversion.Start(cancellationToken);
 
-				// 3. Upload video lên Azure 
+				//  Upload on Azure 
 				_logger.LogInformation($"[UPLOAD] Start pushing .ts and .m3u8 files to Azure in bulk....");
 
 				string azureFolder = $"movies/{slug}/ep{episodeNumber}/hls";
@@ -87,12 +83,11 @@ namespace FinalCuongFilm.Service.Services
 					throw new Exception("Error: FFmpeg finished running but failed to create any files!");
 				}
 
-				// Giới hạn chỉ cho upload tối đa 10 file cùng lúc
+			
 				using var semaphore = new SemaphoreSlim(10);
 
 				var uploadTasks = allFiles.Select(async filePath =>
 				{
-					// Dừng việc up file lại ngay nếu có lệnh hủy Job
 					await semaphore.WaitAsync(cancellationToken);
 					try
 					{
@@ -122,7 +117,7 @@ namespace FinalCuongFilm.Service.Services
 			catch (OperationCanceledException)
 			{
 				_logger.LogWarning($"[CANCELLED] HLS processing was explicitly cancelled by Hangfire for: {slug}");
-				throw; // Phải throw ra để Hangfire nhận diện trạng thái Canceled/Failed
+				throw; 
 			}
 			catch (Exception ex)
 			{
@@ -131,7 +126,7 @@ namespace FinalCuongFilm.Service.Services
 			}
 			finally
 			{
-				// Đoạn này rất quan trọng, giữ nguyên để luôn dọn rác dù thành công hay bị hủy ngang
+				
 				if (File.Exists(localInputPath)) File.Delete(localInputPath);
 				if (Directory.Exists(localOutputDir)) Directory.Delete(localOutputDir, true);
 			}
@@ -144,7 +139,6 @@ namespace FinalCuongFilm.Service.Services
 			{	
 				string masterM3u8Url = await ConvertToHlsAsync(mp4Url, slug, episodeNumber, cancellationToken);
 
-				// 2. Cập nhật Database sau khi xong
 				var mediaFile = await _mediaFileService.GetByIdAsync(mediaFileId);
 				if (mediaFile != null)
 				{
@@ -161,7 +155,7 @@ namespace FinalCuongFilm.Service.Services
 						EpisodeId = mediaFile.EpisodeId
 					};
 
-					// Lưu bản Update này vào Database
+					//Update in Database
 					await _mediaFileService.UpdateAsync(updateDto);
 
 					_logger.LogInformation($"[HANGFIRE] The HLS file has been updated in the database for MediaId: {mediaFileId}");

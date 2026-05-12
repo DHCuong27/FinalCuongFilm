@@ -35,9 +35,7 @@ namespace FinalCuongFilm.DataLayer
 		public DbSet<WatchHistory> WatchHistories { get; set; }
 		public DbSet<SearchSuggestion> SearchSuggestions { get; set; }
 
-	
-		// Premium & Payment (MỚI THÊM)
-		
+		// Premium & Payment
 		public DbSet<VipPackage> VipPackages { get; set; }
 		public DbSet<Transaction> Transactions { get; set; }
 		public DbSet<UserSubscription> UserSubscriptions { get; set; }
@@ -64,10 +62,8 @@ namespace FinalCuongFilm.DataLayer
 				entity.Property(x => x.ViewCount).HasDefaultValue(0);
 				entity.Property(x => x.IsActive).HasDefaultValue(true);
 
-				// Thêm cờ đánh dấu Phim VIP
 				entity.Property(x => x.IsVipOnly).HasDefaultValue(false);
-
-				entity.Property(x => x.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
+				entity.Property(x => x.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
 
 				entity.HasOne(m => m.Country).WithMany().HasForeignKey(m => m.CountryId).OnDelete(DeleteBehavior.Restrict);
 				entity.HasOne(m => m.Language).WithMany(l => l.Movies).HasForeignKey(m => m.LanguageId).OnDelete(DeleteBehavior.Restrict);
@@ -81,7 +77,9 @@ namespace FinalCuongFilm.DataLayer
 				entity.HasIndex(x => x.IsActive);
 				entity.HasIndex(x => x.CreatedAt);
 				entity.HasIndex(x => x.ViewCount);
-				entity.HasIndex(x => x.TmdbId).IsUnique().HasFilter("[TmdbId] IS NOT NULL");
+
+				// ĐÃ FIX: Chuyển [TmdbId] thành \"TmdbId\"
+				entity.HasIndex(x => x.TmdbId).IsUnique().HasFilter("\"TmdbId\" IS NOT NULL");
 			});
 
 			// 2. EPISODE CONFIGURATION
@@ -95,7 +93,7 @@ namespace FinalCuongFilm.DataLayer
 				entity.Property(e => e.EpisodeNumber).IsRequired();
 				entity.Property(e => e.ViewCount).HasDefaultValue(0);
 				entity.Property(e => e.IsActive).HasDefaultValue(true);
-				entity.Property(e => e.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
+				entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
 
 				entity.HasMany(e => e.MediaFiles).WithOne(mf => mf.Episode).HasForeignKey(mf => mf.EpisodeId).OnDelete(DeleteBehavior.ClientSetNull);
 
@@ -117,7 +115,7 @@ namespace FinalCuongFilm.DataLayer
 				entity.Property(m => m.Quality).HasMaxLength(20);
 				entity.Property(m => m.Language).HasMaxLength(10);
 				entity.Property(m => m.FileSizeBytes).HasColumnName("FileSizeInBytes").IsRequired(false);
-				entity.Property(m => m.UploadedAt).HasColumnName("CreatedAt").HasDefaultValueSql("GETUTCDATE()").IsRequired();
+				entity.Property(m => m.UploadedAt).HasColumnName("CreatedAt").HasDefaultValueSql("CURRENT_TIMESTAMP").IsRequired();
 
 				entity.HasIndex(m => m.MovieId);
 				entity.HasIndex(m => m.EpisodeId);
@@ -138,7 +136,9 @@ namespace FinalCuongFilm.DataLayer
 				entity.Property(x => x.TmdbId).IsRequired(false);
 
 				entity.HasIndex(x => x.Slug).IsUnique();
-				entity.HasIndex(x => x.TmdbId).IsUnique().HasFilter("[TmdbId] IS NOT NULL");
+
+				// ĐÃ FIX: Chuyển [TmdbId] thành \"TmdbId\"
+				entity.HasIndex(x => x.TmdbId).IsUnique().HasFilter("\"TmdbId\" IS NOT NULL");
 			});
 
 			// 5. MANY-TO-MANY RELATIONSHIPS (PascalCase format)
@@ -217,7 +217,10 @@ namespace FinalCuongFilm.DataLayer
 				entity.ToTable("VipPackages");
 				entity.HasKey(x => x.Id);
 				entity.Property(x => x.Name).IsRequired().HasMaxLength(255);
-				entity.Property(x => x.Price).HasColumnType("decimal(18,2)").IsRequired();
+
+				// ĐÃ FIX: Dùng HasPrecision thay cho HasColumnType("decimal")
+				entity.Property(x => x.Price).HasPrecision(18, 2).IsRequired();
+
 				entity.Property(x => x.Description).HasMaxLength(1000);
 				entity.Property(x => x.IsActive).HasDefaultValue(true);
 			});
@@ -229,26 +232,28 @@ namespace FinalCuongFilm.DataLayer
 				entity.HasKey(x => x.Id);
 
 				entity.Property(x => x.UserId).IsRequired().HasMaxLength(450);
-				entity.Property(x => x.Amount).HasColumnType("decimal(18,2)").IsRequired();
+
+				// ĐÃ FIX: Dùng HasPrecision thay cho HasColumnType("decimal")
+				entity.Property(x => x.Amount).HasPrecision(18, 2).IsRequired();
+
 				entity.Property(x => x.OrderInfo).HasMaxLength(500);
 				entity.Property(x => x.PaymentMethod).HasMaxLength(50).HasDefaultValue("ZALOPAY");
 
 				entity.Property(x => x.Status)
-					  .HasConversion<string>()
-					  .HasMaxLength(50)
-					  .IsRequired();
+					.HasConversion<string>()
+					.HasMaxLength(50)
+					.IsRequired();
 
-				entity.Property(x => x.TransactionDate).HasDefaultValueSql("GETUTCDATE()");
+				entity.Property(x => x.TransactionDate).HasDefaultValueSql("CURRENT_TIMESTAMP");
 
 				entity.HasIndex(x => x.UserId);
 				entity.HasIndex(x => x.TransactionDate);
 
-				// THE CRITICAL FIX: Explicitly define the Foreign Key relationship
 				entity.HasOne(x => x.User)
-					  .WithMany()
-					  .HasForeignKey(x => x.UserId)
-					  .IsRequired()
-					  .OnDelete(DeleteBehavior.Cascade);
+					.WithMany()
+					.HasForeignKey(x => x.UserId)
+					.IsRequired()
+					.OnDelete(DeleteBehavior.Cascade);
 			});
 
 			// Cấu hình bảng UserSubscription
@@ -257,7 +262,6 @@ namespace FinalCuongFilm.DataLayer
 				entity.ToTable("UserSubscriptions");
 				entity.HasKey(x => x.Id);
 				entity.Property(x => x.UserId).IsRequired().HasMaxLength(450);
-
 			});
 		}
 
@@ -268,7 +272,7 @@ namespace FinalCuongFilm.DataLayer
 				entity.ToTable("Favorites");
 				entity.HasKey(f => f.Id);
 				entity.Property(f => f.UserId).IsRequired().HasMaxLength(450);
-				entity.Property(f => f.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
+				entity.Property(f => f.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
 				entity.HasIndex(f => new { f.UserId, f.MovieId }).IsUnique();
 				entity.HasIndex(f => f.UserId);
 				entity.HasIndex(f => f.MovieId);
@@ -282,7 +286,7 @@ namespace FinalCuongFilm.DataLayer
 				entity.Property(r => r.Rating).IsRequired();
 				entity.Property(r => r.Comment).HasMaxLength(1000);
 				entity.Property(r => r.IsApproved).HasDefaultValue(false);
-				entity.Property(r => r.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
+				entity.Property(r => r.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
 				entity.HasIndex(r => new { r.UserId, r.MovieId });
 				entity.HasIndex(r => r.Rating);
 				entity.HasIndex(r => r.IsApproved);
@@ -293,7 +297,7 @@ namespace FinalCuongFilm.DataLayer
 			{
 				entity.ToTable("WatchHistories");
 				entity.HasKey(x => x.Id);
-				entity.Property(x => x.LastWatchedAt).IsRequired().HasDefaultValueSql("GETUTCDATE()");
+				entity.Property(x => x.LastWatchedAt).IsRequired().HasDefaultValueSql("CURRENT_TIMESTAMP");
 				entity.HasIndex(x => x.MovieId);
 				entity.HasIndex(x => x.LastWatchedAt);
 			});
@@ -303,7 +307,7 @@ namespace FinalCuongFilm.DataLayer
 				entity.ToTable("SearchSuggestions");
 				entity.HasKey(x => x.Id);
 				entity.Property(x => x.SuggestionText).IsRequired().HasMaxLength(MaxLengths.SEARCH_TERM);
-				entity.Property(x => x.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
+				entity.Property(x => x.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
 				entity.HasIndex(x => x.SuggestionText);
 				entity.HasIndex(x => x.CreatedAt);
 			});
