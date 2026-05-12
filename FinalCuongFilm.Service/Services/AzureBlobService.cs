@@ -27,10 +27,10 @@ namespace FinalCuongFilm.Service.Services
 			_configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
 			_logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
-			var connectionString = _configuration.GetConnectionString("AzureBlobStorage")
-				?? throw new ArgumentNullException("AzureBlobStorage connection string not found");
+			//var connectionString = _configuration.GetConnectionString("AzureBlobStorage")
+			//	?? throw new ArgumentNullException("AzureBlobStorage connection string not found");
 
-			_blobServiceClient = new BlobServiceClient(connectionString);
+			//_blobServiceClient = new BlobServiceClient(connectionString);
 			_logger = logger;
 
 			_ = EnsureContainersExistAsync();
