@@ -14,6 +14,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="robots.txt" />
+    <Content Include="sitemap.xml" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="AutoMapper" Version="16.1.1" />
     <PackageReference Include="Azure.Storage.Blobs.Batch" Version="12.24.0" />
     <PackageReference Include="Hangfire.AspNetCore" Version="1.8.23" />
