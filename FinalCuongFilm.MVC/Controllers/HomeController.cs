@@ -4,8 +4,11 @@ using FinalCuongFilm.MVC.Models.ViewModels;
 using FinalCuongFilm.Service.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Memory;
 using System.Diagnostics;
 using System.Security.Claims;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.EntityFrameworkCore;
 
 namespace FinalCuongFilm.MVC.Controllers
 {
@@ -16,12 +19,14 @@ namespace FinalCuongFilm.MVC.Controllers
 		private readonly IGenreService _genreService;
 		private readonly ICountryService _countryService;
 		private readonly IFavoriteService _favoriteService;
+		private readonly IMemoryCache _cache;
 
 		public HomeController(
 			ILogger<HomeController> logger,
 			IMovieService movieService,
 			IGenreService genreService,
 			ICountryService countryService,
+			IMemoryCache cache,
 			IFavoriteService favoriteService)
 		{
 			_logger = logger;
@@ -29,17 +34,13 @@ namespace FinalCuongFilm.MVC.Controllers
 			_genreService = genreService;
 			_countryService = countryService;
 			_favoriteService = favoriteService;
+			_cache = cache;
 		}
 
 		public async Task<IActionResult> Index(
-		string? search = null,
-		Guid? genreId = null,
-		Guid? countryId = null,
-		int? releaseYear = null,
-		int? type = null,
-		string sortBy = "latest",
-		int pageNumber = 1,
-		int pageSize = 12)
+			string? search = null, Guid? genreId = null, Guid? countryId = null,
+			int? releaseYear = null, int? type = null, string sortBy = "latest",
+			int pageNumber = 1, int pageSize = 12)
 		{
 			if (User.IsInRole("Admin"))
 				return RedirectToAction("Index", "Dashboard", new { area = "Admin" });
@@ -48,44 +49,60 @@ namespace FinalCuongFilm.MVC.Controllers
 			ViewData["MetaDescription"] = "CuongFilm - Xem phim chất lượng cao, phim mới cập nhật mỗi ngày.";
 			ViewData["CanonicalUrl"] = "https://cuongfilm.site/";
 
-			// 1. Lấy toàn bộ dữ liệu gốc
-			var allMovies = await _movieService.GetAllAsync();
 			var genres = await _genreService.GetAllAsync();
 			var countries = await _countryService.GetAllAsync();
-
 			ViewBag.Genres = genres;
 			ViewBag.Countries = countries;
 
-			// 2. Lấy các danh sách cố định cho Slider và các Section ngang
-			var latestMovies = allMovies
-				.Where(m => m.IsActive)
-				.Take(12) 
-				.ToList();
+			// ==========================================
+			// BƯỚC 1: CACHE CÁC SLIDER CỐ ĐỊNH (Tránh gọi Supabase liên tục)
+			// ==========================================
+			string cacheKey = "HomeFixedSlidersData";
+			if (!_cache.TryGetValue(cacheKey, out HomeFilterViewModel homeVM))
+			{
+				var baseQuery = _movieService.GetBaseActiveMoviesQuery();
 
-			var popularMovies = allMovies
-				.Where(m => m.IsActive)
-				.OrderByDescending(m => m.ViewCount)
-				.Take(12)
-				.ToList();
+				// Thực thi thành 4 câu Query nhỏ, ép SQL tự tính toán và chỉ trả về 12 dòng DTO siêu nhẹ
+				var latestMovies = await _movieService.MapToLightweightDto(
+					baseQuery.OrderByDescending(m => m.CreatedAt).Take(12)).ToListAsync();
 
-			var koreanMovies = allMovies
-				.Where(m => m.IsActive && (m.CountryName == "South Korea" || m.CountryName == "Hàn Quốc"))
-				.ToList();
+				var popularMovies = await _movieService.MapToLightweightDto(
+					baseQuery.OrderByDescending(m => m.ViewCount).Take(12)).ToListAsync();
 
-			var chineseMovies = allMovies
-				.Where(m => m.IsActive && (m.CountryName == "China" || m.CountryName == "Trung Quốc"))
-				.ToList();
+				var koreanMovies = await _movieService.MapToLightweightDto(
+					baseQuery.Where(m => m.Country != null && (m.Country.Name == "South Korea" || m.Country.Name == "Hàn Quốc"))
+							 .OrderByDescending(m => m.CreatedAt).Take(12)).ToListAsync();
 
-			// 3. Xử lý phần "Tất Cả Phim" có Filter + Phân trang
-			var query = allMovies.Where(m => m.IsActive).AsEnumerable();
+				var chineseMovies = await _movieService.MapToLightweightDto(
+					baseQuery.Where(m => m.Country != null && (m.Country.Name == "China" || m.Country.Name == "Trung Quốc"))
+							 .OrderByDescending(m => m.CreatedAt).Take(12)).ToListAsync();
+
+				// Khởi tạo Model để cache lại
+				homeVM = new HomeFilterViewModel
+				{
+					LatestMovies = latestMovies,
+					PopularMovies = popularMovies,
+					KoreanMovies = koreanMovies,
+					ChineseMovies = chineseMovies,
+					ContinueWatchingMovies = new List<MovieDto>()
+				};
+
+				// Lưu vào RAM của Railway trong 10 phút
+				var cacheEntryOptions = new MemoryCacheEntryOptions()
+					.SetAbsoluteExpiration(TimeSpan.FromMinutes(10));
+				_cache.Set(cacheKey, homeVM, cacheEntryOptions);
+			}
+
+			// ==========================================
+			// BƯỚC 2: XỬ LÝ FILTER ĐỘNG (Push xuống SQL)
+			// ==========================================
+			var query = _movieService.GetBaseActiveMoviesQuery();
 
 			if (!string.IsNullOrWhiteSpace(search))
-				query = query.Where(m =>
-					m.Title.Contains(search, StringComparison.OrdinalIgnoreCase) ||
-					(m.Description?.Contains(search, StringComparison.OrdinalIgnoreCase) ?? false));
+				query = query.Where(m => m.Title.ToLower().Contains(search.ToLower()));
 
 			if (genreId.HasValue)
-				query = query.Where(m => m.SelectedGenreIds.Contains(genreId.Value));
+				query = query.Where(m => m.MovieGenres.Any(mg => mg.GenreId == genreId.Value));
 
 			if (countryId.HasValue)
 				query = query.Where(m => m.CountryId == countryId.Value);
@@ -102,18 +119,21 @@ namespace FinalCuongFilm.MVC.Controllers
 				"year_asc" => query.OrderBy(m => m.ReleaseYear),
 				"year_desc" => query.OrderByDescending(m => m.ReleaseYear),
 				"title" => query.OrderBy(m => m.Title),
-				_ => query.OrderByDescending(m => m.ReleaseYear)
+				_ => query.OrderByDescending(m => m.CreatedAt) // Sửa lại order by CreatedAt cho chuẩn 'latest'
 			};
 
-			var filteredList = query.ToList();
-			var totalItems = filteredList.Count;
-			var pagedMovies = filteredList
-				.Skip((pageNumber - 1) * pageSize)
-				.Take(pageSize)
-				.ToList();
+			// Đếm tổng số lượng (Phục vụ phân trang)
+			var totalItems = await query.CountAsync();
 
-			// 4. Đóng gói dữ liệu Filter
-			var filterVM = new MovieFilterViewModel
+			// Cắt trang (Skip & Take) TẠI DATABASE, sau đó mới Map ra DTO nhẹ và kéo về RAM
+			var pagedMovies = await _movieService.MapToLightweightDto(
+				query.Skip((pageNumber - 1) * pageSize).Take(pageSize)
+			).ToListAsync();
+
+			// ==========================================
+			// BƯỚC 3: GẮN DỮ LIỆU FILTER VÀO MODEL ĐÃ CACHE
+			// ==========================================
+			homeVM.AllMoviesFilter = new MovieFilterViewModel
 			{
 				Movies = pagedMovies,
 				Genres = genres,
@@ -129,19 +149,9 @@ namespace FinalCuongFilm.MVC.Controllers
 				TotalItems = totalItems
 			};
 
-			// 5. CHÌA KHÓA Ở ĐÂY: Gôm TẤT CẢ vào MỘT ViewModel duy nhất để gửi ra View
-			var homeVM = new HomeFilterViewModel
-			{
-				LatestMovies = latestMovies,
-				PopularMovies = popularMovies,
-				KoreanMovies = koreanMovies,     
-				ChineseMovies = chineseMovies,  
-				ContinueWatchingMovies = new List<MovieDto>(),
-				AllMoviesFilter = filterVM
-			};
-
 			return View(homeVM);
 		}
+
 
 		// GET: /Home/Browse?type=1
 		public async Task<IActionResult> Browse(

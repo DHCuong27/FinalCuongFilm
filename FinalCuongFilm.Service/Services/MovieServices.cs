@@ -63,6 +63,31 @@ namespace FinalCuongFilm.Service.Services
 			return movies;
 		}
 
+
+		public IQueryable<MovieDto> MapToLightweightDto(IQueryable<Movie> query)
+		{
+			return query.Select(m => new MovieDto
+			{
+				Id = m.Id,
+				Title = m.Title,
+				Slug = m.Slug,
+				ReleaseYear = m.ReleaseYear,
+				ViewCount = m.ViewCount,
+				PosterUrl = m.PosterUrl,
+				BackdropUrl = m.BackdropUrl,
+				Type = m.Type,
+				IsVipOnly = m.IsVipOnly,
+				CountryName = m.Country != null ? m.Country.Name : null
+			});
+		}
+
+		public IQueryable<Movie> GetBaseActiveMoviesQuery()
+		{
+			// BẮT BUỘC dùng AsNoTracking để bỏ qua overhead theo dõi thay đổi của EF Core
+			return _context.Movies.AsNoTracking().Where(m => m.IsActive);
+		}
+
+
 		public async Task<MovieDto?> GetByIdAsync(Guid id)
 		{
 			var movie = await _context.Movies

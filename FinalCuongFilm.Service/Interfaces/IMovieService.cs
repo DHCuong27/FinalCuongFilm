@@ -1,4 +1,5 @@
-﻿using FinalCuongFilm.Common.DTOs;
+﻿using FinalCuongFilm.ApplicationCore.Entities;
+using FinalCuongFilm.Common.DTOs;
 
 public interface IMovieService
 {
@@ -22,6 +23,7 @@ public interface IMovieService
 	Task<IEnumerable<MovieDto>> SearchAsync(string keyword);
 	Task<PagedResult<MovieDto>> GetPagedAsync(string searchTerm, int page , int pageSize);
 
-
+	IQueryable<Movie> GetBaseActiveMoviesQuery();
+	IQueryable<MovieDto> MapToLightweightDto(IQueryable<Movie> query);
 
 }
