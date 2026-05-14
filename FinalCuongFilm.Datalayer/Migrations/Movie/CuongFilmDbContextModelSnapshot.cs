@@ -367,6 +367,10 @@ namespace FinalCuongFilm.Datalayer.Migrations.Movie
                     b.Property<Guid?>("CountryId")
                         .HasColumnType("uuid");
 
+                    b.Property<string>("BackdropUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp without time zone")

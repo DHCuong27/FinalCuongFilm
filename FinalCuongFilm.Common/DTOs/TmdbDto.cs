@@ -62,6 +62,9 @@ namespace FinalCuongFilm.Common.DTOs
 		[JsonPropertyName("poster_path")]
 		public string PosterPath { get; set; }
 
+		[JsonPropertyName("backdrop_path")]
+		public string BackdropPath { get; set; }
+
 		// Map ngày phát hành của phim lẻ
 		[JsonPropertyName("release_date")]
 		public string ReleaseDate { get; set; }

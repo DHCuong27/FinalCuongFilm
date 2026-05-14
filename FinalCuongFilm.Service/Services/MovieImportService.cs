@@ -67,6 +67,7 @@ namespace FinalCuongFilm.Service.Services
 					Slug = SlugHelper.GenerateSlug(officialTitle) + "-" + movieDetails.Id,
 					Description = movieDetails.Overview,
 					PosterUrl = !string.IsNullOrEmpty(movieDetails.PosterPath) ? "https://image.tmdb.org/t/p/w500" + movieDetails.PosterPath : null,
+					BackdropUrl = !string.IsNullOrEmpty(movieDetails.BackdropPath) ? "https://image.tmdb.org/t/p/w780" + movieDetails.BackdropPath : null,
 					TmdbId = movieDetails.Id,
 					Status = MovieStatus.Completed,
 					Type = isTvSeries ? MovieType.Series : MovieType.Movie,

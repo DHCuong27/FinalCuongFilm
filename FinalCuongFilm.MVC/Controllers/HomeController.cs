@@ -44,6 +44,10 @@ namespace FinalCuongFilm.MVC.Controllers
 			if (User.IsInRole("Admin"))
 				return RedirectToAction("Index", "Dashboard", new { area = "Admin" });
 
+			ViewData["Title"] = "CuongFilm - Xem phim chất lượng cao";
+			ViewData["MetaDescription"] = "CuongFilm - Xem phim chất lượng cao, phim mới cập nhật mỗi ngày.";
+			ViewData["CanonicalUrl"] = "https://cuongfilm.site/";
+
 			// 1. Lấy toàn bộ dữ liệu gốc
 			var allMovies = await _movieService.GetAllAsync();
 			var genres = await _genreService.GetAllAsync();

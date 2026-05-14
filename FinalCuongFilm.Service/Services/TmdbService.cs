@@ -85,6 +85,7 @@ namespace FinalCuongFilm.Service.Services
 				Title = root.GetProperty("name").GetString() ?? "",
 				Overview = root.TryGetProperty("overview", out var ov) ? ov.GetString() : "",
 				PosterPath = root.TryGetProperty("poster_path", out var pp) ? pp.GetString() : "",
+				BackdropPath = root.TryGetProperty("backdrop_path", out var bp) ? bp.GetString() : "",
 				ReleaseDate = root.TryGetProperty("first_air_date", out var fad) ? fad.GetString() : "",
 				Runtime = root.TryGetProperty("episode_run_time", out var ert) && bindingRunTime(ert) > 0 ? bindingRunTime(ert) : 45,
 				Genres = JsonSerializer.Deserialize<List<TmdbGenreDto>>(root.GetProperty("genres").GetRawText(), new JsonSerializerOptions { PropertyNameCaseInsensitive = true }),

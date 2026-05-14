@@ -45,6 +45,7 @@ namespace FinalCuongFilm.Service.Services
 					DurationMinutes = m.DurationMinutes,
 					ViewCount = m.ViewCount,
 					PosterUrl = m.PosterUrl,
+					BackdropUrl = m.BackdropUrl,
 					TrailerUrl = m.TrailerUrl,
 					Type = m.Type,
 					Status = m.Status,
@@ -89,6 +90,7 @@ namespace FinalCuongFilm.Service.Services
 				IsActive = movie.IsActive,
 				IsVipOnly = movie.IsVipOnly,
 				PosterUrl = movie.PosterUrl,
+				BackdropUrl = movie.BackdropUrl,
 				GenreName = movie.MovieGenres.FirstOrDefault()?.Genre?.Name,
 				GenreNames = movie.MovieGenres
 					.Where(mg => mg.Genre != null)
