@@ -15,6 +15,7 @@ namespace FinalCuongFilm.Common.DTOs
 		public long ViewCount { get; set; }
 		public int? DurationMinutes { get; set; }
 		public string? PosterUrl { get; set; }
+		public string? BackdropUrl { get; set; }
 		public string? TrailerUrl { get; set; }
 		public MovieType Type { get; set; }
 		public MovieStatus Status { get; set; }

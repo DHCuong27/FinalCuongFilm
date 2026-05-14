@@ -55,6 +55,7 @@ namespace FinalCuongFilm.DataLayer
 				entity.Property(x => x.Slug).IsRequired().HasMaxLength(MaxLengths.SLUG);
 				entity.Property(x => x.Description).HasMaxLength(MaxLengths.DESCRIPTION);
 				entity.Property(x => x.PosterUrl).HasMaxLength(MaxLengths.IMAGE_URL);
+				entity.Property(x => x.BackdropUrl).HasMaxLength(MaxLengths.IMAGE_URL);
 				entity.Property(x => x.TrailerUrl).HasMaxLength(MaxLengths.VIDEO_URL);
 
 				entity.Property(x => x.TmdbId).IsRequired(false);
