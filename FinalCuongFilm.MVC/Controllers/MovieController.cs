@@ -109,7 +109,9 @@ namespace FinalCuongFilm.MVC.Controllers
 				PageTitle = type switch { 1 => "Movies", 2 => "TV Series", _ => "All Movies" },
 				PageSubTitle = $"{totalItems} movies found"
 			};
-
+			ViewData["Title"] = "CuongFilm";
+			ViewData["MetaDescription"] = "CuongFilm - Xem phim mới, phim lẻ, phim bộ chất lượng cao, cập nhật mỗi ngày.";
+			ViewData["CanonicalUrl"] = "https://cuongfilm.site/";
 			return View(vm);
 		}
 
@@ -127,7 +129,7 @@ namespace FinalCuongFilm.MVC.Controllers
 			ViewData["MetaDescription"] = movie.Description;
 			ViewData["OgImage"] = movie.PosterUrl; // Khi share link sẽ hiện cái Poster này
 			ViewData["OgType"] = "video.movie";
-			ViewData["CanonicalUrl"] = $"https://cuongfilm.com/movie/{movie.Slug}";
+			ViewData["CanonicalUrl"] = $"https://cuongfilm.site/movie/{movie.Slug}";
 			ViewBag.Genres = await _genreService.GetAllAsync();
 			ViewBag.Countries = await _countryService.GetAllAsync();
 
