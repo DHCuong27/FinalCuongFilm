@@ -1,103 +1,56 @@
-# FinalCuongFilm
+# FinalCuongFilm - Movie Streaming Platform
 
-Hệ thống quản lý và hiển thị phim (FinalCuongFilm) được xây dựng theo kiến trúc nhiều lớp, bao gồm API, MVC, dịch vụ nghiệp vụ và tầng dữ liệu. Dự án tập trung vào khả năng mở rộng, bảo trì và triển khai thực tế trong môi trường doanh nghiệp.
+[![Live Demo](https://img.shields.io/badge/Live_Demo-cuongfilm.site-e50914?style=for-the-badge&logo=google-chrome&logoColor=white)](https://www.cuongfilm.site/)
+
+Hệ thống quản lý và hiển thị phim trực tuyến (FinalCuongFilm) được xây dựng theo kiến trúc N-Tier (Nhiều tầng), bao gồm Web API, MVC Client, Business Service và Data Access Layer. Dự án tập trung vào khả năng mở rộng, hiệu suất xử lý luồng video và tính sẵn sàng khi triển khai thực tế trên môi trường Cloud.
 
 ---
 
 ## 📌 Mục tiêu dự án
 
-- Xây dựng hệ thống quản lý phim theo mô hình nhiều tầng (Layered Architecture).
-- Cung cấp API phục vụ cho client (web/mobile).
-- Tách biệt rõ ràng các tầng nghiệp vụ, dữ liệu và giao diện.
-- Dễ dàng triển khai bằng Docker.
+- Xây dựng nền tảng xem phim trực tuyến với trải nghiệm mượt mà, áp dụng các nguyên tắc thiết kế UI/UX và tương tác người máy (HCI).
+- Áp dụng triệt để mô hình kiến trúc nhiều tầng (Layered Architecture) để phân tách trách nhiệm (Separation of Concerns).
+- Cung cấp hệ thống RESTful API chuẩn mực phục vụ đa nền tảng (Web/Mobile).
+- Xử lý các tác vụ nền phức tạp (Background Jobs) và tích hợp thanh toán điện tử.
 
 ---
 
-## 🧱 Kiến trúc tổng thể
+## ⚙️ Công nghệ & Hệ sinh thái sử dụng
 
-Dự án được tổ chức theo mô hình nhiều tầng:
+### Backend & Architecture
+- **Framework:** .NET / C#
+- **API & UI:** ASP.NET Core Web API, ASP.NET Core MVC
+- **ORM:** Entity Framework Core
+- **Background Processing:** Hangfire (Xử lý mã hóa video sang định dạng HLS m3u8)
 
-- **FinalCuongFilm.API**: Web API phục vụ dữ liệu.
-- **FinalCuongFilm.MVC**: Giao diện MVC.
-- **FinalCuongFilm.ApplicationCore**: Chứa logic nghiệp vụ và domain.
-- **FinalCuongFilm.Service**: Tầng service xử lý nghiệp vụ.
-- **FinalCuongFilm.Datalayer**: Tầng truy cập dữ liệu (DAL).
-- **FinalCuongFilm.Common**: Các tiện ích dùng chung.
-
----
-
-## ⚙️ Công nghệ sử dụng
-
-### Backend
-- **.NET / C#**
-- **ASP.NET Core Web API**
-- **ASP.NET Core MVC**
-- **Entity Framework Core** (dự kiến/đề xuất cho tầng DAL)
+### Database & Cloud Storage
+- **Database:** Supabase (PostgreSQL) với Connection Pooling.
+- **Storage:** Azure Blob Storage (Lưu trữ và phân phối nội dung Video Streaming).
 
 ### Frontend
-- **HTML**
-- **CSS**
+- **UI Framework:** Bootstrap 5, FontAwesome
+- **Ngôn ngữ:** HTML5, CSS3, JavaScript/jQuery
 
-### DevOps / Triển khai
-- **Docker** (có sẵn `Dockerfile`)
+### Tích hợp bên thứ ba (Third-party)
+- **Payment Gateway:** ZaloPay API (Tích hợp cơ chế Webhook & Polling).
+
+### DevOps & Deployment
+- **Containerization:** Docker (`Dockerfile` tích hợp sẵn).
+- **Hosting:** Railway App.
 
 ---
 
-## 📁 Cấu trúc thư mục
+## 🧱 Kiến trúc tổng thể & Cấu trúc thư mục
 
-```
+Dự án được tổ chức và liên kết chặt chẽ giữa các Project để đảm bảo tính đóng gói:
+
+```text
 FinalCuongFilm/
-├── FinalCuongFilm.API/              # API layer
-├── FinalCuongFilm.MVC/              # MVC UI layer
-├── FinalCuongFilm.ApplicationCore/  # Domain & business logic
-├── FinalCuongFilm.Service/          # Service layer
-├── FinalCuongFilm.Datalayer/        # Data access layer
-├── FinalCuongFilm.Common/           # Common utilities
+├── FinalCuongFilm.API/              # Điểm cuối API (Endpoints) cung cấp dữ liệu
+├── FinalCuongFilm.MVC/              # Client giao diện người dùng (Web App)
+├── FinalCuongFilm.ApplicationCore/  # Chứa Domain Models, DTOs và Interfaces
+├── FinalCuongFilm.Service/          # Tầng xử lý Logic nghiệp vụ chính (Business Logic)
+├── FinalCuongFilm.Datalayer/        # Tầng thao tác với cơ sở dữ liệu (Repositories/DbContext)
+├── FinalCuongFilm.Common/           # Các tiện ích dùng chung (Constants, Helpers, Extensions)
 ├── FinalCuongFilm.sln               # Solution file
-└── Dockerfile                       # Docker build file
-```
-
----
-
-## 🚀 Hướng dẫn chạy dự án
-
-### 1. Clone repository
-```bash
-git clone https://github.com/DHCuong27/FinalCuongFilm.git
-cd FinalCuongFilm
-```
-
-### 2. Mở bằng Visual Studio
-- Mở file `FinalCuongFilm.sln`.
-- Chạy dự án API hoặc MVC tùy mục tiêu.
-
-### 3. Chạy bằng Docker (tùy cấu hình)
-```bash
-docker build -t finalcuongfilm .
-docker run -p 5000:5000 finalcuongfilm
-```
-
----
-
-## ✅ Quy ước & chuẩn nghiệp vụ
-
-- Tách lớp rõ ràng theo kiến trúc nhiều tầng.
-- Dùng DTO/Model riêng cho API để tránh rò rỉ Domain.
-- Service chịu trách nhiệm xử lý nghiệp vụ, không đặt logic trong Controller.
-- Datalayer tập trung truy cập dữ liệu, repository pattern khuyến nghị.
-
----
-
-## 📌 Định hướng mở rộng
-
-- Tích hợp xác thực (JWT/Identity).
-- Thêm phân quyền người dùng.
-- Bổ sung caching và logging (Serilog, Redis).
-- Viết unit test cho tầng Service và ApplicationCore.
-
----
-
-## 📄 License
-
-Dự án thuộc quyền sở hữu của **DHCuong27**.  
-Vui lòng liên hệ tác giả nếu muốn sử dụng cho mục đích thương mại.
+└── Dockerfile                       # Cấu hình đóng gói Docker image
