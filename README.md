@@ -1,6 +1,6 @@
 # FinalCuongFilm - Movie Streaming Platform
 
-[![Live Demo](https://img.shields.io/badge/Live_Demo-cuongfilm.site-e50914?style=for-the-badge&logo=google-chrome&logoColor=white)](https://www.cuongfilm.site/)
+[![Live Demo](https://img.shields.io/badge/Live_Demo-cuongfilm.site-e50914?style=for-the-badge&logo=google-chrome&logoColor=white)](https://cuongfilm.site/)
 
 Hệ thống quản lý và hiển thị phim trực tuyến (FinalCuongFilm) được xây dựng theo kiến trúc N-Tier (Nhiều tầng), bao gồm Web API, MVC Client, Business Service và Data Access Layer. Dự án tập trung vào khả năng mở rộng, hiệu suất xử lý luồng video và tính sẵn sàng khi triển khai thực tế trên môi trường Cloud.
 
