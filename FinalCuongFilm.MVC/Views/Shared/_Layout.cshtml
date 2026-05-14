@@ -11,17 +11,26 @@
 
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-    <link rel="icon" type="image/png" href="~/img/Logobrcf.png" />
+    <link rel="icon" type="image/png" href="~/img/LogoCfv2.png" />
 
-    <link rel="icon" type="image/png" href="~/img/Logobrcf.png" />
+    <link rel="icon" type="image/png" href="~/img/LogoCfv2.png" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <meta name="description" content="@(ViewData["MetaDescription"] ?? "CuongFilm - Xem phim mới, phim lẻ, phim bộ chất lượng cao.")" />
+    @if (ViewData["CanonicalUrl"] != null)
+    {
+        <link rel="canonical" href="@ViewData["CanonicalUrl"]" />
+        <meta property="og:url" content="@ViewData["CanonicalUrl"]" />
+    }
+    <meta property="og:title" content="@ViewData["Title"] - CuongFilm" />
+    <meta property="og:description" content="@(ViewData["MetaDescription"] ?? "CuongFilm - Xem phim mới, phim lẻ, phim bộ chất lượng cao.")" />
+    <meta property="og:image" content="@(ViewData["OgImage"] ?? "https://cuongfilm.site/images/default-share-banner.jpg")" />
 </head>
 <body>
     <header>
         <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
             <div class="container">
                 <a class="navbar-brand" href="/">
-                    <i class="fas fa-film"></i> CuongFilm
+                    <img src="~/img/Logobrcf.png" alt="CuongFilm Logo" style="height: 30px; width: auto; margin-right: 8px; vertical-align: middle;" /> CuongFilm
                 </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                     <span class="navbar-toggler-icon"></span>

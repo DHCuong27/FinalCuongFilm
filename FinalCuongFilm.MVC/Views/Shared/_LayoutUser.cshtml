@@ -25,16 +25,14 @@
     <meta property="og:type" content="@(ViewData["OgType"] ?? "website")" />
     <meta property="og:title" content="@ViewData["Title"] - CuongFilm" />
     <meta property="og:description" content="@(ViewData["MetaDescription"] ?? "CuongFilm - High-quality online movie streaming channel, with new movies updated daily.")" />
-    <meta property="og:image" content="@(ViewData["OgImage"] ?? "https://cuongfilm.com/images/default-share-banner.jpg")" />
+    <meta property="og:image" content="@(ViewData["OgImage"] ?? "https://www.cuongfilm.site/images/default-share-banner.jpg")" />
 
     @if (ViewData["CanonicalUrl"] != null)
     {
         <meta property="og:url" content="@ViewData["CanonicalUrl"]" />
         <link rel="canonical" href="@ViewData["CanonicalUrl"]" />
     }
-    <link rel="icon" type="image/png" href="~/img/Logobrcf.png" />
-
-    <link rel="icon" type="image/png" href="~/img/Logobrcf.png" />
+    <link rel="icon" type="image/png" href="~/img/LogoCfv3.png" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
@@ -1081,8 +1079,21 @@
     <div class="wrapper">
         <nav class="navbar navbar-expand-lg netflix-nav" id="mainNav">
             <div class="container-fluid px-4">
-                <a class="navbar-brand" href="/">
-                    <i class="fas fa-film"></i> CuongFilm
+                <a class="navbar-brand d-flex align-items-center text-decoration-none" href="/">
+
+                    <img src="~/img/LogoCfv6.png" alt="CuongFilm Icon" style="height: 40px; width: auto; margin-right: 12px;" />
+
+                    <div class="d-flex flex-column justify-content-center">
+
+                        <span style="color: #8c0b14; font-weight: 800; font-size: 1.5rem; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; letter-spacing: -0.5px; line-height: 1; text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.6);">
+                            CuongFilm
+                        </span>
+
+                        <span style="color: #ffffff; font-size: 0.65rem; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; letter-spacing: 1.5px; text-transform: uppercase; margin-top: 4px; opacity: 0.8;">
+                            Embracing the art of cinema
+                        </span>
+
+                    </div>
                 </a>
 
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain" style="background: rgba(255,255,255,0.1); border: none;">
