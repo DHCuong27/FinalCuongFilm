@@ -14,18 +14,18 @@ namespace FinalCuongFilm.Service.Services
 		private readonly CuongFilmDbContext _context;
 		private readonly IMapper _mapper;
 		private readonly ILogger<MovieService> _logger;
-		private readonly IAzureBlobService _azureBlobService;
+		private readonly IStorageService _storageService;
 
 		public MovieService(
 			CuongFilmDbContext context,
 			IMapper mapper,
 			ILogger<MovieService> logger,
-			IAzureBlobService azureBlobService)
+			IStorageService storageService)
 		{
 			_context = context;
 			_mapper = mapper;
 			_logger = logger;
-			_azureBlobService = azureBlobService;
+			_storageService = storageService;
 		}
 
 		#region READ METHODS
@@ -320,7 +320,7 @@ namespace FinalCuongFilm.Service.Services
 			{
 				try
 				{
-					await _azureBlobService.DeleteAsync(media.FileUrl);
+					await _storageService.DeleteAsync(media.FileUrl);
 				}
 				catch (Exception ex)
 				{

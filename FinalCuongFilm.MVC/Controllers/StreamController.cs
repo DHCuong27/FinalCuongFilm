@@ -7,20 +7,20 @@ namespace FinalCuongFilm.MVC.Controllers
 	public class StreamController : Controller
 	{
 		private readonly IMediaFileService _mediaFileService;
-		private readonly IAzureBlobService _azureBlobService;
+		private readonly IStorageService _storageService;
 		private readonly IMovieService _movieService;
 		private readonly IEpisodeService _episodeService;
 		private readonly ILogger<StreamController> _logger;
 
 		public StreamController(
 			IMediaFileService mediaFileService,
-			IAzureBlobService azureBlobService,
+			IStorageService storageService,
 			IMovieService movieService,
 			IEpisodeService episodeService,
 			ILogger<StreamController> logger)
 		{
 			_mediaFileService = mediaFileService;
-			_azureBlobService = azureBlobService;
+			_storageService = storageService;
 			_movieService = movieService;
 			_episodeService = episodeService;
 			_logger = logger;
@@ -42,7 +42,7 @@ namespace FinalCuongFilm.MVC.Controllers
 				}
 
 				// Tạo SAS token có thời hạn 4 giờ — không lộ raw URL
-				var streamingUrl = await _azureBlobService.GetStreamingUrlAsync(mediaFile.FileUrl, expiryHours: 4);
+				var streamingUrl = await _storageService.GetStreamingUrlAsync(mediaFile.FileUrl, expiryHours: 4);
 
 				_logger.LogInformation($"Generated streaming URL for media: {mediaFileId}");
 

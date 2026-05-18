@@ -16,7 +16,7 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 		private readonly IActorService _actorService;
 		private readonly IGenreService _genreService;
 		private readonly CuongFilmDbContext _context;
-		private readonly IAzureBlobService _azureBlobService;
+		private readonly IStorageService _storageService;
 		private readonly IMovieImportService _movieImportService;
 		private readonly ILogger<MoviesController> _logger;
 
@@ -25,7 +25,7 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 			IActorService actorService,
 			IGenreService genreService,
 			CuongFilmDbContext context,
-			IAzureBlobService azureBlobService,
+			IStorageService storageService,
 			IMovieImportService movieImportService,
 			ILogger<MoviesController> logger)
 		{
@@ -33,7 +33,7 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 			_actorService = actorService;
 			_genreService = genreService;
 			_context = context;
-			_azureBlobService = azureBlobService;
+			_storageService = storageService;
 			_movieImportService = movieImportService;
 			_logger = logger;
 		}
@@ -117,7 +117,7 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 							!string.IsNullOrWhiteSpace(dto.Title) ? dto.Title.ToLower().Replace(" ", "-") :
 							Guid.NewGuid().ToString();
 
-						dto.PosterUrl = await _azureBlobService.UploadPosterAsync(posterFile, tempSlug);
+						dto.PosterUrl = await _storageService.UploadPosterAsync(posterFile, tempSlug);
 					}
 
 					await _movieService.CreateAsync(dto);
@@ -207,7 +207,7 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 					if (posterFile != null && posterFile.Length > 0)
 					{
 						var slug = !string.IsNullOrEmpty(dto.Slug) ? dto.Slug : dto.Id.ToString();
-						dto.PosterUrl = await _azureBlobService.UploadPosterAsync(posterFile, slug);
+						dto.PosterUrl = await _storageService.UploadPosterAsync(posterFile, slug);
 					}
 
 					var result = await _movieService.UpdateAsync(id, dto);

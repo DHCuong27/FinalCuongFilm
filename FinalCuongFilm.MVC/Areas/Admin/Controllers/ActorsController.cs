@@ -19,19 +19,19 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 	{
 		private readonly IMovieService _movieService;
 		private readonly IActorService _actorService;
-		private readonly IAzureBlobService _azureBlobService;
+		private readonly IStorageService _storageService;
 		private readonly CuongFilmDbContext _context;
 
 		public ActorsController(
 			IMovieService movieService,
 			IActorService actorService,
 			CuongFilmDbContext context,
-			IAzureBlobService azureBlobService
+			IStorageService azureBlobService
 		)
 		{
 			_movieService = movieService;
 			_actorService = actorService;
-			_azureBlobService = azureBlobService;
+			_storageService = azureBlobService;
 			_context = context;
 		}
 
@@ -92,7 +92,7 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 					if (posterFile != null && posterFile.Length > 0)
 					{
 						var tempSlug = dto.Name?.ToLower().Replace(" ", "-") ?? Guid.NewGuid().ToString();
-						dto.AvartUrl = await _azureBlobService.UploadPosterAsync(posterFile, tempSlug);
+						dto.AvartUrl = await _storageService.UploadPosterAsync(posterFile, tempSlug);
 					}
 
 					// 2. Call Service to handle Actor creation + Assign MovieIds
@@ -239,7 +239,7 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 					if (posterFile != null && posterFile.Length > 0)
 					{
 						var tempSlug = dto.Name?.ToLower().Replace(" ", "-") ?? dto.Id.ToString();
-						dto.AvartUrl = await _azureBlobService.UploadPosterAsync(posterFile, tempSlug);
+						dto.AvartUrl = await _storageService.UploadPosterAsync(posterFile, tempSlug);
 					}
 
 					var result = await _actorService.UpdateAsync(dto);

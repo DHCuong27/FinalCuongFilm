@@ -11,7 +11,7 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 	[Authorize(Roles = "Admin")]
 	public class MediaUploadController : Controller
 	{
-		private readonly IAzureBlobService _azureBlobService;
+		private readonly IStorageService _storageService;
 		private readonly IMediaFileService _mediaFileService;
 		private readonly IMovieService _movieService;
 		private readonly IEpisodeService _episodeService;
@@ -19,14 +19,14 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 		private readonly ILogger<MediaUploadController> _logger;
 
 		public MediaUploadController(
-			IAzureBlobService azureBlobService,
+			IStorageService storageService,
 			IMediaFileService mediaFileService,
 			IMovieService movieService,
 			IEpisodeService episodeService,
 			IVideoConversionService videoConversionService,
 			ILogger<MediaUploadController> logger)
 		{
-			_azureBlobService = azureBlobService;
+			_storageService = storageService;
 			_mediaFileService = mediaFileService;
 			_movieService = movieService;
 			_episodeService = episodeService;
@@ -186,12 +186,12 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 				{
 					try
 					{
-						await _azureBlobService.DeleteFileAsync(mediaFile.FileUrl);
-						_logger.LogInformation("Deleted file from Azure: {FileUrl}", mediaFile.FileUrl);
+						await _storageService.DeleteFileAsync(mediaFile.FileUrl);
+						_logger.LogInformation("Deleted file from storage: {FileUrl}", mediaFile.FileUrl);
 					}
 					catch (Exception ex)
 					{
-						_logger.LogWarning(ex, "Failed to delete file from Azure: {FileUrl}", mediaFile.FileUrl);
+						_logger.LogWarning(ex, "Failed to delete file from storage: {FileUrl}", mediaFile.FileUrl);
 					}
 				}
 
@@ -272,7 +272,7 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 							message = "Upload Failed: Invalid file format. The system only accepts strictly .mp4 video files."
 						});
 					}
-					string originalUrl = await _azureBlobService.UploadVideoAsync(dto.VideoFile, movie.Slug, dto.EpisodeNumber);
+					string originalUrl = await _storageService.UploadVideoAsync(dto.VideoFile, movie.Slug, dto.EpisodeNumber);
 					long fileSize = dto.VideoFile.Length;
 
 					var mediaFileDto = new MediaFileCreateDto
@@ -324,7 +324,7 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 				{
 					if (!string.IsNullOrEmpty(mediaFile.FileUrl))
 					{
-						await _azureBlobService.DeleteFileAsync(mediaFile.FileUrl);
+						await _storageService.DeleteFileAsync(mediaFile.FileUrl);
 					}
 					await _mediaFileService.DeleteAsync(mediaId);
 					TempData["Success"] = "Media file deleted successfully!";
@@ -354,7 +354,7 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 					return Json(new { success = false, message = "Movie not found." });
 				}
 
-				var posterUrl = await _azureBlobService.UploadPosterAsync(posterFile, movie.Slug);
+				var posterUrl = await _storageService.UploadPosterAsync(posterFile, movie.Slug);
 
 				var updateDto = new MovieUpdateDto
 				{
@@ -403,12 +403,12 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 					ContentType = "text/plain"
 				};
 
-				var testUrl = await _azureBlobService.UploadAsync(formFile, "videos", "test/connection-test.txt");
+				var testUrl = await _storageService.UploadAsync(formFile, "videos", "test/connection-test.txt");
 
 				return Json(new
 				{
 					success = true,
-					message = "Azure Blob Storage connection successful!",
+					message = "Storage connection successful!",
 					testUrl = testUrl
 				});
 			}

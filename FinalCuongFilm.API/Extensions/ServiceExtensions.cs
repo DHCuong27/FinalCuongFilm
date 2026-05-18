@@ -45,7 +45,7 @@ namespace FinalCuongFilm.API.Extensions
 			services.AddScoped<IMediaFileService, MediaFileService>();
 			services.AddScoped<IFavoriteService, FavoriteService>();
 			services.AddScoped<IReviewService, ReviewService>();
-			services.AddScoped<IAzureBlobService, AzureBlobService>();
+			services.AddScoped<IStorageService, AzureBlobService>();
 
 			return services;
 		}

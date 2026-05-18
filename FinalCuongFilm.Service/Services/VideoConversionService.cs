@@ -6,14 +6,14 @@ namespace FinalCuongFilm.Service.Services
 {
 	public class VideoConversionService : IVideoConversionService
 	{
-		private readonly IAzureBlobService _azureBlobService;
+		private readonly IStorageService _storageService;
 		private readonly IMediaFileService _mediaFileService;
 		private readonly ILogger<VideoConversionService> _logger;
 		private readonly string _tempPath;
 
-		public VideoConversionService(IAzureBlobService azureBlobService, IMediaFileService mediaFileService, ILogger<VideoConversionService> logger)
+		public VideoConversionService(IStorageService storageService, IMediaFileService mediaFileService, ILogger<VideoConversionService> logger)
 		{
-			_azureBlobService = azureBlobService;
+			_storageService = storageService;
 			_mediaFileService = mediaFileService;
 			_logger = logger;
 
@@ -93,7 +93,7 @@ namespace FinalCuongFilm.Service.Services
 					{
 						string relativePath = Path.GetRelativePath(localOutputDir, filePath).Replace("\\", "/");
 						using var stream = File.OpenRead(filePath);
-						string uploadedUrl = await _azureBlobService.UploadStreamAsync(stream, relativePath, azureFolder);
+						string uploadedUrl = await _storageService.UploadStreamAsync(stream, relativePath, azureFolder);
 						return new { Path = relativePath, Url = uploadedUrl };
 					}
 					finally

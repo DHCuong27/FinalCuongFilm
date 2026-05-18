@@ -92,6 +92,7 @@ builder.Services.ConfigureApplicationCookie(options =>
 builder.Services.AddAutoMapper(cfg => cfg.AddMaps(typeof(MappingProfile)));
 
 // Services
+builder.Services.AddHttpClient();
 builder.Services.AddScoped<IMovieService, MovieService>();
 builder.Services.AddScoped<IActorService, ActorService>();
 builder.Services.AddScoped<IGenreService, GenreService>();
@@ -103,7 +104,8 @@ builder.Services.AddScoped<IFavoriteService, FavoriteService>();
 builder.Services.AddScoped<IReviewService, ReviewService>();
 builder.Services.AddHttpClient<ITmdbService, TmdbService>();
 builder.Services.AddScoped<IMovieImportService, MovieImportService>();
-builder.Services.AddScoped<IAzureBlobService, AzureBlobService>();
+//builder.Services.AddScoped<IStorageService, AzureBlobService>();
+builder.Services.AddScoped<IStorageService, SupabaseStorageService>();
 builder.Services.AddScoped<IVideoConversionService, VideoConversionService>();
 builder.Services.AddScoped<IVipService, VipService>();
 

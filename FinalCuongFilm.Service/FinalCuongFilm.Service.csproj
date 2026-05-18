@@ -8,8 +8,7 @@
 
   <ItemGroup>
     <PackageReference Include="AutoMapper" Version="16.1.1" />
-    <PackageReference Include="Azure.Storage.Blobs" Version="12.27.0" />
-    <PackageReference Include="Azure.Storage.Blobs.Batch" Version="12.24.0" />
+	<PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
     <PackageReference Include="CliWrap" Version="3.10.0" />
     <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="2.3.9" />
     <PackageReference Include="Microsoft.AspNetCore.Http.Features" Version="2.3.0" />

@@ -1,6 +1,4 @@
-﻿using Azure.Storage.Blobs;
-using Azure.Storage.Blobs.Models;
-using Azure.Storage.Sas;
+﻿
 using FinalCuongFilm.DataLayer;
 using FinalCuongFilm.MVC.Models.ViewModels;
 using FinalCuongFilm.Service.Interfaces;
@@ -21,7 +19,7 @@ namespace FinalCuongFilm.MVC.Controllers
 		private readonly IGenreService _genreService;
 		private readonly ICountryService _countryService;
 		private readonly IActorService _actorService;
-		private readonly IAzureBlobService _azureBlobService;
+		private readonly IStorageService _storageService;
 		private readonly IVipService _vipService;
 		private readonly ILogger<MovieController> _logger;
 		private readonly CuongFilmDbContext _context;
@@ -33,13 +31,13 @@ namespace FinalCuongFilm.MVC.Controllers
 			IReviewService reviewService, IEpisodeService episodeService,
 			IMediaFileService mediaFileService, IGenreService genreService,
 			ICountryService countryService, IActorService actorService,
-			IVipService vipService, IAzureBlobService azureBlobService, CuongFilmDbContext context, IConfiguration configuration, IWebHostEnvironment env, ILogger<MovieController> logger)
+			IVipService vipService, IStorageService storageService, CuongFilmDbContext context, IConfiguration configuration, IWebHostEnvironment env, ILogger<MovieController> logger)
 		{
 			_movieService = movieService; _favoriteService = favoriteService;
 			_reviewService = reviewService; _episodeService = episodeService;
 			_mediaFileService = mediaFileService; _genreService = genreService;
 			_countryService = countryService; _actorService = actorService;
-			_vipService = vipService; _azureBlobService = azureBlobService; _context = context; _configuration = configuration; _env = env; _logger = logger;
+			_vipService = vipService; _storageService = storageService; _context = context; _configuration = configuration; _env = env; _logger = logger;
 		}
 
 		// GET: /Movie
@@ -237,7 +235,7 @@ namespace FinalCuongFilm.MVC.Controllers
 
 				if (hlsFile != null)
 				{
-					streamingUrl = await _azureBlobService.GetStreamingUrlAsync(hlsFile.FileUrl, expiryHours: 12);
+					streamingUrl = await _storageService.GetStreamingUrlAsync(hlsFile.FileUrl, expiryHours: 12);
 					ViewBag.MediaType = "hls";
 					qualitySources.Add(new { id = hlsFile.Id, quality = "Auto (HLS)", url = streamingUrl });
 				}
@@ -249,7 +247,7 @@ namespace FinalCuongFilm.MVC.Controllers
 						ViewBag.MediaType = "mp4";
 						var sasTasks = videoFiles.Select(async qf =>
 						{
-							var qUrl = await _azureBlobService.GetStreamingUrlAsync(qf.FileUrl, expiryHours: 4);
+							var qUrl = await _storageService.GetStreamingUrlAsync(qf.FileUrl, expiryHours: 4);
 							return new { id = qf.Id, quality = qf.Quality ?? "HD", url = qUrl };
 						});
 
@@ -265,7 +263,7 @@ namespace FinalCuongFilm.MVC.Controllers
 				var subtitleFilesList = mediaFiles.Where(m => m.FileType?.ToLower() == "subtitle").ToList();
 				var subtitleTasks = subtitleFilesList.Select(async sub =>
 				{
-					var subUrl = await _azureBlobService.GetStreamingUrlAsync(sub.FileUrl, expiryHours: 4);
+					var subUrl = await _storageService.GetStreamingUrlAsync(sub.FileUrl, expiryHours: 4);
 					return new { language = sub.Language ?? "en", url = subUrl, label = sub.Language ?? "Subtitle" };
 				});
 				var subtitleFiles = await Task.WhenAll(subtitleTasks);
@@ -396,9 +394,6 @@ namespace FinalCuongFilm.MVC.Controllers
 			var movie = await _context.Movies.FindAsync(id);
 			if (movie == null) return NotFound();
 
-
-
-
 			var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 			bool hasVip = await _vipService.HasActiveVipAsync(userId);
 
@@ -408,107 +403,37 @@ namespace FinalCuongFilm.MVC.Controllers
 				return RedirectToAction("Index", "Premium");
 			}
 
-
 			try
 			{
-				var blobServiceClient = new BlobServiceClient(_configuration.GetConnectionString("AzureBlobStorage"));
-				var containerClient = blobServiceClient.GetBlobContainerClient("videos");
+				var mediaFiles = await _mediaFileService.GetByMovieIdAsync(movie.Id);
+				var mp4 = mediaFiles
+					.Where(m => m.FileType?.ToLower() == "video" && m.FileUrl.EndsWith(".mp4", StringComparison.OrdinalIgnoreCase))
+					.OrderByDescending(m => m.Quality)
+					.FirstOrDefault();
 
-				string searchPrefix = $"{movie.Slug}/";
-				string targetBlobName = null;
-
-				// SCAN THE FOLDER ON AZURE TO FIND THE MP4 FILE
-				await foreach (var blobItem in containerClient.GetBlobsAsync(BlobTraits.None, BlobStates.None, searchPrefix, CancellationToken.None))
+				if (mp4 == null)
 				{
-					if (blobItem.Name.EndsWith(".mp4", StringComparison.OrdinalIgnoreCase))
-					{
-						targetBlobName = blobItem.Name;
-						break;
-					}
-				}
-
-				// If the scan completes and no MP4 file is found
-				if (targetBlobName == null)
-				{
-					TempData["Error"] = $"No MP4 file found in the '{searchPrefix}' directory. Please check Azure storage.";
+					TempData["Error"] = "No MP4 file found for this movie.";
 					return RedirectToAction("Detail", new { slug = movie.Slug });
 				}
 
-				// CREATE SAS TOKEN AND FORCE DOWNLOAD
-				var blobClient = containerClient.GetBlobClient(targetBlobName);
-
-				if (blobClient.CanGenerateSasUri)
-				{
-					BlobSasBuilder sasBuilder = new BlobSasBuilder()
-					{
-						BlobContainerName = "videos",
-						BlobName = targetBlobName,
-						Resource = "b",
-						StartsOn = DateTimeOffset.UtcNow.AddMinutes(-5),
-						ExpiresOn = DateTimeOffset.UtcNow.AddHours(2)
-					};
-
-					sasBuilder.SetPermissions(BlobSasPermissions.Read);
-
-					// Set a clean filename for the user to download
-					sasBuilder.ContentDisposition = $"attachment; filename=\"{movie.Slug}.mp4\"";
-
-					return Redirect(blobClient.GenerateSasUri(sasBuilder).ToString());
-				}
-
-				TempData["Error"] = "System error: Unable to generate the download authentication token.";
-				return RedirectToAction("Detail", new { slug = movie.Slug });
+				// Bucket public -> direct URL
+				return Redirect(mp4.FileUrl);
 			}
 			catch (Exception ex)
 			{
 				_logger.LogError(ex, "Error processing download for movie {MovieId}", id);
-				TempData["Error"] = "Azure connection error: " + ex.Message;
+				TempData["Error"] = "Storage connection error: " + ex.Message;
 				return RedirectToAction("Detail", new { slug = movie.Slug });
 			}
 		}
 
-		private string GetSecureDownloadLink(string blobName, string containerName = "videos")
+		private string GetSecureDownloadLink(string blobPath, string bucket = "videos")
 		{
-			try
-			{
-				// Khởi tạo Client kết nối Azure
-				var blobServiceClient = new BlobServiceClient(_configuration.GetConnectionString("AzureBlobStorage"));
-				var blobContainerClient = blobServiceClient.GetBlobContainerClient(containerName);
-				var blobClient = blobContainerClient.GetBlobClient(blobName);
+			if (string.IsNullOrWhiteSpace(blobPath)) return null;
 
-				// Kiểm tra xem file MP4 có thực sự tồn tại ở folder [slug]-[id] không
-				if (!blobClient.Exists())
-				{
-					return null;
-				}
-
-				if (blobClient.CanGenerateSasUri)
-				{
-					BlobSasBuilder sasBuilder = new BlobSasBuilder()
-					{
-						BlobContainerName = containerName,
-						BlobName = blobName,
-						Resource = "b",
-						StartsOn = DateTimeOffset.UtcNow.AddMinutes(-5),
-						ExpiresOn = DateTimeOffset.UtcNow.AddHours(2) // Link sống trong 2 giờ
-					};
-
-					sasBuilder.SetPermissions(BlobSasPermissions.Read);
-
-					// Lấy tên file ở cuối đường dẫn để đặt tên khi tải về
-					string fileName = Path.GetFileName(blobName);
-					sasBuilder.ContentDisposition = $"attachment; filename=\"{fileName}\"";
-
-					return blobClient.GenerateSasUri(sasBuilder).ToString();
-				}
-				return null;
-			}
-			catch (Exception ex)
-			{
-				Console.WriteLine($"SAS Error: {ex.Message}");
-				return null;
-			}
+			// https://<project>.supabase.co/storage/v1/object/public/{bucket}/{path}
+			return $"{_configuration["SUPABASE_URL"]}/storage/v1/object/public/{bucket}/{blobPath}";
 		}
-
 	}
 }
