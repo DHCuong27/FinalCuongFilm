@@ -1,5 +1,4 @@
 ﻿using System.Net.Http.Headers;
-using System.Net.Http;
 using FinalCuongFilm.Service.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
@@ -30,6 +29,9 @@ namespace FinalCuongFilm.Service.Services
 				?? throw new InvalidOperationException("SUPABASE_URL is missing");
 			_serviceRoleKey = configuration["SUPABASE_SERVICE_ROLE_KEY"]
 				?? throw new InvalidOperationException("SUPABASE_SERVICE_ROLE_KEY is missing");
+
+			// Optional: tăng timeout để upload file lớn
+			_httpClient.Timeout = TimeSpan.FromMinutes(30);
 		}
 
 		private void ApplyAuthHeaders(HttpRequestMessage req)
@@ -39,7 +41,7 @@ namespace FinalCuongFilm.Service.Services
 		}
 
 		private string PublicUrl(string bucket, string path)
-			=> $"{_supabaseUrl}/storage/v1/object/public/{bucket}/{path}";
+			=> $"{_supabaseUrl.TrimEnd('/')}/storage/v1/object/public/{bucket}/{path}";
 
 		public async Task<string> UploadAsync(IFormFile file, string bucketName, string? customFileName = null)
 		{
@@ -66,7 +68,8 @@ namespace FinalCuongFilm.Service.Services
 			req.Headers.Add("x-upsert", "true");
 
 			var content = new StreamContent(stream);
-			content.Headers.ContentType = new MediaTypeHeaderValue(string.IsNullOrWhiteSpace(contentType) ? "application/octet-stream" : contentType);
+			content.Headers.ContentType = new MediaTypeHeaderValue(
+				string.IsNullOrWhiteSpace(contentType) ? "application/octet-stream" : contentType);
 			req.Content = content;
 
 			var resp = await _httpClient.SendAsync(req);
@@ -103,7 +106,7 @@ namespace FinalCuongFilm.Service.Services
 		public async Task<bool> DeleteAsync(string fileUrl)
 		{
 			var (bucket, path) = ParsePublicUrl(fileUrl);
-			var url = $"{_supabaseUrl}/storage/v1/object/{bucket}/{path}";
+			var url = $"{_supabaseUrl.TrimEnd('/')}/storage/v1/object/{bucket}/{path}";
 			using var req = new HttpRequestMessage(HttpMethod.Delete, url);
 			ApplyAuthHeaders(req);
 			var resp = await _httpClient.SendAsync(req);
@@ -115,7 +118,7 @@ namespace FinalCuongFilm.Service.Services
 		public async Task<bool> ExistsAsync(string fileUrl)
 		{
 			var (bucket, path) = ParsePublicUrl(fileUrl);
-			var url = $"{_supabaseUrl}/storage/v1/object/{bucket}/{path}";
+			var url = $"{_supabaseUrl.TrimEnd('/')}/storage/v1/object/{bucket}/{path}";
 			using var req = new HttpRequestMessage(HttpMethod.Head, url);
 			ApplyAuthHeaders(req);
 			var resp = await _httpClient.SendAsync(req);
