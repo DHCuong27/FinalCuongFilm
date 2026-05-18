@@ -69,7 +69,7 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 			}
 
 			// 2. LỌC THEO TỪ KHÓA TÌM KIẾM (MỚI THÊM)
-		
+
 			if (!string.IsNullOrWhiteSpace(searchTerm))
 			{
 				// Tìm kiếm mở rộng: Khớp tên File HOẶC tên Phim HOẶC tên Tập
@@ -181,7 +181,7 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 				var mediaFile = await _mediaFileService.GetByIdAsync(id);
 				if (mediaFile == null) return NotFound();
 
-				// Xóa file vật lý trên Azure
+				// Xóa file vật lý trên Storage
 				if (!string.IsNullOrEmpty(mediaFile.FileUrl))
 				{
 					try
@@ -216,7 +216,6 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 		[HttpGet]
 		public async Task<IActionResult> UploadVideo(Guid? id)
 		{
-			
 			if (id == null)
 			{
 				TempData["Error"] = "Please select a movie from the list to manage videos.";
@@ -263,7 +262,6 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 					var allowedExtensions = new[] { ".mp4" };
 					var extension = Path.GetExtension(dto.VideoFile.FileName).ToLowerInvariant();
 
-					
 					if (!allowedExtensions.Contains(extension) || dto.VideoFile.ContentType != "video/mp4")
 					{
 						return Json(new
@@ -348,6 +346,11 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 		{
 			try
 			{
+				if (posterFile == null || posterFile.Length == 0)
+				{
+					return Json(new { success = false, message = "Poster file is required." });
+				}
+
 				var movie = await _movieService.GetByIdAsync(movieId);
 				if (movie == null)
 				{
@@ -393,7 +396,7 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 		{
 			try
 			{
-				var testContent = "Azure Blob Storage connection test - " + DateTime.Now;
+				var testContent = "Storage connection test - " + DateTime.Now;
 				var bytes = System.Text.Encoding.UTF8.GetBytes(testContent);
 
 				using var stream = new MemoryStream(bytes);
@@ -414,7 +417,7 @@ namespace FinalCuongFilm.MVC.Areas.Admin.Controllers
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError(ex, "Azure connection test failed");
+				_logger.LogError(ex, "Storage connection test failed");
 				return Json(new
 				{
 					success = false,

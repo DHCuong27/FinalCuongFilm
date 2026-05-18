@@ -56,14 +56,17 @@ namespace FinalCuongFilm.Service.Services
 
 		private async Task<string> UploadStreamInternalAsync(Stream stream, string path, string bucket, string contentType)
 		{
-			var url = $"{_supabaseUrl}/storage/v1/object/{bucket}/{path}";
+			path = path.TrimStart('/');
+			var safePath = Uri.EscapeDataString(path).Replace("%2F", "/");
+
+			var url = $"{_supabaseUrl.TrimEnd('/')}/storage/v1/object/{bucket}/{safePath}";
 			using var req = new HttpRequestMessage(HttpMethod.Post, url);
 
 			ApplyAuthHeaders(req);
 			req.Headers.Add("x-upsert", "true");
 
 			var content = new StreamContent(stream);
-			content.Headers.ContentType = new MediaTypeHeaderValue(contentType);
+			content.Headers.ContentType = new MediaTypeHeaderValue(string.IsNullOrWhiteSpace(contentType) ? "application/octet-stream" : contentType);
 			req.Content = content;
 
 			var resp = await _httpClient.SendAsync(req);
@@ -73,7 +76,7 @@ namespace FinalCuongFilm.Service.Services
 				throw new Exception($"Supabase upload failed: {resp.StatusCode} - {body}");
 			}
 
-			return PublicUrl(bucket, path);
+			return PublicUrl(bucket, safePath);
 		}
 
 		public Task<string> UploadVideoAsync(IFormFile file, string movieSlug, int? episodeNumber = null)
