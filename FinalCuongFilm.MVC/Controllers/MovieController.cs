@@ -146,7 +146,7 @@ namespace FinalCuongFilm.MVC.Controllers
 							(m.CountryId == movie.CountryId || m.SelectedGenreIds.Intersect(movie.SelectedGenreIds).Any()))
 				.OrderByDescending(m => m.ViewCount)
 				.Take(6).ToList();
-		
+
 
 			var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 			ViewBag.IsFavorited = userId != null && await _favoriteService.IsFavoriteAsync(userId, movie.Id);
@@ -187,19 +187,15 @@ namespace FinalCuongFilm.MVC.Controllers
 				if (movie == null) return RedirectToAction("Index", "Home");
 
 				var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-				Console.WriteLine($"====== PHIM NÀY CÓ VIP KHÔNG? KẾT QUẢ: {movie.IsVipOnly} ======");
 				if (movie.IsVipOnly)
 				{
-					// Check 1: Chưa đăng nhập -> Đuổi ra trang Login của Identity
 					if (string.IsNullOrEmpty(userId))
 					{
 						TempData["Warning"] = "Đây là bộ phim Premium. Vui lòng đăng nhập để tiếp tục!";
 						return RedirectToPage("/Account/Login", new { area = "Identity", returnUrl = Request.Path });
 					}
 
-					// Check 2: Đã đăng nhập nhưng kiểm tra xem có VIP không?
 					bool hasVip = await _vipService.HasActiveVipAsync(userId);
-
 					if (!hasVip)
 					{
 						TempData["Warning"] = "Phim này dành riêng cho tài khoản Premium. Vui lòng nâng cấp gói để xem!";
@@ -217,31 +213,64 @@ namespace FinalCuongFilm.MVC.Controllers
 					var episodes = await _episodeService.GetByMovieIdAsync(movie.Id);
 					allEpisodes = episodes.Where(e => e.IsActive).OrderBy(e => e.EpisodeNumber).ToList();
 
-					if (!allEpisodes.Any()) return RedirectToAction("Detail", new { slug });
+					if (!allEpisodes.Any())
+					{
+						TempData["Warning"] = "Chưa có tập phim nào.";
+						return RedirectToAction("Detail", new { slug });
+					}
 
 					int targetEp = ep ?? 1;
 					currentEpisode = allEpisodes.FirstOrDefault(e => e.EpisodeNumber == targetEp) ?? allEpisodes.First();
-					mediaFiles = await _mediaFileService.GetByEpisodeIdAsync(currentEpisode.Id);
+					mediaFiles = await _mediaFileService.GetByEpisodeIdAsync(currentEpisode.Id) ?? Enumerable.Empty<FinalCuongFilm.Common.DTOs.MediaFileDto>();
+
+					// ✅ Fallback nếu không có media theo EpisodeId
+					if (mediaFiles == null || !mediaFiles.Any())
+					{
+						mediaFiles = await _mediaFileService.GetByMovieIdAsync(movie.Id) ?? Enumerable.Empty<FinalCuongFilm.Common.DTOs.MediaFileDto>();
+					}
 				}
 				else
 				{
-					mediaFiles = await _mediaFileService.GetByMovieIdAsync(movie.Id);
+					mediaFiles = await _mediaFileService.GetByMovieIdAsync(movie.Id) ?? Enumerable.Empty<FinalCuongFilm.Common.DTOs.MediaFileDto>();
+				}
+
+				var mediaFilesList = mediaFiles.Where(m => m != null).ToList();
+				if (!mediaFilesList.Any())
+				{
+					TempData["Warning"] = "Video chưa sẵn sàng. Vui lòng thử lại sau.";
+					return RedirectToAction("Detail", new { slug });
 				}
 
 				// 3. Tối ưu hóa xử lý Streaming URL (HLS vs MP4)
 				string? streamingUrl = null;
 				var qualitySources = new List<object>();
-				var hlsFile = mediaFiles.FirstOrDefault(m => m.FileType?.ToLower() == "hls");
 
-				if (hlsFile != null)
+				bool IsHls(FinalCuongFilm.Common.DTOs.MediaFileDto m) =>
+					(!string.IsNullOrWhiteSpace(m.FileType) && m.FileType.Trim().ToLower().Contains("hls")) ||
+					(!string.IsNullOrWhiteSpace(m.FileUrl) && m.FileUrl.EndsWith(".m3u8", StringComparison.OrdinalIgnoreCase));
+
+				bool IsMp4(FinalCuongFilm.Common.DTOs.MediaFileDto m) =>
+					(!string.IsNullOrWhiteSpace(m.FileType) && m.FileType.Trim().ToLower().Contains("video")) ||
+					(!string.IsNullOrWhiteSpace(m.FileUrl) && m.FileUrl.EndsWith(".mp4", StringComparison.OrdinalIgnoreCase));
+
+				var hlsFile = mediaFilesList.FirstOrDefault(m => IsHls(m));
+
+				if (hlsFile != null && !string.IsNullOrWhiteSpace(hlsFile.FileUrl))
 				{
 					streamingUrl = await _storageService.GetStreamingUrlAsync(hlsFile.FileUrl, expiryHours: 12);
 					ViewBag.MediaType = "hls";
-					qualitySources.Add(new { id = hlsFile.Id, quality = "Auto (HLS)", url = streamingUrl });
+					if (!string.IsNullOrWhiteSpace(streamingUrl))
+					{
+						qualitySources.Add(new { id = hlsFile.Id, quality = "Auto (HLS)", url = streamingUrl });
+					}
 				}
 				else
 				{
-					var videoFiles = mediaFiles.Where(m => m.FileType?.ToLower() == "video").OrderByDescending(m => m.Quality).ToList();
+					var videoFiles = mediaFilesList
+						.Where(m => IsMp4(m) && !string.IsNullOrWhiteSpace(m.FileUrl))
+						.OrderByDescending(m => m.Quality)
+						.ToList();
+
 					if (videoFiles.Any())
 					{
 						ViewBag.MediaType = "mp4";
@@ -252,15 +281,19 @@ namespace FinalCuongFilm.MVC.Controllers
 						});
 
 						var resolvedSources = await Task.WhenAll(sasTasks);
-						qualitySources.AddRange(resolvedSources);
-						streamingUrl = resolvedSources.First().url;
+						qualitySources.AddRange(resolvedSources.Where(x => !string.IsNullOrWhiteSpace(x.url)));
+						streamingUrl = resolvedSources.FirstOrDefault()?.url;
 					}
 				}
 
-				if (string.IsNullOrEmpty(streamingUrl)) return RedirectToAction("Detail", new { slug });
+				if (string.IsNullOrWhiteSpace(streamingUrl))
+				{
+					TempData["Warning"] = "Video chưa sẵn sàng hoặc không tìm thấy file HLS/MP4 hợp lệ.";
+					return RedirectToAction("Detail", new { slug });
+				}
 
-				// 4. TỐI ƯU: Xử lý Phụ đề (Subtitles) đồng thời
-				var subtitleFilesList = mediaFiles.Where(m => m.FileType?.ToLower() == "subtitle").ToList();
+				// 4. Subtitles
+				var subtitleFilesList = mediaFilesList.Where(m => m.FileType?.ToLower() == "subtitle").ToList();
 				var subtitleTasks = subtitleFilesList.Select(async sub =>
 				{
 					var subUrl = await _storageService.GetStreamingUrlAsync(sub.FileUrl, expiryHours: 4);
@@ -268,7 +301,7 @@ namespace FinalCuongFilm.MVC.Controllers
 				});
 				var subtitleFiles = await Task.WhenAll(subtitleTasks);
 
-				// 5. Tăng lượt xem & Lấy dữ liệu râu ria
+				// 5. Update view
 				await _movieService.IncrementViewCountAsync(movie.Id);
 
 				var actors = new List<FinalCuongFilm.Common.DTOs.ActorDto>();
@@ -284,7 +317,6 @@ namespace FinalCuongFilm.MVC.Controllers
 					catch (Exception ex) { _logger.LogWarning(ex, "Không thể lưu lịch sử xem phim cho User {UserId}, Movie {MovieId}", userId, movie.Id); }
 				}
 
-				// Đổ dữ liệu đồng loạt ra ViewBag để tối ưu thời gian chờ
 				ViewBag.Genres = await _genreService.GetAllAsync();
 				ViewBag.Countries = await _countryService.GetAllAsync();
 				ViewBag.IsFavorited = userId != null && await _favoriteService.IsFavoriteAsync(userId, movie.Id);
@@ -294,13 +326,12 @@ namespace FinalCuongFilm.MVC.Controllers
 				ViewBag.Actors = actors;
 				ViewBag.Reviews = await _reviewService.GetMovieReviewsAsync(movie.Id, approvedOnly: false);
 
-
 				var viewModel = new MovieWatchViewModel
 				{
 					Movie = movie,
 					Episodes = allEpisodes,
 					CurrentEpisode = currentEpisode,
-					MediaFiles = mediaFiles.ToList()
+					MediaFiles = mediaFilesList
 				};
 
 				return View(viewModel);
@@ -308,9 +339,12 @@ namespace FinalCuongFilm.MVC.Controllers
 			catch (Exception ex)
 			{
 				_logger.LogError(ex, "[Watch] Error when load film: {Slug}", slug);
-				return RedirectToAction("Index", "Home");
+				TempData["Warning"] = "Có lỗi xảy ra khi tải phim. Vui lòng thử lại.";
+				return RedirectToAction("Detail", new { slug });
 			}
 		}
+
+
 		// Watch by ID: /Movie/WatchById/{id}
 		public async Task<IActionResult> WatchById(Guid id)
 		{

@@ -19,17 +19,6 @@ namespace FinalCuongFilm.Service.Services
 
 			_tempPath = Path.Combine(Path.GetTempPath(), "TempVideoProcessing");
 			if (!Directory.Exists(_tempPath)) Directory.CreateDirectory(_tempPath);
-
-			var ffmpegPath = Path.Combine(AppContext.BaseDirectory, "ffmpeg");
-			if (Directory.Exists(ffmpegPath))
-			{
-				FFmpeg.SetExecutablesPath(ffmpegPath);
-				_logger.LogInformation("FFmpeg path set to: {Path}", ffmpegPath);
-			}
-			else
-			{
-				_logger.LogWarning("FFmpeg folder not found at: {Path}. Make sure ffmpeg is installed or add ffmpeg binaries.", ffmpegPath);
-			}
 		}
 
 		public async Task<string> ConvertToHlsAsync(string sourceFileUrl, string slug, int episodeNumber, CancellationToken cancellationToken)
@@ -64,11 +53,9 @@ namespace FinalCuongFilm.Service.Services
 				string ffmpegArgs =
 				$"-i \"{localInputPath}\" " +
 				"-map 0:v:0 -map 0:v:0 -map 0:v:0 -map 0:a:0 -map 0:a:0 -map 0:a:0 " +
-
 				"-s:v:0 1920x1080 -c:v:0 libx264 -preset ultrafast -b:v:0 3000k -profile:v:0 main " +
 				"-s:v:1 1280x720 -c:v:1 libx264 -preset ultrafast -b:v:1 1500k -profile:v:1 main " +
 				"-s:v:2 854x480 -c:v:2 libx264 -preset ultrafast -b:v:2 800k -profile:v:2 main " +
-
 				"-c:a aac -b:a 128k " +
 				"-var_stream_map \"v:0,a:0,name:1080p v:1,a:1,name:720p v:2,a:2,name:480p\" " +
 				"-hls_time 10 -hls_list_size 0 -master_pl_name master.m3u8 " +
@@ -135,7 +122,6 @@ namespace FinalCuongFilm.Service.Services
 			}
 		}
 
-		// Hang Fire
 		public async Task ProcessVideoBackgroundJobAsync(Guid mediaFileId, string mp4Url, string slug, int episodeNumber, CancellationToken cancellationToken)
 		{
 			try
