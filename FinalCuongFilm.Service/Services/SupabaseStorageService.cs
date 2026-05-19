@@ -97,9 +97,15 @@ namespace FinalCuongFilm.Service.Services
 		public Task<string> UploadSubtitleAsync(IFormFile file, string movieSlug, string language)
 			=> UploadAsync(file, SUBTITLE_BUCKET, $"{movieSlug}/subs/{language}-{DateTime.UtcNow:yyyyMMdd}{Path.GetExtension(file.FileName)}");
 
-		public Task<string> GetStreamingUrlAsync(string fileUrl, int expiryHours = 24)
+		public Task<string> GetStreamingUrlAsync(string fileUrl, int expiryHours = 12)
 		{
-			// Bucket public => không cần signed URL
+		
+
+			if (string.IsNullOrWhiteSpace(fileUrl))
+			{
+				return Task.FromResult(string.Empty);
+			}
+
 			return Task.FromResult(fileUrl);
 		}
 

@@ -122,10 +122,9 @@ namespace FinalCuongFilm.MVC.Controllers
 			var movie = allMovies.FirstOrDefault(m => m.Slug == slug && m.IsActive);
 			if (movie == null) return NotFound();
 
-			// Trong MoviesController.cs -> Hàm Detail()
 			ViewData["Title"] = movie.Title;
 			ViewData["MetaDescription"] = movie.Description;
-			ViewData["OgImage"] = movie.PosterUrl; // Khi share link sẽ hiện cái Poster này
+			ViewData["OgImage"] = movie.PosterUrl;
 			ViewData["OgType"] = "video.movie";
 			ViewData["CanonicalUrl"] = $"https://cuongfilm.site/movie/{movie.Slug}";
 			ViewBag.Genres = await _genreService.GetAllAsync();
@@ -147,11 +146,9 @@ namespace FinalCuongFilm.MVC.Controllers
 				.OrderByDescending(m => m.ViewCount)
 				.Take(6).ToList();
 
-
 			var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 			ViewBag.IsFavorited = userId != null && await _favoriteService.IsFavoriteAsync(userId, movie.Id);
 
-			// Luôn lấy Rating model, dù phim chưa có rating nào thì hàm GetMovieRatingAsync vẫn trả về model với giá trị 0
 			ViewBag.Rating = await _reviewService.GetMovieRatingAsync(movie.Id);
 
 			var reviews = await _reviewService.GetMovieReviewsAsync(movie.Id, approvedOnly: true);
@@ -170,9 +167,7 @@ namespace FinalCuongFilm.MVC.Controllers
 			return View(viewModel);
 		}
 
-
 		// Watch: /Movie/Watch/{slug}?ep=1
-
 		[AllowAnonymous]
 		[Route("Movie/Watch/{slug}")]
 		public async Task<IActionResult> Watch(string slug, int? ep = null)
@@ -206,7 +201,7 @@ namespace FinalCuongFilm.MVC.Controllers
 				// 2. Xử lý logic Tập phim & Lấy danh sách File Media
 				var allEpisodes = new List<FinalCuongFilm.Common.DTOs.EpisodeDto>();
 				FinalCuongFilm.Common.DTOs.EpisodeDto? currentEpisode = null;
-				IEnumerable<FinalCuongFilm.Common.DTOs.MediaFileDto> mediaFiles;
+				List<FinalCuongFilm.Common.DTOs.MediaFileDto> mediaFilesList = new();
 
 				if (movie.Type == ApplicationCore.Entities.Enum.MovieType.Series)
 				{
@@ -221,27 +216,29 @@ namespace FinalCuongFilm.MVC.Controllers
 
 					int targetEp = ep ?? 1;
 					currentEpisode = allEpisodes.FirstOrDefault(e => e.EpisodeNumber == targetEp) ?? allEpisodes.First();
-					mediaFiles = await _mediaFileService.GetByEpisodeIdAsync(currentEpisode.Id) ?? Enumerable.Empty<FinalCuongFilm.Common.DTOs.MediaFileDto>();
 
-					// ✅ Fallback nếu không có media theo EpisodeId
-					if (mediaFiles == null || !mediaFiles.Any())
-					{
-						mediaFiles = await _mediaFileService.GetByMovieIdAsync(movie.Id) ?? Enumerable.Empty<FinalCuongFilm.Common.DTOs.MediaFileDto>();
-					}
+					var byEpisode = await _mediaFileService.GetByEpisodeIdAsync(currentEpisode.Id)
+						?? Enumerable.Empty<FinalCuongFilm.Common.DTOs.MediaFileDto>();
+					var byMovie = await _mediaFileService.GetByMovieIdAsync(movie.Id)
+						?? Enumerable.Empty<FinalCuongFilm.Common.DTOs.MediaFileDto>();
+
+					mediaFilesList = byEpisode.Concat(byMovie)
+						.Where(m => m != null)
+						.GroupBy(m => m.Id)
+						.Select(g => g.First())
+						.ToList();
 				}
 				else
 				{
-					mediaFiles = await _mediaFileService.GetByMovieIdAsync(movie.Id) ?? Enumerable.Empty<FinalCuongFilm.Common.DTOs.MediaFileDto>();
+					var byMovie = await _mediaFileService.GetByMovieIdAsync(movie.Id)
+						?? Enumerable.Empty<FinalCuongFilm.Common.DTOs.MediaFileDto>();
+
+					mediaFilesList = byMovie.Where(m => m != null).ToList();
 				}
 
-				var mediaFilesList = mediaFiles.Where(m => m != null).ToList();
-				if (!mediaFilesList.Any())
-				{
-					TempData["Warning"] = "Video chưa sẵn sàng. Vui lòng thử lại sau.";
-					return RedirectToAction("Detail", new { slug });
-				}
+				// ĐÃ XÓA CHECK !mediaFilesList.Any() Ở ĐÂY ĐỂ MỞ ĐƯỜNG CHO FALLBACK CHẠY!
 
-				// 3. Tối ưu hóa xử lý Streaming URL (HLS vs MP4)
+				// 3. Tối ưu hóa xử lý Streaming URL (HLS vs MP4) - BỎ SAS TOKEN
 				string? streamingUrl = null;
 				var qualitySources = new List<object>();
 
@@ -257,12 +254,10 @@ namespace FinalCuongFilm.MVC.Controllers
 
 				if (hlsFile != null && !string.IsNullOrWhiteSpace(hlsFile.FileUrl))
 				{
-					streamingUrl = await _storageService.GetStreamingUrlAsync(hlsFile.FileUrl, expiryHours: 12);
+					// Supabase Public Bucket -> Dùng thẳng URL gốc không cần GetStreamingUrlAsync
+					streamingUrl = hlsFile.FileUrl;
 					ViewBag.MediaType = "hls";
-					if (!string.IsNullOrWhiteSpace(streamingUrl))
-					{
-						qualitySources.Add(new { id = hlsFile.Id, quality = "Auto (HLS)", url = streamingUrl });
-					}
+					qualitySources.Add(new { id = hlsFile.Id, quality = "Auto (HLS)", url = streamingUrl });
 				}
 				else
 				{
@@ -274,15 +269,36 @@ namespace FinalCuongFilm.MVC.Controllers
 					if (videoFiles.Any())
 					{
 						ViewBag.MediaType = "mp4";
-						var sasTasks = videoFiles.Select(async qf =>
+						foreach (var qf in videoFiles)
 						{
-							var qUrl = await _storageService.GetStreamingUrlAsync(qf.FileUrl, expiryHours: 4);
-							return new { id = qf.Id, quality = qf.Quality ?? "HD", url = qUrl };
-						});
+							// Dùng thẳng URL gốc
+							qualitySources.Add(new { id = qf.Id, quality = qf.Quality ?? "HD", url = qf.FileUrl });
+						}
+						streamingUrl = videoFiles.FirstOrDefault()?.FileUrl;
+					}
+				}
 
-						var resolvedSources = await Task.WhenAll(sasTasks);
-						qualitySources.AddRange(resolvedSources.Where(x => !string.IsNullOrWhiteSpace(x.url)));
-						streamingUrl = resolvedSources.FirstOrDefault()?.url;
+				// ✅ FALLBACK: Xử lý thông minh cho cả Phim lẻ và Phim bộ nếu DB chưa có File
+				if (string.IsNullOrWhiteSpace(streamingUrl))
+				{
+					var supabaseUrl = _configuration["SUPABASE_URL"];
+					if (!string.IsNullOrWhiteSpace(supabaseUrl))
+					{
+						string fallbackUrl = "";
+
+						if (movie.Type == ApplicationCore.Entities.Enum.MovieType.Series && currentEpisode != null)
+						{
+							fallbackUrl = $"{supabaseUrl}/storage/v1/object/public/videos/movies/{movie.Slug}/ep{currentEpisode.EpisodeNumber}/hls/master.m3u8";
+						}
+						else
+						{
+							fallbackUrl = $"{supabaseUrl}/storage/v1/object/public/videos/movies/{movie.Slug}/hls/master.m3u8";
+						}
+
+						streamingUrl = fallbackUrl;
+						ViewBag.MediaType = "hls";
+						qualitySources.Add(new { id = Guid.Empty, quality = "Auto (HLS)", url = streamingUrl });
+						_logger.LogWarning("[Watch] Fallback HLS URL used: {Url}", fallbackUrl);
 					}
 				}
 
@@ -292,16 +308,15 @@ namespace FinalCuongFilm.MVC.Controllers
 					return RedirectToAction("Detail", new { slug });
 				}
 
-				// 4. Subtitles
+				// 4. Subtitles - BỎ SAS TOKEN
 				var subtitleFilesList = mediaFilesList.Where(m => m.FileType?.ToLower() == "subtitle").ToList();
-				var subtitleTasks = subtitleFilesList.Select(async sub =>
-				{
-					var subUrl = await _storageService.GetStreamingUrlAsync(sub.FileUrl, expiryHours: 4);
-					return new { language = sub.Language ?? "en", url = subUrl, label = sub.Language ?? "Subtitle" };
-				});
-				var subtitleFiles = await Task.WhenAll(subtitleTasks);
+				var subtitleFiles = subtitleFilesList.Select(sub => new {
+					language = sub.Language ?? "en",
+					url = sub.FileUrl, // Dùng thẳng URL
+					label = sub.Language ?? "Subtitle"
+				}).ToList();
 
-				// 5. Update view
+				// 5. Update view & History
 				await _movieService.IncrementViewCountAsync(movie.Id);
 
 				var actors = new List<FinalCuongFilm.Common.DTOs.ActorDto>();
@@ -344,7 +359,6 @@ namespace FinalCuongFilm.MVC.Controllers
 			}
 		}
 
-
 		// Watch by ID: /Movie/WatchById/{id}
 		public async Task<IActionResult> WatchById(Guid id)
 		{
@@ -362,10 +376,9 @@ namespace FinalCuongFilm.MVC.Controllers
 			var genres = await _genreService.GetAllAsync();
 			var countries = await _countryService.GetAllAsync();
 
-
 			ViewBag.Genres = genres;
 			ViewBag.Countries = countries;
-			// Filter exclusively for VIP movies
+
 			var query = allMovies.Where(m => m.IsActive && m.IsVipOnly).AsEnumerable();
 
 			if (!string.IsNullOrWhiteSpace(search))
@@ -394,7 +407,7 @@ namespace FinalCuongFilm.MVC.Controllers
 			{
 				"popular" => query.OrderByDescending(m => m.ViewCount),
 				"title" => query.OrderBy(m => m.Title),
-				_ => query.OrderByDescending(m => m.ReleaseYear) // Default "latest"
+				_ => query.OrderByDescending(m => m.ReleaseYear)
 			};
 
 			var filteredList = query.ToList();
@@ -418,7 +431,6 @@ namespace FinalCuongFilm.MVC.Controllers
 				PageSubTitle = "Exclusive films for VIP members"
 			};
 
-			// Reuse the Index view to display the filtered list
 			return View("Index", vm);
 		}
 
@@ -451,7 +463,6 @@ namespace FinalCuongFilm.MVC.Controllers
 					return RedirectToAction("Detail", new { slug = movie.Slug });
 				}
 
-				// Bucket public -> direct URL
 				return Redirect(mp4.FileUrl);
 			}
 			catch (Exception ex)
@@ -466,7 +477,6 @@ namespace FinalCuongFilm.MVC.Controllers
 		{
 			if (string.IsNullOrWhiteSpace(blobPath)) return null;
 
-			// https://<project>.supabase.co/storage/v1/object/public/{bucket}/{path}
 			return $"{_configuration["SUPABASE_URL"]}/storage/v1/object/public/{bucket}/{blobPath}";
 		}
 	}

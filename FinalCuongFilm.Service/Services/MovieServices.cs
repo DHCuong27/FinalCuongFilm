@@ -341,11 +341,12 @@ namespace FinalCuongFilm.Service.Services
 
 		public async Task IncrementViewCountAsync(Guid movieId)
 		{
-			await _context.Database.ExecuteSqlRawAsync(
-				"UPDATE Movies SET ViewCount = ViewCount + 1 WHERE Id = {0}",
-				movieId);
-
-			_logger.LogInformation($"View incremented for movie {movieId}");
+			var movie = await _context.Movies.FirstOrDefaultAsync(m => m.Id == movieId);
+			if (movie != null)
+			{
+				movie.ViewCount += 1;
+				await _context.SaveChangesAsync();
+			}
 		}
 
 		#endregion
