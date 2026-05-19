@@ -18,15 +18,24 @@ namespace FinalCuongFilm.Service.Services
 			_logger = logger;
 
 			_tempPath = Path.Combine(Path.GetTempPath(), "TempVideoProcessing");
-
 			if (!Directory.Exists(_tempPath)) Directory.CreateDirectory(_tempPath);
+
+			var ffmpegPath = Path.Combine(AppContext.BaseDirectory, "ffmpeg");
+			if (Directory.Exists(ffmpegPath))
+			{
+				FFmpeg.SetExecutablesPath(ffmpegPath);
+				_logger.LogInformation("FFmpeg path set to: {Path}", ffmpegPath);
+			}
+			else
+			{
+				_logger.LogWarning("FFmpeg folder not found at: {Path}. Make sure ffmpeg is installed or add ffmpeg binaries.", ffmpegPath);
+			}
 		}
 
 		public async Task<string> ConvertToHlsAsync(string sourceFileUrl, string slug, int episodeNumber, CancellationToken cancellationToken)
 		{
 			_logger.LogInformation($"[START] Processing HLS for: {slug} - Ep: {episodeNumber}");
 
-			// Safely extract filename from URL
 			var uri = new Uri(sourceFileUrl);
 			string fileName = Path.GetFileName(uri.LocalPath);
 
@@ -38,11 +47,9 @@ namespace FinalCuongFilm.Service.Services
 
 			try
 			{
-			
-				_logger.LogInformation($"[DOWNLOAD] Downloading the original MP4 file from Azure to my computer....");
+				_logger.LogInformation($"[DOWNLOAD] Downloading the original MP4 file from storage....");
 				using (var httpClient = new HttpClient())
 				{
-			
 					using (var response = await httpClient.GetAsync(sourceFileUrl, HttpCompletionOption.ResponseHeadersRead, cancellationToken))
 					{
 						response.EnsureSuccessStatusCode();
@@ -53,7 +60,6 @@ namespace FinalCuongFilm.Service.Services
 					}
 				}
 
-				// Transcode  FFmpeg
 				_logger.LogInformation($"[FFMPEG] Start splitting and compressing multi-resolution video....");
 				string ffmpegArgs =
 				$"-i \"{localInputPath}\" " +
@@ -71,10 +77,9 @@ namespace FinalCuongFilm.Service.Services
 				var conversion = FFmpeg.Conversions.New().AddParameter(ffmpegArgs);
 				await conversion.Start(cancellationToken);
 
-				//  Upload on Azure 
-				_logger.LogInformation($"[UPLOAD] Start pushing .ts and .m3u8 files to Azure in bulk....");
+				_logger.LogInformation($"[UPLOAD] Start pushing .ts and .m3u8 files to storage in bulk....");
 
-				string azureFolder = $"movies/{slug}/ep{episodeNumber}/hls";
+				string storageFolder = $"movies/{slug}/ep{episodeNumber}/hls";
 
 				var allFiles = Directory.GetFiles(localOutputDir, "*.*", SearchOption.AllDirectories);
 
@@ -83,7 +88,6 @@ namespace FinalCuongFilm.Service.Services
 					throw new Exception("Error: FFmpeg finished running but failed to create any files!");
 				}
 
-			
 				using var semaphore = new SemaphoreSlim(10);
 
 				var uploadTasks = allFiles.Select(async filePath =>
@@ -93,12 +97,12 @@ namespace FinalCuongFilm.Service.Services
 					{
 						string relativePath = Path.GetRelativePath(localOutputDir, filePath).Replace("\\", "/");
 						using var stream = File.OpenRead(filePath);
-						string uploadedUrl = await _storageService.UploadStreamAsync(stream, relativePath, azureFolder);
+						string uploadedUrl = await _storageService.UploadStreamAsync(stream, relativePath, storageFolder);
 						return new { Path = relativePath, Url = uploadedUrl };
 					}
 					finally
 					{
-						semaphore.Release(); 
+						semaphore.Release();
 					}
 				});
 
@@ -117,7 +121,7 @@ namespace FinalCuongFilm.Service.Services
 			catch (OperationCanceledException)
 			{
 				_logger.LogWarning($"[CANCELLED] HLS processing was explicitly cancelled by Hangfire for: {slug}");
-				throw; 
+				throw;
 			}
 			catch (Exception ex)
 			{
@@ -126,17 +130,16 @@ namespace FinalCuongFilm.Service.Services
 			}
 			finally
 			{
-				
 				if (File.Exists(localInputPath)) File.Delete(localInputPath);
 				if (Directory.Exists(localOutputDir)) Directory.Delete(localOutputDir, true);
 			}
 		}
 
-	// Hang Fire
+		// Hang Fire
 		public async Task ProcessVideoBackgroundJobAsync(Guid mediaFileId, string mp4Url, string slug, int episodeNumber, CancellationToken cancellationToken)
 		{
 			try
-			{	
+			{
 				string masterM3u8Url = await ConvertToHlsAsync(mp4Url, slug, episodeNumber, cancellationToken);
 
 				var mediaFile = await _mediaFileService.GetByIdAsync(mediaFileId);
@@ -155,7 +158,6 @@ namespace FinalCuongFilm.Service.Services
 						EpisodeId = mediaFile.EpisodeId
 					};
 
-					//Update in Database
 					await _mediaFileService.UpdateAsync(updateDto);
 
 					_logger.LogInformation($"[HANGFIRE] The HLS file has been updated in the database for MediaId: {mediaFileId}");
@@ -168,7 +170,7 @@ namespace FinalCuongFilm.Service.Services
 			catch (Exception ex)
 			{
 				_logger.LogError(ex, $"[HANGFIRE] Error when processing video in the background for MediaId: {mediaFileId}");
-				throw; 
+				throw;
 			}
 		}
 	}

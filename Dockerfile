@@ -15,7 +15,9 @@ WORKDIR /app
 COPY --from=build /app .
 
 # 3. Cài đặt FFmpeg để Hangfire dùng nén video
-RUN apt-get update && apt-get install -y ffmpeg
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends ffmpeg \
+ && rm -rf /var/lib/apt/lists/*
 
 
 # Thêm 2 dòng này để chỉ định cứng cổng mạng cho Railway
