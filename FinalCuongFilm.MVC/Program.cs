@@ -244,7 +244,8 @@ static string GetRequiredPostgresConnectionString(IConfiguration configuration)
 		("DATABASE_URL", configuration["DATABASE_URL"]),
 		("POSTGRES_URL", configuration["POSTGRES_URL"]),
 		("POSTGRES_DATABASE_URL", configuration["POSTGRES_DATABASE_URL"]),
-		("ConnectionStrings__CuongFilmConnection", configuration.GetConnectionString("CuongFilmConnection"))
+		("ConnectionStrings__CuongFilmConnection", configuration.GetConnectionString("CuongFilmConnection")),
+		("ConnectionStrings__DefaultConnection", configuration.GetConnectionString("DefaultConnection"))
 	};
 
 	var selected = candidates.FirstOrDefault(candidate => !string.IsNullOrWhiteSpace(candidate.Value));
@@ -322,6 +323,7 @@ static string NormalizePostgresConnectionString(string connectionString)
 
 	return builder.ConnectionString;
 }
+
 
 
 
