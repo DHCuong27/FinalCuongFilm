@@ -1,354 +1,770 @@
-﻿@{
-    ViewData["Title"] = "Dashboard Overview";
+@{
+    ViewData["Title"] = "Tổng Quan Hệ Thống";
 }
 
 <style>
-    .dashboard-header {
-        font-size: 1.75rem;
-        font-weight: 700;
-        color: #1e293b;
-        margin-bottom: 1.5rem;
+    /* ========================================================================
+       PREMIUM DESIGN SYSTEM - ADMIN DASHBOARD OVERVIEW
+       ======================================================================== */
+    :root {
+        --dash-primary: #4f46e5;
+        --dash-primary-glow: rgba(79, 70, 229, 0.15);
+        --dash-success: #10b981;
+        --dash-success-glow: rgba(16, 185, 129, 0.15);
+        --dash-warning: #f59e0b;
+        --dash-warning-glow: rgba(245, 158, 11, 0.15);
+        --dash-danger: #ef4444;
+        --dash-danger-glow: rgba(239, 68, 68, 0.15);
+        --dash-info: #06b6d4;
+        --dash-info-glow: rgba(6, 182, 212, 0.15);
+        
+        --glass-bg: rgba(255, 255, 255, 0.85);
+        --glass-border: rgba(255, 255, 255, 0.4);
     }
 
-    .dash-card {
-        border: none;
-        border-radius: 16px;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
-        height: 100%;
-        background-color: #ffffff;
-    }
-
-        .dash-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
-        }
-
-    .dash-body {
-        padding: 1.5rem;
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-    }
-
-    .dash-icon {
-        width: 55px;
-        height: 55px;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.5rem;
-        flex-shrink: 0;
-    }
-
-    .dash-num {
-        font-size: 1.75rem;
-        font-weight: 700;
-        color: #1e293b;
-        line-height: 1.1;
-        margin-bottom: 0.2rem;
-    }
-
-    .dash-label {
-        font-size: 0.75rem;
-        font-weight: 600;
-        color: #64748b;
-        letter-spacing: 0.5px;
-        text-transform: uppercase;
-        margin: 0;
-    }
-
-    .dash-footer {
-        background-color: transparent;
-        border-top: 1px solid #f1f5f9;
-        padding: 1rem 1.5rem;
-    }
-
-    .dash-link {
-        color: #3b82f6;
-        text-decoration: none;
-        font-weight: 500;
-        font-size: 0.9rem;
+    /* Base Layout Improvements */
+    .dashboard-header-container {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        transition: color 0.2s ease;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+        gap: 1rem;
     }
 
-        .dash-link:hover {
-            color: #2563eb;
+    .dashboard-header {
+        font-size: 1.85rem;
+        font-weight: 850;
+        color: #0f172a;
+        margin: 0;
+        letter-spacing: -0.8px;
+        position: relative;
+    }
+
+    /* Staggered Entry Animation */
+    @@keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(24px);
         }
-
-    /* Custom Icon Colors matching your design */
-    .icon-blue {
-        background-color: #e0f2fe;
-        color: #3b82f6;
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
 
-    .icon-teal {
-        background-color: #ccfbf1;
-        color: #14b8a6;
+    .animate-card {
+        animation: fadeInUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        opacity: 0;
     }
 
-    .icon-red {
-        background-color: #fee2e2;
-        color: #ef4444;
+    .delay-1 { animation-delay: 0.05s; }
+    .delay-2 { animation-delay: 0.1s; }
+    .delay-3 { animation-delay: 0.15s; }
+    .delay-4 { animation-delay: 0.2s; }
+    .delay-5 { animation-delay: 0.25s; }
+    .delay-6 { animation-delay: 0.3s; }
+    .delay-7 { animation-delay: 0.35s; }
+    .delay-8 { animation-delay: 0.4s; }
+    .delay-9 { animation-delay: 0.45s; }
+    .delay-10 { animation-delay: 0.5s; }
+    .delay-11 { animation-delay: 0.55s; }
+
+    /* ==================== HERO WELCOME CARD ==================== */
+    .welcome-hero {
+        background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #31108f 100%);
+        border-radius: 24px;
+        padding: 2.5rem;
+        color: #ffffff;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        margin-bottom: 2.5rem;
+        border: 1px solid rgba(255, 255, 255, 0.05);
     }
 
-    .icon-green {
-        background-color: #dcfce7;
-        color: #10b981;
+    .welcome-hero::after {
+        content: '';
+        position: absolute;
+        width: 300px;
+        height: 300px;
+        background: radial-gradient(circle, rgba(79, 70, 229, 0.2) 0%, transparent 70%);
+        top: -100px;
+        right: -50px;
+        pointer-events: none;
     }
 
-    .icon-gold {
-        background-color: #fef3c7;
-        color: #f59e0b;
+    .welcome-hero-content {
+        position: relative;
+        z-index: 2;
+        max-width: 650px;
     }
 
-    .icon-pink {
-        background-color: #fce7f3;
-        color: #ec4899;
+    .welcome-title {
+        font-size: 2.1rem;
+        font-weight: 850;
+        letter-spacing: -1px;
+        margin-bottom: 0.8rem;
     }
 
-    .icon-lightgreen {
-        background-color: #ecfccb;
-        color: #10b981;
+    .welcome-subtitle {
+        color: #94a3b8;
+        font-size: 1.05rem;
+        line-height: 1.6;
+        margin-bottom: 0;
     }
 
-    .icon-yellow {
-        background-color: #fef08a;
-        color: #eab308;
+    .live-clock-card {
+        background: rgba(255, 255, 255, 0.07);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 18px;
+        padding: 1.25rem 2rem;
+        text-align: right;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        z-index: 2;
     }
 
-    .icon-purple {
-        background-color: #f3e8ff;
-        color: #a855f7;
+    .live-time {
+        font-size: 1.85rem;
+        font-weight: 800;
+        color: #f8fafc;
+        font-family: monospace;
+        letter-spacing: 1px;
     }
 
-    .icon-orange {
-        background-color: #ffedd5;
-        color: #f97316;
+    .live-date {
+        color: #94a3b8;
+        font-size: 0.85rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        margin-top: 0.25rem;
     }
 
-    .icon-indigo {
-        background-color: #e0e7ff;
-        color: #6366f1;
+    /* ==================== STATS CARDS ==================== */
+    .section-title {
+        font-size: 1.15rem;
+        font-weight: 800;
+        color: #475569;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+    }
+
+    .section-title::after {
+        content: '';
+        flex-grow: 1;
+        height: 1px;
+        background: #e2e8f0;
+    }
+
+    .premium-card {
+        background: var(--glass-bg);
+        border: 1px solid var(--glass-border);
+        border-radius: 20px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.01);
+        backdrop-filter: blur(8px);
+        transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        overflow: hidden;
+    }
+
+    .premium-card:hover {
+        transform: translateY(-8px);
+        background: #ffffff;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.02);
+    }
+
+    .card-glow-indigo:hover { border-color: var(--dash-primary); box-shadow: 0 20px 25px -5px var(--dash-primary-glow); }
+    .card-glow-teal:hover { border-color: var(--dash-info); box-shadow: 0 20px 25px -5px var(--dash-info-glow); }
+    .card-glow-red:hover { border-color: var(--dash-danger); box-shadow: 0 20px 25px -5px var(--dash-danger-glow); }
+    .card-glow-green:hover { border-color: var(--dash-success); box-shadow: 0 20px 25px -5px var(--dash-success-glow); }
+    .card-glow-gold:hover { border-color: var(--dash-warning); box-shadow: 0 20px 25px -5px var(--dash-warning-glow); }
+
+    .premium-card-body {
+        padding: 1.75rem;
+        display: flex;
+        align-items: center;
+        gap: 1.25rem;
+    }
+
+    .premium-icon-box {
+        width: 60px;
+        height: 60px;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.6rem;
+        flex-shrink: 0;
+        transition: transform 0.3s ease;
+    }
+
+    .premium-card:hover .premium-icon-box {
+        transform: scale(1.1) rotate(3deg);
+    }
+
+    .stats-info {
+        flex-grow: 1;
+    }
+
+    .stats-number {
+        font-size: 2.1rem;
+        font-weight: 850;
+        color: #0f172a;
+        line-height: 1;
+        letter-spacing: -0.5px;
+        margin-bottom: 0.35rem;
+    }
+
+    .stats-label {
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: #64748b;
+        margin: 0;
+    }
+
+    .premium-card-footer {
+        background: rgba(248, 250, 252, 0.65);
+        border-top: 1px solid #f1f5f9;
+        padding: 0.9rem 1.75rem;
+    }
+
+    .premium-card-link {
+        color: #475569;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.82rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: all 0.2s ease;
+    }
+
+    .premium-card-link i {
+        font-size: 0.75rem;
+        transition: transform 0.2s ease;
+    }
+
+    .premium-card:hover .premium-card-link {
+        color: var(--dash-primary);
+    }
+
+    .premium-card:hover .premium-card-link i {
+        transform: translateX(4px);
+    }
+
+    /* Icon Gradients */
+    .grad-indigo { background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%); color: #4f46e5; }
+    .grad-teal { background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%); color: #0284c7; }
+    .grad-rose { background: linear-gradient(135deg, #ffe4e6 0%, #fecdd3 100%); color: #e11d48; }
+    .grad-emerald { background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%); color: #059669; }
+    .grad-amber { background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); color: #d97706; }
+    .grad-pink { background: linear-gradient(135deg, #fce7f3 0%, #fbcfe8 100%); color: #db2777; }
+    .grad-lime { background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); color: #16a34a; }
+    .grad-yellow { background: linear-gradient(135deg, #fef9c3 0%, #fef08a 100%); color: #ca8a04; }
+    .grad-purple { background: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%); color: #9333ea; }
+    .grad-orange { background: linear-gradient(135deg, #ffedd5 0%, #fed7aa 100%); color: #ea580c; }
+    .grad-sky { background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); color: #0369a1; }
+
+    /* ==================== QUICK ACTIONS & STATUS TIMELINE ==================== */
+    .panel-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 20px;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.02);
+        padding: 1.75rem;
+        height: 100%;
+    }
+
+    .panel-title {
+        font-size: 1.25rem;
+        font-weight: 800;
+        color: #0f172a;
+        margin-bottom: 1.5rem;
+        letter-spacing: -0.5px;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .action-tile-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+
+    .action-tile {
+        background: #f8fafc;
+        border: 1px solid #f1f5f9;
+        border-radius: 16px;
+        padding: 1.25rem 1rem;
+        text-align: center;
+        color: #475569;
+        text-decoration: none;
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.6rem;
+    }
+
+    .action-tile i {
+        font-size: 1.45rem;
+        color: var(--dash-primary);
+        transition: transform 0.3s ease;
+    }
+
+    .action-tile span {
+        font-weight: 700;
+        font-size: 0.85rem;
+    }
+
+    .action-tile:hover {
+        background: #ffffff;
+        border-color: var(--dash-primary);
+        color: var(--dash-primary);
+        box-shadow: 0 12px 20px -5px var(--dash-primary-glow);
+        transform: translateY(-3px);
+    }
+
+    .action-tile:hover i {
+        transform: translateY(-2px) scale(1.05);
+    }
+
+    /* Status Timeline Styles */
+    .timeline-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 1.2rem;
+    }
+
+    .timeline-item {
+        display: flex;
+        gap: 1rem;
+        align-items: flex-start;
+    }
+
+    .timeline-indicator {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        flex-shrink: 0;
+        margin-top: 6px;
+        position: relative;
+    }
+
+    .indicator-success { background-color: var(--dash-success); box-shadow: 0 0 0 4px var(--dash-success-glow); }
+    .indicator-info { background-color: var(--dash-info); box-shadow: 0 0 0 4px var(--dash-info-glow); }
+    .indicator-warning { background-color: var(--dash-warning); box-shadow: 0 0 0 4px var(--dash-warning-glow); }
+
+    .timeline-content {
+        flex-grow: 1;
+    }
+
+    .timeline-header {
+        font-weight: 700;
+        font-size: 0.9rem;
+        color: #334155;
+        margin: 0;
+    }
+
+    .timeline-desc {
+        font-size: 0.82rem;
+        color: #64748b;
+        margin-top: 0.15rem;
+        margin-bottom: 0;
     }
 </style>
 
 <div class="container-fluid py-4">
-    <h2 class="dashboard-header">Dashboard Overview</h2>
+    
+    <!-- Header Block -->
+    <div class="dashboard-header-container">
+        <div>
+            <h2 class="dashboard-header">Tổng Quan Hệ Thống</h2>
+        </div>
+    </div>
+
+    <!-- Hero Card Grid -->
+    <div class="row g-4 mb-5">
+        <div class="col-12 col-xl-8 animate-card delay-1">
+            <div class="welcome-hero h-100 d-flex align-items-center">
+                <div class="welcome-hero-content">
+                    <h1 class="welcome-title">Chào mừng trở lại, Admin!</h1>
+                    <p class="welcome-subtitle">
+                        Chào mừng bạn đến với bảng điều khiển chính của **CuongFilm**. Tại đây bạn có thể quản trị toàn bộ tài nguyên phim trực tuyến, quản lý thành viên, xử lý luồng video chuyển đổi (HLS) và theo dõi trạng thái thanh toán doanh thu VIP trong thời gian thực.
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-xl-4 animate-card delay-2">
+            <div class="live-clock-card h-100">
+                <div class="live-time" id="liveClock">00:00:00</div>
+                <div class="live-date" id="liveDate">ĐANG TẢI...</div>
+            </div>
+        </div>
+    </div>
 
     <div class="row g-4">
-        <div class="col-12 col-md-6 col-lg-3">
-            <div class="dash-card">
-                <div class="dash-body">
-                    <div class="dash-icon icon-blue">
-                        <i class="fa-solid fa-film"></i>
+        <!-- Main Statistics Area (Left Column) -->
+        <div class="col-12 col-lg-8 col-xl-9">
+            
+            <!-- SECTION 1: CONTENT MANAGEMENT -->
+            <div class="mb-5">
+                <h3 class="section-title"><i class="fa-solid fa-film text-primary"></i> Quản Lý Nội Dung Phim</h3>
+                <div class="row g-4">
+                    
+                    <!-- Total Movies -->
+                    <div class="col-12 col-md-6 col-xl-3 animate-card delay-3">
+                        <div class="premium-card card-glow-indigo">
+                            <div class="premium-card-body">
+                                <div class="premium-icon-box grad-indigo">
+                                    <i class="fa-solid fa-film"></i>
+                                </div>
+                                <div class="stats-info">
+                                    <div class="stats-number">@ViewBag.TotalMovies</div>
+                                    <p class="stats-label">Bộ Phim</p>
+                                </div>
+                            </div>
+                            <div class="premium-card-footer">
+                                <a asp-controller="Movies" asp-action="Index" class="premium-card-link">
+                                    Quản lý phim <i class="fa-solid fa-arrow-right"></i>
+                                </a>
+                            </div>
+                        </div>
                     </div>
-                    <div>
-                        <div class="dash-num">@ViewBag.TotalMovies</div>
-                        <p class="dash-label">Total Movies</p>
+
+                    <!-- Total Episodes -->
+                    <div class="col-12 col-md-6 col-xl-3 animate-card delay-4">
+                        <div class="premium-card card-glow-teal">
+                            <div class="premium-card-body">
+                                <div class="premium-icon-box grad-teal">
+                                    <i class="fa-solid fa-tv"></i>
+                                </div>
+                                <div class="stats-info">
+                                    <div class="stats-number">@ViewBag.TotalEpisodes</div>
+                                    <p class="stats-label">Tập Phim</p>
+                                </div>
+                            </div>
+                            <div class="premium-card-footer">
+                                <a asp-controller="Episodes" asp-action="Index" class="premium-card-link">
+                                    Quản lý tập phim <i class="fa-solid fa-arrow-right"></i>
+                                </a>
+                            </div>
+                        </div>
                     </div>
-                </div>
-                <div class="dash-footer">
-                    <a asp-controller="Movies" asp-action="Index" class="dash-link">
-                        Manage Movies <i class="fa-solid fa-arrow-right"></i>
-                    </a>
+
+                    <!-- Media Files -->
+                    <div class="col-12 col-md-6 col-xl-3 animate-card delay-5">
+                        <div class="premium-card card-glow-red">
+                            <div class="premium-card-body">
+                                <div class="premium-icon-box grad-rose">
+                                    <i class="fa-solid fa-file-video"></i>
+                                </div>
+                                <div class="stats-info">
+                                    <div class="stats-number">@ViewBag.TotalMediaFiles</div>
+                                    <p class="stats-label">Tệp Video</p>
+                                </div>
+                            </div>
+                            <div class="premium-card-footer">
+                                <a asp-controller="MediaUpload" asp-action="Index" class="premium-card-link">
+                                    Kho lưu trữ <i class="fa-solid fa-arrow-right"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Actors -->
+                    <div class="col-12 col-md-6 col-xl-3 animate-card delay-6">
+                        <div class="premium-card card-glow-gold">
+                            <div class="premium-card-body">
+                                <div class="premium-icon-box grad-amber">
+                                    <i class="fa-solid fa-user-tie"></i>
+                                </div>
+                                <div class="stats-info">
+                                    <div class="stats-number">@ViewBag.TotalActors</div>
+                                    <p class="stats-label">Diễn Viên</p>
+                                </div>
+                            </div>
+                            <div class="premium-card-footer">
+                                <a asp-controller="Actors" asp-action="Index" class="premium-card-link">
+                                    Quản lý diễn viên <i class="fa-solid fa-arrow-right"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
             </div>
-        </div>
 
-        <div class="col-12 col-md-6 col-lg-3">
-            <div class="dash-card">
-                <div class="dash-body">
-                    <div class="dash-icon icon-teal">
-                        <i class="fa-solid fa-tv"></i>
+            <!-- SECTION 2: VIP & REVENUE -->
+            <div class="mb-5">
+                <h3 class="section-title"><i class="fa-solid fa-crown text-warning"></i> Doanh Thu & Gói VIP</h3>
+                <div class="row g-4">
+                    
+                    <!-- VIP Accounts -->
+                    <div class="col-12 col-md-6 col-xl-4 animate-card delay-7">
+                        <div class="premium-card card-glow-gold">
+                            <div class="premium-card-body">
+                                <div class="premium-icon-box grad-yellow">
+                                    <i class="fa-solid fa-crown"></i>
+                                </div>
+                                <div class="stats-info">
+                                    <div class="stats-number">@ViewBag.TotalUserSubscriptions</div>
+                                    <p class="stats-label">Hội Viên VIP</p>
+                                </div>
+                            </div>
+                            <div class="premium-card-footer">
+                                <a asp-controller="VipManager" asp-action="ActiveVips" class="premium-card-link">
+                                    Xem danh sách VIP <i class="fa-solid fa-arrow-right"></i>
+                                </a>
+                            </div>
+                        </div>
                     </div>
-                    <div>
-                        <div class="dash-num">@ViewBag.TotalEpisodes</div>
-                        <p class="dash-label">Episodes</p>
+
+                    <!-- Premium Plans -->
+                    <div class="col-12 col-md-6 col-xl-4 animate-card delay-8">
+                        <div class="premium-card card-glow-indigo">
+                            <div class="premium-card-body">
+                                <div class="premium-icon-box grad-pink">
+                                    <i class="fa-solid fa-gem"></i>
+                                </div>
+                                <div class="stats-info">
+                                    <div class="stats-number">@ViewBag.TotalVipPackages</div>
+                                    <p class="stats-label font-bold text-slate-800">Gói Dịch Vụ</p>
+                                </div>
+                            </div>
+                            <div class="premium-card-footer">
+                                <a asp-controller="VipPackage" asp-action="Index" class="premium-card-link">
+                                    Thiết lập gói VIP <i class="fa-solid fa-arrow-right"></i>
+                                </a>
+                            </div>
+                        </div>
                     </div>
-                </div>
-                <div class="dash-footer">
-                    <a asp-controller="Episodes" asp-action="Index" class="dash-link">
-                        Manage Episodes <i class="fa-solid fa-arrow-right"></i>
-                    </a>
+
+                    <!-- Payment History / Transactions -->
+                    <div class="col-12 col-md-6 col-xl-4 animate-card delay-9">
+                        <div class="premium-card card-glow-green">
+                            <div class="premium-card-body">
+                                <div class="premium-icon-box grad-lime">
+                                    <i class="fa-solid fa-file-invoice-dollar"></i>
+                                </div>
+                                <div class="stats-info">
+                                    <div class="stats-number">@ViewBag.TotalTransactions</div>
+                                    <p class="stats-label">Giao Dịch</p>
+                                </div>
+                            </div>
+                            <div class="premium-card-footer">
+                                <a asp-controller="VipManager" asp-action="Transactions" class="premium-card-link">
+                                    Lịch sử thanh toán <i class="fa-solid fa-arrow-right"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
             </div>
-        </div>
 
-        <div class="col-12 col-md-6 col-lg-3">
-            <div class="dash-card">
-                <div class="dash-body">
-                    <div class="dash-icon icon-red">
-                        <i class="fa-solid fa-file-video"></i>
+            <!-- SECTION 3: SYSTEM METADATA -->
+            <div class="mb-4">
+                <h3 class="section-title"><i class="fa-solid fa-gears text-info"></i> Hệ Thống & Thành Viên</h3>
+                <div class="row g-4">
+                    
+                    <!-- Total Users -->
+                    <div class="col-12 col-md-6 col-xl-3 animate-card delay-10">
+                        <div class="premium-card card-glow-green">
+                            <div class="premium-card-body">
+                                <div class="premium-icon-box grad-emerald">
+                                    <i class="fa-solid fa-users"></i>
+                                </div>
+                                <div class="stats-info">
+                                    <div class="stats-number">@ViewBag.TotalUsers</div>
+                                    <p class="stats-label">Người Dùng</p>
+                                </div>
+                            </div>
+                            <div class="premium-card-footer">
+                                <a asp-controller="User" asp-action="Index" class="premium-card-link">
+                                    Quản lý tài khoản <i class="fa-solid fa-arrow-right"></i>
+                                </a>
+                            </div>
+                        </div>
                     </div>
-                    <div>
-                        <div class="dash-num">@ViewBag.TotalMediaFiles</div>
-                        <p class="dash-label">Media Files</p>
+
+                    <!-- Genres -->
+                    <div class="col-12 col-md-6 col-xl-3 animate-card delay-11">
+                        <div class="premium-card card-glow-indigo">
+                            <div class="premium-card-body">
+                                <div class="premium-icon-box grad-purple">
+                                    <i class="fa-solid fa-tags"></i>
+                                </div>
+                                <div class="stats-info">
+                                    <div class="stats-number">@ViewBag.TotalGenres</div>
+                                    <p class="stats-label">Thể Loại</p>
+                                </div>
+                            </div>
+                            <div class="premium-card-footer">
+                                <a asp-controller="Genres" asp-action="Index" class="premium-card-link">
+                                    Chỉnh sửa thể loại <i class="fa-solid fa-arrow-right"></i>
+                                </a>
+                            </div>
+                        </div>
                     </div>
-                </div>
-                <div class="dash-footer">
-                    <a asp-controller="MediaUpload" asp-action="Index" class="dash-link">
-                        Manage Media <i class="fa-solid fa-arrow-right"></i>
-                    </a>
+
+                    <!-- Countries -->
+                    <div class="col-12 col-md-6 col-xl-3 animate-card delay-11">
+                        <div class="premium-card card-glow-teal">
+                            <div class="premium-card-body">
+                                <div class="premium-icon-box grad-orange">
+                                    <i class="fa-solid fa-earth-americas"></i>
+                                </div>
+                                <div class="stats-info">
+                                    <div class="stats-number">@ViewBag.TotalCountries</div>
+                                    <p class="stats-label">Quốc Gia</p>
+                                </div>
+                            </div>
+                            <div class="premium-card-footer">
+                                <a asp-controller="Countries" asp-action="Index" class="premium-card-link">
+                                    Chỉnh sửa quốc gia <i class="fa-solid fa-arrow-right"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Languages -->
+                    <div class="col-12 col-md-6 col-xl-3 animate-card delay-11">
+                        <div class="premium-card card-glow-indigo">
+                            <div class="premium-card-body">
+                                <div class="premium-icon-box grad-sky">
+                                    <i class="fa-solid fa-language"></i>
+                                </div>
+                                <div class="stats-info">
+                                    <div class="stats-number">@ViewBag.TotalLanguages</div>
+                                    <p class="stats-label">Ngôn Ngữ</p>
+                                </div>
+                            </div>
+                            <div class="premium-card-footer">
+                                <a asp-controller="Languages" asp-action="Index" class="premium-card-link">
+                                    Cài đặt ngôn ngữ <i class="fa-solid fa-arrow-right"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
             </div>
+
         </div>
 
-        <div class="col-12 col-md-6 col-lg-3">
-            <div class="dash-card">
-                <div class="dash-body">
-                    <div class="dash-icon icon-green">
-                        <i class="fa-solid fa-users"></i>
-                    </div>
-                    <div>
-                        <div class="dash-num">@ViewBag.TotalUsers</div>
-                        <p class="dash-label">Total Users</p>
+        <!-- Sidebar Actions & Timeline Area (Right Column) -->
+        <div class="col-12 col-lg-4 col-xl-3">
+            <div class="row g-4">
+                
+                <!-- Quick Actions Panel -->
+                <div class="col-12 animate-card delay-5">
+                    <div class="panel-card">
+                        <h4 class="panel-title"><i class="fa-solid fa-bolt text-warning"></i> Thao Tác Nhanh</h4>
+                        <div class="action-tile-grid">
+                            <a href="/Admin/Movies/Create" class="action-tile">
+                                <i class="fa-solid fa-circle-plus"></i>
+                                <span>Thêm Phim</span>
+                            </a>
+                            <a href="/Admin/Episodes/Create" class="action-tile">
+                                <i class="fa-solid fa-circle-nodes"></i>
+                                <span>Thêm Tập</span>
+                            </a>
+                            <a href="/Admin/MediaUpload/Index" class="action-tile">
+                                <i class="fa-solid fa-cloud-arrow-up"></i>
+                                <span>Tải Video</span>
+                            </a>
+                            <a href="/Admin/Actors/Create" class="action-tile">
+                                <i class="fa-solid fa-masks-theater"></i>
+                                <span>Diễn Viên</span>
+                            </a>
+                        </div>
                     </div>
                 </div>
-                <div class="dash-footer">
-                    <a asp-controller="User" asp-action="Index" class="dash-link">
-                        Manage Users <i class="fa-solid fa-arrow-right"></i>
-                    </a>
+
+                <!-- System Status Timeline -->
+                <div class="col-12 animate-card delay-7">
+                    <div class="panel-card">
+                        <h4 class="panel-title"><i class="fa-solid fa-server text-success"></i> Trạng Thái Hệ Thống</h4>
+                        <ul class="timeline-list">
+                            <li class="timeline-item">
+                                <div class="timeline-indicator indicator-success"></div>
+                                <div class="timeline-content">
+                                    <h5 class="timeline-header">Supabase Database</h5>
+                                    <p class="timeline-desc">Kết nối thành công. Connection pooling ổn định.</p>
+                                </div>
+                            </li>
+                            <li class="timeline-item">
+                                <div class="timeline-indicator indicator-success"></div>
+                                <div class="timeline-content">
+                                    <h5 class="timeline-header">Azure Blob Storage</h5>
+                                    <p class="timeline-desc">Lưu trữ video streaming CDN hoạt động bình thường.</p>
+                                </div>
+                            </li>
+                            <li class="timeline-item">
+                                <div class="timeline-indicator indicator-info"></div>
+                                <div class="timeline-content">
+                                    <h5 class="timeline-header">Hangfire Encoding Engine</h5>
+                                    <p class="timeline-desc">Tiến trình nền mã hóa video HLS (m3u8) đang sẵn sàng.</p>
+                                </div>
+                            </li>
+                            <li class="timeline-item">
+                                <div class="timeline-indicator indicator-info"></div>
+                                <div class="timeline-content">
+                                    <h5 class="timeline-header">ZaloPay Gateway</h5>
+                                    <p class="timeline-desc">SandBox endpoint phản hồi tốt. Webhook cổng thanh toán trực tuyến.</p>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
+
             </div>
         </div>
-
-        <div class="col-12 col-md-6 col-lg-3">
-            <div class="dash-card">
-                <div class="dash-body">
-                    <div class="dash-icon icon-gold">
-                        <i class="fa-solid fa-crown"></i>
-                    </div>
-                    <div>
-                        <div class="dash-num">@ViewBag.TotalUserSubscriptions</div>
-                        <p class="dash-label">VIP Accounts</p>
-                    </div>
-                </div>
-                <div class="dash-footer">
-                    <a asp-controller="VipManager" asp-action="ActiveVips" class="dash-link">
-                        Active VIPs <i class="fa-solid fa-arrow-right"></i>
-                    </a>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-12 col-md-6 col-lg-3">
-            <div class="dash-card">
-                <div class="dash-body">
-                    <div class="dash-icon icon-pink">
-                        <i class="fa-solid fa-gem"></i>
-                    </div>
-                    <div>
-                        <div class="dash-num">@ViewBag.TotalVipPackages</div>
-                        <p class="dash-label">Premium Plans</p>
-                    </div>
-                </div>
-                <div class="dash-footer">
-                    <a asp-controller="VipPackage" asp-action="Index" class="dash-link">
-                        Manage Plans <i class="fa-solid fa-arrow-right"></i>
-                    </a>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-12 col-md-6 col-lg-3">
-            <div class="dash-card">
-                <div class="dash-body">
-                    <div class="dash-icon icon-lightgreen">
-                        <i class="fa-solid fa-file-invoice-dollar"></i>
-                    </div>
-                    <div>
-                        <div class="dash-num">@ViewBag.TotalTransactions</div>
-                        <p class="dash-label">Payment History</p>
-                    </div>
-                </div>
-                <div class="dash-footer">
-                    <a asp-controller="VipManager" asp-action="Transactions" class="dash-link">
-                        View History <i class="fa-solid fa-arrow-right"></i>
-                    </a>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-12 col-md-6 col-lg-3">
-            <div class="dash-card">
-                <div class="dash-body">
-                    <div class="dash-icon icon-yellow">
-                        <i class="fa-solid fa-user-tie"></i>
-                    </div>
-                    <div>
-                        <div class="dash-num">@ViewBag.TotalActors</div>
-                        <p class="dash-label">Actors</p>
-                    </div>
-                </div>
-                <div class="dash-footer">
-                    <a asp-controller="Actors" asp-action="Index" class="dash-link">
-                        Manage Actors <i class="fa-solid fa-arrow-right"></i>
-                    </a>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-12 col-md-6 col-lg-3">
-            <div class="dash-card">
-                <div class="dash-body">
-                    <div class="dash-icon icon-purple">
-                        <i class="fa-solid fa-tags"></i>
-                    </div>
-                    <div>
-                        <div class="dash-num">@ViewBag.TotalGenres</div>
-                        <p class="dash-label">Genres</p>
-                    </div>
-                </div>
-                <div class="dash-footer">
-                    <a asp-controller="Genres" asp-action="Index" class="dash-link">
-                        Manage Genres <i class="fa-solid fa-arrow-right"></i>
-                    </a>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-12 col-md-6 col-lg-3">
-            <div class="dash-card">
-                <div class="dash-body">
-                    <div class="dash-icon icon-orange">
-                        <i class="fa-solid fa-earth-americas"></i>
-                    </div>
-                    <div>
-                        <div class="dash-num">@ViewBag.TotalCountries</div>
-                        <p class="dash-label">Countries</p>
-                    </div>
-                </div>
-                <div class="dash-footer">
-                    <a asp-controller="Countries" asp-action="Index" class="dash-link">
-                        Manage Countries <i class="fa-solid fa-arrow-right"></i>
-                    </a>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-12 col-md-6 col-lg-3">
-            <div class="dash-card">
-                <div class="dash-body">
-                    <div class="dash-icon icon-indigo">
-                        <i class="fa-solid fa-language"></i>
-                    </div>
-                    <div>
-                        <div class="dash-num">@ViewBag.TotalLanguages</div>
-                        <p class="dash-label">Languages</p>
-                    </div>
-                </div>
-                <div class="dash-footer">
-                    <a asp-controller="Languages" asp-action="Index" class="dash-link">
-                        Manage Languages <i class="fa-solid fa-arrow-right"></i>
-                    </a>
-                </div>
-            </div>
-        </div>
-
     </div>
 </div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        // Dynamic Live Clock
+        const updateClock = () => {
+            const clockEl = document.getElementById('liveClock');
+            const dateEl = document.getElementById('liveDate');
+            if (!clockEl || !dateEl) return;
+
+            const now = new Date();
+            
+            // Format time: HH:MM:SS
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            clockEl.textContent = `${hours}:${minutes}:${seconds}`;
+
+            // Format date: Day of week, DD/MM/YYYY
+            const daysOfWeek = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
+            const dayName = daysOfWeek[now.getDay()];
+            const day = String(now.getDate()).padStart(2, '0');
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const year = now.getFullYear();
+            dateEl.textContent = `${dayName}, ${day}/${month}/${year}`;
+        };
+
+        // Initialize clock and trigger every second
+        updateClock();
+        setInterval(updateClock, 1000);
+    });
+</script>

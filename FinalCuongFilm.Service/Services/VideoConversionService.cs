@@ -24,9 +24,17 @@ namespace FinalCuongFilm.Service.Services
 		public async Task<string> ConvertToHlsAsync(string sourceFileUrl, string slug, int episodeNumber, CancellationToken cancellationToken)
 		{
 			_logger.LogInformation($"[START] Processing HLS for: {slug} - Ep: {episodeNumber}");
+			if (!Uri.TryCreate(sourceFileUrl, UriKind.Absolute, out var sourceUri) ||
+				(sourceUri.Scheme != Uri.UriSchemeHttps && sourceUri.Scheme != Uri.UriSchemeHttp))
+			{
+				throw new InvalidOperationException("The uploaded video URL is invalid. Check SUPABASE_URL and make sure it starts with https://");
+			}
 
-			var uri = new Uri(sourceFileUrl);
-			string fileName = Path.GetFileName(uri.LocalPath);
+			string fileName = Path.GetFileName(sourceUri.LocalPath);
+			if (string.IsNullOrWhiteSpace(fileName))
+			{
+				fileName = $"{slug}_ep{episodeNumber}_{Guid.NewGuid():N}.mp4";
+			}
 
 			string localInputPath = Path.Combine(_tempPath, fileName);
 			string outputFolderName = $"{slug}_ep{episodeNumber}_hls";
@@ -39,7 +47,7 @@ namespace FinalCuongFilm.Service.Services
 				_logger.LogInformation($"[DOWNLOAD] Downloading the original MP4 file from storage....");
 				using (var httpClient = new HttpClient())
 				{
-					using (var response = await httpClient.GetAsync(sourceFileUrl, HttpCompletionOption.ResponseHeadersRead, cancellationToken))
+					using (var response = await httpClient.GetAsync(sourceUri, HttpCompletionOption.ResponseHeadersRead, cancellationToken))
 					{
 						response.EnsureSuccessStatusCode();
 						using (var fileStream = new FileStream(localInputPath, FileMode.Create, FileAccess.Write, FileShare.None))

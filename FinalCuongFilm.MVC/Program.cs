@@ -1,4 +1,4 @@
-﻿using FinalCuongFilm.ApplicationCore.Entities.Identity;
+using FinalCuongFilm.ApplicationCore.Entities.Identity;
 using FinalCuongFilm.DataLayer;
 using FinalCuongFilm.MVC.Data;
 using FinalCuongFilm.MVC.Filters;
@@ -7,22 +7,21 @@ using FinalCuongFilm.Service.Mappings;
 using FinalCuongFilm.Service.Services;
 using Hangfire;
 using Hangfire.PostgreSql;
+using Microsoft.AspNetCore.ResponseCompression;
+using System.IO.Compression;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Lấy connection string trước khi dùng
-var connectionString = builder.Configuration.GetConnectionString("CuongFilmConnection");
-if (string.IsNullOrEmpty(connectionString))
-{
-	throw new InvalidOperationException("CRITICAL ERROR: Không tìm thấy chuỗi kết nối Database! Hãy kiểm tra lại biến ConnectionStrings__CuongFilmConnection trên Railway.");
-}
+// Resolve the PostgreSQL connection string before registering services
+var connectionString = GetRequiredPostgresConnectionString(builder.Configuration);
 
-// ✅ FFmpeg path: ưu tiên ENV, fallback theo OS
+// FFmpeg path: prefer ENV, then fallback by OS
 var ffmpegPathFromEnv = builder.Configuration["FFMPEG_PATH"];
 if (!string.IsNullOrWhiteSpace(ffmpegPathFromEnv) && Directory.Exists(ffmpegPathFromEnv))
 {
@@ -37,7 +36,7 @@ else if (OperatingSystem.IsWindows())
 	}
 	else
 	{
-		// Không set path -> sẽ lỗi rõ ràng nếu thiếu ffmpeg trên Windows
+		// Leave unset so missing FFmpeg fails clearly on Windows
 	}
 }
 else
@@ -111,6 +110,26 @@ builder.Services.AddScoped<IStorageService, SupabaseStorageService>();
 builder.Services.AddScoped<IVideoConversionService, VideoConversionService>();
 builder.Services.AddScoped<IVipService, VipService>();
 
+builder.Services.AddResponseCompression(options =>
+{
+	options.EnableForHttps = true;
+	options.Providers.Add<BrotliCompressionProvider>();
+	options.Providers.Add<GzipCompressionProvider>();
+	options.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(new[]
+	{
+		"application/json",
+		"application/manifest+json",
+		"image/svg+xml"
+	});
+});
+builder.Services.Configure<BrotliCompressionProviderOptions>(options =>
+{
+	options.Level = CompressionLevel.Fastest;
+});
+builder.Services.Configure<GzipCompressionProviderOptions>(options =>
+{
+	options.Level = CompressionLevel.Fastest;
+});
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 
@@ -130,8 +149,38 @@ if (!app.Environment.IsDevelopment())
 	app.UseHsts();
 }
 
+app.Use(async (context, next) =>
+{
+	context.Response.OnStarting(() =>
+	{
+		var headers = context.Response.Headers;
+		headers.TryAdd("X-Content-Type-Options", "nosniff");
+		headers.TryAdd("Referrer-Policy", "strict-origin-when-cross-origin");
+		headers.TryAdd("X-Frame-Options", "SAMEORIGIN");
+		headers.TryAdd("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
+		return Task.CompletedTask;
+	});
+
+	await next();
+});
 app.UseHttpsRedirection();
-app.UseStaticFiles();
+app.UseResponseCompression();
+app.UseStaticFiles(new StaticFileOptions
+{
+	OnPrepareResponse = ctx =>
+	{
+		var requestPath = ctx.Context.Request.Path.Value ?? string.Empty;
+		var isDocumentLike = requestPath.EndsWith(".xml", StringComparison.OrdinalIgnoreCase)
+			|| requestPath.EndsWith(".txt", StringComparison.OrdinalIgnoreCase)
+			|| requestPath.EndsWith(".json", StringComparison.OrdinalIgnoreCase);
+
+		ctx.Context.Response.Headers.CacheControl = app.Environment.IsDevelopment()
+			? "no-cache"
+			: isDocumentLike
+				? "public,max-age=3600"
+				: "public,max-age=31536000,immutable";
+	}
+});
 app.UseRouting();
 
 app.UseHangfireDashboard("/hangfire", new DashboardOptions
@@ -142,6 +191,7 @@ app.UseSession();
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.MapGet("/health", () => Results.Ok(new { status = "healthy" }));
 app.MapRazorPages();
 
 app.MapControllerRoute(
@@ -178,7 +228,75 @@ using (var scope = app.Services.CreateScope())
 	catch (Exception ex)
 	{
 		var logger = services.GetRequiredService<ILogger<Program>>();
-		logger.LogError(ex, "Có lỗi xảy ra trong quá trình Migrate hoặc Seed dữ liệu.");
+		logger.LogError(ex, "Database migration or seed failed.");
+		if (!app.Environment.IsDevelopment())
+		{
+			throw;
+		}
 	}
 }
 app.Run();
+static string GetRequiredPostgresConnectionString(IConfiguration configuration)
+{
+	var candidates = new[]
+	{
+		configuration.GetConnectionString("CuongFilmConnection"),
+		configuration["DATABASE_URL"],
+		configuration["POSTGRES_URL"],
+		configuration["POSTGRES_DATABASE_URL"]
+	};
+
+	var connectionString = candidates.FirstOrDefault(value => !string.IsNullOrWhiteSpace(value));
+	if (string.IsNullOrWhiteSpace(connectionString))
+	{
+		throw new InvalidOperationException(
+			"CRITICAL ERROR: Missing PostgreSQL connection string. On Railway, configure DATABASE_URL, POSTGRES_URL, or ConnectionStrings__CuongFilmConnection.");
+	}
+
+	return NormalizePostgresConnectionString(connectionString);
+}
+
+static string NormalizePostgresConnectionString(string connectionString)
+{
+	connectionString = connectionString.Trim();
+
+	if (!connectionString.StartsWith("postgres://", StringComparison.OrdinalIgnoreCase)
+		&& !connectionString.StartsWith("postgresql://", StringComparison.OrdinalIgnoreCase))
+	{
+		return connectionString;
+	}
+
+	var uri = new Uri(connectionString);
+	var userInfoParts = uri.UserInfo.Split(':', 2);
+	var username = userInfoParts.Length > 0 ? Uri.UnescapeDataString(userInfoParts[0]) : string.Empty;
+	var password = userInfoParts.Length > 1 ? Uri.UnescapeDataString(userInfoParts[1]) : string.Empty;
+
+	var builder = new NpgsqlConnectionStringBuilder
+	{
+		Host = uri.Host,
+		Port = uri.Port > 0 ? uri.Port : 5432,
+		Database = Uri.UnescapeDataString(uri.AbsolutePath.TrimStart('/')),
+		Username = username,
+		Password = password
+	};
+
+	var query = uri.Query.TrimStart('?').Split('&', StringSplitOptions.RemoveEmptyEntries);
+	foreach (var item in query)
+	{
+		var pair = item.Split('=', 2);
+		if (pair.Length != 2)
+		{
+			continue;
+		}
+
+		var key = Uri.UnescapeDataString(pair[0]);
+		var value = Uri.UnescapeDataString(pair[1]);
+		if (key.Equals("sslmode", StringComparison.OrdinalIgnoreCase)
+			&& Enum.TryParse<SslMode>(value, ignoreCase: true, out var sslMode))
+		{
+			builder.SslMode = sslMode;
+		}
+	}
+
+	return builder.ConnectionString;
+}

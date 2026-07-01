@@ -1,4 +1,4 @@
-﻿@page
+@page
 @model RegisterModel
 @{
     ViewData["Title"] = "Register";
@@ -52,15 +52,19 @@
     }
 
     .netflix-brand {
-        font-size: 2.5rem;
-        font-weight: bold;
-        color: var(--netflix-red);
+        font-size: 1.8rem;
+        font-weight: 800;
+        color: var(--netflix-red) !important;
         text-decoration: none;
         text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-    }
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+     }
 
         .netflix-brand:hover {
-            color: var(--netflix-red);
+            color: var(--netflix-red) !important;
+            text-decoration: none;
         }
 
     /* ===== CONTENT ===== */
@@ -200,8 +204,8 @@
 <div class="netflix-register-container">
     <!-- Header -->
     <div class="netflix-header">
-        <a class="navbar-brand" href="/">
-            <img src="~/img/LogoCfv6.png" alt="CuongFilm Logo" style="height: 30px; width: auto; margin-right: 8px; vertical-align: middle;" /> CuongFilm
+        <a class="netflix-brand" href="/">
+            <img src="~/img/LogoCfv6.png" alt="CuongFilm Logo" style="height: 32px; width: auto;" /> CuongFilm
         </a>
     </div>
 

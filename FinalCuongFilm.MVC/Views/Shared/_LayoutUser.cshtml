@@ -12,10 +12,29 @@
     bool isHomePage = (currentController == "Home" && currentAction == "Index");
 }
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#07080b" />
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin />
+
+    <title>@ViewData["Title"] - CuongFilm</title>
+
+    <meta name="description" content="@(ViewData["MetaDescription"] ?? "CuongFilm - High-quality online movie streaming channel, with new movies updated daily.")" />
+
+    <meta property="og:site_name" content="CuongFilm" />
+    <meta property="og:type" content="@(ViewData["OgType"] ?? "website")" />
+    <meta property="og:title" content="@ViewData["Title"] - CuongFilm" />
+    <meta property="og:description" content="@(ViewData["MetaDescription"] ?? "CuongFilm - High-quality online movie streaming channel, with new movies updated daily.")" />
+    <meta property="og:image" content="@(ViewData["OgImage"] ?? "https://www.cuongfilm.site/images/default-share-banner.jpg")" />
+
+    @if (ViewData["CanonicalUrl"] != null)
+    {
+        <meta property="og:url" content="@ViewData["CanonicalUrl"]" />
+        <link rel="canonical" href="@ViewData["CanonicalUrl"]" />
+    }
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin />
 
     <title>@ViewData["Title"] - CuongFilm</title>
 
@@ -33,18 +52,10 @@
         <link rel="canonical" href="@ViewData["CanonicalUrl"]" />
     }
     <link rel="icon" type="image/png" href="~/img/LogoCfv6.png" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" asp-append-version="true" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-
-    @if (isHomePage)
-    {
-        <style id="anti-flash-style">
-            #reun-overlay {
-                display: none !important;
-            }
-        </style>
-    }
+    <link rel="stylesheet" href="~/css/cuongfilm-taste.css" asp-append-version="true" />
 
     <style>
         /* CSS Reset */
@@ -63,10 +74,6 @@
             font-family: 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif;
             padding-top: 80px;
         }
-
-            body.intro-active {
-                overflow: hidden;
-            }
 
         .wrapper {
             flex: 1 0 auto;
@@ -130,6 +137,7 @@
                 padding: 0.5rem 1rem !important;
                 transition: all 0.2s ease;
                 position: relative;
+                white-space: nowrap !important;
             }
 
                 .netflix-nav .nav-link:hover, .netflix-nav .nav-link.active {
@@ -435,530 +443,99 @@
         }
 
         /* ======================================================================== */
-        /* INTRO OVERLAY STYLES (Loaded safely as standard CSS)                     */
+        /* DISCLAIMER MODAL STYLES                                                 */
         /* ======================================================================== */
-        #reun-overlay {
+        body.cf-disclaimer-open {
+            overflow: hidden;
+        }
+        .cf-modal-overlay {
             position: fixed;
             inset: 0;
-            background: radial-gradient(circle at center, #700000 0%, #0a0000 100%);
-            z-index: 9999999;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(8px);
+            z-index: 99999;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: opacity 0.5s ease-out;
-            perspective: 1200px;
-            overflow: hidden;
-            pointer-events: none;
-        }
-
-            #reun-overlay.reun-is-playing {
-                pointer-events: all;
-                animation: reunScreenShake 2.5s forwards;
-            }
-
-        .reun-scene {
-            position: relative;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .reun-bg-rays {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 200vw;
-            height: 200vw;
-            background: repeating-conic-gradient(from 0deg, transparent 0deg 10deg, rgba(255, 0, 0, 0.15) 10deg 20deg);
-            transform: translate(-50%, -50%);
-            animation: reunRotateRays 20s linear infinite;
-            z-index: 1;
-        }
-
-        .reun-flash {
-            position: absolute;
-            inset: 0;
-            background: #ffffff;
             opacity: 0;
-            z-index: 25;
+            visibility: hidden;
+            transition: opacity 0.4s ease, visibility 0.4s ease;
         }
-
-        #reun-overlay.reun-is-playing .reun-flash {
-            animation: reunImpactFlash 2.5s forwards;
+        .cf-modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
         }
-
-        .reun-title-wrapper {
+        .cf-modal-content {
+            background: #111111;
+            border: 1px solid rgba(229, 9, 20, 0.3);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8), 0 0 30px rgba(229, 9, 20, 0.15);
+            border-radius: 12px;
+            width: 90%;
+            max-width: 500px;
+            padding: 30px;
             text-align: center;
-            z-index: 5;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            transform: scale(0.9);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-
-        .reun-title {
-            font-size: 6rem;
-            font-weight: 900;
-            color: #FFD700;
-            text-transform: uppercase;
-            opacity: 0;
-            animation: reunTextPopUp 2.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-            text-shadow: 0 0 30px rgba(255, 215, 0, 0.6), 0 5px 20px rgba(0,0,0,0.9);
-            line-height: 1;
+        .cf-modal-overlay.active .cf-modal-content {
+            transform: scale(1);
         }
-
-        .reun-subtitle {
+        .cf-modal-icon {
             font-size: 2.5rem;
-            font-weight: 700;
+            color: #e50914;
+            margin-bottom: 15px;
+        }
+        .cf-modal-header h2 {
+            font-size: 1.5rem;
+            font-weight: 800;
             color: #ffffff;
-            opacity: 0;
-            animation: reunSubtitlePop 2.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards 0.2s;
-            text-shadow: 0 0 15px rgba(255,255,255,0.4), 0 5px 15px rgba(0,0,0,0.9);
+            margin-bottom: 20px;
+            letter-spacing: 0.5px;
+        }
+        .cf-modal-body {
+            max-height: min(52vh, 420px);
+            overflow-y: auto;
+            padding-right: 4px;
         }
 
-        .reun-gate {
-            position: absolute;
-            bottom: 20%;
-            width: 400px;
-            height: 200px;
-            display: flex;
-            justify-content: center;
-            z-index: 10;
+        .cf-modal-body p {
+            font-size: 0.95rem;
+            color: #cccccc;
+            line-height: 1.6;
+            margin-bottom: 15px;
         }
-
-        .reun-door {
-            width: 50%;
-            height: 100%;
-            border: 6px solid #050505;
-            border-bottom: 0;
-            background: linear-gradient(to bottom, transparent 20%, #050505 20%, #050505 25%, transparent 25%, transparent 75%, #050505 75%, #050505 80%, transparent 80%), repeating-linear-gradient(90deg, transparent, transparent 20px, #050505 20px, #050505 26px);
-            position: relative;
-            box-shadow: inset 0 0 20px rgba(0,0,0,0.9);
+        .cf-modal-body strong {
+            color: #ffffff;
         }
-
-            .reun-door::before {
-                content: '';
-                position: absolute;
-                top: -20px;
-                left: 0;
-                width: 100%;
-                height: 20px;
-                background: repeating-linear-gradient(90deg, transparent, transparent 21px, #050505 21px, #050505 25px);
-            }
-
-            .reun-door::after {
-                content: '';
-                position: absolute;
-                top: 50%;
-                width: 60px;
-                height: 60px;
-                border: 6px solid #050505;
-                border-radius: 50%;
-                transform: translateY(-50%);
-            }
-
-        .reun-left-door {
-            transform-origin: left center;
+        .cf-modal-body .highlight-text {
+            color: #ffd700;
+            font-weight: 600;
+            background: rgba(255, 215, 0, 0.08);
+            padding: 8px 12px;
+            border-radius: 6px;
+            border-left: 3px solid #ffd700;
+            margin-bottom: 15px;
         }
-
-            .reun-left-door::after {
-                right: -3px;
-            }
-
-        .reun-right-door {
-            transform-origin: right center;
+        .btn-cf-primary {
+            background: #e50914;
+            color: #ffffff;
+            border: none;
+            padding: 12px 28px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            margin-top: 15px;
+            box-shadow: 0 4px 15px rgba(229, 9, 20, 0.4);
         }
-
-            .reun-right-door::after {
-                left: -3px;
-            }
-
-        .reun-tank {
-            position: absolute;
-            bottom: 20%;
-            left: -400px;
-            width: 300px;
-            height: 140px;
-            z-index: 20;
-            filter: drop-shadow(0 20px 15px rgba(0,0,0,0.8));
+        .btn-cf-primary:hover {
+            background: #ff1e27;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(229, 9, 20, 0.6);
         }
-
-        #reun-overlay.reun-is-playing .reun-tank {
-            animation: reunTankDrive 2.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
-        }
-
-        .reun-tank-body {
-            position: absolute;
-            bottom: 30px;
-            width: 240px;
-            height: 50px;
-            background: linear-gradient(135deg, #3a3a3a, #0a0a0a);
-            border-radius: 10px 40px 0 0;
-            border-top: 3px solid #555;
-            box-shadow: inset 0 10px 10px rgba(255,255,255,0.1);
-        }
-
-        .reun-tank-turret {
-            position: absolute;
-            bottom: 80px;
-            left: 50px;
-            width: 120px;
-            height: 50px;
-            background: radial-gradient(circle at top left, #444, #111);
-            border-radius: 50px 50px 0 0;
-            border-top: 2px solid #666;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .reun-tank-gun {
-            position: absolute;
-            bottom: 95px;
-            left: 150px;
-            width: 160px;
-            height: 14px;
-            background: linear-gradient(to bottom, #555, #111, #333);
-            border-radius: 0 8px 8px 0;
-            border-right: 4px solid #000;
-        }
-
-        .reun-tank-tracks {
-            position: absolute;
-            bottom: 0;
-            width: 260px;
-            height: 35px;
-            background: #0a0a0a;
-            border-radius: 20px;
-            border: 4px solid #222;
-            overflow: hidden;
-        }
-
-            .reun-tank-tracks::after {
-                content: '';
-                position: absolute;
-                inset: 0;
-                background: repeating-linear-gradient(90deg, #111, #111 10px, #444 10px, #444 20px);
-                opacity: 0.8;
-            }
-
-        #reun-overlay.reun-is-playing .reun-tank-tracks::after {
-            animation: reunTreadMove 0.5s linear infinite;
-        }
-
-        .reun-tank-flag {
-            position: absolute;
-            top: -55px;
-            left: 20px;
-            width: 65px;
-            height: 45px;
-            background: linear-gradient(to bottom, #da251d 50%, #00a0e9 50%);
-            border-left: 4px solid #999;
-            color: #fff200;
-            font-size: 2rem;
-            line-height: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transform-origin: left bottom;
-            animation: reunFlagWave 0.3s infinite alternate ease-in-out;
-            box-shadow: 3px 3px 10px rgba(0,0,0,0.6);
-        }
-
-            .reun-tank-flag::before {
-                content: '\2605';
-                position: absolute;
-                margin-top: 3px;
-            }
-
-        .reun-smoke {
-            position: absolute;
-            bottom: 40px;
-            left: -20px;
-            width: 30px;
-            height: 30px;
-            background: rgba(100, 100, 100, 0.6);
-            border-radius: 50%;
-            filter: blur(5px);
-            opacity: 0;
-        }
-
-        #reun-overlay.reun-is-playing .reun-smoke-1 {
-            animation: reunPuff 0.8s linear infinite;
-        }
-
-        #reun-overlay.reun-is-playing .reun-smoke-2 {
-            animation: reunPuff 0.8s linear infinite 0.4s;
-        }
-
-        .reun-debris {
-            position: absolute;
-            background: #050505;
-            opacity: 0;
-        }
-
-        #reun-overlay.reun-is-playing .reun-d1 {
-            width: 25px;
-            height: 10px;
-            top: 40%;
-            left: 45%;
-            animation: reunExplode1 1s ease-out 1.1s forwards;
-        }
-
-        #reun-overlay.reun-is-playing .reun-d2 {
-            width: 15px;
-            height: 20px;
-            top: 50%;
-            left: 55%;
-            animation: reunExplode2 1s ease-out 1.1s forwards;
-        }
-
-        #reun-overlay.reun-is-playing .reun-d3 {
-            width: 30px;
-            height: 8px;
-            top: 30%;
-            left: 50%;
-            animation: reunExplode3 1s ease-out 1.1s forwards;
-        }
-
-        #reun-overlay.reun-is-playing .reun-left-door {
-            animation: reunCrashLeft 2.5s forwards;
-        }
-
-        #reun-overlay.reun-is-playing .reun-right-door {
-            animation: reunCrashRight 2.5s forwards;
-        }
-
-        @@keyframes reunRotateRays {
-            0% {
-                transform: translate(-50%, -50%) rotate(0deg);
-            }
-
-            100% {
-                transform: translate(-50%, -50%) rotate(360deg);
-            }
-        }
-
-        @@keyframes reunImpactFlash {
-            0%, 43% {
-                opacity: 0;
-            }
-
-            44% {
-                opacity: 0.8;
-            }
-
-            46% {
-                opacity: 0;
-            }
-
-            100% {
-                opacity: 0;
-            }
-        }
-
-        @@keyframes reunTextPopUp {
-            0% {
-                opacity: 0;
-                letter-spacing: 25px;
-                transform: scale(0.8);
-            }
-
-            15% {
-                opacity: 1;
-                letter-spacing: 8px;
-                transform: scale(1.05);
-            }
-
-            20% {
-                transform: scale(1);
-            }
-
-            80% {
-                opacity: 1;
-                transform: scale(1.02);
-            }
-
-            100% {
-                opacity: 0;
-                transform: scale(1.1);
-            }
-        }
-
-        @@keyframes reunSubtitlePop {
-            0% {
-                opacity: 0;
-                letter-spacing: 30px;
-                transform: scale(0.8);
-            }
-
-            15% {
-                opacity: 1;
-                letter-spacing: 15px;
-                transform: scale(1);
-            }
-
-            80% {
-                opacity: 1;
-                transform: scale(1.02);
-            }
-
-            100% {
-                opacity: 0;
-                transform: scale(1.1);
-            }
-        }
-
-        @@keyframes reunTankDrive {
-            0% {
-                transform: translateX(0);
-            }
-
-            44% {
-                transform: translateX(calc(50vw + 20px));
-            }
-
-            47% {
-                transform: translateX(calc(50vw - 10px));
-            }
-
-            100% {
-                transform: translateX(calc(50vw + 400px));
-            }
-        }
-
-        @@keyframes reunTreadMove {
-            0% {
-                background-position: 0 0;
-            }
-
-            100% {
-                background-position: -20px 0;
-            }
-        }
-
-        @@keyframes reunPuff {
-            0% {
-                transform: translate(0, 0) scale(1);
-                opacity: 0.8;
-            }
-
-            100% {
-                transform: translate(-60px, -40px) scale(3);
-                opacity: 0;
-            }
-        }
-
-        @@keyframes reunCrashLeft {
-            0%, 43% {
-                transform: rotateY(0deg);
-                opacity: 1;
-            }
-
-            44% {
-                transform: rotateY(-80deg) translateZ(80px) rotateX(-20deg);
-                opacity: 0.9;
-            }
-
-            100% {
-                transform: rotateY(-120deg) translateZ(150px) rotateX(-30deg);
-                opacity: 0;
-            }
-        }
-
-        @@keyframes reunCrashRight {
-            0%, 43% {
-                transform: rotateY(0deg);
-                opacity: 1;
-            }
-
-            44% {
-                transform: rotateY(80deg) translateZ(80px) rotateX(-20deg);
-                opacity: 0.9;
-            }
-
-            100% {
-                transform: rotateY(120deg) translateZ(150px) rotateX(-30deg);
-                opacity: 0;
-            }
-        }
-
-        @@keyframes reunFlagWave {
-            0% {
-                transform: skewY(0deg) scaleY(1);
-            }
-
-            100% {
-                transform: skewY(-20deg) scaleY(0.9);
-            }
-        }
-
-        @@keyframes reunScreenShake {
-            0%, 43% {
-                transform: translate(0, 0);
-            }
-
-            44% {
-                transform: translate(-15px, 8px);
-            }
-
-            45% {
-                transform: translate(15px, -8px);
-            }
-
-            46% {
-                transform: translate(-10px, -5px);
-            }
-
-            47% {
-                transform: translate(10px, 5px);
-            }
-
-            48% {
-                transform: translate(0, 0);
-            }
-
-            100% {
-                transform: translate(0, 0);
-            }
-        }
-
-        @@keyframes reunExplode1 {
-            0% {
-                transform: translate(0,0) rotate(0deg);
-                opacity: 1;
-            }
-
-            100% {
-                transform: translate(-150px, -200px) rotate(500deg);
-                opacity: 0;
-            }
-        }
-
-        @@keyframes reunExplode2 {
-            0% {
-                transform: translate(0,0) rotate(0deg);
-                opacity: 1;
-            }
-
-            100% {
-                transform: translate(180px, -120px) rotate(-400deg);
-                opacity: 0;
-            }
-        }
-
-        @@keyframes reunExplode3 {
-            0% {
-                transform: translate(0,0) rotate(0deg);
-                opacity: 1;
-            }
-
-            100% {
-                transform: translate(80px, -250px) rotate(800deg);
-                opacity: 0;
-            }
+        .btn-cf-primary:active {
+            transform: translateY(0);
         }
 
         /* Responsive */
@@ -991,27 +568,6 @@
                 min-width: 300px;
                 columns: 2;
             }
-
-            .reun-title {
-                font-size: 3.5rem;
-                letter-spacing: 4px !important;
-            }
-
-            .reun-subtitle {
-                font-size: 1.5rem;
-                letter-spacing: 6px !important;
-            }
-
-            .reun-tank {
-                transform: scale(0.6);
-                bottom: 15%;
-                left: -250px;
-            }
-
-            .reun-gate {
-                transform: scale(0.6);
-                bottom: 15%;
-            }
         }
 
         @@media (max-width: 576px) {
@@ -1033,55 +589,31 @@
     @await RenderSectionAsync("Styles", required: false)
 </head>
 <body>
-
-    @if (isHomePage)
-    {
-        <script>
-            if (!sessionStorage.getItem('hasSeenIntro')) {
-                var antiFlash = document.getElementById('anti-flash-style');
-                if(antiFlash) antiFlash.remove();
-                document.body.classList.add('intro-active');
-            }
-        </script>
-
-        <div id="reun-overlay">
-            <div class="reun-scene">
-                <div class="reun-bg-rays"></div>
-                <div class="reun-flash"></div>
-
-                <div class="reun-title-wrapper">
-                    <div class="reun-title">APRIL 30, 1975</div>
-                    <div class="reun-subtitle">INDEPENDENCE PALACE</div>
-                </div>
-
-                <div class="reun-gate">
-                    <div class="reun-door reun-left-door"></div>
-                    <div class="reun-door reun-right-door"></div>
-                    <div class="reun-debris reun-d1"></div>
-                    <div class="reun-debris reun-d2"></div>
-                    <div class="reun-debris reun-d3"></div>
-                </div>
-
-                <div class="reun-tank">
-                    <div class="reun-smoke reun-smoke-1"></div>
-                    <div class="reun-smoke reun-smoke-2"></div>
-                    <div class="reun-tank-gun"></div>
-                    <div class="reun-tank-turret">
-                        <div class="reun-tank-flag"></div>
-                    </div>
-                    <div class="reun-tank-body"></div>
-                    <div class="reun-tank-tracks"></div>
-                </div>
+    <!-- Graduation project and payment sandbox disclaimer -->
+    <div id="disclaimer-modal" class="cf-modal-overlay active" role="dialog" aria-modal="true" aria-labelledby="disclaimer-title" aria-describedby="disclaimer-description">
+        <div class="cf-modal-content">
+            <div class="cf-modal-header">
+                <i class="fa-solid fa-scale-balanced cf-modal-icon" aria-hidden="true"></i>
+                <h2 id="disclaimer-title">Thông báo trước khi sử dụng website</h2>
+            </div>
+            <div id="disclaimer-description" class="cf-modal-body">
+                <p>Chào mừng bạn đến với <strong>CuongFilm</strong>. Website này được xây dựng nhằm phục vụ <strong>đồ án tốt nghiệp</strong>, mục đích học tập, nghiên cứu và trình bày kỹ thuật phát triển hệ thống web xem phim.</p>
+                <p class="highlight-text"><i class="fa-solid fa-circle-info" aria-hidden="true"></i> Website không hoạt động thương mại, không bán nội dung phim/video và không thu tiền thật từ người dùng.</p>
+                <p>Những video hoặc dữ liệu minh họa nếu xuất hiện trong hệ thống chỉ được dùng để kiểm thử chức năng như upload, phát video, phân quyền VIP, lịch sử xem và giao diện người dùng. Nhóm/cá nhân thực hiện cam kết không cố ý khai thác, phân phối hoặc vi phạm bản quyền video.</p>
+                <p>Chức năng thanh toán VIP chỉ là mô phỏng nghiệp vụ, được tích hợp qua <strong>ZaloPay Sandbox for Developer</strong>. Vì vậy các giao dịch trong website là giao dịch thử nghiệm, không phải tiền thật và không tạo giá trị mua bán thực tế.</p>
+                <p>Bằng cách tiếp tục, bạn xác nhận đã hiểu phạm vi sử dụng của website là đồ án học tập và đồng ý trải nghiệm hệ thống trong bối cảnh thử nghiệm.</p>
+            </div>
+            <div class="cf-modal-footer">
+                <button id="btn-accept-disclaimer" class="btn-cf-primary" type="button">Tôi đã hiểu và tiếp tục</button>
             </div>
         </div>
-    }
-
+    </div>
     <div class="wrapper">
         <nav class="navbar navbar-expand-lg netflix-nav" id="mainNav">
             <div class="container-fluid px-4">
                 <a class="navbar-brand d-flex align-items-center text-decoration-none" href="/">
 
-                    <img src="~/img/LogoCfv6.png" alt="CuongFilm Icon" style="height: 40px; width: auto; margin-right: 12px;" />
+                    <img src="~/img/LogoCfv6.png" alt="CuongFilm Icon" width="40" height="40" decoding="async" fetchpriority="high" style="height: 40px; width: 40px; margin-right: 12px; object-fit: contain;" />
 
                     <div class="d-flex flex-column justify-content-center">
 
@@ -1096,7 +628,7 @@
                     </div>
                 </a>
 
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain" style="background: rgba(255,255,255,0.1); border: none;">
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain" aria-label="Toggle navigation" style="background: rgba(255,255,255,0.1); border: none;">
                     <span class="navbar-toggler-icon"></span>
                 </button>
 
@@ -1202,7 +734,7 @@
                             {
                                 <div class="dropdown ms-3">
                                     <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" style="text-decoration: none;">
-                                        <img src="@avatarUrl" alt="User Avatar" class="user-avatar me-2" style="width: 35px; height: 35px; border-radius: 50%; object-fit: cover; border: 1px solid rgba(255,255,255,0.2);" />
+                                        <img src="@avatarUrl" alt="User Avatar" class="user-avatar me-2" width="35" height="35" loading="lazy" decoding="async" style="width: 35px; height: 35px; border-radius: 50%; object-fit: cover; border: 1px solid rgba(255,255,255,0.2);" />
 
                                         <span class="d-none d-lg-inline text-white me-2">@displayNavbarName</span>
 
@@ -1271,10 +803,10 @@
         <footer class="netflix-footer">
             <div class="footer-content">
                 <div class="social-links">
-                    <a href="#"><i class="fab fa-facebook"></i></a>
-                    <a href="#"><i class="fab fa-instagram"></i></a>
-                    <a href="#"><i class="fab fa-twitter"></i></a>
-                    <a href="#"><i class="fab fa-youtube"></i></a>
+                    <a href="#" aria-label="Facebook"><i class="fab fa-facebook" aria-hidden="true"></i></a>
+                    <a href="#" aria-label="Instagram"><i class="fab fa-instagram" aria-hidden="true"></i></a>
+                    <a href="#" aria-label="Twitter"><i class="fab fa-twitter" aria-hidden="true"></i></a>
+                    <a href="#" aria-label="YouTube"><i class="fab fa-youtube" aria-hidden="true"></i></a>
                 </div>
 
                 <div class="footer-grid">
@@ -1336,18 +868,28 @@
         </footer>
     </div>
 
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/lib/jquery/dist/jquery.min.js" asp-append-version="true"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js" asp-append-version="true"></script>
 
     <script>
-        window.addEventListener('scroll', function() {
+        (function () {
             const nav = document.getElementById('mainNav');
-            if (window.scrollY > 50) {
-                nav.classList.add('scrolled');
-            } else {
-                nav.classList.remove('scrolled');
-            }
-        });
+            if (!nav || !('IntersectionObserver' in window)) return;
+
+            const sentinel = document.createElement('div');
+            sentinel.setAttribute('aria-hidden', 'true');
+            sentinel.style.position = 'absolute';
+            sentinel.style.top = '0';
+            sentinel.style.left = '0';
+            sentinel.style.width = '1px';
+            sentinel.style.height = '1px';
+            document.body.prepend(sentinel);
+
+            const observer = new IntersectionObserver(entries => {
+                nav.classList.toggle('scrolled', !entries[0].isIntersecting);
+            }, { rootMargin: '-32px 0px 0px 0px' });
+            observer.observe(sentinel);
+        })();
 
         $(document).ready(function () {
             let debounceTimer;
@@ -1404,31 +946,34 @@
         
         // JAVASCRIPT: CLEAN SEPARATION OF C# AND JS
         
-        var isHomePageView = @isHomePage.ToString().ToLower();
-
         document.addEventListener("DOMContentLoaded", function () {
-            if (isHomePageView) {
-                const introOverlay = document.getElementById('reun-overlay');
+            const disclaimerModal = document.getElementById('disclaimer-modal');
+            const btnAccept = document.getElementById('btn-accept-disclaimer');
+            const disclaimerKey = 'cuongfilm-disclaimer-accepted-v2';
 
-                if (introOverlay && !sessionStorage.getItem('hasSeenIntro')) {
-                    introOverlay.classList.add('reun-is-playing');
+            if (!disclaimerModal || !btnAccept) return;
 
-                    setTimeout(function () {
-                        introOverlay.style.opacity = '0';
-
-                        setTimeout(function () {
-                            introOverlay.style.display = 'none';
-                            introOverlay.classList.remove('reun-is-playing');
-                            document.body.classList.remove('intro-active');
-                            sessionStorage.setItem('hasSeenIntro', 'true');
-                        }, 500);
-
-                    }, 2500);
-                }
+            if (localStorage.getItem(disclaimerKey) === 'true') {
+                disclaimerModal.classList.remove('active');
+                document.body.classList.remove('cf-disclaimer-open');
+                return;
             }
+
+            disclaimerModal.classList.add('active');
+            document.body.classList.add('cf-disclaimer-open');
+            btnAccept.focus({ preventScroll: true });
+
+            btnAccept.addEventListener('click', function () {
+                disclaimerModal.classList.remove('active');
+                document.body.classList.remove('cf-disclaimer-open');
+                localStorage.setItem(disclaimerKey, 'true');
+            });
         });
     </script>
 
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
+
+
+

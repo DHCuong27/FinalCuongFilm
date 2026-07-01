@@ -1,4 +1,5 @@
 ﻿using FinalCuongFilm.ApplicationCore.Entities;
+using FinalCuongFilm.ApplicationCore.Entities.Identity;
 using FinalCuongFilm.DataLayer;
 using FinalCuongFilm.Service.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -45,8 +46,12 @@ namespace FinalCuongFilm.Service.Services
 
 		public async Task<Transaction> CreateTransactionAsync(string userId, Guid packageId)
 		{
+			if (string.IsNullOrWhiteSpace(userId)) throw new InvalidOperationException("A signed-in user is required to create a VIP transaction.");
+
 			var package = await _context.VipPackages.FindAsync(packageId);
 			if (package == null || !package.IsActive) throw new Exception("VIP package is invalid.");
+
+			await EnsurePaymentUserExistsAsync(userId);
 
 			var transaction = new Transaction
 			{
@@ -71,6 +76,8 @@ namespace FinalCuongFilm.Service.Services
 
 			if (isSuccess)
 			{
+				await EnsurePaymentUserExistsAsync(transaction.UserId);
+
 				var package = await _context.VipPackages.FindAsync(transaction.PackageId);
 				if (package == null) return;
 
@@ -113,6 +120,29 @@ namespace FinalCuongFilm.Service.Services
 			await _context.SaveChangesAsync();
 		}
 
+		private async Task EnsurePaymentUserExistsAsync(string userId)
+		{
+			var exists = await _context.Set<CuongFilmUser>().AnyAsync(user => user.Id == userId);
+			if (exists) return;
+
+			_context.Set<CuongFilmUser>().Add(new CuongFilmUser
+			{
+				Id = userId,
+				UserName = $"payment-user-{userId}",
+				NormalizedUserName = $"PAYMENT-USER-{userId}".ToUpperInvariant(),
+				EmailConfirmed = false,
+				PhoneNumberConfirmed = false,
+				TwoFactorEnabled = false,
+				LockoutEnabled = false,
+				AccessFailedCount = 0,
+				CreatedAt = DateTime.UtcNow,
+				SecurityStamp = Guid.NewGuid().ToString("N"),
+				ConcurrencyStamp = Guid.NewGuid().ToString("N")
+			});
+
+			await _context.SaveChangesAsync();
+		}
+
 		// Get All Packages (Admin)
 		public async Task<IEnumerable<VipPackage>> GetAllPackagesAsync()
 		{
@@ -148,3 +178,5 @@ namespace FinalCuongFilm.Service.Services
 		}
 	}
 }
+
+

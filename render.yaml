@@ -1,0 +1,28 @@
+﻿services:
+  - type: web
+    name: final-cuong-film
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /health
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+      - key: ASPNETCORE_HTTP_PORTS
+        value: 8080
+      - key: DATABASE_URL
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: ZaloPay__AppId
+        sync: false
+      - key: ZaloPay__Key1
+        sync: false
+      - key: ZaloPay__Key2
+        sync: false
+      - key: ZaloPay__Endpoint
+        value: https://sb-openapi.zalopay.vn/v2/create
+      - key: ZaloPay__QueryEndpoint
+        value: https://sb-openapi.zalopay.vn/v2/query

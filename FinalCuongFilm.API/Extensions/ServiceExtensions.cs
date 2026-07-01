@@ -1,4 +1,4 @@
-﻿using FinalCuongFilm.ApplicationCore.Entities.Identity;
+using FinalCuongFilm.ApplicationCore.Entities.Identity;
 using FinalCuongFilm.DataLayer;
 using FinalCuongFilm.Service.Interfaces;
 using FinalCuongFilm.Service.Services;
@@ -45,7 +45,7 @@ namespace FinalCuongFilm.API.Extensions
 			services.AddScoped<IMediaFileService, MediaFileService>();
 			services.AddScoped<IFavoriteService, FavoriteService>();
 			services.AddScoped<IReviewService, ReviewService>();
-			services.AddScoped<IStorageService, AzureBlobService>();
+			services.AddScoped<IStorageService, SupabaseStorageService>();
 
 			return services;
 		}

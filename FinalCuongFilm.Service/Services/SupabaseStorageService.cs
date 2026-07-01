@@ -12,10 +12,12 @@ namespace FinalCuongFilm.Service.Services
 		private readonly ILogger<SupabaseStorageService> _logger;
 		private readonly string _supabaseUrl;
 		private readonly string _serviceRoleKey;
+		private readonly bool _isConfigured;
 
 		private const string VIDEO_BUCKET = "videos";
 		private const string POSTER_BUCKET = "posters";
 		private const string SUBTITLE_BUCKET = "subtitles";
+		private const string StorageConfigurationMessage = "Supabase storage is not configured. Set SUPABASE_URL=https://your-project.supabase.co and SUPABASE_SERVICE_ROLE_KEY in environment variables.";
 
 		public SupabaseStorageService(
 			IHttpClientFactory httpClientFactory,
@@ -25,23 +27,65 @@ namespace FinalCuongFilm.Service.Services
 			_httpClient = httpClientFactory.CreateClient();
 			_logger = logger;
 
-			_supabaseUrl = configuration["SUPABASE_URL"]
-				?? throw new InvalidOperationException("SUPABASE_URL is missing");
-			_serviceRoleKey = configuration["SUPABASE_SERVICE_ROLE_KEY"]
-				?? throw new InvalidOperationException("SUPABASE_SERVICE_ROLE_KEY is missing");
+			var configuredUrl = configuration["SUPABASE_URL"];
+			var configuredKey = configuration["SUPABASE_SERVICE_ROLE_KEY"]?.Trim();
 
-			// Optional: tăng timeout để upload file lớn
+			if (!TryNormalizeSupabaseUrl(configuredUrl, out var normalizedUrl) || string.IsNullOrWhiteSpace(configuredKey))
+			{
+				_supabaseUrl = string.Empty;
+				_serviceRoleKey = configuredKey ?? string.Empty;
+				_isConfigured = false;
+				_logger.LogWarning(StorageConfigurationMessage);
+			}
+			else
+			{
+				_supabaseUrl = normalizedUrl;
+				_serviceRoleKey = configuredKey;
+				_isConfigured = true;
+			}
+
 			_httpClient.Timeout = TimeSpan.FromMinutes(30);
+		}
+
+		private void EnsureConfigured()
+		{
+			if (!_isConfigured)
+			{
+				throw new InvalidOperationException(StorageConfigurationMessage);
+			}
 		}
 
 		private void ApplyAuthHeaders(HttpRequestMessage req)
 		{
+			EnsureConfigured();
 			req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _serviceRoleKey);
 			req.Headers.Add("apikey", _serviceRoleKey);
 		}
 
+		private static bool TryNormalizeSupabaseUrl(string? configuredUrl, out string normalizedUrl)
+		{
+			normalizedUrl = string.Empty;
+			if (string.IsNullOrWhiteSpace(configuredUrl))
+			{
+				return false;
+			}
+
+			var value = configuredUrl.Trim().TrimEnd('/');
+			if (!Uri.TryCreate(value, UriKind.Absolute, out var uri) ||
+				(uri.Scheme != Uri.UriSchemeHttps && uri.Scheme != Uri.UriSchemeHttp))
+			{
+				return false;
+			}
+
+			normalizedUrl = uri.GetLeftPart(UriPartial.Authority);
+			return true;
+		}
+
 		private string PublicUrl(string bucket, string path)
-			=> $"{_supabaseUrl.TrimEnd('/')}/storage/v1/object/public/{bucket}/{path}";
+		{
+			EnsureConfigured();
+			return $"{_supabaseUrl}/storage/v1/object/public/{bucket}/{path}";
+		}
 
 		public async Task<string> UploadAsync(IFormFile file, string bucketName, string? customFileName = null)
 		{
@@ -58,10 +102,12 @@ namespace FinalCuongFilm.Service.Services
 
 		private async Task<string> UploadStreamInternalAsync(Stream stream, string path, string bucket, string contentType)
 		{
+			EnsureConfigured();
+
 			path = path.TrimStart('/');
 			var safePath = Uri.EscapeDataString(path).Replace("%2F", "/");
 
-			var url = $"{_supabaseUrl.TrimEnd('/')}/storage/v1/object/{bucket}/{safePath}";
+			var url = $"{_supabaseUrl}/storage/v1/object/{bucket}/{safePath}";
 			using var req = new HttpRequestMessage(HttpMethod.Post, url);
 
 			ApplyAuthHeaders(req);
@@ -99,8 +145,6 @@ namespace FinalCuongFilm.Service.Services
 
 		public Task<string> GetStreamingUrlAsync(string fileUrl, int expiryHours = 12)
 		{
-		
-
 			if (string.IsNullOrWhiteSpace(fileUrl))
 			{
 				return Task.FromResult(string.Empty);
@@ -111,8 +155,13 @@ namespace FinalCuongFilm.Service.Services
 
 		public async Task<bool> DeleteAsync(string fileUrl)
 		{
+			if (!_isConfigured || string.IsNullOrWhiteSpace(fileUrl))
+			{
+				return false;
+			}
+
 			var (bucket, path) = ParsePublicUrl(fileUrl);
-			var url = $"{_supabaseUrl.TrimEnd('/')}/storage/v1/object/{bucket}/{path}";
+			var url = $"{_supabaseUrl}/storage/v1/object/{bucket}/{path}";
 			using var req = new HttpRequestMessage(HttpMethod.Delete, url);
 			ApplyAuthHeaders(req);
 			var resp = await _httpClient.SendAsync(req);
@@ -123,8 +172,13 @@ namespace FinalCuongFilm.Service.Services
 
 		public async Task<bool> ExistsAsync(string fileUrl)
 		{
+			if (!_isConfigured || string.IsNullOrWhiteSpace(fileUrl))
+			{
+				return false;
+			}
+
 			var (bucket, path) = ParsePublicUrl(fileUrl);
-			var url = $"{_supabaseUrl.TrimEnd('/')}/storage/v1/object/{bucket}/{path}";
+			var url = $"{_supabaseUrl}/storage/v1/object/{bucket}/{path}";
 			using var req = new HttpRequestMessage(HttpMethod.Head, url);
 			ApplyAuthHeaders(req);
 			var resp = await _httpClient.SendAsync(req);

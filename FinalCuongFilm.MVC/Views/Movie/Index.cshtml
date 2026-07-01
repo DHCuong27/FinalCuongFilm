@@ -1,4 +1,4 @@
-﻿@using FinalCuongFilm.ApplicationCore.Entities
+@using FinalCuongFilm.ApplicationCore.Entities
 @model FinalCuongFilm.MVC.Models.ViewModels.MovieFilterViewModel
 @{
     ViewData["Title"] = Model.PageTitle ?? "All Movies";
@@ -664,7 +664,7 @@
             </a>
         </div>
         <div style="text-align:center; color:var(--netflix-light-gray); font-size:0.85rem; margin-top:-1rem; margin-bottom:2rem;">
-            Page @Model.PageNumber of @Model.TotalPages — @Model.TotalItems movies total
+            Page @Model.PageNumber of @Model.TotalPages - @Model.TotalItems movies total
         </div>
     }
 </div>

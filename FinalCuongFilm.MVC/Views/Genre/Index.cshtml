@@ -1,4 +1,4 @@
-﻿@model FinalCuongFilm.MVC.Models.ViewModels.MovieFilterViewModel
+@model FinalCuongFilm.MVC.Models.ViewModels.MovieFilterViewModel
 @{
     ViewData["Title"] = Model.PageTitle ?? "Movie Genre";
     Layout = "_LayoutUser";
@@ -303,7 +303,7 @@
     <div class="sort-bar">
         <div class="sort-bar-left">
             Showing <span>@Model.Movies.Count</span> / <span>@Model.TotalItems</span> movies
-            — Page <span>@Model.PageNumber</span> / <span>@(Model.TotalPages == 0 ? 1 : Model.TotalPages)</span>
+            - Page <span>@Model.PageNumber</span> / <span>@(Model.TotalPages == 0 ? 1 : Model.TotalPages)</span>
         </div>
         <form method="get" asp-action="Index" asp-controller="Genre" class="sort-group">
             <input type="hidden" name="slug" value="@genreSlug" />

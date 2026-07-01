@@ -34,15 +34,14 @@ namespace FinalCuongFilm.MVC.Controllers
 		public async Task<IActionResult> Index()
 		{
 			var packages = await _vipService.GetActivePackagesAsync();
-			
+
 			var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 			if (!string.IsNullOrEmpty(userId))
 			{
 				var currentVip = await _vipService.GetCurrentUserSubscriptionAsync(userId);
 				ViewBag.CurrentVipEndDate = currentVip?.EndDate;
-
 			}
-			// Truyền dữ liệu vào ViewBag
+
 			ViewBag.Genres = await _genreService.GetAllAsync();
 			ViewBag.Countries = await _countryService.GetAllAsync();
 			return View(packages);
@@ -52,7 +51,6 @@ namespace FinalCuongFilm.MVC.Controllers
 		[HttpGet]
 		public async Task<IActionResult> Checkout(Guid packageId)
 		{
-
 			var packages = await _vipService.GetActivePackagesAsync();
 			var selectedPackage = packages.FirstOrDefault(p => p.Id == packageId);
 
@@ -61,7 +59,7 @@ namespace FinalCuongFilm.MVC.Controllers
 				TempData["Error"] = "VIP package does not exist.";
 				return RedirectToAction(nameof(Index));
 			}
-			// Truyền dữ liệu vào ViewBag
+
 			ViewBag.Genres = await _genreService.GetAllAsync();
 			ViewBag.Countries = await _countryService.GetAllAsync();
 			return View(selectedPackage);
@@ -92,12 +90,34 @@ namespace FinalCuongFilm.MVC.Controllers
 			if (appUser.Length > 30) appUser = appUser[..30];
 
 			var amount = (int)Math.Round(package.Price, MidpointRounding.AwayFromZero);
-			var transaction = await _vipService.CreateTransactionAsync(userId, packageId);
+			FinalCuongFilm.ApplicationCore.Entities.Transaction transaction;
+			try
+			{
+				transaction = await _vipService.CreateTransactionAsync(userId, packageId);
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Unable to create VIP transaction for user {UserId} and package {PackageId}", userId, packageId);
+				TempData["Error"] = "Không thể tạo giao dịch VIP. Vui lòng đăng xuất, đăng nhập lại và thử lại.";
+				return RedirectToAction("Index");
+			}
 
 			var appTransId = $"{DateTime.Now:yyMMdd}_{transaction.Id:N}";
 			var appTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds().ToString();
 
-			
+			if (string.IsNullOrWhiteSpace(appId) || string.IsNullOrWhiteSpace(key1))
+			{
+				_logger.LogWarning("ZaloPay sandbox credentials are missing. Completing transaction {TransactionId} in local demo mode.", transaction.Id);
+				await _vipService.CompleteTransactionAsync(transaction.Id, true);
+				return RedirectToAction(nameof(PaymentSuccess), new
+				{
+					txnId = transaction.Id,
+					appTransId,
+					status = 1,
+					demo = true
+				});
+			}
+
 			var redirectUrlWithParams = $"{redirectUrl}?txnId={transaction.Id}&appTransId={appTransId}";
 			var embedData = JsonConvert.SerializeObject(new { redirecturl = redirectUrlWithParams });
 			var item = "[]";
@@ -111,9 +131,13 @@ namespace FinalCuongFilm.MVC.Controllers
 				{ "amount", amount.ToString() },
 				{ "item", item },
 				{ "embed_data", embedData },
-				{ "description", $"CuongFilm VIP {package.Name}" },
-				{ "callback_url", callbackUrl }
+				{ "description", $"CuongFilm VIP {package.Name}" }
 			};
+
+			if (!string.IsNullOrWhiteSpace(callbackUrl))
+			{
+				reqData["callback_url"] = callbackUrl;
+			}
 
 			var dataToSign = $"{reqData["app_id"]}|{reqData["app_trans_id"]}|{reqData["app_user"]}|{reqData["amount"]}|{reqData["app_time"]}|{reqData["embed_data"]}|{reqData["item"]}";
 			reqData["mac"] = ComputeHmacSha256(dataToSign, key1);
@@ -131,7 +155,10 @@ namespace FinalCuongFilm.MVC.Controllers
 				if (returnCode == 1 && !string.IsNullOrWhiteSpace(orderUrl))
 					return Redirect(orderUrl);
 
-				TempData["Error"] = "Failed to create ZaloPay transaction.";
+				string message = res?.return_message != null ? (string)res.return_message : "Unknown response";
+				string subMessage = res?.sub_return_message != null ? (string)res.sub_return_message : "";
+				_logger.LogWarning("ZaloPay create transaction failed. Code: {Code}, Message: {Message}, SubMessage: {SubMessage}, Raw: {Raw}", returnCode, message, subMessage, raw);
+				TempData["Error"] = $"Không tạo được giao dịch ZaloPay Sandbox: {message} {subMessage}".Trim();
 				return RedirectToAction("Index");
 			}
 			catch (Exception ex)
@@ -147,19 +174,19 @@ namespace FinalCuongFilm.MVC.Controllers
 		public async Task<IActionResult> PaymentSuccess(
 			[FromQuery] Guid? txnId,
 			[FromQuery] string? appTransId,
-			[FromQuery] int? status)
+			[FromQuery] int? status,
+			[FromQuery] bool demo = false)
 		{
 			var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 			if (string.IsNullOrWhiteSpace(userId)) return Challenge();
 
-			_logger.LogInformation("[PAYMENT SUCCESS] Redirected back. txnId: {TxnId}, appTransId: {AppTransId}, status: {Status}", txnId, appTransId, status);
+			_logger.LogInformation("[PAYMENT SUCCESS] Redirected back. txnId: {TxnId}, appTransId: {AppTransId}, status: {Status}, demo: {Demo}", txnId, appTransId, status, demo);
 
-			if (txnId.HasValue && !string.IsNullOrWhiteSpace(appTransId))
+			if (!demo && txnId.HasValue && !string.IsNullOrWhiteSpace(appTransId))
 			{
-				// Execute active query with retry mechanism (Polling)
 				await CheckZaloPayOrderStatusWithRetryAsync(appTransId, txnId.Value);
 			}
-			else
+			else if (!demo)
 			{
 				_logger.LogWarning("[PAYMENT SUCCESS] Missing parameters. Cannot perform active query.");
 			}
@@ -185,6 +212,12 @@ namespace FinalCuongFilm.MVC.Controllers
 			var key1 = _config["ZaloPay:Key1"] ?? "";
 			var queryEndpoint = "https://sb-openapi.zalopay.vn/v2/query";
 
+			if (string.IsNullOrWhiteSpace(appId) || string.IsNullOrWhiteSpace(key1))
+			{
+				_logger.LogWarning("[ACTIVE QUERY] ZaloPay credentials are missing. Skipping gateway query for transaction {TxnId}.", txnId);
+				return;
+			}
+
 			var dataToSign = $"{appId}|{appTransId}|{key1}";
 			var mac = ComputeHmacSha256(dataToSign, key1);
 
@@ -196,15 +229,13 @@ namespace FinalCuongFilm.MVC.Controllers
 			};
 
 			int maxRetries = 3;
-			int delayMilliseconds = 2000; // 2 seconds between retries
+			int delayMilliseconds = 2000;
 
 			for (int i = 1; i <= maxRetries; i++)
 			{
 				try
 				{
 					_logger.LogInformation("[ACTIVE QUERY] Attempt {Attempt}/{MaxRetries} for appTransId: {AppTransId}", i, maxRetries, appTransId);
-
-					// Delay before querying to give ZaloPay Sandbox time to process
 					await Task.Delay(delayMilliseconds);
 
 					using var http = new HttpClient();
@@ -220,14 +251,14 @@ namespace FinalCuongFilm.MVC.Controllers
 					{
 						_logger.LogInformation("[ACTIVE QUERY] Status SUCCESS. Updating database...");
 						await _vipService.CompleteTransactionAsync(txnId, true);
-						return; // Exit loop, job is done
+						return;
 					}
 
 					if (returnCode == 2)
 					{
 						_logger.LogInformation("[ACTIVE QUERY] Status FAILED. Transaction was rejected.");
 						await _vipService.CompleteTransactionAsync(txnId, false);
-						return; // Exit loop, failure confirmed
+						return;
 					}
 
 					_logger.LogWarning("[ACTIVE QUERY] Status PENDING or UNKNOWN (Code: {Code}). Retrying...", returnCode);
