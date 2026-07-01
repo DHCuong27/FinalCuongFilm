@@ -277,9 +277,31 @@ static string GetSafePostgresHost(string connectionString)
 		return "unknown";
 	}
 }
+static string StripEnvironmentVariablePrefix(string value)
+{
+	var equalsIndex = value.IndexOf('=');
+	if (equalsIndex <= 0)
+	{
+		return value;
+	}
+
+	var prefix = value[..equalsIndex].Trim();
+	var knownPrefixes = new[]
+	{
+		"DATABASE_URL",
+		"POSTGRES_URL",
+		"POSTGRES_DATABASE_URL",
+		"ConnectionStrings__CuongFilmConnection",
+		"ConnectionStrings__DefaultConnection"
+	};
+
+	return knownPrefixes.Any(item => item.Equals(prefix, StringComparison.OrdinalIgnoreCase))
+		? value[(equalsIndex + 1)..].Trim()
+		: value;
+}
 static string NormalizePostgresConnectionString(string connectionString)
 {
-	connectionString = connectionString.Trim();
+	connectionString = StripEnvironmentVariablePrefix(connectionString.Trim());
 
 	if (!connectionString.StartsWith("postgres://", StringComparison.OrdinalIgnoreCase)
 		&& !connectionString.StartsWith("postgresql://", StringComparison.OrdinalIgnoreCase))
@@ -323,6 +345,7 @@ static string NormalizePostgresConnectionString(string connectionString)
 
 	return builder.ConnectionString;
 }
+
 
 
 
