@@ -1,4 +1,4 @@
-using FinalCuongFilm.ApplicationCore.Entities.Identity;
+﻿using FinalCuongFilm.ApplicationCore.Entities.Identity;
 using FinalCuongFilm.DataLayer;
 using FinalCuongFilm.MVC.Data;
 using FinalCuongFilm.MVC.Filters;
@@ -20,6 +20,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Resolve the PostgreSQL connection string before registering services
 var connectionString = GetRequiredPostgresConnectionString(builder.Configuration);
+builder.Logging.AddConsole();
 
 // FFmpeg path: prefer ENV, then fallback by OS
 var ffmpegPathFromEnv = builder.Configuration["FFMPEG_PATH"];
@@ -238,24 +239,43 @@ using (var scope = app.Services.CreateScope())
 app.Run();
 static string GetRequiredPostgresConnectionString(IConfiguration configuration)
 {
-	var candidates = new[]
+	var candidates = new (string Source, string? Value)[]
 	{
-		configuration.GetConnectionString("CuongFilmConnection"),
-		configuration["DATABASE_URL"],
-		configuration["POSTGRES_URL"],
-		configuration["POSTGRES_DATABASE_URL"]
+		("DATABASE_URL", configuration["DATABASE_URL"]),
+		("POSTGRES_URL", configuration["POSTGRES_URL"]),
+		("POSTGRES_DATABASE_URL", configuration["POSTGRES_DATABASE_URL"]),
+		("ConnectionStrings__CuongFilmConnection", configuration.GetConnectionString("CuongFilmConnection"))
 	};
 
-	var connectionString = candidates.FirstOrDefault(value => !string.IsNullOrWhiteSpace(value));
-	if (string.IsNullOrWhiteSpace(connectionString))
+	var selected = candidates.FirstOrDefault(candidate => !string.IsNullOrWhiteSpace(candidate.Value));
+	if (string.IsNullOrWhiteSpace(selected.Value))
 	{
 		throw new InvalidOperationException(
-			"CRITICAL ERROR: Missing PostgreSQL connection string. On Railway, configure DATABASE_URL, POSTGRES_URL, or ConnectionStrings__CuongFilmConnection.");
+			"CRITICAL ERROR: Missing PostgreSQL connection string. Configure DATABASE_URL with a public PostgreSQL URL, for example from Supabase Transaction Pooler.");
 	}
 
-	return NormalizePostgresConnectionString(connectionString);
+	var normalizedConnectionString = NormalizePostgresConnectionString(selected.Value);
+	Console.WriteLine($"Database connection source: {selected.Source}; host: {GetSafePostgresHost(normalizedConnectionString)}");
+	return normalizedConnectionString;
 }
 
+static string GetSafePostgresHost(string connectionString)
+{
+	try
+	{
+		if (connectionString.StartsWith("postgres://", StringComparison.OrdinalIgnoreCase)
+			|| connectionString.StartsWith("postgresql://", StringComparison.OrdinalIgnoreCase))
+		{
+			return new Uri(connectionString).Host;
+		}
+
+		return new NpgsqlConnectionStringBuilder(connectionString).Host ?? "unknown";
+	}
+	catch
+	{
+		return "unknown";
+	}
+}
 static string NormalizePostgresConnectionString(string connectionString)
 {
 	connectionString = connectionString.Trim();
@@ -277,7 +297,9 @@ static string NormalizePostgresConnectionString(string connectionString)
 		Port = uri.Port > 0 ? uri.Port : 5432,
 		Database = Uri.UnescapeDataString(uri.AbsolutePath.TrimStart('/')),
 		Username = username,
-		Password = password
+		Password = password,
+		SslMode = SslMode.Require,
+		TrustServerCertificate = true
 	};
 
 	var query = uri.Query.TrimStart('?').Split('&', StringSplitOptions.RemoveEmptyEntries);
@@ -300,3 +322,6 @@ static string NormalizePostgresConnectionString(string connectionString)
 
 	return builder.ConnectionString;
 }
+
+
+
