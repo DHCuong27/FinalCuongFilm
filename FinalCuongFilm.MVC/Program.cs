@@ -1,4 +1,4 @@
-﻿using FinalCuongFilm.ApplicationCore.Entities.Identity;
+using FinalCuongFilm.ApplicationCore.Entities.Identity;
 using FinalCuongFilm.DataLayer;
 using FinalCuongFilm.MVC.Data;
 using FinalCuongFilm.MVC.Filters;
@@ -120,16 +120,19 @@ builder.Services.AddResponseCompression(options =>
 	{
 		"application/json",
 		"application/manifest+json",
-		"image/svg+xml"
+		"image/svg+xml",
+		"text/css",
+		"application/javascript",
+		"text/javascript"
 	});
 });
 builder.Services.Configure<BrotliCompressionProviderOptions>(options =>
 {
-	options.Level = CompressionLevel.Fastest;
+	options.Level = CompressionLevel.Optimal;
 });
 builder.Services.Configure<GzipCompressionProviderOptions>(options =>
 {
-	options.Level = CompressionLevel.Fastest;
+	options.Level = CompressionLevel.Optimal;
 });
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();

@@ -1,0 +1,103 @@
+@model FinalCuongFilm.MVC.Models.ViewModels.MovieFilterViewModel
+<div>
+    <div id="filter-count-wrapper">
+        Đang hiển thị <strong>@Model.Movies.Count</strong> / <strong>@Model.TotalItems</strong> phim
+        @if (!string.IsNullOrEmpty(Model.Search) || Model.GenreId.HasValue || Model.CountryId.HasValue || Model.Type.HasValue)
+        {
+            <span style="color:var(--cf-text-lo)"> - đã lọc</span>
+        }
+    </div>
+
+    <div id="filtered-movies-wrapper">
+        @if (Model.Movies.Any())
+        {
+            <div class="movies-grid">
+                @foreach (var movie in Model.Movies)
+                {
+                    <div class="grid-card">
+                        <div class="grid-poster">
+                            <span class="badge-type-card">@(movie.Type.ToString() == "Series" ? "Series" : "Movie")</span>
+                            @if (movie.IsVipOnly)
+                            {
+                                <div class="badge-vip-card"><i class="fa-solid fa-crown"></i> VIP</div>
+                            }
+                            <a asp-controller="Movie" asp-action="Detail" asp-route-slug="@movie.Slug"
+                               aria-label="Xem chi tiết: @movie.Title">
+                                <img src="@(string.IsNullOrEmpty(movie.PosterUrl) ? "https://via.placeholder.com/300x450/1c1c1c/555?text=No+Poster" : movie.PosterUrl)"
+                                     alt="@movie.Title" loading="lazy" decoding="async" width="300" height="450" />
+                            </a>
+                            <div class="grid-overlay">
+                                <a asp-controller="Movie" asp-action="Watch"
+                                   asp-route-slug="@movie.Slug"
+                                   class="btn-play-card"
+                                   aria-label="Xem ngay: @movie.Title">
+                                    <i class="fas fa-play" aria-hidden="true"></i> Xem ngay
+                                </a>
+                            </div>
+                        </div>
+                        <div class="grid-info">
+                            <div class="grid-title">
+                                <a asp-controller="Movie" asp-action="Detail" asp-route-slug="@movie.Slug">@movie.Title</a>
+                            </div>
+                            <div class="grid-meta">
+                                @if (movie.ReleaseYear.HasValue)
+                                {
+                                    <span><i class="fas fa-calendar" aria-hidden="true"></i> @movie.ReleaseYear</span>
+                                }
+                                @if (!string.IsNullOrEmpty(movie.CountryName))
+                                {
+                                    <span>@movie.CountryName</span>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            @if (Model.TotalPages > 1)
+            {
+                int maxP = 5;
+                int sP = Math.Max(1, Model.PageNumber - maxP / 2);
+                int eP = Math.Min(Model.TotalPages, sP + maxP - 1);
+                if (eP - sP + 1 < maxP) sP = Math.Max(1, eP - maxP + 1);
+
+                <div class="pagination" role="navigation" aria-label="Phân trang">
+                    <a asp-action="Index" asp-controller="Home"
+                       asp-route-search="@Model.Search" asp-route-genreId="@Model.GenreId"
+                       asp-route-countryId="@Model.CountryId" asp-route-type="@Model.Type"
+                       asp-route-sortBy="@Model.SortBy" asp-route-pageNumber="@(Model.PageNumber - 1)"
+                       class="page-btn @(!Model.HasPreviousPage ? "disabled" : null)"
+                       aria-label="Trang trước">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                    @for (int pi = sP; pi <= eP; pi++)
+                    {
+                        <a asp-action="Index" asp-controller="Home"
+                           asp-route-search="@Model.Search" asp-route-genreId="@Model.GenreId"
+                           asp-route-countryId="@Model.CountryId" asp-route-type="@Model.Type"
+                           asp-route-sortBy="@Model.SortBy" asp-route-pageNumber="@pi"
+                           class="page-btn @(pi == Model.PageNumber ? "active" : null)"
+                           aria-current="@(pi == Model.PageNumber ? "page" : null)"
+                           aria-label="Trang @pi">@pi</a>
+                    }
+                    <a asp-action="Index" asp-controller="Home"
+                       asp-route-search="@Model.Search" asp-route-genreId="@Model.GenreId"
+                       asp-route-countryId="@Model.CountryId" asp-route-type="@Model.Type"
+                       asp-route-sortBy="@Model.SortBy" asp-route-pageNumber="@(Model.PageNumber + 1)"
+                       class="page-btn @(!Model.HasNextPage ? "disabled" : null)"
+                       aria-label="Trang sau">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="empty-state">
+                <i class="fas fa-search" aria-hidden="true"></i>
+                <h3>Không tìm thấy phim phù hợp</h3>
+                <p>Thử điều chỉnh bộ lọc, hoặc <a asp-action="Index" asp-controller="Home">xóa tất cả bộ lọc</a>.</p>
+            </div>
+        }
+    </div>
+</div>

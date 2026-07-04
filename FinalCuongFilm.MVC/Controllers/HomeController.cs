@@ -1,4 +1,4 @@
-﻿using FinalCuongFilm.Common.DTOs;
+using FinalCuongFilm.Common.DTOs;
 using FinalCuongFilm.MVC.Models;
 using FinalCuongFilm.MVC.Models.ViewModels;
 using FinalCuongFilm.Service.Interfaces;
@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 using System.Diagnostics;
 using System.Security.Claims;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.EntityFrameworkCore;
 
 namespace FinalCuongFilm.MVC.Controllers
@@ -49,8 +48,20 @@ namespace FinalCuongFilm.MVC.Controllers
 			ViewData["MetaDescription"] = "CuongFilm - Xem phim chất lượng cao, phim mới cập nhật mỗi ngày.";
 			ViewData["CanonicalUrl"] = "https://cuongfilm.site/";
 
-			var genres = await _genreService.GetAllAsync();
-			var countries = await _countryService.GetAllAsync();
+			// Cache Genres list
+			var genres = await _cache.GetOrCreateAsync("AllGenres", async entry =>
+			{
+				entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(30);
+				return await _genreService.GetAllAsync();
+			}) ?? Enumerable.Empty<GenreDto>();
+
+			// Cache Countries list
+			var countries = await _cache.GetOrCreateAsync("AllCountries", async entry =>
+			{
+				entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(30);
+				return await _countryService.GetAllAsync();
+			}) ?? Enumerable.Empty<CountryDto>();
+
 			ViewBag.Genres = genres;
 			ViewBag.Countries = countries;
 
@@ -149,6 +160,12 @@ namespace FinalCuongFilm.MVC.Controllers
 				TotalItems = totalItems
 			};
 
+			// Return partial view if requested via AJAX
+			if (Request.Query.ContainsKey("partial"))
+			{
+				return PartialView("_FilteredMovies", homeVM.AllMoviesFilter);
+			}
+
 			return View(homeVM);
 		}
 
@@ -162,28 +179,37 @@ namespace FinalCuongFilm.MVC.Controllers
 			string sortBy = "latest",
 			int pageNumber = 1)
 		{
-			var allMovies = await _movieService.GetAllAsync();
-			var genres = await _genreService.GetAllAsync();
-			var countries = await _countryService.GetAllAsync();
+			// Cache Genres list
+			var genres = await _cache.GetOrCreateAsync("AllGenres", async entry =>
+			{
+				entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(30);
+				return await _genreService.GetAllAsync();
+			}) ?? Enumerable.Empty<GenreDto>();
 
+			// Cache Countries list
+			var countries = await _cache.GetOrCreateAsync("AllCountries", async entry =>
+			{
+				entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(30);
+				return await _countryService.GetAllAsync();
+			}) ?? Enumerable.Empty<CountryDto>();
 
 			ViewBag.Genres = genres;
 			ViewBag.Countries = countries;
 
-			// Base filter by movie type (Movie or TV Series)
-			var query = allMovies.Where(m => m.IsActive && (int)m.Type == type).AsEnumerable();
+			// Push all filtering to SQL instead of loading all movies into memory
+			var query = _movieService.GetBaseActiveMoviesQuery()
+				.Where(m => (int)m.Type == type);
 
-			// Apply optional filters
 			if (!string.IsNullOrWhiteSpace(search))
 			{
 				query = query.Where(m =>
-					m.Title.Contains(search, StringComparison.OrdinalIgnoreCase) ||
-					(m.Description?.Contains(search, StringComparison.OrdinalIgnoreCase) ?? false));
+					m.Title.ToLower().Contains(search.ToLower()) ||
+					(m.Description != null && m.Description.ToLower().Contains(search.ToLower())));
 			}
 
 			if (genreId.HasValue)
 			{
-				query = query.Where(m => m.SelectedGenreIds != null && m.SelectedGenreIds.Contains(genreId.Value));
+				query = query.Where(m => m.MovieGenres.Any(mg => mg.GenreId == genreId.Value));
 			}
 
 			if (countryId.HasValue)
@@ -196,14 +222,15 @@ namespace FinalCuongFilm.MVC.Controllers
 			{
 				"popular" => query.OrderByDescending(m => m.ViewCount),
 				"title" => query.OrderBy(m => m.Title),
-				_ => query.OrderByDescending(m => m.ReleaseYear) // Default "latest"
+				_ => query.OrderByDescending(m => m.ReleaseYear)
 			};
 
-			// Pagination
+			// Pagination pushed to database
 			int pageSize = 12;
-			var filteredList = query.ToList();
-			int totalItems = filteredList.Count;
-			var pagedMovies = filteredList.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToList();
+			var totalItems = await query.CountAsync();
+			var pagedMovies = await _movieService.MapToLightweightDto(
+				query.Skip((pageNumber - 1) * pageSize).Take(pageSize)
+			).ToListAsync();
 
 			var viewModel = new MovieFilterViewModel
 			{
@@ -224,6 +251,7 @@ namespace FinalCuongFilm.MVC.Controllers
 
 			return View(viewModel);
 		}
+
 		// Privacy
 		public IActionResult Privacy() => View();
 
