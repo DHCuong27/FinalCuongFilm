@@ -380,83 +380,81 @@
             observer.observe(sentinel);
         })();
 
-        $(document).ready(function () {
-            let debounceTimer;
-
-            $('#searchInput').on('input', function () {
-                clearTimeout(debounceTimer);
-                const query = $(this).val().trim();
-
-                if (query.length < 2) {
-                    $('#searchSuggestions').hide();
-                    return;
-                }
-
-                debounceTimer = setTimeout(() => {
-                    $.ajax({
-                        url: '/Search/Suggestions',
-                        type: 'GET',
-                        data: { q: query },
-                        success: function (data) {
-                            const suggestionsBox = $('#searchSuggestions');
-                            suggestionsBox.empty();
-
-                            if (data && data.length > 0) {
-                                data.forEach(movie => {
-                                    const item = `
-                                        <a href="/Movie/Detail?slug=${movie.slug}" class="suggestion-item">
-                                            <img src="${movie.posterUrl || 'https://via.placeholder.com/40x60/2d2d2d/ffffff?text=No+Poster'}"
-                                                 alt="${movie.title}"
-                                                 onerror="this.src='https://via.placeholder.com/40x60/2d2d2d/ffffff?text=No+Poster'">
-                                            <div>
-                                                <div style="font-weight: 600;">${movie.title}</div>
-                                                <div style="font-size: 0.8rem; color: #b3b3b3;">${movie.year || ''}</div>
-                                            </div>
-                                        </a>`;
-                                    suggestionsBox.append(item);
-                                });
-                                suggestionsBox.show();
-                            } else {
-                                suggestionsBox.html('<div style="padding: 15px; color: #b3b3b3; text-align: center;">No results found</div>');
-                                suggestionsBox.show();
-                            }
-                        }
-                    });
-                }, 300);
-            });
-
-            $(document).on('click', function (e) {
-                if (!$(e.target).closest('.search-container').length) {
-                    $('#searchSuggestions').fadeOut(200);
-                }
-            });
-        });
-
-        
-        // JAVASCRIPT: CLEAN SEPARATION OF C# AND JS
-        
         document.addEventListener("DOMContentLoaded", function () {
+            // Disclaimer Modal (Plain JS, safe, won't break if jQuery fails to load)
             const disclaimerModal = document.getElementById('disclaimer-modal');
             const btnAccept = document.getElementById('btn-accept-disclaimer');
             const disclaimerKey = 'cuongfilm-disclaimer-accepted-v2';
 
-            if (!disclaimerModal || !btnAccept) return;
+            if (disclaimerModal && btnAccept) {
+                if (localStorage.getItem(disclaimerKey) === 'true') {
+                    disclaimerModal.classList.remove('active');
+                    document.body.classList.remove('cf-disclaimer-open');
+                } else {
+                    disclaimerModal.classList.add('active');
+                    document.body.classList.add('cf-disclaimer-open');
+                    btnAccept.focus({ preventScroll: true });
 
-            if (localStorage.getItem(disclaimerKey) === 'true') {
-                disclaimerModal.classList.remove('active');
-                document.body.classList.remove('cf-disclaimer-open');
-                return;
+                    btnAccept.addEventListener('click', function () {
+                        disclaimerModal.classList.remove('active');
+                        document.body.classList.remove('cf-disclaimer-open');
+                        localStorage.setItem(disclaimerKey, 'true');
+                    });
+                }
             }
 
-            disclaimerModal.classList.add('active');
-            document.body.classList.add('cf-disclaimer-open');
-            btnAccept.focus({ preventScroll: true });
+            // Search Suggestions (uses jQuery, safe here since deferred jQuery has run before DOMContentLoaded)
+            if (typeof $ !== 'undefined') {
+                let debounceTimer;
 
-            btnAccept.addEventListener('click', function () {
-                disclaimerModal.classList.remove('active');
-                document.body.classList.remove('cf-disclaimer-open');
-                localStorage.setItem(disclaimerKey, 'true');
-            });
+                $('#searchInput').on('input', function () {
+                    clearTimeout(debounceTimer);
+                    const query = $(this).val().trim();
+
+                    if (query.length < 2) {
+                        $('#searchSuggestions').hide();
+                        return;
+                    }
+
+                    debounceTimer = setTimeout(() => {
+                        $.ajax({
+                            url: '/Search/Suggestions',
+                            type: 'GET',
+                            data: { q: query },
+                            success: function (data) {
+                                const suggestionsBox = $('#searchSuggestions');
+                                suggestionsBox.empty();
+
+                                if (data && data.length > 0) {
+                                    data.forEach(movie => {
+                                        const item = `
+                                            <a href="/Movie/Detail?slug=${movie.slug}" class="suggestion-item">
+                                                <img src="${movie.posterUrl || 'https://via.placeholder.com/40x60/2d2d2d/ffffff?text=No+Poster'}"
+                                                     alt="${movie.title}"
+                                                     onerror="this.src='https://via.placeholder.com/40x60/2d2d2d/ffffff?text=No+Poster'">
+                                                <div>
+                                                    <div style="font-weight: 600;">${movie.title}</div>
+                                                    <div style="font-size: 0.8rem; color: #b3b3b3;">${movie.year || ''}</div>
+                                                </div>
+                                            </a>`;
+                                        suggestionsBox.append(item);
+                                    });
+                                    suggestionsBox.show();
+                                } else {
+                                    suggestionsBox.html('<div style="padding: 15px; color: #b3b3b3; text-align: center;">No results found</div>');
+                                    suggestionsBox.show();
+                                }
+                            }
+                        });
+                    }, 300);
+                });
+
+                $(document).on('click', function (e) {
+                    if (!$(e.target).closest('.search-container').length) {
+                        $('#searchSuggestions').fadeOut(200);
+                    }
+                });
+            }
         });
     </script>
 
